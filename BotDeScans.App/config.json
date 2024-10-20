@@ -1,0 +1,67 @@
+﻿{
+  "Serilog": {
+    "Using": [ "Serilog.Sinks.Console" ],
+    "MinimumLevel": "Debug",
+    "WriteTo": [
+      { "Name": "Console" },
+      {
+        "Name": "File",
+        "Args": {
+          "path": "log.txt",
+          "rollingInterval": "Day"
+        }
+      }
+    ],
+    "Enrich": [ "FromLogContext" ],
+    "Properties": {
+      "Application": "BotDeScans"
+    }
+  },
+  "Settings": {
+    "Publish": {
+      "PingType": "Role",
+      "GlobalRole": "Role",
+      "Steps": [
+        "Download",
+        "Compress"
+      ]
+    }
+  },
+  "Discord": {
+    "Token": "",
+    "ServerId": 0,
+    "ReleaseChannel": 0
+  },
+  "GoogleDrive": {
+    "RewriteExistingFile": true
+  },
+  "Mega": {
+    "User": "",
+    "Pass": "",
+    "RewriteExistingFile": true
+  },
+  "Blogger": {
+    "Id": "",
+    "Url": ""
+  },
+  "Mangadex": {
+    "GroupId": "",
+    "User": "",
+    "Pass": ""
+  },
+  "Tsuki": {
+    "User": "",
+    "Pass": ""
+  },
+  "UserAgent": "BotDeScans/0.0.1",
+  "Compress": {
+    "Grayscale": {
+      "Quality": "50",
+      "MinimumQuality": "30"
+    },
+    "Colorful": {
+      "Quality": "90",
+      "MinimumQuality": "85"
+    }
+  }
+}
