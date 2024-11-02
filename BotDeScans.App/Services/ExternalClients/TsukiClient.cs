@@ -1,5 +1,5 @@
-﻿using BotDeScans.App.Enums;
-using BotDeScans.App.Extensions;
+﻿using BotDeScans.App.Extensions;
+using BotDeScans.App.Features.Publish.Steps;
 using FluentResults;
 using Microsoft.Extensions.Configuration;
 using System.Net.Http.Json;

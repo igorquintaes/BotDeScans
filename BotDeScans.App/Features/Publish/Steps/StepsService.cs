@@ -1,14 +1,11 @@
-﻿using BotDeScans.App.Enums;
-using BotDeScans.App.Extensions;
+﻿using BotDeScans.App.Extensions;
 using FluentResults;
 using Microsoft.Extensions.Configuration;
-namespace BotDeScans.App.Services;
+namespace BotDeScans.App.Features.Publish.Steps;
 
 public class StepsService(IConfiguration configuration)
 {
-    private readonly StepEnum[] steps = configuration.GetRequiredValues<StepEnum>(
-        "Settings:Publish:Steps", 
-        value => Enum.Parse(typeof(StepEnum), value));
+    private readonly StepEnum[] steps = configuration.GetRequiredValues<StepEnum>("Settings:Publish:Steps", value => Enum.Parse(typeof(StepEnum), value));
 
     public Result ValidateStepsDependencies()
     {
@@ -21,19 +18,19 @@ public class StepsService(IConfiguration configuration)
         {
             result.WithReason(step switch
             {
-                (StepEnum.UploadPdfBox or
-                 StepEnum.UploadPdfMega or
-                 StepEnum.UploadPdfGoogleDrive) when steps.NotContains(StepEnum.PdfFiles)
+                StepEnum.UploadPdfBox or
+                StepEnum.UploadPdfMega or
+                StepEnum.UploadPdfGoogleDrive when steps.NotContains(StepEnum.PdfFiles)
                     => ErrorFromDependency(step, requiredSteps: StepEnum.PdfFiles),
-                (StepEnum.UploadZipBox or
-                 StepEnum.UploadZipMega or
-                 StepEnum.UploadZipGoogleDrive or
-                 StepEnum.UploadMangadex or
-                 StepEnum.UploadTsuki) when steps.NotContains(StepEnum.ZipFiles)
+                StepEnum.UploadZipBox or
+                StepEnum.UploadZipMega or
+                StepEnum.UploadZipGoogleDrive or
+                StepEnum.UploadMangadex or
+                StepEnum.UploadTsuki when steps.NotContains(StepEnum.ZipFiles)
                     => ErrorFromDependency(step, requiredSteps: StepEnum.ZipFiles),
                 StepEnum.PublishBlogspot when steps.NotContainsAll(requiredBloggerSteps)
-                   => ErrorFromDependency(step, requiredSteps: requiredBloggerSteps),
-                _ => new Success("No error in current step :)")
+                    => ErrorFromDependency(step, requiredSteps: requiredBloggerSteps),
+                _   => new Success("No error in current step :)")
             });
         }
 

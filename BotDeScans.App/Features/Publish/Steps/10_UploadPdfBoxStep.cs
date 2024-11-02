@@ -1,14 +1,14 @@
-﻿using BotDeScans.App.Enums;
+﻿using BotDeScans.App.Services;
 using FluentResults;
 using Microsoft.Extensions.DependencyInjection;
-namespace BotDeScans.App.Services.Publish.Steps;
+namespace BotDeScans.App.Features.Publish.Steps;
 
-public class UploadZipBoxStep(
+public class UploadPdfBoxStep(
     IServiceProvider serviceProvider,
     PublishState state) : IStep
 {
-    public StepEnum StepName => StepEnum.UploadZipBox;
-    public StepType StepType => StepType.Publish;
+    public StepEnum StepName => StepEnum.UploadPdfBox;
+    public StepType StepType => StepType.Execute;
 
     public Task<Result> ValidateBeforeFilesManagementAsync(CancellationToken _)
         => Task.FromResult(Result.Ok());
@@ -19,13 +19,17 @@ public class UploadZipBoxStep(
     public async Task<Result> ExecuteAsync(CancellationToken cancellationToken)
     {
         var boxService = serviceProvider.GetRequiredService<BoxService>();
-
         var titleFolder = await boxService.GetOrCreateFolderAsync(state.Info.DisplayTitle);
         var file = await boxService.CreateFileAsync(
-            filePath: state.InternalData.ZipFilePath,
+            filePath: state.InternalData.PdfFilePath,
             parentFolderId: titleFolder.Id);
 
-        state.Links.BoxZip = file.SharedLink.DownloadUrl;
+        state.Links.BoxPdf = file.SharedLink.DownloadUrl;
+        state.Links.BoxPdfReader = file.SharedLink.DownloadUrl
+            .Split("/")
+            .Last()
+            .Replace(".pdf", "", StringComparison.InvariantCultureIgnoreCase);
+
         return Result.Ok();
     }
 }

@@ -1,9 +1,10 @@
-﻿using BotDeScans.App.Services.Discord;
+﻿using BotDeScans.App.Features.Publish;
+using BotDeScans.App.Features.Publish.Steps;
+using BotDeScans.App.Services.Discord;
 using BotDeScans.App.Services.ExternalClients;
 using BotDeScans.App.Services.GoogleDrive;
 using BotDeScans.App.Services.Initializatiors;
 using BotDeScans.App.Services.Logging;
-using BotDeScans.App.Services.Publish;
 using BotDeScans.App.Services.Validators;
 using BotDeScans.App.Services.Wrappers;
 using Microsoft.Extensions.DependencyInjection;

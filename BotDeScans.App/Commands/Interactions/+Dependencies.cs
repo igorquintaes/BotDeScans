@@ -1,7 +1,7 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
 using Remora.Discord.Interactivity.Extensions;
 using System.Diagnostics.CodeAnalysis;
-namespace BotDeScans.App.Services.Discord.Interactions;
+namespace BotDeScans.App.Commands.Interactions;
 
 [ExcludeFromCodeCoverage]
 internal static class AddDependencies

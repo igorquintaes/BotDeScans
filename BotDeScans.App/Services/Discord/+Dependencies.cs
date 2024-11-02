@@ -1,7 +1,6 @@
-﻿using BotDeScans.App.Extensions;
-using BotDeScans.App.Services.Discord.Commands;
+﻿using BotDeScans.App.Commands;
+using BotDeScans.App.Extensions;
 using BotDeScans.App.Services.Discord.Conditions;
-using BotDeScans.App.Services.Discord.Interactions;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -14,7 +13,6 @@ internal static class AddDependencies
 {
     internal static IServiceCollection AddDiscordServices(this IServiceCollection services) => services
         .AddDiscordCommands()
-        .AddDiscordInteractions()
         .AddDiscordConditions()
         .AddSingleton<RolesService>()
         .AddScoped<ExtendedFeedbackService>();

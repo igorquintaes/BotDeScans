@@ -1,14 +1,14 @@
-﻿using BotDeScans.App.Enums;
+﻿using BotDeScans.App.Services;
 using FluentResults;
 using Microsoft.Extensions.DependencyInjection;
-namespace BotDeScans.App.Services.Publish.Steps;
+namespace BotDeScans.App.Features.Publish.Steps;
 
 public class CompressFilesStep(
     IServiceProvider serviceProvider,
     PublishState state) : IStep
 {
     public StepEnum StepName => StepEnum.Compress;
-    public StepType StepType => StepType.Management;
+    public StepType StepType => StepType.Manage;
 
     public Task<Result> ValidateBeforeFilesManagementAsync(CancellationToken _)
         => Task.FromResult(Result.Ok());

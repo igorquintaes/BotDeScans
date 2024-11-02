@@ -1,14 +1,14 @@
-﻿using BotDeScans.App.Enums;
+﻿using BotDeScans.App.Services;
 using FluentResults;
 using Microsoft.Extensions.DependencyInjection;
-namespace BotDeScans.App.Services.Publish.Steps;
+namespace BotDeScans.App.Features.Publish.Steps;
 
 public class UploadZipMegaStep(
     IServiceProvider serviceProvider,
     PublishState state) : IStep
 {
     public StepEnum StepName => StepEnum.UploadZipMega;
-    public StepType StepType => StepType.Publish;
+    public StepType StepType => StepType.Execute;
 
     public Task<Result> ValidateBeforeFilesManagementAsync(CancellationToken _)
         => Task.FromResult(Result.Ok());

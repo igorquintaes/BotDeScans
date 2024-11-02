@@ -1,14 +1,17 @@
-﻿using BotDeScans.App.Enums;
+﻿using BotDeScans.App.Services;
 using FluentResults;
 using Microsoft.Extensions.DependencyInjection;
-namespace BotDeScans.App.Services.Publish.Steps;
+namespace BotDeScans.App.Features.Publish.Steps;
 
-public class PdfFilesStep(
+public class ZipFilesStep(
     IServiceProvider serviceProvider,
     PublishState state) : IStep
 {
-    public StepEnum StepName => StepEnum.PdfFiles;
-    public StepType StepType => StepType.Management;
+    public StepEnum StepName => StepEnum.ZipFiles;
+    public StepType StepType => StepType.Manage;
+
+    private readonly IServiceProvider serviceProvider = serviceProvider;
+    private readonly PublishState state = state;
 
     public Task<Result> ValidateBeforeFilesManagementAsync(CancellationToken _)
         => Task.FromResult(Result.Ok());
@@ -16,16 +19,16 @@ public class PdfFilesStep(
     public Task<Result> ValidateAfterFilesManagementAsync(CancellationToken _)
         => Task.FromResult(Result.Ok());
 
-    public async Task<Result> ExecuteAsync(CancellationToken cancellationToken)
+    public Task<Result> ExecuteAsync(CancellationToken cancellationToken)
     {
         var fileService = serviceProvider.GetRequiredService<FileService>();
         var fileReleaseService = serviceProvider.GetRequiredService<FileReleaseService>();
 
-        state.InternalData.PdfFilePath = await fileService.CreatePdfFileAsync(
-            fileName: $"{state.Info.ChapterNumber}.pdf",
+        state.InternalData.ZipFilePath = fileService.CreateZipFile(
+            fileName: $"{state.Info.ChapterNumber}.zip",
             resourcesDirectory: state.InternalData.OriginContentFolder,
             destinationDirectory: fileReleaseService.CreateScopedDirectory());
 
-        return Result.Ok();
+        return Task.FromResult(Result.Ok());
     }
 }

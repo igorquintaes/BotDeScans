@@ -1,6 +1,8 @@
 ﻿using BotDeScans.App.Attributes;
 using BotDeScans.App.Builders;
 using BotDeScans.App.Extensions;
+using BotDeScans.App.Services;
+using BotDeScans.App.Services.Discord;
 using BotDeScans.App.Services.GoogleDrive;
 using Remora.Commands.Attributes;
 using Remora.Commands.Groups;
@@ -8,7 +10,7 @@ using Remora.Discord.API.Objects;
 using Remora.Results;
 using System.ComponentModel;
 using System.Diagnostics.CodeAnalysis;
-namespace BotDeScans.App.Services.Discord.Commands;
+namespace BotDeScans.App.Commands;
 
 [Group("googledrive")]
 public class GoogleDriveCommands(
@@ -28,7 +30,6 @@ public class GoogleDriveCommands(
 
         var successEmbed = EmbedBuilder.CreateSuccessEmbed("Os arquivos do link estão de acordo com as regras de publicação!");
         return await feedbackService.SendContextualEmbedAsync(successEmbed, ct: CancellationToken);
-
     }
 
     [Command("delete-file")]
@@ -99,7 +100,6 @@ public class GoogleDriveCommands(
                 .WithAttachment(fileName, chartStream)
                 .Build(),
             ct: CancellationToken);
-
     }
 
     [Group("debug")]

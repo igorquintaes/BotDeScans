@@ -1,16 +1,15 @@
-﻿using BotDeScans.App.Enums;
-using BotDeScans.App.Extensions;
+﻿using BotDeScans.App.Extensions;
+using BotDeScans.App.Features.Publish.Steps;
 using Microsoft.Extensions.Configuration;
 using System.ComponentModel;
-using System.Runtime.Serialization;
-namespace BotDeScans.App.Services.Publish;
+namespace BotDeScans.App.Features.Publish;
 
 public class PublishState
 {
     public PublishState(IConfiguration configuration)
     {
         var stepsAsString = configuration.GetRequiredValues<StepEnum>(
-            "Settings:Publish:Steps", 
+            "Settings:Publish:Steps",
             value => Enum.Parse(typeof(StepEnum), value));
 
         Steps = Enum
@@ -53,10 +52,10 @@ public class PublishState
         [Description("Mega [Pdf]")]
         public string? MegaPdf { get; set; }
 
-        [Description("Google Drive [Zip]")]
+        [Description("Drive [Zip]")]
         public string? DriveZip { get; set; }
 
-        [Description("Google Drive [Pdf]")]
+        [Description("Drive [Pdf]")]
         public string? DrivePdf { get; set; }
 
         [Description("Box [Zip]")]
@@ -65,13 +64,13 @@ public class PublishState
         [Description("Box [Pdf]")]
         public string? BoxPdf { get; set; }
 
-        [Description("Em nosso site")]
+        [Description("Blogger")]
         public string? BloggerLink { get; set; }
 
-        [Description("Online [MangaDex]")]
+        [Description("MangaDex")]
         public string? MangaDexLink { get; set; }
 
-        [Description("Online [Tsuki]")]
+        [Description("Tsuki")]
         public string? TsukiLink { get; set; }
 
         public string? BoxPdfReader { get; set; }

@@ -1,5 +1,5 @@
-﻿using BotDeScans.App.Enums;
-using BotDeScans.App.Extensions;
+﻿using BotDeScans.App.Extensions;
+using BotDeScans.App.Features.Publish.Steps;
 using CG.Web.MegaApiClient;
 using FluentResults;
 using Microsoft.Extensions.Configuration;

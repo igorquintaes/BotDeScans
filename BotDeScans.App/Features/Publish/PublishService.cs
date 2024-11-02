@@ -1,11 +1,10 @@
-﻿using BotDeScans.App.Enums;
-using BotDeScans.App.Extensions;
-using BotDeScans.App.Services.Publish.Steps;
+﻿using BotDeScans.App.Extensions;
+using BotDeScans.App.Features.Publish.Steps;
 using FluentResults;
 using Microsoft.Extensions.Configuration;
 using Remora.Discord.API.Abstractions.Rest;
 using Remora.Rest.Core;
-namespace BotDeScans.App.Services.Publish;
+namespace BotDeScans.App.Features.Publish;
 
 public class PublishService(
     IConfiguration configuration,
@@ -17,7 +16,7 @@ public class PublishService(
     private readonly PublishState publishState = publishState;
 
 
-    public async Task<Result<string>> GetPublishPingAsync(string title, CancellationToken cancellationToken)
+    public async Task<Result<string>> CreatePingMessageAsync(string title, CancellationToken cancellationToken)
     {
         const string pingTypeKey = "Settings:Publish:PingType";
         var pingType = configuration.GetRequiredValue<PingType>(pingTypeKey);
@@ -32,7 +31,7 @@ public class PublishService(
         };
     }
 
-    private async Task<Result<string>> GetTitleRole(string title, CancellationToken cancellationToken) 
+    private async Task<Result<string>> GetTitleRole(string title, CancellationToken cancellationToken)
         => TryGetRoleName(title, out var roleName) is false
             ? (Result<string>)Result.Fail($"Erro ao encontrar um cargo para o mangá '{title}', no arquivo roles.txt")
             : await GetRoleFromDiscord(roleName, cancellationToken);
@@ -52,6 +51,7 @@ public class PublishService(
         return $"{titleRolePing.Value}, {globalRolePing.Value}";
     }
 
+    // todo: método em classe do discord
     private async Task<Result<string>> GetRoleFromDiscord(string roleName, CancellationToken cancellationToken)
     {
         var serverId = configuration.GetRequiredValue<ulong>("Discord:ServerId");
@@ -74,35 +74,38 @@ public class PublishService(
             .TryGetValue(title.ToLowerInvariant(), out roleName!);
 
     public Task<Result> ValidateBeforeFilesManagementAsync(CancellationToken cancellationToken)
-        => RunAsync(
-            operation: "validating",
-            func: async (step, ct) => await step.ValidateBeforeFilesManagementAsync(ct),
+        => RunStepsAsync(
+            stepFunc: async (step, ct) => await step.ValidateBeforeFilesManagementAsync(ct),
+            feedbackFunc: null,
             stepTypes: Enum.GetValues<StepType>(),
             breakOnError: false,
             changeStateOnSuccess: false,
             cancellationToken: cancellationToken);
 
     public Task<Result> ValidateAfterFilesManagementAsync(CancellationToken cancellationToken)
-        => RunAsync(
-            operation: "validating",
-            func: async (step, ct) => await step.ValidateAfterFilesManagementAsync(ct),
+        => RunStepsAsync(
+            stepFunc: async (step, ct) => await step.ValidateAfterFilesManagementAsync(ct),
+            feedbackFunc: null,
             stepTypes: Enum.GetValues<StepType>(),
             breakOnError: false,
             changeStateOnSuccess: false,
             cancellationToken: cancellationToken);
 
-    public Task<Result> RunAsync(StepType stepType, CancellationToken cancellationToken)
-        => RunAsync(
-            operation: "executing",
-            func: async (step, ct) => await step.ExecuteAsync(ct),
+    public Task<Result> RunAsync(
+        StepType stepType,
+        Func<Task<Result>>? feedbackFunc,
+        CancellationToken cancellationToken)
+        => RunStepsAsync(
+            stepFunc: async (step, ct) => await step.ExecuteAsync(ct),
+            feedbackFunc: feedbackFunc,
             stepTypes: [stepType],
             breakOnError: true,
             changeStateOnSuccess: true,
             cancellationToken: cancellationToken);
 
-    private async Task<Result> RunAsync(
-        string operation,
-        Func<IStep, CancellationToken, Task<Result>> func,
+    private async Task<Result> RunStepsAsync(
+        Func<IStep, CancellationToken, Task<Result>> stepFunc,
+        Func<Task<Result>>? feedbackFunc,
         StepType[] stepTypes,
         bool breakOnError,
         bool changeStateOnSuccess,
@@ -119,7 +122,7 @@ public class PublishService(
 
             try
             {
-                var executionResult = await func(step, cancellationToken);
+                var executionResult = await stepFunc(step, cancellationToken);
                 result.WithReasons(executionResult.Reasons);
 
                 if (changeStateOnSuccess)
@@ -128,14 +131,19 @@ public class PublishService(
                         : StepStatus.Error;
                 else if (executionResult.IsFailed)
                     publishState.Steps[step.StepName] = StepStatus.Error;
-
             }
             catch (Exception ex)
             {
-                var message = $"Unexpected error while {operation} {step.StepName}. More info inside exception logs.";
+                var message = $"Unexpected error in {step.StepName}. " +
+                              $"Exception message: {ex.Message}. " +
+                               "More info inside exception logs.";
+
                 result.WithError(new Error(message).CausedBy(ex));
                 publishState.Steps[step.StepName] = StepStatus.Error;
             }
+
+            if (feedbackFunc is not null)
+                await feedbackFunc();
 
             // todo: no futuro podemos pensar em cenários de falha e que permitem o fluxo continuar... não agora.
             if (publishState.Steps[step.StepName] == StepStatus.Error && breakOnError)
@@ -146,7 +154,7 @@ public class PublishService(
     }
 
     // todo: método de revert no futuro (?)
-    // talvez não seja necessário... estamos ampliando os casos validação
+    // talvez não seja necessário... estamos ampliando os casos validação e casos de rewrite
     // podemos tratar como cenários exceção e reversão manual em caso de erros.
 }
 

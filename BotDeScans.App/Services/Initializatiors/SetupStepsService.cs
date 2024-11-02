@@ -1,4 +1,5 @@
-﻿using BotDeScans.App.Services.Logging;
+﻿using BotDeScans.App.Features.Publish.Steps;
+using BotDeScans.App.Services.Logging;
 using Microsoft.Extensions.Hosting;
 namespace BotDeScans.App.Services.Initializatiors;
 

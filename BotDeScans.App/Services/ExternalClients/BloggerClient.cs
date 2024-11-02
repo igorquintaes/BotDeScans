@@ -1,5 +1,5 @@
-﻿using BotDeScans.App.Enums;
-using BotDeScans.App.Extensions;
+﻿using BotDeScans.App.Extensions;
+using BotDeScans.App.Features.Publish.Steps;
 using BotDeScans.App.Services.Wrappers;
 using FluentResults;
 using Google.Apis.Auth.OAuth2;

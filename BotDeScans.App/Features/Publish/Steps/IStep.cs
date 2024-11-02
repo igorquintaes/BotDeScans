@@ -1,6 +1,17 @@
 ﻿using BotDeScans.App.Attributes;
+using FluentResults;
 using System.ComponentModel;
-namespace BotDeScans.App.Enums;
+
+namespace BotDeScans.App.Features.Publish.Steps;
+
+public interface IStep
+{
+    public Task<Result> ExecuteAsync(CancellationToken cancellationToken);
+    public Task<Result> ValidateBeforeFilesManagementAsync(CancellationToken cancellationToken);
+    public Task<Result> ValidateAfterFilesManagementAsync(CancellationToken cancellationToken);
+    public StepEnum StepName { get; }
+    public StepType StepType { get; }
+}
 
 public enum StepEnum
 {
@@ -34,20 +45,6 @@ public enum StepEnum
 
 public enum StepType
 {
-    Management,
-    Publish
-}
-
-public enum StepStatus
-{
-    [Emoji("track_next")]
-    Skip,
-    [Emoji("clock10")]
-    Queued,
-    [Emoji("fire")]
-    Executing,
-    [Emoji("white_check_mark")]
-    Success,
-    [Emoji("warning")]
-    Error,
+    Manage,
+    Execute
 }

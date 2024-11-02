@@ -1,9 +1,9 @@
-﻿using BotDeScans.App.Enums;
+﻿using BotDeScans.App.Attributes;
 using BotDeScans.App.Extensions;
 using System.Drawing;
-namespace BotDeScans.App.Models;
+namespace BotDeScans.App.Features.Publish.Steps;
 
-public class BotTasks(IDictionary<StepEnum, StepStatus> data) : Dictionary<StepEnum, StepStatus>(data)
+public class StepsInfo(IDictionary<StepEnum, StepStatus> data) : Dictionary<StepEnum, StepStatus>(data)
 {
     public StepStatus Status =>
         this.All(x => x.Value == StepStatus.Success || x.Value == StepStatus.Skip)
@@ -33,5 +33,20 @@ public class BotTasks(IDictionary<StepEnum, StepStatus> data) : Dictionary<StepE
     public string Details
         => string.Join(
             Environment.NewLine,
-            this.Select(task => $"{task.Value.GetEmoji()} - {task.Key.GetDescription()}"));
+            this.Where(X => X.Value != StepStatus.Skip)
+                .Select(task => $"{task.Value.GetEmoji()} - {task.Key.GetDescription()}"));
+}
+
+public enum StepStatus
+{
+    [Emoji("track_next")]
+    Skip,
+    [Emoji("clock10")]
+    Queued,
+    [Emoji("fire")]
+    Executing,
+    [Emoji("white_check_mark")]
+    Success,
+    [Emoji("warning")]
+    Error,
 }

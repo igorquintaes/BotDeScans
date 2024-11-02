@@ -1,5 +1,6 @@
 ﻿using BotDeScans.App.Attributes;
 using BotDeScans.App.Builders;
+using BotDeScans.App.Commands.Interactions;
 using Remora.Commands.Attributes;
 using Remora.Commands.Groups;
 using Remora.Discord.API.Abstractions.Objects;
@@ -9,7 +10,7 @@ using Remora.Discord.Commands.Attributes;
 using Remora.Discord.Commands.Contexts;
 using Remora.Results;
 using System.ComponentModel;
-namespace BotDeScans.App.Services.Discord.Commands;
+namespace BotDeScans.App.Commands;
 
 public class PublishCommands(
     IOperationContext context,
@@ -24,12 +25,12 @@ public class PublishCommands(
         if (context is not InteractionContext interactionContext)
             return Result.FromSuccess();
 
-        var modal = new ModalBuilder(nameof(Publish), "Publicar novo lançamento")
-            .AddField("link", "Link do capítulo")
-            .AddField("title", "Nome do mangá")
-            .AddField("chapterName", "Nome do capítulo", false)
-            .AddField("chapterNumberAndVolume", "NumeroCap $ Volume")
-            .AddField("message", "Mensagem de postagem", false, TextInputStyle.Paragraph)
+        var modal = new ModalBuilder(nameof(PublishInteractions.PublishAsync), "Publicar novo lançamento")
+            .AddField(fieldName: "link",        label: "Link do capítulo")
+            .AddField(fieldName: "title",       label: "Nome do mangá")
+            .AddField(fieldName: "chapterName", label: "Nome do capítulo", isRequired: false)
+            .AddField(fieldName: "chapterInfo", label: "Numero do capítulo $ Volume")
+            .AddField(fieldName: "message",     label: "Mensagem de postagem", isRequired: false, TextInputStyle.Paragraph)
             .Create();
 
         var response = new InteractionResponse(InteractionCallbackType.Modal, modal);
