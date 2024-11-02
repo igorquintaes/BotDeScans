@@ -28,8 +28,8 @@ public static class EmbedBuilder
             .ToList();
 
         // todo: some errors can be larger than embed max lenght.
-        // Log a duplicate info is a short and fast way to prevent info loss.
-        // We need handle it better, creating N embeds or truncating messages.
+        // Log a duplicate info is a short and fast way to prevent info loss. 
+        // We need handle it better, creating N embeds or truncating messages. 
         foreach (var embedField in embedFields)
             Log.Error($"{embedField.Name}{Environment.NewLine}{embedField.Value}");
 

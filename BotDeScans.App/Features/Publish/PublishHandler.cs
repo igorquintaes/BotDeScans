@@ -13,13 +13,13 @@ public class PublishHandler(PublishState publishState, PublishService publishSer
         if (preValidationResult.IsFailed)
             return preValidationResult;
 
-        var publishPingResult = await publishService.CreatePingMessageAsync(publishState.Info.DisplayTitle, cancellationToken);
-        if (publishPingResult.IsFailed)
-            return publishPingResult;
+        var pingResult = await publishService.CreatePingMessageAsync(publishState.Info.DisplayTitle, cancellationToken);
+        if (pingResult.IsFailed)
+            return pingResult;
 
-        var startingFeedbackResult = await feedbackFunc();
-        if (startingFeedbackResult.IsFailed)
-            return startingFeedbackResult;
+        var initialFeedbackResult = await feedbackFunc();
+        if (initialFeedbackResult.IsFailed)
+            return initialFeedbackResult;
 
         var managePublishResult = await publishService.RunAsync(StepType.Manage, feedbackFunc, cancellationToken);
         if (managePublishResult.IsFailed)
@@ -29,6 +29,10 @@ public class PublishHandler(PublishState publishState, PublishService publishSer
         if (validationResult.IsFailed)
             return validationResult;
 
-        return await publishService.RunAsync(StepType.Execute, feedbackFunc, cancellationToken);
+        var publishResult = await publishService.RunAsync(StepType.Execute, feedbackFunc, cancellationToken);
+        if (publishResult.IsFailed)
+            return publishResult;
+
+        return pingResult;
     }
 }
