@@ -7,6 +7,7 @@ using Remora.Discord.API.Abstractions.Rest;
 using Remora.Discord.API.Objects;
 using Remora.Discord.Commands.Contexts;
 using Remora.Rest.Core;
+using Serilog;
 using System.Drawing;
 namespace BotDeScans.App.Builders;
 
@@ -17,8 +18,8 @@ public static class EmbedBuilder
         if (result.IsSuccess)
             throw new InvalidOperationException("error embed must be called with an error result state");
 
-        var errorsInfos = result.Errors.GetInnerErrorsInfo();
-        var exceptionsEmbedField = errorsInfos.Select(errorInfo =>
+        var errorsInfos = result.Errors.GetErrorsInfo();
+        var embedFields = errorsInfos.Select(errorInfo =>
             new EmbedField(
                 Name: errorInfo switch
                 {
@@ -26,12 +27,19 @@ public static class EmbedBuilder
                     _ when errorInfo.Depth != 0 => ":arrow_right: Detalhe interno",
                     _ => $"Erro {errorInfo.Number}"
                 },
-                Value: errorInfo.Message));
+                Value: errorInfo.Message))
+            .ToList();
+
+        // todo: some errors can be larger than embed max lenght.
+        // Log a duplicate info is a short and fast way to prevent info loss.
+        // We need handle it better, creating N embeds or truncating messages.
+        foreach (var embedField in embedFields)
+            Log.Error($"{embedField.Name}{Environment.NewLine}{embedField.Value}");
 
         return new Embed(
             Title: ":no_entry: Erro!",
             Colour: Color.Red,
-            Fields: exceptionsEmbedField.ToList());
+            Fields: embedFields);
     }
 
     public static Embed CreateSuccessEmbed(

@@ -27,18 +27,18 @@ public static class ResultExtensions
             : Result.Fail(validationResult.Errors.Select(validationError =>
                      new Error(validationError.ErrorMessage)));
 
-    public static IEnumerable<ErrorInfo> GetInnerErrorsInfo(this IReadOnlyList<IError> errors, int depth = 0)
+    public static IEnumerable<ErrorInfo> GetErrorsInfo(this IReadOnlyList<IError> errors, int depth = 0)
     {
         for (var index = 0; index < errors.Count; index++)
         {
             var error = errors[index];
-            var errorNumber = index - 1;
+            var errorNumber = index + 1;
             yield return new(error.Message, errorNumber, depth, ErrorType.Regular);
 
             if (error.TryGetExceptionMessageFromError(out var exceptionMessage))
                 yield return new(exceptionMessage, errorNumber, depth, ErrorType.Exception);
 
-            foreach (var innerError in GetInnerErrorsInfo(error.Reasons, depth + 1))
+            foreach (var innerError in GetErrorsInfo(error.Reasons, depth + 1))
                 yield return innerError;
         }
     }
