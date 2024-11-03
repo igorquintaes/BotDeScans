@@ -29,7 +29,9 @@ public class ImageService(IConfiguration configuration)
             using var imageJob = new ImageJob();
             var imageBytes = await File.ReadAllBytesAsync(filePath, ct);
             var imageJobResult = await imageJob
-                .Decode(imageBytes)
+                .Decode(source: new BytesSource(imageBytes),
+                        // Handles ImageMalformed error: https://github.com/imazen/imageflow-dotnet/issues/46
+                        commands: new DecodeCommands().SetIgnoreColorProfileErrors(true))
                 .EncodeToBytes(new PngQuantEncoder(quality, minQuality))
                 .Finish()
                 .InProcessAsync();
