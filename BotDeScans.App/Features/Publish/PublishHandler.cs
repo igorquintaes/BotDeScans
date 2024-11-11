@@ -1,6 +1,4 @@
-﻿using BotDeScans.App.Features.Publish.Steps;
-using FluentResults;
-
+﻿using FluentResults;
 namespace BotDeScans.App.Features.Publish;
 
 public class PublishHandler(PublishState publishState, PublishService publishService)
@@ -21,15 +19,15 @@ public class PublishHandler(PublishState publishState, PublishService publishSer
         if (initialFeedbackResult.IsFailed)
             return initialFeedbackResult;
 
-        var managePublishResult = await publishService.RunAsync(StepType.Manage, feedbackFunc, cancellationToken);
-        if (managePublishResult.IsFailed)
-            return managePublishResult;
+        var managementResult = await publishService.RunManagementStepsAsync(feedbackFunc, cancellationToken);
+        if (managementResult.IsFailed)
+            return managementResult;
 
         var validationResult = await publishService.ValidateAfterFilesManagementAsync(cancellationToken);
         if (validationResult.IsFailed)
             return validationResult;
 
-        var publishResult = await publishService.RunAsync(StepType.Execute, feedbackFunc, cancellationToken);
+        var publishResult = await publishService.RunPublishStepsAsync(feedbackFunc, cancellationToken);
         if (publishResult.IsFailed)
             return publishResult;
 

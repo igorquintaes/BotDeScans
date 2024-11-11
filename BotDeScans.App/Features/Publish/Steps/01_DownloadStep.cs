@@ -1,4 +1,5 @@
-﻿using BotDeScans.App.Services;
+﻿using BotDeScans.App.Features.GoogleDrive;
+using BotDeScans.App.Services;
 using FluentResults;
 using Microsoft.Extensions.DependencyInjection;
 namespace BotDeScans.App.Features.Publish.Steps;
@@ -9,7 +10,7 @@ public class DownloadStep(
     PublishState state) : IStep
 {
     public StepEnum StepName => StepEnum.Download;
-    public StepType StepType => StepType.Manage;
+    public StepType StepType => StepType.Management;
 
     public async Task<Result> ValidateBeforeFilesManagementAsync(CancellationToken cancellationToken)
         => await googleDriveService.ValidateFilesFromLinkAsync(state.Info.Link, cancellationToken);

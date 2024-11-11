@@ -1,2 +1,2 @@
 RMDIR ".\TestsReport" /s /q
-RMDIR ".\DreamBot.UnitTests\TestResults" /s /q
+RMDIR ".\BotDeScans.Tests\TestResults" /s /q

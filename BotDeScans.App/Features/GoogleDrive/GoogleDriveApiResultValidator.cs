@@ -1,10 +1,11 @@
-﻿using FluentValidation;
+﻿using BotDeScans.App.Services;
+using FluentValidation;
 using Google.Apis.Drive.v3.Data;
-namespace BotDeScans.App.Services.Validators;
+namespace BotDeScans.App.Features.GoogleDrive;
 
 public class GoogleDriveApiResultValidator : AbstractValidator<FileList>
 {
-    public GoogleDriveApiResultValidator(ChapterValidatorService chapterValidatorService) =>
+    public GoogleDriveApiResultValidator(ValidatorService chapterValidatorService) =>
         RuleFor(model => model)
             .Must(chapterValidatorService.ShouldHaveOnlyFiles)
                 .WithMessage("O diretório precisa conter apenas arquivos.")

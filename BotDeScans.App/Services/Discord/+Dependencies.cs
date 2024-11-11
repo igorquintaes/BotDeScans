@@ -1,9 +1,9 @@
-﻿using BotDeScans.App.Commands;
-using BotDeScans.App.Extensions;
+﻿using BotDeScans.App.Extensions;
 using BotDeScans.App.Services.Discord.Conditions;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Remora.Discord.Commands.Extensions;
 using Remora.Discord.Hosting.Extensions;
 using System.Diagnostics.CodeAnalysis;
 namespace BotDeScans.App.Services.Discord;

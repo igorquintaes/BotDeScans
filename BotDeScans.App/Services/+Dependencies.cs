@@ -1,8 +1,8 @@
-﻿using BotDeScans.App.Features.Publish;
+﻿using BotDeScans.App.Features.GoogleDrive;
+using BotDeScans.App.Features.Publish;
 using BotDeScans.App.Features.Publish.Steps;
 using BotDeScans.App.Services.Discord;
 using BotDeScans.App.Services.ExternalClients;
-using BotDeScans.App.Services.GoogleDrive;
 using BotDeScans.App.Services.Initializatiors;
 using BotDeScans.App.Services.Logging;
 using BotDeScans.App.Services.Validators;
@@ -23,7 +23,6 @@ internal static class AddDependencies
         .AddLoggingServices()
         .AddValidators()
         .AddWrappers()
-        .AddSingleton<ChapterValidatorService>()
         .AddSingleton<ChartService>()
         .AddSingleton<ExtractionService>()
         .AddSingleton<FileService>()
@@ -32,7 +31,6 @@ internal static class AddDependencies
         .AddScoped<BoxService>()
         .AddScoped<FileReleaseService>()
         .AddScoped<GoogleBloggerService>()
-        .AddScoped<GoogleDriveService>()
         .AddScoped<MangaDexService>()
         .AddScoped<MegaService>()
         .AddScoped<TsukiService>();

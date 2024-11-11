@@ -1,4 +1,4 @@
-﻿using BotDeScans.App.Services;
+﻿using BotDeScans.App.Features.GoogleDrive;
 using FluentResults;
 using Microsoft.Extensions.DependencyInjection;
 namespace BotDeScans.App.Features.Publish.Steps;
@@ -8,7 +8,7 @@ public class UploadZipGoogleDriveStep(
     PublishState state) : IStep
 {
     public StepEnum StepName => StepEnum.UploadZipGoogleDrive;
-    public StepType StepType => StepType.Execute;
+    public StepType StepType => StepType.Publish;
 
     public Task<Result> ValidateBeforeFilesManagementAsync(CancellationToken _)
         => Task.FromResult(Result.Ok());

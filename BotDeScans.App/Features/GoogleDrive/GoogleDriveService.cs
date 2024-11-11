@@ -1,52 +1,36 @@
 ﻿using BotDeScans.App.Extensions;
-using BotDeScans.App.Services.GoogleDrive;
+using BotDeScans.App.Features.GoogleDrive.InternalServices;
+using BotDeScans.App.Services;
 using FluentResults;
 using FluentValidation;
-using FluentValidation.Results;
 using Google.Apis.Drive.v3.Data;
 using Microsoft.Extensions.Configuration;
 using System.Collections.Concurrent;
 using File = Google.Apis.Drive.v3.Data.File;
-namespace BotDeScans.App.Services;
+namespace BotDeScans.App.Features.GoogleDrive;
 
-public class GoogleDriveService
+public class GoogleDriveService(
+    ExtractionService extractionService,
+    GoogleDriveFilesService googleDriveFilesService,
+    GoogleDriveFoldersService googleDriveFoldersService,
+    GoogleDriveResourcesService googleDriveResourcesService,
+    GoogleDrivePermissionsService googleDrivePermissionsService,
+    IValidator<FileList> validator,
+    IConfiguration configuration)
 {
-    private readonly ExtractionService extractionService;
-    private readonly GoogleDriveFilesService googleDriveFilesService;
-    private readonly GoogleDriveFoldersService googleDriveFoldersService;
-    private readonly GoogleDriveResourcesService googleDriveResourcesService;
-    private readonly GoogleDrivePermissionsService googleDrivePermissionsService;
-    private readonly IValidator<FileList> validator;
-    private readonly IConfiguration configuration;
-
-    public GoogleDriveService(
-        ExtractionService extractionService,
-        GoogleDriveFilesService googleDriveFilesService,
-        GoogleDriveFoldersService googleDriveFoldersService,
-        GoogleDriveResourcesService googleDriveResourcesService,
-        GoogleDrivePermissionsService googleDrivePermissionsService,
-        IValidator<FileList> validator,
-        IConfiguration configuration)
-    {
-        this.extractionService = extractionService;
-        this.googleDriveFilesService = googleDriveFilesService;
-        this.googleDriveFoldersService = googleDriveFoldersService;
-        this.googleDriveResourcesService = googleDriveResourcesService;
-        this.googleDrivePermissionsService = googleDrivePermissionsService;
-        this.validator = validator;
-        this.configuration = configuration;
-    }
-
     public async Task<Result<File>> GetOrCreateFolderAsync(
         string folderName,
         string? parentId,
         CancellationToken cancellationToken = default)
     {
         var folderResult = await googleDriveFoldersService.GetFolderAsync(folderName, parentId, cancellationToken);
+        if (folderResult.IsFailed)
+            return folderResult.ToResult<File>();
 
-        return folderResult.IsSuccess && folderResult.ValueOrDefault is null
-            ? await googleDriveFoldersService.CreateFolderAsync(folderName, parentId, cancellationToken)
-            : folderResult!;
+        if (folderResult.ValueOrDefault is not null)
+            return folderResult.ToResult(_ => folderResult.Value!);
+
+        return await googleDriveFoldersService.CreateFolderAsync(folderName, parentId, cancellationToken);
     }
 
     public async Task<Result<File>> CreateFileAsync(
@@ -64,7 +48,7 @@ public class GoogleDriveService
         {
             const string rewriteKey = "GoogleDrive:RewriteExistingFile";
             var rewriteFile = configuration.GetValue<bool?>(rewriteKey) ?? false;
-            if (!rewriteFile)
+            if (rewriteFile is false)
                 return Result.Fail($"Já existe um arquivo com o nome especificado. Se desejar sobrescrever o arquivo existente, altere a configuração {rewriteKey} para permitir.");
 
             return await googleDriveFilesService.UpdateFileAsync(filePath, fileResult.Value!.Id, cancellationToken);
@@ -90,9 +74,8 @@ public class GoogleDriveService
                 conditionToAddError: () => fileResult.IsSuccess,
                 error: "Não foi encontrado um arquivo com o nome especificado.");
 
-        return (await googleDriveResourcesService
-            .DeleteResource(fileResult.Value.Id, cancellationToken))
-            .ToResult();
+        var deleteResult = await googleDriveResourcesService.DeleteResource(fileResult.Value.Id, cancellationToken);
+        return deleteResult.ToResult();
     }
 
     public async Task<Result> SaveFilesFromLinkAsync(
@@ -139,21 +122,22 @@ public class GoogleDriveService
         string email,
         CancellationToken cancellationToken = default)
     {
-        var userPermissionsResult = await googleDrivePermissionsService.GetDriverAccessPermissionsAsync(email, cancellationToken);
+        var getPermissionsResult = await googleDrivePermissionsService.GetDriverAccessPermissionsAsync(email, cancellationToken);
+        if (getPermissionsResult.IsFailed || getPermissionsResult.Value.Any())
+            return getPermissionsResult.ToResult();
 
-        return userPermissionsResult.IsSuccess && !userPermissionsResult.Value.Any()
-            ? (await googleDrivePermissionsService.CreateBaseUserReaderPermissionAsync(email, cancellationToken)).ToResult()
-            : userPermissionsResult.ToResult();
+        var setPermissionResult = await googleDrivePermissionsService.CreateBaseUserReaderPermissionAsync(email, cancellationToken);
+        return setPermissionResult.ToResult();
     }
 
     public async Task<Result> RevokeReaderAccessToBotFilesAsync(
         string email,
         CancellationToken cancellationToken = default)
     {
-        var userPermissionsResult = await googleDrivePermissionsService.GetDriverAccessPermissionsAsync(email, cancellationToken);
+        var getPermissionsResult = await googleDrivePermissionsService.GetDriverAccessPermissionsAsync(email, cancellationToken);
+        if (getPermissionsResult.IsFailed)
+            return getPermissionsResult.ToResult();
 
-        return userPermissionsResult.IsSuccess
-            ? await googleDrivePermissionsService.DeleteBaseUserPermissionsAsync(userPermissionsResult.Value, cancellationToken)
-            : userPermissionsResult.ToResult();
+        return await googleDrivePermissionsService.DeleteBaseUserPermissionsAsync(getPermissionsResult.Value, cancellationToken);
     }
 }

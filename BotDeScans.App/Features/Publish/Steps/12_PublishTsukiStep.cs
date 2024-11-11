@@ -9,7 +9,7 @@ public class PublishTsukiStep(
     PublishState state) : IStep
 {
     public StepEnum StepName => StepEnum.UploadTsuki;
-    public StepType StepType => StepType.Execute;
+    public StepType StepType => StepType.Publish;
 
     public Task<Result> ValidateBeforeFilesManagementAsync(CancellationToken _)
         => TryGetMangaId(state.Info.DisplayTitle, out var _) is false

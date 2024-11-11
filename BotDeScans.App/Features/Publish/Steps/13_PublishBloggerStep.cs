@@ -8,7 +8,7 @@ public class PublishBloggerStep(
     PublishState state) : IStep
 {
     public StepEnum StepName => StepEnum.PublishBlogspot;
-    public StepType StepType => StepType.Execute;
+    public StepType StepType => StepType.Publish;
 
     public Task<Result> ValidateBeforeFilesManagementAsync(CancellationToken _)
         => Task.FromResult(Result.Ok());

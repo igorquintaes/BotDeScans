@@ -1,16 +1,16 @@
 ﻿using BotDeScans.App.Attributes;
 using BotDeScans.App.Builders;
 using BotDeScans.App.Extensions;
+using BotDeScans.App.Features.GoogleDrive.InternalServices;
 using BotDeScans.App.Services;
 using BotDeScans.App.Services.Discord;
-using BotDeScans.App.Services.GoogleDrive;
 using Remora.Commands.Attributes;
 using Remora.Commands.Groups;
 using Remora.Discord.API.Objects;
 using Remora.Results;
 using System.ComponentModel;
 using System.Diagnostics.CodeAnalysis;
-namespace BotDeScans.App.Commands;
+namespace BotDeScans.App.Features.GoogleDrive.Discord;
 
 [Group("googledrive")]
 public class GoogleDriveCommands(
@@ -102,6 +102,7 @@ public class GoogleDriveCommands(
             ct: CancellationToken);
     }
 
+#if DEBUG
     [Group("debug")]
     [ExcludeFromCodeCoverage(Justification = "Live Discord testing and debug.")]
     public class GoogleDriveDebugCommands : CommandGroup
@@ -154,4 +155,6 @@ public class GoogleDriveCommands(
             return await feedbackService.SendContextualEmbedAsync(embed, ct: CancellationToken);
         }
     }
+
+#endif
 }

@@ -8,7 +8,7 @@ public class PdfFilesStep(
     PublishState state) : IStep
 {
     public StepEnum StepName => StepEnum.PdfFiles;
-    public StepType StepType => StepType.Manage;
+    public StepType StepType => StepType.Management;
 
     public Task<Result> ValidateBeforeFilesManagementAsync(CancellationToken _)
         => Task.FromResult(Result.Ok());

@@ -5,6 +5,8 @@ using MangaDexSharp;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Remora.Discord.Commands.Extensions;
+using Remora.Discord.Interactivity.Extensions;
 using System.Diagnostics.CodeAnalysis;
 
 namespace BotDeScans.App;
@@ -18,14 +20,16 @@ public class Program
         .AddLoggingToHost()
         .ConfigureServices(services => services
             .AddServices()
+            .AddDiscordCommands(true)
+            .AddInteractivity()
             .AddLazyCache()
             .AddMangaDex())
         .ConfigureAppConfiguration(config => config
             .AddEnvironmentVariables()
-            .AddJsonFile("config.json", optional: true)
-            .AddJsonFile(".\\config\\config.json", optional: true)
-            .AddJsonFile("config.local.json", optional: true)
-            .AddJsonFile(".\\config\\config.local.json", optional: true))
+            .AddJsonFile("config.json", optional: true, reloadOnChange: true)
+            .AddJsonFile("config.local.json", optional: true, reloadOnChange: true)
+            .AddJsonFile(Path.Combine("config", "config.json"), optional: true, reloadOnChange: true)
+            .AddJsonFile(Path.Combine("config", "config.local.json"), optional: true, reloadOnChange: true))
         .UseConsoleLifetime()
         .Build()
         .RunAsync();

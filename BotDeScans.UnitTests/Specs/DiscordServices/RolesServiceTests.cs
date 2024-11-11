@@ -1,5 +1,5 @@
 ﻿using AutoBogus;
-using BotDeScans.App.DiscordServices;
+using BotDeScans.App.Services.Discord;
 using BotDeScans.UnitTests.Extensions;
 using FakeItEasy;
 using FluentAssertions;

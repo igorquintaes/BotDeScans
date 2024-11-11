@@ -2,7 +2,7 @@
 using BotDeScans.App.Services.Wrappers;
 using FluentResults;
 using Google.Apis.Drive.v3.Data;
-namespace BotDeScans.App.Services.GoogleDrive;
+namespace BotDeScans.App.Features.GoogleDrive.InternalServices;
 
 public class GoogleDrivePermissionsService(
     GoogleDriveClient googleDriveClient,

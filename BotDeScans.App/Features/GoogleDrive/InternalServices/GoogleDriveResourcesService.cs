@@ -2,7 +2,7 @@
 using BotDeScans.App.Services.Wrappers;
 using FluentResults;
 using File = Google.Apis.Drive.v3.Data.File;
-namespace BotDeScans.App.Services.GoogleDrive;
+namespace BotDeScans.App.Features.GoogleDrive.InternalServices;
 
 public class GoogleDriveResourcesService(
     GoogleDriveClient googleDriveClient,

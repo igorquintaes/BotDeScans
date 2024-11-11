@@ -8,7 +8,7 @@ public class ZipFilesStep(
     PublishState state) : IStep
 {
     public StepEnum StepName => StepEnum.ZipFiles;
-    public StepType StepType => StepType.Manage;
+    public StepType StepType => StepType.Management;
 
     private readonly IServiceProvider serviceProvider = serviceProvider;
     private readonly PublishState state = state;

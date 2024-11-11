@@ -16,7 +16,7 @@ using System.ComponentModel;
 using System.Drawing;
 using System.Reflection;
 using static BotDeScans.App.Features.Publish.PublishState;
-namespace BotDeScans.App.Commands.Interactions;
+namespace BotDeScans.App.Features.Publish.Discord;
 
 // Todo: Criar cadeia de modals
 // Edit: A API do Discord não permite uma modal chamar outra, F
@@ -72,7 +72,7 @@ public class PublishInteractions(
             Colour: Color.Green,
             Fields: linkFields,
             Author: new EmbedAuthor(
-                Name: interactionContext.GetUserName(), 
+                Name: interactionContext.GetUserName(),
                 IconUrl: interactionContext.GetUserAvatarUrl()));
 
         var promotedButton = new ButtonComponent(
@@ -121,7 +121,7 @@ public class PublishInteractions(
             embeds: new List<Embed> { embed },
             ct: CancellationToken);
 
-        return updateMessageResult.IsSuccess is true 
+        return updateMessageResult.IsSuccess is true
             ? FluentResults.Result.Ok()
             : FluentResults.Result
                 .Fail("Error while updating message in discord.")

@@ -1,10 +1,11 @@
-﻿using CG.Web.MegaApiClient;
-using BotDeScans.App.Services;
-using BotDeScans.App.Services.Factories;
-using BotDeScans.App.Wrappers;
+﻿using BotDeScans.App.Services;
+using BotDeScans.App.Services.ExternalClients;
+using BotDeScans.App.Services.Wrappers;
+using CG.Web.MegaApiClient;
 using FakeItEasy;
 using FluentAssertions;
 using FluentResults;
+using FluentResults.Extensions.FluentAssertions;
 using Microsoft.Extensions.Configuration;
 using System;
 using System.IO;
@@ -21,15 +22,15 @@ namespace BotDeScans.UnitTests.Specs.Services
 
         public MegaServiceTests()
         {
-            var storageFactory = A.Fake<ExternalServicesFactory>();
-            megaApiClient = A.Fake<IMegaApiClient>();
             streamWrapper = A.Fake<StreamWrapper>();
             configuration = A.Fake<IConfiguration>();
-            instance = new(storageFactory, streamWrapper, configuration);
+            megaApiClient = A.Fake<IMegaApiClient>();
 
-            A.CallTo(() => storageFactory
-                .CreateMegaClient())
-                .Returns(Result.Ok(megaApiClient));
+            var megaClient = A.Fake<MegaClient>();
+            A.CallTo(() => megaClient.Client).Returns(megaApiClient);
+
+            instance = new(megaClient, streamWrapper, configuration);
+
         }
 
         public class GetOrCreateFolderAsync : MegaServiceTests
@@ -158,7 +159,7 @@ namespace BotDeScans.UnitTests.Specs.Services
                     .Returns(uri);
 
                 var result = await instance.CreateFileAsync(filePath, null, cancellationToken);
-                result.Should().Be(uri);
+                result.Should().BeSuccess().And.HaveValue(uri);
             }
 
             [Fact]
@@ -179,7 +180,7 @@ namespace BotDeScans.UnitTests.Specs.Services
                     .Returns(uri);
 
                 var result = await instance.CreateFileAsync(filePath, parentNode, cancellationToken);
-                result.Should().Be(uri);
+                result.Should().BeSuccess().And.HaveValue(uri);
             }
 
             public override void Dispose()

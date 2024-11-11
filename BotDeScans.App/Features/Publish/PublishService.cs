@@ -91,14 +91,24 @@ public class PublishService(
             changeStateOnSuccess: false,
             cancellationToken: cancellationToken);
 
-    public Task<Result> RunAsync(
-        StepType stepType,
+    public Task<Result> RunManagementStepsAsync(
         Func<Task<Result>>? feedbackFunc,
         CancellationToken cancellationToken)
         => RunStepsAsync(
             stepFunc: async (step, ct) => await step.ExecuteAsync(ct),
             feedbackFunc: feedbackFunc,
-            stepTypes: [stepType],
+            stepTypes: [StepType.Management],
+            breakOnError: true,
+            changeStateOnSuccess: true,
+            cancellationToken: cancellationToken);
+
+    public Task<Result> RunPublishStepsAsync(
+        Func<Task<Result>>? feedbackFunc,
+        CancellationToken cancellationToken)
+        => RunStepsAsync(
+            stepFunc: async (step, ct) => await step.ExecuteAsync(ct),
+            feedbackFunc: feedbackFunc,
+            stepTypes: [StepType.Publish],
             breakOnError: true,
             changeStateOnSuccess: true,
             cancellationToken: cancellationToken);

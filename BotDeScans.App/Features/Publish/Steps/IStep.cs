@@ -45,6 +45,6 @@ public enum StepEnum
 
 public enum StepType
 {
-    Manage,
-    Execute
+    Management,
+    Publish
 }

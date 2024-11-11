@@ -1,5 +1,5 @@
-﻿using BotDeScans.App.Services.ExternalClients;
-using BotDeScans.App.Services.GoogleDrive;
+﻿using BotDeScans.App.Features.GoogleDrive.InternalServices;
+using BotDeScans.App.Services.ExternalClients;
 using BotDeScans.App.Services.Logging;
 using FluentResults;
 using Microsoft.Extensions.DependencyInjection;

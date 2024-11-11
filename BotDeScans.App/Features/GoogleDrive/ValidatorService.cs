@@ -1,8 +1,9 @@
-﻿using Google.Apis.Drive.v3.Data;
+﻿using BotDeScans.App.Services;
+using Google.Apis.Drive.v3.Data;
 using System.Globalization;
-namespace BotDeScans.App.Services;
+namespace BotDeScans.App.Features.GoogleDrive;
 
-public class ChapterValidatorService
+public class ValidatorService
 {
     public virtual bool ShouldHaveOnlyFiles(FileList fileList) =>
         fileList.Files

@@ -1,7 +1,7 @@
 ﻿using BotDeScans.App.Services.ExternalClients;
 using BotDeScans.App.Services.Wrappers;
 using FluentResults;
-namespace BotDeScans.App.Services.GoogleDrive;
+namespace BotDeScans.App.Features.GoogleDrive.InternalServices;
 
 public class GoogleDriveSettingsService(
     GoogleDriveClient googleDriveClient,

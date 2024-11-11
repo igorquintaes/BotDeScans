@@ -1,8 +1,9 @@
-﻿using BotDeScans.App.Services.ExternalClients;
+﻿using BotDeScans.App.Features.GoogleDrive.InternalServices;
+using BotDeScans.App.Services.ExternalClients;
 using BotDeScans.App.Services.Wrappers;
 using FluentResults;
 using File = Google.Apis.Drive.v3.Data.File;
-namespace BotDeScans.App.Services.GoogleDrive;
+namespace BotDeScans.App.Features.GoogleDrive;
 
 public class GoogleDriveFoldersService(
     GoogleDriveClient googleDriveClient,
