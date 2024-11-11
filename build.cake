@@ -8,7 +8,7 @@ using Spectre.Console
 
 var target = Argument("target", "Default");
 var configuration = Argument("Configuration", "Release");
-var solution = "./DreamBot.sln";
+var solution = "./BotDeScans.sln";
 var testResultsDir = Argument("testResultsDir", "./TestResults");
 
 Task("Restore")

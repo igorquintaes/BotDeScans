@@ -1,5 +1,5 @@
-﻿using BotDeScans.App.Services.ExternalClients;
-using BotDeScans.App.Services.Publish;
+﻿using BotDeScans.App.Features.Publish;
+using BotDeScans.App.Services.ExternalClients;
 using FluentResults;
 using Google.Apis.Blogger.v3;
 using Google.Apis.Blogger.v3.Data;
@@ -87,13 +87,14 @@ public partial class GoogleBloggerService(
 
     private static IDictionary<string, Func<PublishState, string>> CreateReplacingTemplateKeyMaps(string cover)
     {
+        // todo: precisamos rever isso. O ideal é que seja uma lista de chave/valor reutilizável em todas mensagens da app
         var mainKeyMaps = new Dictionary<string, Func<PublishState, string>>
         {
             { "##RELEASE_TITLE##",         state => state.Info.DisplayTitle },
             { "##CHAPTER_TITLE##",         state => state.Info.ChapterName ?? $"Capítulo {state.Info.ChapterNumber}" },
             { "##CHAPTER_NUMBER##",        state => state.Info.ChapterNumber },
             { "##VOLUME_NUMBER##",         state => state.Info.ChapterVolume ?? "?"},
-            { "##MESSAGE##",               state => state.Info.Message?.Replace("\n", "<br>") ?? "" }, // todo: precisamos rever isso. O ideal é que seja uma lista de chave/valor reutilizável em todas mensagens da app
+            { "##MESSAGE##",               state => state.Info.Message?.Replace("\n", "<br>") ?? "" },
 
             { "##MEGA_ZIP_LINK##",         state => state.Links.MegaZip?? $"#" },
             { "##MEGA_PDF_LINK##",         state => state.Links.MegaPdf ?? $"#" },

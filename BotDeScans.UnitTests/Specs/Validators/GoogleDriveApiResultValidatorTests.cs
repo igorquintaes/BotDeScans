@@ -1,6 +1,6 @@
 ﻿using AutoBogus;
+using BotDeScans.App.Features.GoogleDrive;
 using BotDeScans.App.Services;
-using BotDeScans.App.Validators;
 using FakeItEasy;
 using FluentAssertions;
 using FluentAssertions.Execution;
@@ -13,14 +13,14 @@ namespace BotDeScans.UnitTests.Specs.Validators
 {
     public class GoogleDriveApiResultValidatorTests : UnitTest<GoogleDriveApiResultValidator>
     {
-        private readonly ChapterValidatorService chapterValidatorService;
+        private readonly ValidatorService chapterValidatorService;
         private readonly ExtractionService extractionService;
         private readonly FileList googleDriveApiResult;
 
         public GoogleDriveApiResultValidatorTests()
         {
             googleDriveApiResult = AutoFaker.Generate<FileList>();
-            chapterValidatorService = A.Fake<ChapterValidatorService>();
+            chapterValidatorService = A.Fake<ValidatorService>();
             extractionService = A.Fake<ExtractionService>();
             A.CallTo(chapterValidatorService)
                 .WithReturnType<bool>()
@@ -75,47 +75,47 @@ namespace BotDeScans.UnitTests.Specs.Validators
             {
                 new object[]
                 {
-                    nameof(ChapterValidatorService.ShouldHaveOnlyFiles),
+                    nameof(ValidatorService.ShouldHaveOnlyFiles),
                     "O diretório precisa conter apenas arquivos."
                 },
                 new object[]
                 {
-                    nameof(ChapterValidatorService.ShouldHaveExactlyOneCoverFile),
-                    "O diretório precisa conter apenas uma única página de capa, toda em minúsculo. (ex: capa.extensão)"
+                    nameof(ValidatorService.ShouldHaveExactlyOneCoverFile),
+                    "O diretório precisa conter apenas uma única página de capa. (ex: capa.extensão)"
                 },
                 new object[]
                 {
-                    nameof(ChapterValidatorService.ShouldHaveExactlyOneCreditsFile),
-                    "O diretório precisa conter apenas uma única página de créditos, toda em minúsculo. (ex: creditos.extensão)"
+                    nameof(ValidatorService.ShouldHaveExactlyOneCreditsFile),
+                    "O diretório precisa conter apenas uma única página de créditos. (ex: creditos.extensão)"
                 },
                 new object[]
                 {
-                    nameof(ChapterValidatorService.ShouldHaveOnlySupportedFileExtensions),
+                    nameof(ValidatorService.ShouldHaveOnlySupportedFileExtensions),
                     $"O diretório precisa conter apenas arquivos com as extensões esperadas: {string.Join("", FileReleaseService.ValidCoverFiles)}."
                 },
                 new object[]
                 {
-                    nameof(ChapterValidatorService.ShouldHaveOrderedDoublePages),
+                    nameof(ValidatorService.ShouldHaveOrderedDoublePages),
                     "As páginas duplas precisam estar numeradas em ordem e sequencialmente."
                 },
                 new object[]
                 {
-                    nameof(ChapterValidatorService.ShouldHaveNotAnySkippedPage),
+                    nameof(ValidatorService.ShouldHaveNotAnySkippedPage),
                     "As páginas precisam ter números sequenciais, sem pular números."
                 },
                 new object[]
                 {
-                    nameof(ChapterValidatorService.ShouldHaveSamePageLength),
+                    nameof(ValidatorService.ShouldHaveSamePageLength),
                     "O nome dos arquivos das páginas precisa ser escrito de modo que todos tenham o mesmo tamanho (dica: use zero à esqueda)."
                 },
                 new object[]
                 {
-                    nameof(ChapterValidatorService.ShouldStartInPageOne),
+                    nameof(ValidatorService.ShouldStartInPageOne),
                     "A primeira página deve começar com o número 1 (1, 01, 001...)."
                 },
                 new object[]
                 {
-                    nameof(ChapterValidatorService.ShouldNotHaveAnyTextPageThanCoverAndCredits),
+                    nameof(ValidatorService.ShouldNotHaveAnyTextPageThanCoverAndCredits),
                     "Não deve conter outras páginas senão numerais, créditos e capa."
                 },
             };

@@ -1,5 +1,5 @@
 ﻿using Bogus;
-using BotDeScans.App.Services.GoogleDrive;
+using BotDeScans.App.Features.GoogleDrive.InternalServices;
 using System;
 using System.Threading;
 using Xunit;

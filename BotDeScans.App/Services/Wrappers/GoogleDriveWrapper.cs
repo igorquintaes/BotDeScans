@@ -15,7 +15,7 @@ public class GoogleDriveWrapper
         IClientServiceRequest<TResponse> listRequest,
         CancellationToken cancellationToken)
             => Result.Try(() => listRequest.ExecuteAsync(cancellationToken),
-                          ex => new Error("Não foi possível realizar a operação com o GoogleDrive. Detalhes abaixo:")
+                          ex => new Error("Não foi possível realizar a operação com o GoogleDrive.")
                                    .CausedBy(ex));
 
     public virtual async Task<Result<TResponse>> UploadAsync<TRequest, TResponse>(

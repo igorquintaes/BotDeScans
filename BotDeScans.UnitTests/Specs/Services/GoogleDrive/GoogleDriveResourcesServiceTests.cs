@@ -1,5 +1,7 @@
-﻿using BotDeScans.App.Services.GoogleDrive;
-using BotDeScans.App.Wrappers;
+﻿using BotDeScans.App.Features.GoogleDrive.InternalServices;
+using BotDeScans.App.Services.ExternalClients;
+using BotDeScans.App.Services.Wrappers;
+using CG.Web.MegaApiClient;
 using FakeItEasy;
 using FluentAssertions;
 using FluentAssertions.Execution;
@@ -32,7 +34,10 @@ namespace BotDeScans.UnitTests.Specs.Services.GoogleDrive
                 .Files)
                 .Returns(filesResource);
 
-            instance = new (storageFactory, googleDriveWrapper);
+            var client = A.Fake<GoogleDriveClient>();
+            A.CallTo(() => client.Client).Returns(driveService);
+
+            instance = new (client, googleDriveWrapper);
         }
 
         public class GetResourceByNameAsync : GoogleDriveResourcesServiceTests

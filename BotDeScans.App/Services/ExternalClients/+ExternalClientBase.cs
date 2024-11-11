@@ -10,7 +10,7 @@ public abstract class ExternalClientBase
 
 public abstract class ExternalClientBase<TClient> : ExternalClientBase
 {
-    public TClient Client { get; set; } = default!;
+    public virtual TClient Client { get; set; } = default!;
     protected abstract bool Enabled { get; }
 
     protected static Result<FileStream> GetCredentialsAsStream(string fileName)

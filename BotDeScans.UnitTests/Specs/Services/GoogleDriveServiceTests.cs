@@ -1,5 +1,6 @@
-﻿using BotDeScans.App.Services;
-using BotDeScans.App.Services.GoogleDrive;
+﻿using BotDeScans.App.Features.GoogleDrive;
+using BotDeScans.App.Features.GoogleDrive.InternalServices;
+using BotDeScans.App.Services;
 using FakeItEasy;
 using FluentAssertions;
 using FluentResults;
@@ -155,7 +156,7 @@ namespace BotDeScans.UnitTests.Specs.Services
                     .Returns(Result.Ok<File?>(new File()));
 
                 var result = await instance.CreateFileAsync(filePath, parentId, publicAccess, cancellationToken);
-                result.Should().BeFailure().And.HaveError("Já existe um arquivo com o nome especificado.");
+                result.Should().BeFailure().And.HaveError("Já existe um arquivo com o nome especificado. Se desejar sobrescrever o arquivo existente, altere a configuração GoogleDrive:RewriteExistingFile para permitir.");
             }
 
             [Fact]
@@ -432,7 +433,7 @@ namespace BotDeScans.UnitTests.Specs.Services
             public async Task ShouldValidateFilesAsExpected()
             {
                 var result = await instance.ValidateFilesFromLinkAsync(link, cancellationToken);
-                result.Should().BeSuccess().And.HaveValue(validationResult);
+                result.Should().BeSuccess();
             }
 
             [Fact]

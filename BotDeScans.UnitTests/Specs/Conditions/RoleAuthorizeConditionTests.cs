@@ -1,7 +1,7 @@
 ﻿using AutoBogus;
 using BotDeScans.App.Attributes;
-using BotDeScans.App.Conditions;
-using BotDeScans.App.DiscordServices;
+using BotDeScans.App.Services.Discord;
+using BotDeScans.App.Services.Discord.Conditions;
 using BotDeScans.UnitTests.Builders;
 using BotDeScans.UnitTests.Extensions;
 using FakeItEasy;

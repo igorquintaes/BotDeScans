@@ -1,4 +1,5 @@
-﻿using BotDeScans.App.Services;
+﻿using BotDeScans.App.Features.GoogleDrive;
+using BotDeScans.App.Services;
 using FluentAssertions;
 using Google.Apis.Drive.v3.Data;
 using System.Collections.Generic;
@@ -8,7 +9,7 @@ namespace BotDeScans.UnitTests.Specs.Services
 {
     public class ChapterValidatorServiceTests
     {
-        private static readonly ChapterValidatorService validatorService = new();
+        private static readonly ValidatorService validatorService = new();
         private readonly FileList validModel;
 
         public ChapterValidatorServiceTests() => 

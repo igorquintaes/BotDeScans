@@ -1,5 +1,5 @@
-﻿using BotDeScans.App.Enums;
-using BotDeScans.App.Extensions;
+﻿using BotDeScans.App.Extensions;
+using BotDeScans.App.Features.Publish.Steps;
 using BotDeScans.App.Services.Wrappers;
 using FluentResults;
 using Google.Apis.Auth.OAuth2;
@@ -32,15 +32,15 @@ public class BloggerClient(IConfiguration configuration, GoogleDriveWrapper goog
             var credentialResult = GetCredentialsAsStream("blogger.json");
             if (credentialResult.IsFailed) return credentialResult.ToResult();
 
-            const string credPath = "token-BLOG";
             await using var stream = credentialResult.Value;
+            var credentialPath = Path.Combine("config", "tokens");
             var clients = await GoogleClientSecrets.FromStreamAsync(stream, cancellationToken);
             var credential = await GoogleWebAuthorizationBroker.AuthorizeAsync(
                 clients.Secrets,
                 new[] { BloggerService.Scope.Blogger },
                 "user",
                 cancellationToken,
-                new FileDataStore(credPath, true));
+                new FileDataStore(credentialPath, true));
 
             Client = new BloggerService(new BaseClientService.Initializer()
             {
