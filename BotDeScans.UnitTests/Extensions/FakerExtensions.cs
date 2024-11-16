@@ -1,5 +1,6 @@
 ﻿using Bogus;
 using Remora.Rest.Core;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 namespace BotDeScans.UnitTests.Extensions;
