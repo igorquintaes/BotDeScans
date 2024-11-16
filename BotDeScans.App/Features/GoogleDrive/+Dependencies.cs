@@ -17,6 +17,5 @@ internal static class AddDependencies
         .AddScoped<GoogleDriveFoldersService>()
         .AddScoped<GoogleDrivePermissionsService>()
         .AddScoped<GoogleDriveResourcesService>()
-        .AddScoped<GoogleDriveSettingsService>()
-        .AddSingleton<ValidatorService>();
+        .AddScoped<GoogleDriveSettingsService>();
 }

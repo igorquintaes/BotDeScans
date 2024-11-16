@@ -5,8 +5,8 @@ using BotDeScans.App.Services.Discord;
 using BotDeScans.App.Services.ExternalClients;
 using BotDeScans.App.Services.Initializatiors;
 using BotDeScans.App.Services.Logging;
-using BotDeScans.App.Services.Validators;
 using BotDeScans.App.Services.Wrappers;
+using FluentValidation;
 using Microsoft.Extensions.DependencyInjection;
 using System.Diagnostics.CodeAnalysis;
 namespace BotDeScans.App.Services;
@@ -21,7 +21,6 @@ internal static class AddDependencies
         .AddGoogleDriveInternalServices()
         .AddInitializators()
         .AddLoggingServices()
-        .AddValidators()
         .AddWrappers()
         .AddSingleton<ChartService>()
         .AddSingleton<ExtractionService>()
@@ -33,5 +32,6 @@ internal static class AddDependencies
         .AddScoped<GoogleBloggerService>()
         .AddScoped<MangaDexService>()
         .AddScoped<MegaService>()
-        .AddScoped<TsukiService>();
+        .AddScoped<TsukiService>()
+        .AddValidatorsFromAssemblyContaining<Program>();
 }
