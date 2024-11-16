@@ -4,12 +4,11 @@ using FluentAssertions.Execution;
 using Xunit;
 namespace BotDeScans.UnitTests.Specs.Services;
 
-public class ConversionServiceTests : UnitTest<ExtractionService>
+public class ExtractionServiceTests : UnitTest
 {
-    public ConversionServiceTests() => 
-        instance = new ExtractionService();
+    private readonly ExtractionService service = new();
 
-    public class ExtractGoogleDriveIdFromLink : ConversionServiceTests
+    public class ExtractGoogleDriveIdFromLink : ExtractionServiceTests
     {
         [Theory]
         [InlineData("https://drive.google.com/drive/folders/1LXGFGlcqbdUbdnU8C4aSvmnb5x8AldCn?usp=sharing")]
@@ -20,7 +19,7 @@ public class ConversionServiceTests : UnitTest<ExtractionService>
         {
             using (new AssertionScope())
             {
-                instance.TryExtractGoogleDriveIdFromLink(link, out var resourceId).Should().BeTrue();
+                service.TryExtractGoogleDriveIdFromLink(link, out var resourceId).Should().BeTrue();
                 resourceId.Should().Be("1LXGFGlcqbdUbdnU8C4aSvmnb5x8AldCn");
             }
         }
@@ -36,6 +35,6 @@ public class ConversionServiceTests : UnitTest<ExtractionService>
         [InlineData("https://drive.google.com/folderview?id=")]
         [InlineData("https://drive.google.com/folderview?id=randomValue")]
         public void IsInvalid(string link) =>
-            instance.TryExtractGoogleDriveIdFromLink(link, out var _).Should().BeFalse();
+            service.TryExtractGoogleDriveIdFromLink(link, out var _).Should().BeFalse();
     }
 }

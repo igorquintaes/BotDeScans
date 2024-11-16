@@ -13,10 +13,9 @@ using System.Linq;
 using Xunit;
 namespace BotDeScans.UnitTests.Specs.DiscordServices;
 
-public class RolesServiceTests : UnitTest<RolesService>
+public class RolesServiceTests : UnitTest
 {
-    public RolesServiceTests() => 
-        instance = new();
+    private readonly RolesService service = new();
 
     public class ContainsAtLeastOneOfExpectedRoles : RolesServiceTests
     {
@@ -44,7 +43,7 @@ public class RolesServiceTests : UnitTest<RolesService>
 
             roles.AddRange(guildRoles);
 
-            var result = instance.ContainsAtLeastOneOfExpectedRoles(
+            var result = service.ContainsAtLeastOneOfExpectedRoles(
                 requiredRoles,
                 guildRoles,
                 userRoles);
@@ -59,7 +58,7 @@ public class RolesServiceTests : UnitTest<RolesService>
         [Fact]
         public void ShouldReturnErrorWhenThereIsNoneRoleRegisteredInServerAndCommandNeedsARole()
         {
-            var result = instance.ContainsAtLeastOneOfExpectedRoles(
+            var result = service.ContainsAtLeastOneOfExpectedRoles(
                 requiredRoles,
                 new List<Role>(),
                 userRoles);
@@ -78,7 +77,7 @@ public class RolesServiceTests : UnitTest<RolesService>
         public void ShouldReturnFalseWhenGuildMemberIsNotRelatedWithAnyExpectedRoles(int guildMemberRolesQuantity)
         {
             var rolesIDs = dataGenerator.Random.Snowflake(guildMemberRolesQuantity);
-            var result = instance.ContainsAtLeastOneOfExpectedRoles(
+            var result = service.ContainsAtLeastOneOfExpectedRoles(
                 requiredRoles,
                 guildRoles,
                 rolesIDs);
@@ -94,7 +93,7 @@ public class RolesServiceTests : UnitTest<RolesService>
             var randomRole = dataGenerator.PickRandom(guildRoles);
             var requiredRoles = new[] { randomRole.Name };
 
-            var result = instance.ContainsAtLeastOneOfExpectedRoles(
+            var result = service.ContainsAtLeastOneOfExpectedRoles(
                 requiredRoles,
                 guildRoles,
                 new List<Snowflake> { randomRole.ID });
@@ -108,7 +107,7 @@ public class RolesServiceTests : UnitTest<RolesService>
         public void ShouldReturnTrueWhenGuildMemberHasExactlyOneOfExpectedMultipleRoles()
         {
             var randomRole = dataGenerator.PickRandom(guildRoles);
-            var result = instance.ContainsAtLeastOneOfExpectedRoles(
+            var result = service.ContainsAtLeastOneOfExpectedRoles(
                 requiredRoles,
                 guildRoles,
                 new List<Snowflake> { randomRole.ID });
@@ -124,7 +123,7 @@ public class RolesServiceTests : UnitTest<RolesService>
 
             var randomRole = dataGenerator.PickRandom(guildRoles);
             var requiredRoles = new[] { randomRole.Name };
-            var result = instance.ContainsAtLeastOneOfExpectedRoles(
+            var result = service.ContainsAtLeastOneOfExpectedRoles(
                 requiredRoles,
                 guildRoles,
                 new List<Snowflake> { randomRole.ID, dataGenerator.Random.Snowflake() });
@@ -140,7 +139,7 @@ public class RolesServiceTests : UnitTest<RolesService>
             var guildMemberRolesIDs = guildRoles.Select(x => x.ID).ToList();
             guildMemberRolesIDs.Add(dataGenerator.Random.Snowflake());
 
-            var result = instance.ContainsAtLeastOneOfExpectedRoles(
+            var result = service.ContainsAtLeastOneOfExpectedRoles(
                 requiredRoles,
                 guildRoles,
                 guildMemberRolesIDs);

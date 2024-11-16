@@ -15,9 +15,10 @@ using Xunit;
 using BoxClient = BotDeScans.App.Services.ExternalClients.BoxClient;
 namespace BotDeScans.UnitTests.Specs.Services;
 
-public class BoxServiceTests : UnitTest<BoxService>
+public class BoxServiceTests : UnitTest
 {
     private const string rootFolderId = "0";
+    private readonly BoxService service;
     private readonly IBoxClient boxClient;
     private readonly StreamWrapper streamWrapper;
 
@@ -29,7 +30,7 @@ public class BoxServiceTests : UnitTest<BoxService>
         var appClient = A.Fake<BoxClient>();
         A.CallTo(() => appClient.Client).Returns(boxClient);
 
-        instance = new(appClient, streamWrapper);
+        service = new(appClient, streamWrapper);
 
     }
 
@@ -70,7 +71,7 @@ public class BoxServiceTests : UnitTest<BoxService>
         [Fact]
         public async Task ShouldGetFolderWhenItExists()
         {
-            var boxItem = await instance.GetOrCreateFolderAsync(boxCollection.Entries[1].Name);
+            var boxItem = await service.GetOrCreateFolderAsync(boxCollection.Entries[1].Name);
             boxItem.Should().Be(boxCollection.Entries[1]);
         }
 
@@ -87,7 +88,7 @@ public class BoxServiceTests : UnitTest<BoxService>
                 .GetFolderItemsAsync(folderId, maxItemsQuery, default, default, default, default, default))
                 .Returns(boxCollection);
 
-            var boxItem = await instance.GetOrCreateFolderAsync(boxCollection.Entries[1].Name, folderId);
+            var boxItem = await service.GetOrCreateFolderAsync(boxCollection.Entries[1].Name, folderId);
             boxItem.Should().Be(boxCollection.Entries[1]);
         }
 
@@ -103,7 +104,7 @@ public class BoxServiceTests : UnitTest<BoxService>
                     x.Parent.Id == rootFolderId), null))
                 .Returns(newBoxItem);
 
-            var boxItem = await instance.GetOrCreateFolderAsync(name);
+            var boxItem = await service.GetOrCreateFolderAsync(name);
             boxItem.Should().Be(newBoxItem);
         }
 
@@ -121,7 +122,7 @@ public class BoxServiceTests : UnitTest<BoxService>
                     null))
                 .Returns(newBoxItem);
 
-            var boxItem = await instance.GetOrCreateFolderAsync(newBoxItem.Name, folderId);
+            var boxItem = await service.GetOrCreateFolderAsync(newBoxItem.Name, folderId);
             boxItem.Should().Be(newBoxItem);
         }
     }
@@ -187,7 +188,7 @@ public class BoxServiceTests : UnitTest<BoxService>
         //[Fact]
         //public async Task ShouldCreateFileSuccessfuly()
         //{
-        //   var result = await instance.CreateFileAsync(filePath);
+        //   var result = await service.CreateFileAsync(filePath);
         //    result.Should().Be(downloadUrl);
         //}
 
@@ -226,7 +227,7 @@ public class BoxServiceTests : UnitTest<BoxService>
         //            null))
         //        .Returns(boxFile);
 
-        //    var result = await instance.CreateFileAsync(filePath, folderId);
+        //    var result = await service.CreateFileAsync(filePath, folderId);
         //    result.Should().Be(boxFile);
         //}
 

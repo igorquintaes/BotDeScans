@@ -13,8 +13,9 @@ using System.Threading.Tasks;
 using Xunit;
 namespace BotDeScans.UnitTests.Specs.Services;
 
-public class MegaServiceTests : UnitTest<MegaService>
+public class MegaServiceTests : UnitTest
 {
+    private readonly MegaService service;
     private readonly IMegaApiClient megaApiClient;
     private readonly StreamWrapper streamWrapper;
     private readonly IConfiguration configuration;
@@ -28,8 +29,7 @@ public class MegaServiceTests : UnitTest<MegaService>
         var megaClient = A.Fake<MegaClient>();
         A.CallTo(() => megaClient.Client).Returns(megaApiClient);
 
-        instance = new(megaClient, streamWrapper, configuration);
-
+        service = new(megaClient, streamWrapper, configuration);
     }
 
     public class GetOrCreateFolderAsync : MegaServiceTests
@@ -63,7 +63,7 @@ public class MegaServiceTests : UnitTest<MegaService>
         [Fact]
         public async Task ShouldGetFolderWhenItExists()
         {
-            var result = await instance.GetOrCreateFolderAsync(nodes[1].Name);
+            var result = await service.GetOrCreateFolderAsync(nodes[1].Name);
             result.Should().Be(nodes[1]);
             A.CallTo(() => megaApiClient
                 .CreateFolderAsync(A<string>.Ignored, A<INode>.Ignored))
@@ -74,7 +74,7 @@ public class MegaServiceTests : UnitTest<MegaService>
         public async Task ShouldGetFolderWhenItExists_WithParentFolder()
         {
             A.CallTo(() => nodes[1].ParentId).Returns(nodes[2].Id);
-            var result = await instance.GetOrCreateFolderAsync(nodes[1].Name, nodes[2]);
+            var result = await service.GetOrCreateFolderAsync(nodes[1].Name, nodes[2]);
             result.Should().Be(nodes[1]);
             A.CallTo(() => megaApiClient
                 .CreateFolderAsync(A<string>.Ignored, A<INode>.Ignored))
@@ -90,7 +90,7 @@ public class MegaServiceTests : UnitTest<MegaService>
                 .CreateFolderAsync(folderName, nodes[0]))
                 .Returns(newNode);
 
-            var result = await instance.GetOrCreateFolderAsync(folderName);
+            var result = await service.GetOrCreateFolderAsync(folderName);
             result.Should().Be(newNode);
         }
 
@@ -104,7 +104,7 @@ public class MegaServiceTests : UnitTest<MegaService>
                 .CreateFolderAsync(folderName, parentNode))
                 .Returns(newNode);
 
-            var result = await instance.GetOrCreateFolderAsync(folderName, parentNode);
+            var result = await service.GetOrCreateFolderAsync(folderName, parentNode);
             result.Should().Be(newNode);
         }
 
@@ -122,7 +122,7 @@ public class MegaServiceTests : UnitTest<MegaService>
                 .CreateFolderAsync(nodes[1].Name, nodes[0]))
                 .Returns(newNode);
 
-            var result = await instance.GetOrCreateFolderAsync(nodes[1].Name);
+            var result = await service.GetOrCreateFolderAsync(nodes[1].Name);
             result.Should().Be(newNode);
         }
     }
@@ -157,7 +157,7 @@ public class MegaServiceTests : UnitTest<MegaService>
                 .GetDownloadLinkAsync(fileNode))
                 .Returns(uri);
 
-            var result = await instance.CreateFileAsync(filePath, null, cancellationToken);
+            var result = await service.CreateFileAsync(filePath, null, cancellationToken);
             result.Should().BeSuccess().And.HaveValue(uri);
         }
 
@@ -178,7 +178,7 @@ public class MegaServiceTests : UnitTest<MegaService>
                 .GetDownloadLinkAsync(fileNode))
                 .Returns(uri);
 
-            var result = await instance.CreateFileAsync(filePath, parentNode, cancellationToken);
+            var result = await service.CreateFileAsync(filePath, parentNode, cancellationToken);
             result.Should().BeSuccess().And.HaveValue(uri);
         }
 

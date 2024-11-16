@@ -21,8 +21,10 @@ using System.Threading.Tasks;
 using Xunit;
 namespace BotDeScans.UnitTests.Specs.Conditions;
 
-public class RoleAuthorizeConditionTests : UnitTest<RoleAuthorizeCondition>
+public class RoleAuthorizeConditionTests : UnitTest
 {
+    private readonly RoleAuthorizeCondition condition;
+
     private readonly Snowflake userID;
     private readonly Snowflake guildID;
     private readonly IReadOnlyList<IRole> guildRoles;
@@ -81,7 +83,7 @@ public class RoleAuthorizeConditionTests : UnitTest<RoleAuthorizeCondition>
             .WithGuildUser(user)
             .Build();
 
-        instance = new(
+        condition = new(
             interactionContext,
             discordRestGuildAPI,
             restInteractionAPI,
@@ -93,13 +95,13 @@ public class RoleAuthorizeConditionTests : UnitTest<RoleAuthorizeCondition>
         [Fact]
         public async Task ShouldReturnErrorWhenContextIsNotSlashCommand()
         {
-            instance = new(
+            var condition = new RoleAuthorizeCondition(
                 A.Fake<ICommandContext>(), 
                 A.Fake<IDiscordRestGuildAPI>(),
                 A.Fake<IDiscordRestInteractionAPI>(),
                 A.Fake<RolesService>());
 
-            var result = await instance.CheckAsync(roleAuthorizeAttribute);
+            var result = await condition.CheckAsync(roleAuthorizeAttribute);
 
             using var _ = new AssertionScope();
             result.IsSuccess.Should().BeFalse();
@@ -115,7 +117,7 @@ public class RoleAuthorizeConditionTests : UnitTest<RoleAuthorizeCondition>
                 .GetGuildMemberAsync(guildID, userID, cancellationToken))
                 .Returns(Task.FromResult(errorResult));
 
-            var result = await instance.CheckAsync(
+            var result = await condition.CheckAsync(
                 roleAuthorizeAttribute,
                 cancellationToken);
 
@@ -132,7 +134,7 @@ public class RoleAuthorizeConditionTests : UnitTest<RoleAuthorizeCondition>
                 .GetGuildRolesAsync(guildID, cancellationToken))
                 .Returns(Task.FromResult(errorResult));
 
-            var result = await instance.CheckAsync(
+            var result = await condition.CheckAsync(
                 roleAuthorizeAttribute,
                 cancellationToken);
 
@@ -149,7 +151,7 @@ public class RoleAuthorizeConditionTests : UnitTest<RoleAuthorizeCondition>
                 .ContainsAtLeastOneOfExpectedRoles(roleAuthorizeAttribute.RoleNames, guildRoles, guildMember.Roles))
                 .Returns(errorResult);
 
-            var result = await instance.CheckAsync(
+            var result = await condition.CheckAsync(
                 roleAuthorizeAttribute,
                 cancellationToken);
 
@@ -175,7 +177,7 @@ public class RoleAuthorizeConditionTests : UnitTest<RoleAuthorizeCondition>
                     cancellationToken))
                 .Returns(Task.FromResult(Result.FromError(errorResult)));
 
-            var result = await instance.CheckAsync(
+            var result = await condition.CheckAsync(
                 roleAuthorizeAttribute,
                 cancellationToken);
 
@@ -191,7 +193,7 @@ public class RoleAuthorizeConditionTests : UnitTest<RoleAuthorizeCondition>
                 .ContainsAtLeastOneOfExpectedRoles(roleAuthorizeAttribute.RoleNames, guildRoles, guildMember.Roles))
                 .Returns(Result<bool>.FromSuccess(false));
 
-            var result = await instance.CheckAsync(
+            var result = await condition.CheckAsync(
                 roleAuthorizeAttribute,
                 cancellationToken);
 
@@ -223,7 +225,7 @@ public class RoleAuthorizeConditionTests : UnitTest<RoleAuthorizeCondition>
             A.CallTo(() => guildMember.Roles)
                 .Returns(new List<Snowflake> { guildRoles[0].ID });
 
-            var result = await instance.CheckAsync(
+            var result = await condition.CheckAsync(
                 roleAuthorizeAttribute,
                 cancellationToken);
 
@@ -237,7 +239,7 @@ public class RoleAuthorizeConditionTests : UnitTest<RoleAuthorizeCondition>
         [Fact]
         public async Task ShouldReturnSuccessIfUserHasTheExpectedRole()
         {
-            var result = await instance.CheckAsync(
+            var result = await condition.CheckAsync(
                 roleAuthorizeAttribute,
                 cancellationToken);
 

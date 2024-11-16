@@ -18,14 +18,16 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
 using Xunit;
 using File = Google.Apis.Drive.v3.Data.File;
 namespace BotDeScans.UnitTests.Specs.Features.GoogleDrive;
 
-public class GoogleDriveServiceTests : UnitTest<GoogleDriveService>
+public class GoogleDriveServiceTests : UnitTest
 {
+    private readonly GoogleDriveService service;
     private readonly ExtractionService extractionService;
     private readonly GoogleDriveFilesService googleDriveFilesService;
     private readonly GoogleDriveFoldersService googleDriveFoldersService;
@@ -46,7 +48,7 @@ public class GoogleDriveServiceTests : UnitTest<GoogleDriveService>
 
         GoogleDriveSettingsService.BaseFolderId = dataGenerator.Random.String();
 
-        instance = new GoogleDriveService(
+        service = new GoogleDriveService(
             extractionService,
             googleDriveFilesService,
             googleDriveFoldersService,
@@ -80,7 +82,7 @@ public class GoogleDriveServiceTests : UnitTest<GoogleDriveService>
         [Fact]
         public async Task ShouldCreateAndReturnFolderIfItDoesNotExists()
         {
-            var result = await instance.GetOrCreateFolderAsync(folderName, parentId, cancellationToken);
+            var result = await service.GetOrCreateFolderAsync(folderName, parentId, cancellationToken);
             result.Should().BeSuccess().And.HaveValue(expectedResult);
         }
 
@@ -91,7 +93,7 @@ public class GoogleDriveServiceTests : UnitTest<GoogleDriveService>
                 .GetFolderAsync(folderName, parentId, cancellationToken))
                 .Returns(expectedResult);
 
-            var result = await instance.GetOrCreateFolderAsync(folderName, parentId, cancellationToken);
+            var result = await service.GetOrCreateFolderAsync(folderName, parentId, cancellationToken);
             result.Should().BeSuccess().And.HaveValue(expectedResult);
         }
 
@@ -103,7 +105,7 @@ public class GoogleDriveServiceTests : UnitTest<GoogleDriveService>
                 .GetFolderAsync(folderName, parentId, cancellationToken))
                 .Returns(failResult);
 
-            object result = await instance.GetOrCreateFolderAsync(folderName, parentId, cancellationToken);
+            object result = await service.GetOrCreateFolderAsync(folderName, parentId, cancellationToken);
             result.Should().BeEquivalentTo(failResult);
         }
 
@@ -115,7 +117,7 @@ public class GoogleDriveServiceTests : UnitTest<GoogleDriveService>
                 .CreateFolderAsync(folderName, parentId, cancellationToken))
                 .Returns(failResult);
 
-            object result = await instance.GetOrCreateFolderAsync(folderName, parentId, cancellationToken);
+            object result = await service.GetOrCreateFolderAsync(folderName, parentId, cancellationToken);
             result.Should().BeEquivalentTo(failResult);
         }
     }
@@ -148,7 +150,7 @@ public class GoogleDriveServiceTests : UnitTest<GoogleDriveService>
         [Fact]
         public async Task ShouldCreateAndReturnFile()
         {
-            var result = await instance.CreateFileAsync(filePath, parentId, publicAccess, cancellationToken);
+            var result = await service.CreateFileAsync(filePath, parentId, publicAccess, cancellationToken);
             result.Should().BeSuccess().And.HaveValue(expectedResult);
         }
 
@@ -159,7 +161,7 @@ public class GoogleDriveServiceTests : UnitTest<GoogleDriveService>
                 .GetFileAsync(fileName, parentId, cancellationToken))
                 .Returns(Result.Ok<File?>(new File()));
 
-            var result = await instance.CreateFileAsync(filePath, parentId, publicAccess, cancellationToken);
+            var result = await service.CreateFileAsync(filePath, parentId, publicAccess, cancellationToken);
             result.Should().BeFailure().And.HaveError("Já existe um arquivo com o nome especificado. Se desejar sobrescrever o arquivo existente, altere a configuração GoogleDrive:RewriteExistingFile para permitir.");
         }
 
@@ -171,7 +173,7 @@ public class GoogleDriveServiceTests : UnitTest<GoogleDriveService>
                 .GetFileAsync(fileName, parentId, cancellationToken))
                 .Returns(failResult);
 
-            object result = await instance.CreateFileAsync(filePath, parentId, publicAccess, cancellationToken);
+            object result = await service.CreateFileAsync(filePath, parentId, publicAccess, cancellationToken);
             result.Should().BeEquivalentTo(failResult);
         }
 
@@ -183,7 +185,7 @@ public class GoogleDriveServiceTests : UnitTest<GoogleDriveService>
                 .UploadFileAsync(filePath, parentId, publicAccess, cancellationToken))
                 .Returns(failResult);
 
-            object result = await instance.CreateFileAsync(filePath, parentId, publicAccess, cancellationToken);
+            object result = await service.CreateFileAsync(filePath, parentId, publicAccess, cancellationToken);
             result.Should().BeEquivalentTo(failResult);
         }
     }
@@ -218,7 +220,7 @@ public class GoogleDriveServiceTests : UnitTest<GoogleDriveService>
         [Fact]
         public async Task ShouldDeleteResourceWhenFileAndFolderExists()
         {
-            var result = await instance.DeleteFileByNameAndParentNameAsync(fileName, parentName, cancellationToken);
+            var result = await service.DeleteFileByNameAndParentNameAsync(fileName, parentName, cancellationToken);
 
             result.Should()
                 .BeSuccess().And
@@ -235,7 +237,7 @@ public class GoogleDriveServiceTests : UnitTest<GoogleDriveService>
                 .GetFolderAsync(parentName, GoogleDriveSettingsService.BaseFolderId, cancellationToken))
                 .Returns(failResult);
 
-            object result = await instance.DeleteFileByNameAndParentNameAsync(fileName, parentName, cancellationToken);
+            object result = await service.DeleteFileByNameAndParentNameAsync(fileName, parentName, cancellationToken);
             result.Should().BeEquivalentTo(failResult);
         }
 
@@ -247,7 +249,7 @@ public class GoogleDriveServiceTests : UnitTest<GoogleDriveService>
                 .GetFileAsync(fileName, folder.Id, cancellationToken))
                 .Returns(failResult);
 
-            object result = await instance.DeleteFileByNameAndParentNameAsync(fileName, parentName, cancellationToken);
+            object result = await service.DeleteFileByNameAndParentNameAsync(fileName, parentName, cancellationToken);
             result.Should().BeEquivalentTo(failResult);
         }
 
@@ -259,7 +261,7 @@ public class GoogleDriveServiceTests : UnitTest<GoogleDriveService>
                 .DeleteResource(file.Id, cancellationToken))
                 .Returns(failResult);
 
-            object result = await instance.DeleteFileByNameAndParentNameAsync(fileName, parentName, cancellationToken);
+            object result = await service.DeleteFileByNameAndParentNameAsync(fileName, parentName, cancellationToken);
             result.Should().BeEquivalentTo(failResult);
         }
 
@@ -270,7 +272,7 @@ public class GoogleDriveServiceTests : UnitTest<GoogleDriveService>
                 .GetFolderAsync(parentName, GoogleDriveSettingsService.BaseFolderId, cancellationToken))
                 .Returns(Result.Ok<File?>(null));
 
-            var result = await instance.DeleteFileByNameAndParentNameAsync(fileName, parentName, cancellationToken);
+            var result = await service.DeleteFileByNameAndParentNameAsync(fileName, parentName, cancellationToken);
             result.Should().BeFailure().And.HaveError("Não foi encontrada uma pasta com o nome especificado.");
         }
 
@@ -281,7 +283,7 @@ public class GoogleDriveServiceTests : UnitTest<GoogleDriveService>
                 .GetFileAsync(fileName, folder.Id, cancellationToken))
                 .Returns(Result.Ok<File?>(null));
 
-            var result = await instance.DeleteFileByNameAndParentNameAsync(fileName, parentName, cancellationToken);
+            var result = await service.DeleteFileByNameAndParentNameAsync(fileName, parentName, cancellationToken);
             result.Should().BeFailure().And.HaveError("Não foi encontrado um arquivo com o nome especificado.");
         }
     }
@@ -326,14 +328,14 @@ public class GoogleDriveServiceTests : UnitTest<GoogleDriveService>
         [Fact]
         public async Task ShouldDownloadFilesAsExpected()
         {
-            var result = await instance.SaveFilesFromLinkAsync(link, directory);
+            var result = await service.SaveFilesFromLinkAsync(link, directory);
             result.Should().BeSuccess();
         }
 
         [Fact]
         public async Task ShouldCallDownloadFileOnceForEachFile()
         {
-            await instance.SaveFilesFromLinkAsync(link, directory);
+            await service.SaveFilesFromLinkAsync(link, directory);
 
             foreach (var file in files)
             {
@@ -377,7 +379,7 @@ public class GoogleDriveServiceTests : UnitTest<GoogleDriveService>
                     cancellationToken))
                 .Returns(Result.Ok());
 
-            var result = await instance.SaveFilesFromLinkAsync(link, directory);
+            var result = await service.SaveFilesFromLinkAsync(link, directory);
             result.Should()
                 .BeFailure().And.Satisfy(result => result.Errors.Should()
                 .BeEquivalentTo(expectedErrors));
@@ -391,7 +393,7 @@ public class GoogleDriveServiceTests : UnitTest<GoogleDriveService>
                 .GetFilesFromFolderAsync(folderId, cancellationToken))
                 .Returns(failResult);
 
-            object result = await instance.SaveFilesFromLinkAsync(link, directory);
+            object result = await service.SaveFilesFromLinkAsync(link, directory);
             result.Should().BeEquivalentTo(failResult);
         }
 
@@ -402,7 +404,7 @@ public class GoogleDriveServiceTests : UnitTest<GoogleDriveService>
                 .TryExtractGoogleDriveIdFromLink(link, out folderId))
                 .Returns(false);
 
-            var result = await instance.SaveFilesFromLinkAsync(link, directory);
+            var result = await service.SaveFilesFromLinkAsync(link, directory);
             result.Should().BeFailure().And.HaveError("O link informado é inválido.");
         }
     }
@@ -436,7 +438,7 @@ public class GoogleDriveServiceTests : UnitTest<GoogleDriveService>
         [Fact]
         public async Task ShouldValidateFilesAsExpected()
         {
-            var result = await instance.ValidateFilesFromLinkAsync(link, cancellationToken);
+            var result = await service.ValidateFilesFromLinkAsync(link, cancellationToken);
             result.Should().BeSuccess();
         }
 
@@ -447,7 +449,7 @@ public class GoogleDriveServiceTests : UnitTest<GoogleDriveService>
                 .TryExtractGoogleDriveIdFromLink(link, out folderId))
                 .Returns(false);
 
-            var result = await instance.ValidateFilesFromLinkAsync(link, cancellationToken);
+            var result = await service.ValidateFilesFromLinkAsync(link, cancellationToken);
             result.Should().BeFailure().And.HaveError("O link informado é inválido.");
         }
 
@@ -459,7 +461,7 @@ public class GoogleDriveServiceTests : UnitTest<GoogleDriveService>
                 .GetFilesFromFolderAsync(folderId!, cancellationToken))
                 .Returns(failResult);
 
-            object result = await instance.ValidateFilesFromLinkAsync(link, cancellationToken);
+            object result = await service.ValidateFilesFromLinkAsync(link, cancellationToken);
             result.Should().BeEquivalentTo(failResult);
         }
     }
@@ -488,7 +490,7 @@ public class GoogleDriveServiceTests : UnitTest<GoogleDriveService>
         [Fact]
         public async Task ShouldCreatePermissionIfUserHasNotAnyPermission()
         {
-            var result = await instance.GrantReaderAccessToBotFilesAsync(email, cancellationToken);
+            var result = await service.GrantReaderAccessToBotFilesAsync(email, cancellationToken);
 
             result.Should()
                 .BeSuccess().And
@@ -505,7 +507,7 @@ public class GoogleDriveServiceTests : UnitTest<GoogleDriveService>
                 .GetDriverAccessPermissionsAsync(email, cancellationToken))
                 .Returns(Result.Ok(currentUserPermissions));
 
-            var result = await instance.GrantReaderAccessToBotFilesAsync(email, cancellationToken);
+            var result = await service.GrantReaderAccessToBotFilesAsync(email, cancellationToken);
 
             result.Should()
                 .BeSuccess().And
@@ -522,7 +524,7 @@ public class GoogleDriveServiceTests : UnitTest<GoogleDriveService>
                 .GetDriverAccessPermissionsAsync(email, cancellationToken))
                 .Returns(failResult);
 
-            object result = await instance.GrantReaderAccessToBotFilesAsync(email, cancellationToken);
+            object result = await service.GrantReaderAccessToBotFilesAsync(email, cancellationToken);
             result.Should().BeEquivalentTo(failResult);
         }
 
@@ -534,7 +536,7 @@ public class GoogleDriveServiceTests : UnitTest<GoogleDriveService>
                 .CreateBaseUserReaderPermissionAsync(email, cancellationToken))
                 .Returns(failResult);
 
-            object result = await instance.GrantReaderAccessToBotFilesAsync(email, cancellationToken);
+            object result = await service.GrantReaderAccessToBotFilesAsync(email, cancellationToken);
             result.Should().BeEquivalentTo(failResult);
         }
     }
@@ -561,7 +563,7 @@ public class GoogleDriveServiceTests : UnitTest<GoogleDriveService>
         [Fact]
         public async Task ShouldRevokePermissionSuccessfuly()
         {
-            var result = await instance.RevokeReaderAccessToBotFilesAsync(email, cancellationToken);
+            var result = await service.RevokeReaderAccessToBotFilesAsync(email, cancellationToken);
 
             result.Should()
                 .BeSuccess().And
@@ -578,7 +580,7 @@ public class GoogleDriveServiceTests : UnitTest<GoogleDriveService>
                 .GetDriverAccessPermissionsAsync(email, cancellationToken))
                 .Returns(failResult);
 
-            object result = await instance.RevokeReaderAccessToBotFilesAsync(email, cancellationToken);
+            object result = await service.RevokeReaderAccessToBotFilesAsync(email, cancellationToken);
             result.Should().BeEquivalentTo(failResult);
         }
 
@@ -590,7 +592,7 @@ public class GoogleDriveServiceTests : UnitTest<GoogleDriveService>
                 .DeleteBaseUserPermissionsAsync(currentUserPermissions, cancellationToken))
                 .Returns(failResult);
 
-            var result = await instance.RevokeReaderAccessToBotFilesAsync(email, cancellationToken);
+            var result = await service.RevokeReaderAccessToBotFilesAsync(email, cancellationToken);
             result.Should().BeSameAs(failResult);
         }
     }

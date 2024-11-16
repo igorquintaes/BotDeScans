@@ -8,14 +8,14 @@ using System.Reflection;
 using Xunit;
 namespace BotDeScans.UnitTests.Specs.Services;
 
-public class ChartServiceTests : UnitTest<ChartService>
+public class ChartServiceTests : UnitTest
 {
     public class CreatePieChart : ChartServiceTests
     {
         [Fact(Skip = "comma format is not culture insensitive")]
         public void ShouldCreatePieChartAsExpected()
         {
-            instance = new ChartService();
+            var service = new ChartService();
             var data = new Dictionary<string, double>
             {
                 { "Some label", 500d },
@@ -23,7 +23,7 @@ public class ChartServiceTests : UnitTest<ChartService>
                 { "Last", 10d },
             };
 
-            using var resultChartStream = instance.CreatePieChart(data);
+            using var resultChartStream = service.CreatePieChart(data);
             using var resultChartImage = (Bitmap)Image.FromStream(resultChartStream);
 
             var expectedImagePath = Path.Combine(

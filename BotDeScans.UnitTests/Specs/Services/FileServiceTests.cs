@@ -11,10 +11,9 @@ using System.Threading.Tasks;
 using Xunit;
 namespace BotDeScans.UnitTests.Specs.Services;
 
-public class FileServiceTests : UnitTest<FileService>
+public class FileServiceTests : UnitTest
 {
-    public FileServiceTests() =>
-        instance = new ();
+    private readonly FileService service = new();
 
     public class GetMimeType : FileServiceTests
     {
@@ -26,7 +25,7 @@ public class FileServiceTests : UnitTest<FileService>
         public void ShouldGetExpectedMimeType(KeyValuePair<string, string> mimeType)
         {
             var filePath = dataGenerator.System.FilePath() + mimeType.Key;
-            var result = instance.GetMimeType(filePath);
+            var result = service.GetMimeType(filePath);
             result.Should().Be(mimeType.Value);
         }
     }
@@ -59,7 +58,7 @@ public class FileServiceTests : UnitTest<FileService>
         [Fact]
         public void ShouldCreateZipInExpectedDirectory()
         {
-            instance.CreateZipFile(
+            service.CreateZipFile(
                 zipFileName,
                 resourcesDirectory,
                 destinationDirectory);
@@ -70,7 +69,7 @@ public class FileServiceTests : UnitTest<FileService>
         [Fact]
         public void ShouldThrowExceptionIfFileNameExtensionIsNotZip()
         {
-            Action action = () => instance.CreateZipFile(
+            Action action = () => service.CreateZipFile(
                 "file.extension",
                 resourcesDirectory,
                 destinationDirectory);
@@ -82,7 +81,7 @@ public class FileServiceTests : UnitTest<FileService>
         [Fact]
         public void ShouldThrowExceptionIfResourcesDirectoryIsSameThanDestinationDirectory()
         {
-            Action action = () => instance.CreateZipFile(
+            Action action = () => service.CreateZipFile(
                 zipFileName,
                 resourcesDirectory.ToUpper(),
                 resourcesDirectory.ToLower());
@@ -97,7 +96,7 @@ public class FileServiceTests : UnitTest<FileService>
             File.Create(Path.Combine(resourcesDirectory, "01.png")).Dispose();
             File.Create(Path.Combine(resourcesDirectory, "02.png")).Dispose();
 
-            instance.CreateZipFile(
+            service.CreateZipFile(
                 zipFileName,
                 resourcesDirectory,
                 destinationDirectory);
@@ -131,7 +130,7 @@ public class FileServiceTests : UnitTest<FileService>
             var fileContentAsString = dataGenerator.Lorem.Paragraph();
             var fileContentAsByteArray = Encoding.UTF8.GetBytes(fileContentAsString);
 
-            await instance.CreateFileAsync(fileContentAsByteArray, fileName);
+            await service.CreateFileAsync(fileContentAsByteArray, fileName);
 
             File.ReadAllText(fileName, Encoding.UTF8).Should().Be(fileContentAsString);
         }

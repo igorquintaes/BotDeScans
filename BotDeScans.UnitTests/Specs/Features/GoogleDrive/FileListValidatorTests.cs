@@ -12,7 +12,7 @@ using System.Collections.Generic;
 using Xunit;
 namespace BotDeScans.UnitTests.Specs.Features.GoogleDrive;
 
-public class FileListValidatorTests
+public class FileListValidatorTests : UnitTest
 {
     private readonly FileListValidator validator = new FileListValidator();
     private readonly FileList data = new FileList

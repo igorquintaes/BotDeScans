@@ -25,8 +25,9 @@ using Xunit;
 using static Google.Apis.Drive.v3.FilesResource;
 namespace BotDeScans.UnitTests.Specs.Features.GoogleDrive.InternalServices;
 
-public class GoogleDriveResourcesServiceTests : UnitTest<GoogleDriveResourcesService>
+public class GoogleDriveResourcesServiceTests : UnitTest
 {
+    private readonly GoogleDriveResourcesService service;
     private readonly DriveService driveService;
     private readonly GoogleDriveWrapper googleDriveWrapper;
 
@@ -43,7 +44,7 @@ public class GoogleDriveResourcesServiceTests : UnitTest<GoogleDriveResourcesSer
         var client = A.Fake<GoogleDriveClient>();
         A.CallTo(() => client.Client).Returns(driveService);
 
-        instance = new(client, googleDriveWrapper);
+        service = new(client, googleDriveWrapper);
     }
 
     public class GetResourceByNameAsync : GoogleDriveResourcesServiceTests
@@ -75,7 +76,7 @@ public class GoogleDriveResourcesServiceTests : UnitTest<GoogleDriveResourcesSer
         public async Task ShouldGetExpectedResource()
         {
             var expectedResult = files.Single();
-            var result = await instance.GetResourceByNameAsync(
+            var result = await service.GetResourceByNameAsync(
                 dataGenerator.Random.Word(),
                 dataGenerator.Random.Word(),
                 dataGenerator.Random.Word(),
@@ -92,7 +93,7 @@ public class GoogleDriveResourcesServiceTests : UnitTest<GoogleDriveResourcesSer
                 .Files)
                 .Returns(files);
 
-            var result = await instance.GetResourceByNameAsync(
+            var result = await service.GetResourceByNameAsync(
                 dataGenerator.Random.Word(),
                 dataGenerator.Random.Word(),
                 dataGenerator.Random.Word(),
@@ -117,7 +118,7 @@ public class GoogleDriveResourcesServiceTests : UnitTest<GoogleDriveResourcesSer
                 .ExecuteAsync(listRequest, cancellationToken))
                 .Returns(errorResult);
 
-            object result = await instance.GetResourceByNameAsync(
+            object result = await service.GetResourceByNameAsync(
                 dataGenerator.Random.Word(),
                 dataGenerator.Random.Word(),
                 dataGenerator.Random.Word(),
@@ -134,7 +135,7 @@ public class GoogleDriveResourcesServiceTests : UnitTest<GoogleDriveResourcesSer
                 .Files)
                 .Returns(files);
 
-            var result = await instance.GetResourceByNameAsync(
+            var result = await service.GetResourceByNameAsync(
                 dataGenerator.Random.Word(),
                 dataGenerator.Random.Word(),
                 dataGenerator.Random.Word(),
@@ -156,7 +157,7 @@ public class GoogleDriveResourcesServiceTests : UnitTest<GoogleDriveResourcesSer
                 and trashed = false
                 and '{2}' in parents";
 
-            await instance.GetResourceByNameAsync(mimeType, name, parentId, cancellationToken);
+            await service.GetResourceByNameAsync(mimeType, name, parentId, cancellationToken);
 
             using (new AssertionScope())
             {
@@ -179,7 +180,7 @@ public class GoogleDriveResourcesServiceTests : UnitTest<GoogleDriveResourcesSer
                 and trashed = false
                 and '{2}' in parents";
 
-            await instance.GetResourceByNameAsync(mimeType, name, null, cancellationToken);
+            await service.GetResourceByNameAsync(mimeType, name, null, cancellationToken);
             listRequest.Q.Should().Be(string.Format(EXPECTED_QUERY, mimeType, name, parentId));
         }
     }
@@ -200,7 +201,7 @@ public class GoogleDriveResourcesServiceTests : UnitTest<GoogleDriveResourcesSer
                 Parents = new[] { parentId }
             };
 
-            var result = instance.CreateResourceObject(mimeType, name, parentId);
+            var result = service.CreateResourceObject(mimeType, name, parentId);
             result.Should().BeEquivalentTo(expectedResult);
         }
 
@@ -222,7 +223,7 @@ public class GoogleDriveResourcesServiceTests : UnitTest<GoogleDriveResourcesSer
                 Parents = new[] { GoogleDriveSettingsService.BaseFolderId }
             };
 
-            var result = instance.CreateResourceObject(mimeType, name, parentId);
+            var result = service.CreateResourceObject(mimeType, name, parentId);
             result.Should().BeEquivalentTo(expectedResult);
         }
     }
@@ -244,7 +245,7 @@ public class GoogleDriveResourcesServiceTests : UnitTest<GoogleDriveResourcesSer
                 .ExecuteAsync(deleteRequest, cancellationToken))
                 .Returns(expectedResult);
 
-            var result = await instance.DeleteResource(resourceId, cancellationToken);
+            var result = await service.DeleteResource(resourceId, cancellationToken);
             result.Should().BeSameAs(expectedResult);
         }
     }
