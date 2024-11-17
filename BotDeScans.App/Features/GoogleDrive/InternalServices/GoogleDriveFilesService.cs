@@ -32,11 +32,11 @@ public class GoogleDriveFilesService(
         const int MAX_VALUE_PAGESIZE = 1000;
         var listRequest = googleDriveClient.Client.Files.List();
         listRequest.PageSize = MAX_VALUE_PAGESIZE;
-        // todo: criar um query builder
-        listRequest.Q = $"" +
+        listRequest.Q =
             $"trashed = false " +
             $"and '{parentId}' in parents " +
             $"and mimeType != '{GoogleDriveFoldersService.FOLDER_MIMETYPE}'";
+
         return googleDriveWrapper.ExecuteAsync(listRequest, cancellationToken);
     }
 

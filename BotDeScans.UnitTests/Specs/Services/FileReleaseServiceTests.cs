@@ -9,7 +9,7 @@ using System.Linq;
 using Xunit;
 namespace BotDeScans.UnitTests.Specs.Services;
 
-public class FileReleaseServiceTests : UnitTest, IDisposable
+public class FileReleaseServiceTests : UnitTest
 {
     //private readonly string fileReleaseDirectory = Path.Combine(
     //    FileReleaseService.RootDirectory,

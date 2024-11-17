@@ -231,11 +231,9 @@ public class BoxServiceTests : UnitTest
         //    result.Should().Be(boxFile);
         //}
 
-        public override void Dispose()
+        public void Dispose()
         {
             stream?.Dispose();
-            base.Dispose();
-
             GC.SuppressFinalize(this);
         }
     }

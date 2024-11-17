@@ -182,11 +182,9 @@ public class MegaServiceTests : UnitTest
             result.Should().BeSuccess().And.HaveValue(uri);
         }
 
-        public override void Dispose()
+        public void Dispose()
         {
             stream?.Dispose();
-            base.Dispose();
-
             GC.SuppressFinalize(this);
         }
     }

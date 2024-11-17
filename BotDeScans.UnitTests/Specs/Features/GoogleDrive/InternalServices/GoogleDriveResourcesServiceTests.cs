@@ -1,20 +1,12 @@
-﻿using BotDeScans;
+﻿using AutoFixture;
 using BotDeScans.App.Features.GoogleDrive.InternalServices;
 using BotDeScans.App.Services.ExternalClients;
-using BotDeScans.App.Services.Wrappers;
-using BotDeScans.UnitTests;
-using BotDeScans.UnitTests.Specs;
-using BotDeScans.UnitTests.Specs.Features;
-using BotDeScans.UnitTests.Specs.Features.GoogleDrive;
-using BotDeScans.UnitTests.Specs.Features.GoogleDrive.InternalServices;
-using BotDeScans.UnitTests.Specs.Services;
-using CG.Web.MegaApiClient;
+using BotDeScans.UnitTests.Specs.Extensions;
 using FakeItEasy;
 using FluentAssertions;
 using FluentAssertions.Execution;
 using FluentResults;
 using FluentResults.Extensions.FluentAssertions;
-using Google.Apis.Blogger.v3;
 using Google.Apis.Drive.v3;
 using Google.Apis.Drive.v3.Data;
 using System;
@@ -23,84 +15,82 @@ using System.Linq;
 using System.Threading.Tasks;
 using Xunit;
 using static Google.Apis.Drive.v3.FilesResource;
+
 namespace BotDeScans.UnitTests.Specs.Features.GoogleDrive.InternalServices;
 
-public class GoogleDriveResourcesServiceTests : UnitTest
+public class GoogleDriveResourcesServiceTests : UnitTest,  IDisposable
 {
     private readonly GoogleDriveResourcesService service;
-    private readonly DriveService driveService;
-    private readonly GoogleDriveWrapper googleDriveWrapper;
 
     public GoogleDriveResourcesServiceTests()
     {
-        driveService = A.Fake<DriveService>();
-        googleDriveWrapper = A.Fake<GoogleDriveWrapper>();
-        var filesResource = A.Fake<FilesResource>();
+        fixture.Fake<GoogleDriveClient>();
+        fixture.Fake<GoogleDriveWrapper>();
 
-        A.CallTo(() => driveService
-            .Files)
-            .Returns(filesResource);
+        A.CallTo(() => fixture
+            .Fake<GoogleDriveClient>().Client)
+            .Returns(fixture.Fake<DriveService>());
 
-        var client = A.Fake<GoogleDriveClient>();
-        A.CallTo(() => client.Client).Returns(driveService);
+        A.CallTo(() => fixture
+            .Fake<DriveService>().Files)
+            .Returns(fixture.Fake<FilesResource>());
 
-        service = new(client, googleDriveWrapper);
+        service = fixture.Create<GoogleDriveResourcesService>();
+    }
+
+    public void Dispose()
+    {
+        GoogleDriveSettingsService.BaseFolderId = null!;
+        GC.SuppressFinalize(this);
     }
 
     public class GetResourceByNameAsync : GoogleDriveResourcesServiceTests
     {
-        private readonly ListRequest listRequest;
-        private readonly FileList filesList;
-        private readonly List<File> files;
-
         public GetResourceByNameAsync()
         {
-            listRequest = A.Fake<ListRequest>();
-            filesList = A.Fake<FileList>();
-            files = new List<File> { new File() };
+            fixture.Inject<List<File>>([new File()]);
 
-            A.CallTo(() => driveService.Files
-                .List())
-                .Returns(listRequest);
+            A.CallTo(() => fixture
+                .Fake<FilesResource>().List())
+                .Returns(fixture.Fake<ListRequest>());
 
-            A.CallTo(() => googleDriveWrapper
-                .ExecuteAsync(listRequest, cancellationToken))
-                .Returns(filesList);
+            A.CallTo(() => fixture
+                .Fake<GoogleDriveWrapper>().ExecuteAsync(
+                    fixture.Fake<ListRequest>(), 
+                    cancellationToken))
+                .Returns(fixture.Fake<FileList>());
 
-            A.CallTo(() => filesList
-                .Files)
-                .Returns(files);
+            A.CallTo(() => fixture
+                .Fake<FileList>().Files)
+                .Returns(fixture.Create<List<File>>());
         }
 
         [Fact]
-        public async Task ShouldGetExpectedResource()
+        public async Task GivenExecutionShouldReturnSuccessResultWithExpectedData()
         {
-            var expectedResult = files.Single();
+            var expectedResult = fixture.Create<List<File>>().Single();
             var result = await service.GetResourceByNameAsync(
-                dataGenerator.Random.Word(),
-                dataGenerator.Random.Word(),
-                dataGenerator.Random.Word(),
+                fixture.Create<string>(),
+                fixture.Create<string>(),
+                fixture.Create<string>(),
                 cancellationToken);
 
             result.Should().BeSuccess().And.HaveValue(expectedResult);
         }
 
         [Fact]
-        public async Task ShouldReturnNullIfFileIsNotFound()
+        public async Task GivenNoneFileFoundShouldReturnSuccessResultWithNullData()
         {
             var files = new List<File>();
-            A.CallTo(() => filesList
-                .Files)
+            A.CallTo(() => fixture
+                .Fake<FileList>().Files)
                 .Returns(files);
 
             var result = await service.GetResourceByNameAsync(
-                dataGenerator.Random.Word(),
-                dataGenerator.Random.Word(),
-                dataGenerator.Random.Word(),
+                fixture.Create<string>(),
+                fixture.Create<string>(),
+                fixture.Create<string>(),
                 cancellationToken);
-
-            // TODO: Waiting https://github.com/altmann/FluentResults/issues/172
-            //result.Should().BeSuccess().And.HaveValue(null);
 
             using (new AssertionScope())
             {
@@ -110,89 +100,98 @@ public class GoogleDriveResourcesServiceTests : UnitTest
         }
 
         [Fact]
-        public async Task ShouldRepassExecuteAsyncListRequestError()
+        public async Task GivenExecutionErrorShouldReturnFailResult()
         {
-            var errorResult = Result.Fail("some error");
+            A.CallTo(() => fixture
+                .Fake<GoogleDriveWrapper>().ExecuteAsync(
+                    fixture.Fake<ListRequest>(),
+                    cancellationToken))
+                .Returns(Result.Fail("some error"));
 
-            A.CallTo(() => googleDriveWrapper
-                .ExecuteAsync(listRequest, cancellationToken))
-                .Returns(errorResult);
-
-            object result = await service.GetResourceByNameAsync(
-                dataGenerator.Random.Word(),
-                dataGenerator.Random.Word(),
-                dataGenerator.Random.Word(),
+            var result = await service.GetResourceByNameAsync(
+                fixture.Create<string>(),
+                fixture.Create<string>(),
+                fixture.Create<string>(),
                 cancellationToken);
 
-            result.Should().BeEquivalentTo(errorResult);
+            result.Should().BeFailure().And.HaveError("some error");
         }
 
         [Fact]
-        public async Task ShouldReturnErrorIfMoreThanOneFileIsFound()
+        public async Task GivenMultipleFilesReturnShouldReturnFailResult()
         {
             var files = new List<File> { new File(), new File() };
-            A.CallTo(() => filesList
-                .Files)
+            A.CallTo(() => fixture
+                .Fake<FileList>().Files)
                 .Returns(files);
 
             var result = await service.GetResourceByNameAsync(
-                dataGenerator.Random.Word(),
-                dataGenerator.Random.Word(),
-                dataGenerator.Random.Word(),
+                fixture.Create<string>(),
+                fixture.Create<string>(),
+                fixture.Create<string>(),
                 cancellationToken);
 
             result.Should().BeFailure().And.HaveError("Foi encontrado mais de um recurso para os dados mencionados, quando era esperado apenas um.");
         }
 
         [Fact]
-        public async Task ShouldApplyExpectedQueryFilters()
+        public async Task ShouldWriteExpectedQueryWithCustomParentId()
         {
-            var mimeType = dataGenerator.Random.Word();
-            var name = dataGenerator.Random.Word();
-            var parentId = dataGenerator.Random.Word();
             const int EXPECTED_PAGE_SIZE = 2;
-            const string EXPECTED_QUERY = @"
+            const string EXPECTED_QUERY_FORMAT = @"
                 mimeType = '{0}'
                 and name = '{1}' 
                 and trashed = false
                 and '{2}' in parents";
+
+            var mimeType = fixture.Create<string>();
+            var name = fixture.Create<string>();
+            var parentId = fixture.Create<string>();
+            var expectedQuery = string.Format(EXPECTED_QUERY_FORMAT, mimeType, name, parentId);
 
             await service.GetResourceByNameAsync(mimeType, name, parentId, cancellationToken);
 
             using (new AssertionScope())
             {
-                listRequest.PageSize.Should().Be(EXPECTED_PAGE_SIZE);
-                listRequest.Q.Should().Be(string.Format(EXPECTED_QUERY, mimeType, name, parentId));
+                fixture.Freeze<ListRequest>().PageSize.Should().Be(EXPECTED_PAGE_SIZE);
+                fixture.Freeze<ListRequest>().Q.Should().Be(expectedQuery);
             }
         }
 
         [Fact]
-        public async Task ShouldQueryRootFolderAsParentIdIfParameterValueBeNull()
+        public async Task ShouldWriteExpectedQueryWithRootParentId()
         {
-            var mimeType = dataGenerator.Random.Word();
-            var name = dataGenerator.Random.Word();
-            var parentId = dataGenerator.Random.Word();
-            GoogleDriveSettingsService.BaseFolderId = parentId;
-
-            const string EXPECTED_QUERY = @"
+            const int EXPECTED_PAGE_SIZE = 2;
+            const string EXPECTED_QUERY_FORMAT = @"
                 mimeType = '{0}'
                 and name = '{1}' 
                 and trashed = false
                 and '{2}' in parents";
 
+            var mimeType = fixture.Create<string>();
+            var name = fixture.Create<string>();
+            var parentId = fixture.Create<string>();
+            var expectedQuery = string.Format(EXPECTED_QUERY_FORMAT, mimeType, name, parentId);
+            GoogleDriveSettingsService.BaseFolderId = parentId;
+
             await service.GetResourceByNameAsync(mimeType, name, null, cancellationToken);
-            listRequest.Q.Should().Be(string.Format(EXPECTED_QUERY, mimeType, name, parentId));
+
+            using (new AssertionScope())
+            {
+                fixture.Freeze<ListRequest>().PageSize.Should().Be(EXPECTED_PAGE_SIZE);
+                fixture.Freeze<ListRequest>().Q.Should().Be(expectedQuery);
+            }
         }
     }
 
     public class CreateResourceObject : GoogleDriveResourcesServiceTests
     {
         [Fact]
-        public void ShouldCreateResourceObjectWithDefinedParentId()
+        public void GivenDataWithParentIdShouldCreateExpectedResourceObject()
         {
-            var mimeType = dataGenerator.Random.Word();
-            var name = dataGenerator.Random.Word();
-            var parentId = dataGenerator.Random.Word();
+            var mimeType = fixture.Create<string>();
+            var name = fixture.Create<string>();
+            var parentId = fixture.Create<string>();
             var expectedResult = new
             {
                 Name = name,
@@ -205,15 +204,12 @@ public class GoogleDriveResourcesServiceTests : UnitTest
             result.Should().BeEquivalentTo(expectedResult);
         }
 
-        [Theory]
-        [InlineData(null)]
-        [InlineData("")]
-        [InlineData(" ")]
-        public void ShouldCreateResourceObjectRootAsParentId(string parentId)
+        [Fact]
+        public void GivenDataWithoutParentIdShouldCreateExpectedResourceObject()
         {
-            var mimeType = dataGenerator.Random.Word();
-            var name = dataGenerator.Random.Word();
-            GoogleDriveSettingsService.BaseFolderId = dataGenerator.Random.Word();
+            var mimeType = fixture.Create<string>();
+            var name = fixture.Create<string>();
+            GoogleDriveSettingsService.BaseFolderId = fixture.Create<string>();
 
             var expectedResult = new
             {
@@ -223,7 +219,7 @@ public class GoogleDriveResourcesServiceTests : UnitTest
                 Parents = new[] { GoogleDriveSettingsService.BaseFolderId }
             };
 
-            var result = service.CreateResourceObject(mimeType, name, parentId);
+            var result = service.CreateResourceObject(mimeType, name);
             result.Should().BeEquivalentTo(expectedResult);
         }
     }
@@ -231,22 +227,37 @@ public class GoogleDriveResourcesServiceTests : UnitTest
     public class DeleteResource : GoogleDriveResourcesServiceTests
     {
         [Fact]
-        public async Task ShouldDeleteAsExpected()
+        public async Task GivenValidExecutionShouldReturnSuccessResultWithResourceIdData()
         {
-            var resourceId = dataGenerator.Random.Word();
-            var deleteRequest = A.Fake<DeleteRequest>();
-            var expectedResult = new Result<string>();
+            var resourceId = fixture.Create<string>();
 
-            A.CallTo(() => driveService.Files
-                .Delete(resourceId))
-                .Returns(deleteRequest);
+            A.CallTo(() => fixture
+                .Fake<FilesResource>().Delete(resourceId))
+                .Returns(fixture.Freeze<DeleteRequest>());
 
-            A.CallTo(() => googleDriveWrapper
-                .ExecuteAsync(deleteRequest, cancellationToken))
-                .Returns(expectedResult);
+            A.CallTo(() => fixture
+                .Fake<GoogleDriveWrapper>().ExecuteAsync(fixture.Fake<DeleteRequest>(), cancellationToken))
+                .Returns(Result.Ok("delete-id"));
 
             var result = await service.DeleteResource(resourceId, cancellationToken);
-            result.Should().BeSameAs(expectedResult);
+            result.Should().BeSuccess().And.HaveValue("delete-id");
+        }
+
+        [Fact]
+        public async Task GivenValidExecutionShouldReturnFailResult()
+        {
+            var resourceId = fixture.Create<string>();
+
+            A.CallTo(() => fixture
+                .Fake<FilesResource>().Delete(resourceId))
+                .Returns(fixture.Fake<DeleteRequest>());
+
+            A.CallTo(() => fixture
+                .Fake<GoogleDriveWrapper>().ExecuteAsync(fixture.Fake<DeleteRequest>(), cancellationToken))
+                .Returns(Result.Fail("some error"));
+
+            var result = await service.DeleteResource(resourceId, cancellationToken);
+            result.Should().BeFailure().And.HaveError("some error");
         }
     }
 }

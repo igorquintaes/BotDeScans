@@ -1,5 +1,4 @@
 ﻿using BotDeScans.App.Services.ExternalClients;
-using BotDeScans.App.Services.Wrappers;
 using FluentResults;
 using File = Google.Apis.Drive.v3.Data.File;
 namespace BotDeScans.App.Features.GoogleDrive.InternalServices;
@@ -47,15 +46,14 @@ public class GoogleDriveResourcesService(
     public virtual File CreateResourceObject(
         string mimeType,
         string name,
-        string? parentId) =>
-            new()
-            {
-                Name = name,
-                Description = name,
-                MimeType = mimeType,
-                Parents = string.IsNullOrWhiteSpace(parentId)
-                    ? new[] { GoogleDriveSettingsService.BaseFolderId } : new[] { parentId }
-            };
+        string? parentId = null) 
+        => new()
+        {
+            Name = name,
+            Description = name,
+            MimeType = mimeType,
+            Parents = new[] { parentId ?? GoogleDriveSettingsService.BaseFolderId }
+        };
 
     public virtual Task<Result<string>> DeleteResource(
         string resourceId,
