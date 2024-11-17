@@ -1,224 +1,189 @@
-﻿//using BotDeScans.App.Models;
-//using BotDeScans.App.Services.Factories;
-//using BotDeScans.App.Services.GoogleDrive;
-//using BotDeScans.App.Wrappers;
-//using FakeItEasy;
-//using FluentAssertions;
-//using FluentAssertions.Execution;
-//using FluentResults;
-//using FluentResults.Extensions.FluentAssertions;
-//using Google.Apis.Drive.v3;
-//using Google.Apis.Drive.v3.Data;
-//using System;
-//using System.Threading;
-//using System.Threading.Tasks;
-//using Xunit;
-//using static Google.Apis.Drive.v3.AboutResource;
+﻿using AutoFixture;
+using BotDeScans.App.Features.GoogleDrive;
+using BotDeScans.App.Features.GoogleDrive.InternalServices;
+using BotDeScans.App.Services.ExternalClients;
+using BotDeScans.UnitTests.Specs.Extensions;
+using FakeItEasy;
+using FluentAssertions;
+using FluentAssertions.Execution;
+using FluentResults;
+using FluentResults.Extensions.FluentAssertions;
+using Google.Apis.Drive.v3;
+using Google.Apis.Drive.v3.Data;
+using System.Threading.Tasks;
+using Xunit;
+using static BotDeScans.App.Features.GoogleDrive.InternalServices.GoogleDriveSettingsService;
+using static Google.Apis.Drive.v3.AboutResource;
+using static Google.Apis.Drive.v3.Data.About;
 
-//namespace BotDeScans.UnitTests.Specs.Services.GoogleDrive
-//{
-//    public class GoogleDriveSettingsServiceTests : UnitTest<GoogleDriveSettingsService>
-//    {
-//        private readonly DriveService driveService;
-//        private readonly GoogleDriveWrapper googleDriveWrapper;
-//        private readonly GoogleDriveFoldersService googleDriveFoldersService;
+namespace BotDeScans.UnitTests.Specs.Features.GoogleDrive.InternalServices;
 
-//        public GoogleDriveSettingsServiceTests()
-//        {
-//            var storageFactory = A.Fake<ExternalServicesFactory>();
-//            driveService = A.Fake<DriveService>();
-//            googleDriveWrapper = A.Fake<GoogleDriveWrapper>();
-//            googleDriveFoldersService = A.Fake<GoogleDriveFoldersService>();
+public class GoogleDriveSettingsServiceTests : UnitTest
+{
+    private readonly GoogleDriveSettingsService service;
 
-//            A.CallTo(() => storageFactory
-//                .CreateGoogleClients())
-//                .Returns(Result.Ok(driveService));
+    public GoogleDriveSettingsServiceTests()
+    {
+        fixture.Fake<GoogleDriveClient>();
+        fixture.Fake<GoogleDriveWrapper>();
+        fixture.Fake<GoogleDriveFoldersService>();
 
-//            instance = new (storageFactory, googleDriveWrapper, googleDriveFoldersService);
-//        }
+        service = fixture.Create<GoogleDriveSettingsService>();
+    }
 
-//        public class SetUpBaseFolderAsync : GoogleDriveSettingsServiceTests
-//        {
-//            private const string baseGoogleDriveFolderId = "root";
-//            private readonly string folderId;
+    public class SetUpBaseFolderAsync : GoogleDriveSettingsServiceTests
+    {
+        public SetUpBaseFolderAsync()
+        {
+            A.CallTo(() => fixture
+                .Fake<GoogleDriveFoldersService>()
+                .GetFolderAsync(
+                    GoogleDriveSettingsService.BASE_FOLDER_NAME,
+                    GoogleDriveSettingsService.ROOT_FOLDER_NAME,
+                    cancellationToken))
+                .Returns(Result.Ok<File?>(default));
 
-//            public SetUpBaseFolderAsync()
-//            {
-//                folderId = dataGenerator.Random.Word();
+            A.CallTo(() => fixture
+                .Fake<GoogleDriveFoldersService>()
+                .CreateFolderAsync(
+                    GoogleDriveSettingsService.BASE_FOLDER_NAME,
+                    GoogleDriveSettingsService.ROOT_FOLDER_NAME,
+                    cancellationToken))
+                .Returns(fixture.Fake<File>());
+        }
 
-//                A.CallTo(() => googleDriveFoldersService
-//                    .GetFolderAsync(
-//                          GoogleDriveSettingsService.BaseFolderName,
-//                          baseGoogleDriveFolderId,
-//                          cancellationToken))
-//                    .Returns(null as File);
+        [Fact]
+        public async Task GivenSuccessfulExecutionWithoutExistingFolderShouldReturnSuccess()
+        {
+            var result = await service.SetUpBaseFolderAsync(cancellationToken);
 
-//                A.CallTo(() => googleDriveFoldersService
-//                    .CreateFolderAsync(
-//                          GoogleDriveSettingsService.BaseFolderName,
-//                          baseGoogleDriveFolderId,
-//                          cancellationToken))
-//                    .Returns(new File { Id = folderId });
-//            }
+            using var _ = new AssertionScope();
+            result.Should().BeSuccess();
+            GoogleDriveSettingsService.BaseFolderId.Should().Be(fixture.Fake<File>().Id);
 
-//            [Fact]
-//            public async Task ShouldCreateBotFolderIfItDoesNotExists()
-//            {
-//                var result = await instance.SetUpBaseFolderAsync();
+            A.CallTo(() => fixture
+                .Fake<GoogleDriveFoldersService>()
+                .CreateFolderAsync(
+                    GoogleDriveSettingsService.BASE_FOLDER_NAME,
+                    GoogleDriveSettingsService.ROOT_FOLDER_NAME,
+                    cancellationToken))
+                .MustHaveHappenedOnceExactly();
+        }
 
-//                using (new AssertionScope())
-//                {
-//                    result.Should().BeSuccess();
-//                    GoogleDriveSettingsService.BaseFolderId.Should().Be(folderId);
-//                }
-//            }
+        [Fact]
+        public async Task GivenSuccessfulExecutionWithExistingFolderShouldReturnSuccess()
+        {
+            A.CallTo(() => fixture
+                .Fake<GoogleDriveFoldersService>()
+                .GetFolderAsync(
+                    GoogleDriveSettingsService.BASE_FOLDER_NAME,
+                    GoogleDriveSettingsService.ROOT_FOLDER_NAME,
+                    cancellationToken))
+                .Returns(fixture.Fake<File>());
 
-//            [Fact]
-//            public async Task ShouldNotCreateBotFolderWhenItExists()
-//            {
-//                A.CallTo(() => googleDriveFoldersService
-//                    .GetFolderAsync(
-//                          GoogleDriveSettingsService.BaseFolderName,
-//                          baseGoogleDriveFolderId,
-//                          cancellationToken))
-//                    .Returns(new File { Id = folderId });
+            var result = await service.SetUpBaseFolderAsync(cancellationToken);
 
-//                var result = await instance.SetUpBaseFolderAsync();
-//                result.Should().BeSuccess();
+            using var _ = new AssertionScope();
+            result.Should().BeSuccess();
+            GoogleDriveSettingsService.BaseFolderId.Should().Be(fixture.Fake<File>().Id);
 
-//                A.CallTo(() => googleDriveFoldersService
-//                    .CreateFolderAsync(
-//                          A<string>.Ignored,
-//                          A<string>.Ignored,
-//                          A<CancellationToken>.Ignored))
-//                    .MustNotHaveHappened();
-//            }
+            A.CallTo(() => fixture
+                .Fake<GoogleDriveFoldersService>()
+                .CreateFolderAsync(
+                    A<string>.Ignored,
+                    A<string>.Ignored,
+                    cancellationToken))
+                .MustNotHaveHappened();
+        }
 
-//            [Fact]
-//            public async Task ShouldGetBotFolderIfItAlreadyExists()
-//            {
-//                A.CallTo(() => googleDriveFoldersService
-//                    .GetFolderAsync(
-//                          GoogleDriveSettingsService.BaseFolderName,
-//                          baseGoogleDriveFolderId,
-//                          cancellationToken))
-//                    .Returns(new File { Id = folderId });
+        [Fact]
+        public async Task GivenExecutionErrorWhenCheckingIfBaseFolderExistsShouldReturnFailResult()
+        {
+            const string ERROR_MESSAGE = "some error";
 
-//                var result = await instance.SetUpBaseFolderAsync();
+            A.CallTo(() => fixture
+                .Fake<GoogleDriveFoldersService>()
+                .GetFolderAsync(
+                    GoogleDriveSettingsService.BASE_FOLDER_NAME,
+                    GoogleDriveSettingsService.ROOT_FOLDER_NAME,
+                    cancellationToken))
+                .Returns(Result.Fail(ERROR_MESSAGE));
 
-//                using (new AssertionScope())
-//                {
-//                    result.Should().BeSuccess();
-//                    GoogleDriveSettingsService.BaseFolderId.Should().Be(folderId);
-//                }
-//            }
+            var result = await service.SetUpBaseFolderAsync(cancellationToken);
 
-//            [Fact]
-//            public async Task ShouldRepassGetFolderAsyncError()
-//            {
-//                var expectedResult = Result.Fail("some error");
-//                A.CallTo(() => googleDriveFoldersService
-//                    .GetFolderAsync(
-//                          GoogleDriveSettingsService.BaseFolderName,
-//                          baseGoogleDriveFolderId,
-//                          cancellationToken))
-//                    .Returns(expectedResult);
+            result.Should().BeFailure().And.HaveError(ERROR_MESSAGE);
+        }
 
-//                object result = await instance.SetUpBaseFolderAsync();
-//                result.Should().BeEquivalentTo(expectedResult);
-//            }
+        [Fact]
+        public async Task GivenExecutionErrorWhenCreatingBaseFolderShouldReturnFailResult()
+        {
+            const string ERROR_MESSAGE = "some error";
 
-//            [Fact]
-//            public async Task ShouldRepassCreateFolderAsyncError()
-//            {
-//                var expectedResult = Result.Fail("some error");
-//                A.CallTo(() => googleDriveFoldersService
-//                    .CreateFolderAsync(
-//                          GoogleDriveSettingsService.BaseFolderName,
-//                          baseGoogleDriveFolderId,
-//                          cancellationToken))
-//                    .Returns(expectedResult);
+            A.CallTo(() => fixture
+                .Fake<GoogleDriveFoldersService>()
+                .CreateFolderAsync(
+                    GoogleDriveSettingsService.BASE_FOLDER_NAME,
+                    GoogleDriveSettingsService.ROOT_FOLDER_NAME,
+                    cancellationToken))
+                .Returns(Result.Fail(ERROR_MESSAGE));
 
-//                object result = await instance.SetUpBaseFolderAsync();
-//                result.Should().BeEquivalentTo(expectedResult);
-//            }
+            var result = await service.SetUpBaseFolderAsync(cancellationToken);
 
-//            [Fact]
-//            public void ShouldThrowsAnExceptionWhenTryingToGetBaseFolderIdBeforeSetUpBaseFolder()
-//            {
-//                Func<string> action = () => GoogleDriveSettingsService.BaseFolderId;
-//                action.Should()
-//                    .ThrowExactly<InvalidOperationException>()
-//                    .WithMessage("Base folder not set.");
-//            }
-//        }
+            result.Should().BeFailure().And.HaveError(ERROR_MESSAGE);
+        }
+    }
 
-//        public class GetConsumptionData : GoogleDriveSettingsServiceTests
-//        {
-//            private readonly AboutResource aboutResource;
-//            private readonly GetRequest aboutRequest;
-//            private readonly long usedSpace;
-//            private readonly long limitSpace;
+    public class GetConsumptionDataAsync : GoogleDriveSettingsServiceTests
+    {
+        public GetConsumptionDataAsync()
+        {
+            A.CallTo(() => fixture
+                .Fake<GoogleDriveClient>().Client)
+                .Returns(fixture.Fake<DriveService>());
 
-//            public GetConsumptionData()
-//            {
-//                aboutResource = A.Fake<AboutResource>();
-//                aboutRequest = A.Fake<GetRequest>();
-//                usedSpace = dataGenerator.Random.Long(0);
-//                limitSpace = dataGenerator.Random.Long(usedSpace);
+            A.CallTo(() => fixture
+                .Fake<DriveService>().About)
+                .Returns(fixture.Fake<AboutResource>());
 
-//                A.CallTo(() => driveService
-//                    .About)
-//                    .Returns(aboutResource);
+            A.CallTo(() => fixture
+                .Fake<AboutResource>().Get())
+                .Returns(fixture.Fake<GetRequest>());
+        }
 
-//                A.CallTo(() => aboutResource
-//                    .Get())
-//                    .Returns(aboutRequest);
+        [Fact]
+        public async Task GivenSuccessfulExecutionShouldReturnSuccessResultAndExpectedData()
+        {
+            var about = fixture
+                .Build<About>()
+                .With(x => x.StorageQuota, fixture
+                    .Build<StorageQuotaData>()
+                    .With(x => x.Usage, 100L)
+                    .With(x => x.Limit, 600L)
+                    .Create())
+                .Create();
 
-//                A.CallTo(() => googleDriveWrapper
-//                    .ExecuteAsync(aboutRequest, cancellationToken))
-//                    .Returns(new About
-//                    {
-//                        StorageQuota = new About.StorageQuotaData
-//                        {
-//                            Usage = usedSpace,
-//                            Limit = limitSpace,
-//                        }
-//                    });
-//            }
+            A.CallTo(() => fixture
+                .Fake<GoogleDriveWrapper>()
+                .ExecuteAsync(fixture.Fake<GetRequest>(), cancellationToken))
+                .Returns(about);
 
-//            [Fact]
-//            public async Task ShouldCalculateExpectedConsumptionData()
-//            {
-//                var result = await instance.GetConsumptionData(cancellationToken);
+            var result = await service.GetConsumptionDataAsync(cancellationToken);
+            result.Should().BeSuccess();
+            result.Value.Should().BeEquivalentTo(new ConsumptionData(100, 500));
+        }
 
-//                using (new AssertionScope())
-//                {
-//                    result.Should().BeSuccess();
-//                    result.ValueOrDefault?.Should().BeEquivalentTo(
-//                        new DataUsageDrive(usedSpace, limitSpace - usedSpace));
-//                }
-//            }
+        [Fact]
+        public async Task GivenErrorWhileObtainingComsumptionDataShouldReturnError()
+        {
+            const string ERROR_MESSAGE = "some error";
 
-//            [Fact]
-//            public async Task ShouldRepassQueryError()
-//            {
-//                var expectedResult = Result.Fail("some error");
-//                A.CallTo(() => googleDriveWrapper
-//                    .ExecuteAsync(aboutRequest, cancellationToken))
-//                    .Returns(expectedResult);
+            A.CallTo(() => fixture
+                .Fake<GoogleDriveWrapper>()
+                .ExecuteAsync(fixture.Fake<GetRequest>(), cancellationToken))
+                .Returns(Result.Fail(ERROR_MESSAGE));
 
-//                object result = await instance.GetConsumptionData(cancellationToken);
-//                result.Should().BeEquivalentTo(expectedResult);
-//            }
-
-//            [Fact]
-//            public async Task ShouldFillCriteriaAsExpected()
-//            {
-//                const string EXPECTED_FIELDS = "storageQuota";
-//                await instance.GetConsumptionData(cancellationToken);
-//                aboutRequest.Fields.Should().Be(EXPECTED_FIELDS);
-//            }
-//        }
-//    }
-//}
+            var result = await service.GetConsumptionDataAsync(cancellationToken);
+            result.Should().BeFailure().And.HaveError(ERROR_MESSAGE);
+        }
+    }
+}

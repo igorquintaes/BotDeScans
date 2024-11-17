@@ -1,11 +1,5 @@
-﻿using BotDeScans;
-using BotDeScans.App.Features.GoogleDrive;
+﻿using BotDeScans.App.Features.GoogleDrive;
 using BotDeScans.App.Services;
-using BotDeScans.UnitTests;
-using BotDeScans.UnitTests.Specs;
-using BotDeScans.UnitTests.Specs.Features.GoogleDrive;
-using BotDeScans.UnitTests.Specs.Services;
-using FluentAssertions;
 using FluentValidation.TestHelper;
 using Google.Apis.Drive.v3.Data;
 using System.Collections.Generic;
@@ -15,15 +9,15 @@ namespace BotDeScans.UnitTests.Specs.Features.GoogleDrive;
 public class FileListValidatorTests : UnitTest
 {
     private readonly FileListValidator validator = new FileListValidator();
-    private readonly IList<File> data = new List<File>
-    {
+    private readonly IList<File> data =
+    [
         new File { Kind = "drive#file", Name = "01.png" },
         new File { Kind = "drive#file", Name = "02.png" },
         new File { Kind = "drive#file", Name = "03-04.png" },
         new File { Kind = "drive#file", Name = "05.png" },
         new File { Kind = "drive#file", Name = "capa.png" },
         new File { Kind = "drive#file", Name = "creditos.png" }
-    };
+    ];
 
     [Fact]
     public void ShouldBeValid() => 

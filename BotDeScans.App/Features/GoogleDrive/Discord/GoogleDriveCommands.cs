@@ -76,7 +76,7 @@ public class GoogleDriveCommands(
     [Description("Obtém informação do uso de dados e espaço livre.")]
     public async Task<IResult> DataUsage()
     {
-        var dataUsageResult = await googleDriveSettingsService.GetConsumptionData(CancellationToken);
+        var dataUsageResult = await googleDriveSettingsService.GetConsumptionDataAsync(CancellationToken);
         if (dataUsageResult.IsFailed)
             return await feedbackService
                 .SendContextualEmbedAsync(EmbedBuilder
