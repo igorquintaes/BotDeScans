@@ -1,305 +1,285 @@
-﻿//using BotDeScans.App.Services.Factories;
-//using BotDeScans.App.Services.GoogleDrive;
-//using BotDeScans.App.Wrappers;
-//using FakeItEasy;
-//using FluentAssertions;
-//using FluentResults;
-//using FluentResults.Extensions.FluentAssertions;
-//using Google.Apis.Drive.v3;
-//using Google.Apis.Drive.v3.Data;
-//using System.Collections.Generic;
-//using System.Linq;
-//using System.Threading.Tasks;
-//using Xunit;
-//using static Google.Apis.Drive.v3.PermissionsResource;
+﻿using AutoFixture;
+using BotDeScans.App.Features.GoogleDrive.InternalServices;
+using BotDeScans.App.Services.ExternalClients;
+using BotDeScans.UnitTests.Specs.Extensions;
+using FakeItEasy;
+using FluentAssertions;
+using FluentResults;
+using FluentResults.Extensions.FluentAssertions;
+using Google.Apis.Drive.v3;
+using Google.Apis.Drive.v3.Data;
+using System.Collections;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
+using Xunit;
+using static Google.Apis.Drive.v3.PermissionsResource;
 
-//namespace BotDeScans.UnitTests.Specs.Services.GoogleDrive
-//{
-//    public class GoogleDrivePermissionsServiceTests : UnitTest<GoogleDrivePermissionsService>
-//    {
-//        private readonly DriveService driveService;
-//        private readonly GoogleDriveWrapper googleDriveWrapper;
+namespace BotDeScans.UnitTests.Specs.Features.GoogleDrive.InternalServices;
 
-//        public GoogleDrivePermissionsServiceTests()
-//        {
-//            var storageFactory = A.Fake<ExternalServicesFactory>();
-//            driveService = A.Fake<DriveService>();
-//            googleDriveWrapper = A.Fake<GoogleDriveWrapper>();
+public class GoogleDrivePermissionsServiceTests : UnitTest
+{
+    private readonly GoogleDrivePermissionsService service;
 
-//            A.CallTo(() => storageFactory
-//                .CreateGoogleClients())
-//                .Returns(Result.Ok(driveService));
+    public GoogleDrivePermissionsServiceTests()
+    {
+        fixture.Fake<GoogleDriveClient>();
+        fixture.Fake<GoogleDriveWrapper>();
 
-//            A.CallTo(() => driveService
-//                .Permissions)
-//                .Returns(A.Fake<PermissionsResource>());
+        A.CallTo(() => fixture
+            .Fake<GoogleDriveClient>().Client)
+            .Returns(fixture.Fake<DriveService>());
 
-//            instance = new (storageFactory, googleDriveWrapper);
-//        }
+        A.CallTo(() => fixture
+            .Fake<DriveService>().Permissions)
+            .Returns(fixture.Fake<PermissionsResource>());
 
-//        public class CreatePublicReaderPermissionAsync : GoogleDrivePermissionsServiceTests
-//        {
-//            private readonly string id;
-//            private readonly Result<Permission> expectedResponse;
+        service = fixture.Create<GoogleDrivePermissionsService>();
+    }
 
-//            public CreatePublicReaderPermissionAsync()
-//            {
-//                const string EXPECTED_PERMISSION_TYPE = "anyone";
-//                const string EXPECTED_PERMISSION_ROLE = "reader";
-//                var createRequest = A.Fake<CreateRequest>();
-//                expectedResponse = new Result<Permission>();
-//                id = dataGenerator.Random.Word();
+    public class GetUserPermissionsAsync : GoogleDrivePermissionsServiceTests
+    {
+        private readonly string email;
+        private readonly string resourceId;
+        private readonly Permission emailRelatedPermission;
 
-//                A.CallTo(() => driveService.Permissions
-//                    .Create(A<Permission>.That.Matches(permission =>
-//                            permission.Type == EXPECTED_PERMISSION_TYPE &&
-//                            permission.Role == EXPECTED_PERMISSION_ROLE),
-//                        id))
-//                    .Returns(createRequest);
+        public GetUserPermissionsAsync()
+        {
+            email = fixture.Create<string>();
+            resourceId = fixture.Create<string>();
+            emailRelatedPermission = fixture.Build<Permission>()
+                .With(x => x.EmailAddress, email)
+                .With(x => x.Type, GoogleDrivePermissionsService.USER_PERMISSION_TYPE)
+                .Create();
 
-//                A.CallTo(() => googleDriveWrapper
-//                    .ExecuteAsync(createRequest, cancellationToken))
-//                    .Returns(expectedResponse);
-//            }
+            var notRelatedPermission = fixture.Build<Permission>()
+                .With(x => x.Type, GoogleDrivePermissionsService.USER_PERMISSION_TYPE)
+                .Create();
 
-//            [Fact]
-//            public async Task ShouldReturnPermissionFolderResult()
-//            {
-//                var result = await instance.CreatePublicReaderPermissionAsync(id, cancellationToken);
-//                result.Should().BeSameAs(expectedResponse);
-//            }
-//        }
+            var permissionList = fixture.Build<PermissionList>()
+                .With(x => x.Permissions, [emailRelatedPermission, notRelatedPermission])
+                .Create();
 
-//        public class GetDriverAccessPermissionsAsync : GoogleDrivePermissionsServiceTests
-//        {
-//            private readonly ListRequest permissionsRequest;
-//            private readonly Result<PermissionList> permissionResult;
-//            private readonly string validEmailAddress;
-//            private const string VALID_TYPE = "user";
+            A.CallTo(() => fixture
+                .Fake<PermissionsResource>()
+                .List(resourceId))
+                .Returns(fixture.Fake<ListRequest>());
 
-//            public GetDriverAccessPermissionsAsync()
-//            {
-//                GoogleDriveSettingsService.BaseFolderId = dataGenerator.Random.Word();
-//                var permissionsResource = A.Fake<PermissionsResource>();
+            A.CallTo(() => fixture
+                .Fake<GoogleDriveWrapper>()
+                .ExecuteAsync(fixture.Fake<ListRequest>(), cancellationToken))
+                .Returns(permissionList);
+        }
 
-//                validEmailAddress = dataGenerator.Random.Word();
-//                permissionsRequest = A.Fake<ListRequest>();
-//                permissionResult = Result.Ok(A.Fake<PermissionList>());
+        [Fact]
+        public async Task GivenSuccessFulRequestWithEmailPermissionsShouldReturnSuccessResultWithData()
+        {
+            var result = await service.GetUserPermissionsAsync(email, resourceId, cancellationToken);
 
-//                A.CallTo(() => driveService
-//                    .Permissions)
-//                    .Returns(permissionsResource);
+            result.Should().BeSuccess().Which.Value.Should().BeEquivalentTo([emailRelatedPermission]);
+        }
 
-//                A.CallTo(() => permissionsResource
-//                    .List(GoogleDriveSettingsService.BaseFolderId))
-//                    .Returns(permissionsRequest);
+        [Fact]
+        public async Task GivenSuccessFulRequestWithoutEmailPermissionsShouldReturnSuccessResultWithEmptyData()
+        {
+            A.CallTo(() => fixture
+                .Fake<GoogleDriveWrapper>()
+                .ExecuteAsync(fixture.Fake<ListRequest>(), cancellationToken))
+                .Returns(fixture.Fake<PermissionList>());
 
-//                A.CallTo(() => googleDriveWrapper
-//                    .ExecuteAsync(permissionsRequest, cancellationToken))
-//                    .Returns(permissionResult);
+            var result = await service.GetUserPermissionsAsync(email, resourceId, cancellationToken);
 
-//                A.CallTo(() => permissionResult.Value
-//                    .Permissions)
-//                    .Returns(new[]
-//                    {
-//                        new Permission { EmailAddress = validEmailAddress, Type = VALID_TYPE },
-//                        new Permission { EmailAddress = validEmailAddress, Type = "invalid" },
-//                        new Permission { EmailAddress = "invalid", Type = VALID_TYPE },
-//                        new Permission { EmailAddress = "invalid", Type = "invalid" }
-//                    });
-//            }
+            result.Should().BeSuccess().Which.Value.Should().BeEmpty();
+        }
 
-//            [Fact]
-//            public async Task ShouldReturnFilteredPermissionsAsExpected()
-//            {
-//                var expectedResult = Result.Ok<IEnumerable<Permission>>(new []
-//                {
-//                    new Permission { EmailAddress = validEmailAddress, Type = VALID_TYPE }
-//                });
+        [Fact]
+        public async Task GivenErrorWhenRetrievingPermissionsShouldReturnFailResult()
+        {
+            const string ERROR_MESSAGE = "some error";
 
-//                object result = await instance.GetDriverAccessPermissionsAsync(validEmailAddress, cancellationToken);
-//                result.Should().BeEquivalentTo(expectedResult);
-//            }
+            A.CallTo(() => fixture
+                .Fake<GoogleDriveWrapper>()
+                .ExecuteAsync(fixture.Fake<ListRequest>(), cancellationToken))
+                .Returns(Result.Fail(ERROR_MESSAGE));
 
-//            [Fact]
-//            public async Task ShouldReturnFilteredPermissionsAsExpectedCaseInvariant()
-//            {
-//                var expectedResult = Result.Ok<IEnumerable<Permission>>(new[]
-//                {
-//                    new Permission { EmailAddress = validEmailAddress, Type = VALID_TYPE }
-//                });
+            var result = await service.GetUserPermissionsAsync(email, resourceId, cancellationToken);
 
-//                var validEmailAddressRandomCase = string.Join("", validEmailAddress
-//                    .Select(x => dataGenerator.Random.Bool() 
-//                        ? char.ToUpper(x) 
-//                        : char.ToLower(x)));
+            result.Should().BeFailure().And.HaveError(ERROR_MESSAGE);
+        }
 
-//                object result = await instance.GetDriverAccessPermissionsAsync(validEmailAddressRandomCase, cancellationToken);
-//                result.Should().BeEquivalentTo(expectedResult);
-//            }
+        [Fact]
+        public async Task ShouldFillMandatoryRequestFields()
+        {
+            await service.GetUserPermissionsAsync(email, resourceId, cancellationToken);
 
-//            [Fact]
-//            public async Task ShouldReturnMultipleResultsIfExists()
-//            {
-//                var permissions = new[]
-//                {
-//                    new Permission { EmailAddress = validEmailAddress, Type = VALID_TYPE },
-//                    new Permission { EmailAddress = validEmailAddress, Type = VALID_TYPE },
-//                    new Permission { EmailAddress = validEmailAddress, Type = "invalid" },
-//                };
+            A.CallTo(() => fixture
+                .Fake<GoogleDriveWrapper>()
+                .ExecuteAsync(
+                    A<ListRequest>.That.Matches(x => x.Fields == "*"), 
+                    cancellationToken))
+                .MustHaveHappenedOnceExactly();
+        }
+    }
 
-//                A.CallTo(() => permissionResult.Value
-//                    .Permissions)
-//                    .Returns(permissions);
+    public class CreatePublicReaderPermissionAsync : GoogleDrivePermissionsServiceTests
+    {
+        public static string resourceId;
 
-//                var expectedResult = Result.Ok<IEnumerable<Permission>>(new[]
-//                {
-//                    new Permission { EmailAddress = validEmailAddress, Type = VALID_TYPE },
-//                    new Permission { EmailAddress = validEmailAddress, Type = VALID_TYPE }
-//                });
+        public CreatePublicReaderPermissionAsync()
+        {
+            resourceId = fixture.Create<string>();
 
-//                object result = await instance.GetDriverAccessPermissionsAsync(validEmailAddress, cancellationToken);
-//                result.Should().BeEquivalentTo(expectedResult);
-//            }
+            A.CallTo(() => fixture
+                .Fake<PermissionsResource>()
+                .Create(A<Permission>.That.Matches(permission =>
+                    permission.Type == GoogleDrivePermissionsService.PUBLIC_PERMISSION_TYPE &&
+                    permission.Role == GoogleDrivePermissionsService.READER_ROLE),
+                    resourceId))
+                .Returns(fixture.Fake<CreateRequest>());
+        }
 
-//            [Fact]
-//            public async Task ShouldApplyExpectedFilters()
-//            {
-//                const string FIELDS_FILTER = "*";
-//                const int MAX_SIZE_FILTER = 100;
+        [Fact]
+        public async Task GivenSuccessfulExecutionShouldReturnSuccessResultAndPermissionData()
+        {
+            A.CallTo(() => fixture
+                .Fake<GoogleDriveWrapper>()
+                .ExecuteAsync(fixture.Fake<CreateRequest>(), cancellationToken))
+                .Returns(fixture.Fake<Permission>());
 
-//                var result = await instance.GetDriverAccessPermissionsAsync(validEmailAddress, cancellationToken);
+            var result = await service.CreatePublicReaderPermissionAsync(resourceId, cancellationToken);
 
-//                A.CallTo(() => googleDriveWrapper
-//                    .ExecuteAsync(
-//                        A<ListRequest>.That.Matches(request => 
-//                            request.Fields == FIELDS_FILTER &&
-//                            request.PageSize == MAX_SIZE_FILTER), 
-//                        cancellationToken))
-//                    .MustHaveHappenedOnceExactly();
-//            }
+            result.Should().BeSuccess().And.HaveValue(fixture.Fake<Permission>());
+        }
 
-//            [Fact]
-//            public async Task ShouldRepassExecutionError()
-//            { 
-//                var failResult = Result
-//                    .Fail(new Error("some error")
-//                    .CausedBy(dataGenerator.System.Exception()));
+        [Fact]
+        public async Task GivenErrorWhenCreatingPermissionShouldReturnFailResult()
+        {
+            const string ERROR_MESSAGE = "some error";
 
-//                A.CallTo(() => googleDriveWrapper
-//                    .ExecuteAsync(permissionsRequest, cancellationToken))
-//                    .Returns(failResult);
+            A.CallTo(() => fixture
+                .Fake<GoogleDriveWrapper>()
+                .ExecuteAsync(fixture.Fake<CreateRequest>(), cancellationToken))
+                .Returns(Result.Fail(ERROR_MESSAGE));
 
-//                object result = await instance.GetDriverAccessPermissionsAsync(validEmailAddress, cancellationToken);
-//                result.Should().BeEquivalentTo(failResult);
-//            }
-//        }
+            var result = await service.CreatePublicReaderPermissionAsync(resourceId, cancellationToken);
 
-//        public class CreateBaseUserReaderPermissionAsync : GoogleDrivePermissionsServiceTests
-//        {
-//            private readonly string email;
-//            private readonly Result<Permission> expectedResponse;
+            result.Should().BeFailure().And.HaveError(ERROR_MESSAGE);
+        }
+    }
 
-//            public CreateBaseUserReaderPermissionAsync()
-//            {
-//                GoogleDriveSettingsService.BaseFolderId = dataGenerator.Random.Word();
-//                const string EXPECTED_PERMISSION_TYPE = "user";
-//                const string EXPECTED_PERMISSION_ROLE = "reader";
-//                var createRequest = A.Fake<CreateRequest>();
-//                expectedResponse = new Result<Permission>();
-//                email = dataGenerator.Person.Email.ToLower();
+    public class CreateUserReaderPermissionAsync : GoogleDrivePermissionsServiceTests
+    {
+        public static string email;
+        public static string resourceId;
 
-//                A.CallTo(() => driveService.Permissions
-//                    .Create(
-//                        A<Permission>.That.Matches(permission =>
-//                            permission.Type == EXPECTED_PERMISSION_TYPE &&
-//                            permission.Role == EXPECTED_PERMISSION_ROLE &&
-//                            permission.EmailAddress == email),
-//                        GoogleDriveSettingsService.BaseFolderId))
-//                    .Returns(createRequest);
+        public CreateUserReaderPermissionAsync()
+        {
+            email = fixture.Create<string>();
+            resourceId = fixture.Create<string>();
 
-//                A.CallTo(() => googleDriveWrapper
-//                    .ExecuteAsync(createRequest, cancellationToken))
-//                    .Returns(expectedResponse);
-//            }
+            A.CallTo(() => fixture
+                .Fake<PermissionsResource>()
+                .Create(A<Permission>.That.Matches(permission =>
+                    permission.Type == GoogleDrivePermissionsService.USER_PERMISSION_TYPE &&
+                    permission.Role == GoogleDrivePermissionsService.READER_ROLE &&
+                    permission.EmailAddress == email),
+                    resourceId))
+                .Returns(fixture.Fake<CreateRequest>());
+        }
 
-//            [Fact]
-//            public async Task ShouldReturnPermissionFolderResult()
-//            {
-//                var result = await instance.CreateBaseUserReaderPermissionAsync(email, cancellationToken);
-//                result.Should().BeSameAs(expectedResponse);
-//            }
-//        }
+        [Fact]
+        public async Task GivenSuccessfulExecutionShouldReturnSuccessResultAndPermissionData()
+        {
+            A.CallTo(() => fixture
+                .Fake<GoogleDriveWrapper>()
+                .ExecuteAsync(fixture.Fake<CreateRequest>(), cancellationToken))
+                .Returns(fixture.Fake<Permission>());
 
-//        public class DeleteBaseUserPermissionsAsync : GoogleDrivePermissionsServiceTests
-//        {
-//            public readonly IEnumerable<Permission> permissions;
+            var result = await service.CreateUserReaderPermissionAsync(email, resourceId, cancellationToken);
 
-//            public DeleteBaseUserPermissionsAsync()
-//            {
-//                GoogleDriveSettingsService.BaseFolderId = dataGenerator.Random.Word();
-//                permissions = new[]
-//                {
-//                    new Permission { Id = dataGenerator.Random.Word() },
-//                    new Permission { Id = dataGenerator.Random.Word() },
-//                    new Permission { Id = dataGenerator.Random.Word() }
-//                };
-//                var deleteRequest = A.Fake<DeleteRequest>();
-//                var deleteRequestResponse = Result.Ok("some value");
+            result.Should().BeSuccess().And.HaveValue(fixture.Fake<Permission>());
+        }
 
-//                A.CallTo(() => driveService.Permissions
-//                    .Delete(
-//                        GoogleDriveSettingsService.BaseFolderId,
-//                        A<string>.That.Matches(id => permissions.Any(x => x.Id == id))))
-//                    .Returns(deleteRequest);
+        [Fact]
+        public async Task GivenErrorWhenCreatingPermissionShouldReturnFailResult()
+        {
+            const string ERROR_MESSAGE = "some error";
 
-//                A.CallTo(() => googleDriveWrapper
-//                    .ExecuteAsync(deleteRequest, cancellationToken))
-//                    .Returns(deleteRequestResponse);
-//            }
+            A.CallTo(() => fixture
+                .Fake<GoogleDriveWrapper>()
+                .ExecuteAsync(fixture.Fake<CreateRequest>(), cancellationToken))
+                .Returns(Result.Fail(ERROR_MESSAGE));
 
-//            [Fact]
-//            public async Task ShouldDeletePermissionsAsExpected()
-//            {
-//                var result = await instance.DeleteBaseUserPermissionsAsync(permissions, cancellationToken);
-//                result.Should().BeSuccess();
-//            }
+            var result = await service.CreateUserReaderPermissionAsync(email, resourceId, cancellationToken);
 
-//            [Fact]
-//            public async Task ShouldBeAbleToDealWithMultipleFailures()
-//            {
-//                // A successful call is still made (permissions[1])
-//                var deleteRequestResponse1 = Result.Fail(new[] { "error1" });
-//                var deleteRequestResponse2 = Result.Fail(new[] { "error2", "another error" });
-//                var deleteRequest1 = A.Fake<DeleteRequest>();
-//                var deleteRequest2 = A.Fake<DeleteRequest>();
+            result.Should().BeFailure().And.HaveError(ERROR_MESSAGE);
+        }
+    }
 
-//                A.CallTo(() => driveService.Permissions
-//                    .Delete(
-//                        GoogleDriveSettingsService.BaseFolderId,
-//                        permissions.First().Id))
-//                    .Returns(deleteRequest1);
+    public class DeleteUserReaderPermissionsAsync : GoogleDrivePermissionsServiceTests
+    {
+        private readonly IEnumerable<Permission> permissions;
+        private readonly string resourceId;
 
-//                A.CallTo(() => driveService.Permissions
-//                    .Delete(
-//                        GoogleDriveSettingsService.BaseFolderId,
-//                        permissions.Last().Id))
-//                    .Returns(deleteRequest2);
+        public DeleteUserReaderPermissionsAsync()
+        {
+            permissions = fixture.CreateMany<Permission>(2);
+            resourceId = fixture.Create<string>();
 
-//                A.CallTo(() => googleDriveWrapper
-//                    .ExecuteAsync(deleteRequest1, cancellationToken))
-//                    .Returns(deleteRequestResponse1);
+            A.CallTo(() => fixture
+                .Fake<PermissionsResource>()
+                .Delete(resourceId, A<string>.That.Matches(permissionId => permissions.Select(x => x.Id).Contains(permissionId))))
+                .Returns(fixture.Fake<DeleteRequest>());
 
-//                A.CallTo(() => googleDriveWrapper
-//                    .ExecuteAsync(deleteRequest2, cancellationToken))
-//                    .Returns(deleteRequestResponse2);
+            A.CallTo(() => fixture
+                .Fake<GoogleDriveWrapper>()
+                .ExecuteAsync(fixture.Fake<DeleteRequest>(), cancellationToken))
+                .Returns(fixture.Create<string>());
+        }
 
-//                var result = await instance.DeleteBaseUserPermissionsAsync(permissions, cancellationToken);
-//                result.Should().BeFailure().And
-//                               .HaveError("error1").And
-//                               .HaveError("error2").And
-//                               .HaveError("another error");
-//            }
-//        }
-//    }
-//}
+        [Fact]
+        public async Task GivenSuccessfullExecutionForAllPermissionsShouldReturnSuccessResult()
+        {
+            var result = await service.DeleteUserReaderPermissionsAsync(permissions, resourceId, cancellationToken);
+
+            result.Should().BeSuccess();
+        }
+
+        [Fact]
+        public async Task GivenAnyErrorInExecutionShouldReturnFailResult()
+        {
+            const string ERROR_MESSAGE = "some error";
+
+            A.CallTo(() => fixture
+                .Fake<GoogleDriveWrapper>()
+                .ExecuteAsync(fixture.Fake<DeleteRequest>(), cancellationToken))
+                .ReturnsNextFromSequence(
+                    fixture.Create<string>(), 
+                    Result.Fail(ERROR_MESSAGE));
+
+            var result = await service.DeleteUserReaderPermissionsAsync(permissions, resourceId, cancellationToken);
+
+            result.Should().BeFailure().And.HaveError(ERROR_MESSAGE);
+        }
+
+        [Fact]
+        public async Task GivenMultipleErrorsInExecutionShouldReturnFailResultAndAllDetails()
+        {
+            const string FIRST_ERROR_MESSAGE = "first error";
+            const string SECOND_ERROR_MESSAGE = "second error";
+
+            A.CallTo(() => fixture
+                .Fake<GoogleDriveWrapper>()
+                .ExecuteAsync(fixture.Fake<DeleteRequest>(), cancellationToken))
+                .ReturnsNextFromSequence(
+                    Result.Fail(FIRST_ERROR_MESSAGE), 
+                    Result.Fail(SECOND_ERROR_MESSAGE));
+
+            var result = await service.DeleteUserReaderPermissionsAsync(permissions, resourceId, cancellationToken);
+
+            result.Should().BeFailure().And
+                .HaveError(FIRST_ERROR_MESSAGE).And
+                .HaveError(SECOND_ERROR_MESSAGE);
+        }
+    }
+}

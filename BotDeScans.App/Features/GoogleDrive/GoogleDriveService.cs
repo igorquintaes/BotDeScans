@@ -121,11 +121,11 @@ public class GoogleDriveService(
         string email,
         CancellationToken cancellationToken = default)
     {
-        var getPermissionsResult = await googleDrivePermissionsService.GetDriverAccessPermissionsAsync(email, cancellationToken);
+        var getPermissionsResult = await googleDrivePermissionsService.GetUserPermissionsAsync(email, GoogleDriveSettingsService.BaseFolderId, cancellationToken);
         if (getPermissionsResult.IsFailed || getPermissionsResult.Value.Any())
             return getPermissionsResult.ToResult();
 
-        var setPermissionResult = await googleDrivePermissionsService.CreateBaseUserReaderPermissionAsync(email, cancellationToken);
+        var setPermissionResult = await googleDrivePermissionsService.CreateUserReaderPermissionAsync(email, GoogleDriveSettingsService.BaseFolderId, cancellationToken);
         return setPermissionResult.ToResult();
     }
 
@@ -133,10 +133,10 @@ public class GoogleDriveService(
         string email,
         CancellationToken cancellationToken = default)
     {
-        var getPermissionsResult = await googleDrivePermissionsService.GetDriverAccessPermissionsAsync(email, cancellationToken);
+        var getPermissionsResult = await googleDrivePermissionsService.GetUserPermissionsAsync(email, GoogleDriveSettingsService.BaseFolderId, cancellationToken);
         if (getPermissionsResult.IsFailed)
             return getPermissionsResult.ToResult();
 
-        return await googleDrivePermissionsService.DeleteBaseUserPermissionsAsync(getPermissionsResult.Value, cancellationToken);
+        return await googleDrivePermissionsService.DeleteUserReaderPermissionsAsync(getPermissionsResult.Value, GoogleDriveSettingsService.BaseFolderId, cancellationToken);
     }
 }
