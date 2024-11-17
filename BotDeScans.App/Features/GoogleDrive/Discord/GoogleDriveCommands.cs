@@ -105,18 +105,12 @@ public class GoogleDriveCommands(
 #if DEBUG
     [Group("debug")]
     [ExcludeFromCodeCoverage(Justification = "Live Discord testing and debug.")]
-    public class GoogleDriveDebugCommands : CommandGroup
+    public class GoogleDriveDebugCommands(
+        GoogleDriveService googleDriveService,
+        ExtendedFeedbackService feedbackService) : CommandGroup
     {
-        private readonly GoogleDriveService googleDriveService;
-        private readonly ExtendedFeedbackService feedbackService;
-
-        public GoogleDriveDebugCommands(
-            GoogleDriveService googleDriveService,
-            ExtendedFeedbackService feedbackService)
-        {
-            this.googleDriveService = googleDriveService;
-            this.feedbackService = feedbackService;
-        }
+        private readonly GoogleDriveService googleDriveService = googleDriveService;
+        private readonly ExtendedFeedbackService feedbackService = feedbackService;
 
         [Command("download-files")]
         [RoleAuthorize("Staff")]

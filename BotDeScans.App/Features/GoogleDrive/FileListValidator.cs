@@ -2,9 +2,10 @@
 using FluentValidation;
 using Google.Apis.Drive.v3.Data;
 using System.Globalization;
+using File = Google.Apis.Drive.v3.Data.File;
 namespace BotDeScans.App.Features.GoogleDrive;
 
-public class FileListValidator : AbstractValidator<FileList>
+public class FileListValidator : AbstractValidator<IList<File>>
 {
     public FileListValidator() 
     {
@@ -47,98 +48,87 @@ public class FileListValidator : AbstractValidator<FileList>
             .WithMessage("O nome dos arquivos das páginas precisa ser escrito de modo que todos tenham o mesmo tamanho (dica: use zero à esqueda).");
     }
 
-    private static bool ShouldHaveOnlyFiles(FileList fileList) =>
-        fileList.Files
-            .All(x => x.Kind == "drive#file");
+    private static bool ShouldHaveOnlyFiles(IList<File> files) =>
+        files.All(x => x.Kind == "drive#file");
 
-    private static bool ShouldHaveExactlyOneCoverFile(FileList fileList) =>
-        fileList.Files
-            .Where(x => x.Kind == "drive#file")
-            .Count(x => FileReleaseService.ValidCoverFiles.Contains(x.Name, StringComparer.InvariantCulture))
-             == 1;
+    private static bool ShouldHaveExactlyOneCoverFile(IList<File> files) =>
+        files.Where(x => x.Kind == "drive#file")
+             .Count(x => FileReleaseService.ValidCoverFiles.Contains(x.Name, StringComparer.InvariantCulture))
+              == 1;
 
-    private static bool ShouldHaveExactlyOneCreditsFile(FileList fileList) =>
-        fileList.Files
-            .Where(x => x.Kind == "drive#file")
-            .Count(x => FileReleaseService.ValidCreditsFiles.Contains(x.Name, StringComparer.InvariantCulture))
-             == 1;
+    private static bool ShouldHaveExactlyOneCreditsFile(IList<File> files) =>
+        files.Where(x => x.Kind == "drive#file")
+             .Count(x => FileReleaseService.ValidCreditsFiles.Contains(x.Name, StringComparer.InvariantCulture))
+              == 1;
 
-    private static bool ShouldHaveOnlySupportedFileExtensions(FileList fileList) =>
-        fileList.Files
-            .Where(x => x.Kind == "drive#file")
-            .All(x => FileReleaseService.ValidReleaseImageExtensions.Any(y => x
-            .Name.EndsWith(y, StringComparison.InvariantCultureIgnoreCase)));
+    private static bool ShouldHaveOnlySupportedFileExtensions(IList<File> files) =>
+        files.Where(x => x.Kind == "drive#file")
+             .All(x => FileReleaseService.ValidReleaseImageExtensions.Any(y => x
+             .Name.EndsWith(y, StringComparison.InvariantCultureIgnoreCase)));
 
-    private static bool ShouldNotHaveAnyTextPageThanCoverAndCredits(FileList fileList) =>
-        fileList.Files
-            .Where(x => x.Kind == "drive#file")
-            .Select(x => x.Name)
-            .Where(x => !FileReleaseService.ValidCoverFiles.Contains(x, StringComparer.InvariantCultureIgnoreCase))
-            .Where(x => !FileReleaseService.ValidCreditsFiles.Contains(x, StringComparer.InvariantCultureIgnoreCase))
-            .Select(x => Path.GetFileNameWithoutExtension(x))
-            .SelectMany(x => SplitDoublePages(x))
-            .All(x => int.TryParse(x, out var _));
+    private static bool ShouldNotHaveAnyTextPageThanCoverAndCredits(IList<File> files) =>
+        files.Where(x => x.Kind == "drive#file")
+             .Select(x => x.Name)
+             .Where(x => !FileReleaseService.ValidCoverFiles.Contains(x, StringComparer.InvariantCultureIgnoreCase))
+             .Where(x => !FileReleaseService.ValidCreditsFiles.Contains(x, StringComparer.InvariantCultureIgnoreCase))
+             .Select(x => Path.GetFileNameWithoutExtension(x))
+             .SelectMany(x => SplitDoublePages(x))
+             .All(x => int.TryParse(x, out var _));
 
-    private static bool ShouldStartInPageOne(FileList fileList) =>
-         fileList.Files
-            .Where(x => x.Kind == "drive#file")
-            .Select(x => x.Name)
-            .Where(x => !FileReleaseService.ValidCoverFiles.Contains(x, StringComparer.InvariantCultureIgnoreCase))
-            .Where(x => !FileReleaseService.ValidCreditsFiles.Contains(x, StringComparer.InvariantCultureIgnoreCase))
-            .Select(x => Path.GetFileNameWithoutExtension(x))
-            .SelectMany(x => SplitDoublePages(x))
-            .Select(x => int.TryParse(x, out var intResult)
-                ? intResult
-                : int.MaxValue)
-            .OrderBy(x => x)
-            .First() == 1;
+    private static bool ShouldStartInPageOne(IList<File> files) =>
+        files.Where(x => x.Kind == "drive#file")
+             .Select(x => x.Name)
+             .Where(x => !FileReleaseService.ValidCoverFiles.Contains(x, StringComparer.InvariantCultureIgnoreCase))
+             .Where(x => !FileReleaseService.ValidCreditsFiles.Contains(x, StringComparer.InvariantCultureIgnoreCase))
+             .Select(x => Path.GetFileNameWithoutExtension(x))
+             .SelectMany(x => SplitDoublePages(x))
+             .Select(x => int.TryParse(x, out var intResult) ? intResult : int.MaxValue)
+             .OrderBy(x => x)
+             .First() == 1;
 
-    private static bool ShouldHaveOrderedDoublePages(FileList fileList) =>
-         fileList.Files
-            .Where(x => x.Kind == "drive#file")
-            .Where(x => x.Name.Contains('-'))
-            .Select(x => x.Name)
-            .Where(x => !FileReleaseService.ValidCoverFiles.Contains(x, StringComparer.InvariantCultureIgnoreCase))
-            .Where(x => !FileReleaseService.ValidCreditsFiles.Contains(x, StringComparer.InvariantCultureIgnoreCase))
-            .Select(x => Path.GetFileNameWithoutExtension(x))
-            .Select(x => SplitDoublePages(x).ToList())
-            .All(x => x.Count == 2
-                  && int.TryParse(x[0], out var firstValue)
-                  && int.TryParse(x[1], out var lastValue)
-                  && firstValue + 1 == lastValue);
+    private static bool ShouldHaveOrderedDoublePages(IList<File> files) =>
+         files.Where(x => x.Kind == "drive#file")
+              .Where(x => x.Name.Contains('-'))
+              .Select(x => x.Name)
+              .Where(x => !FileReleaseService.ValidCoverFiles.Contains(x, StringComparer.InvariantCultureIgnoreCase))
+              .Where(x => !FileReleaseService.ValidCreditsFiles.Contains(x, StringComparer.InvariantCultureIgnoreCase))
+              .Select(x => Path.GetFileNameWithoutExtension(x))
+              .Select(x => SplitDoublePages(x).ToList())
+              .All(x => x.Count == 2
+                     && int.TryParse(x[0], out var firstValue)
+                     && int.TryParse(x[1], out var lastValue)
+                     && firstValue + 1 == lastValue);
 
-    private static bool ShouldHaveNotAnySkippedPage(FileList fileList)
+    private static bool ShouldHaveNotAnySkippedPage(IList<File> files)
     {
-        var filesNameAsNumber = FilesNameAsNumber(fileList);
+        var filesNameAsNumber = FilesNameAsNumber(files);
         return filesNameAsNumber
             .Zip(filesNameAsNumber.Skip(1), (curr, next) => curr + 1 == next)
             .All(x => x);
     }
 
-    private static bool ShouldHaveSamePageLength(FileList fileList) =>
-         fileList.Files
-            .Where(x => x.Kind == "drive#file")
-            .Select(x => x.Name)
-            .Where(x => !FileReleaseService.ValidCoverFiles.Contains(x, StringComparer.InvariantCultureIgnoreCase))
-            .Where(x => !FileReleaseService.ValidCreditsFiles.Contains(x, StringComparer.InvariantCultureIgnoreCase))
-            .Select(x => Path.GetFileNameWithoutExtension(x))
-            .SelectMany(x => SplitDoublePages(x))
-            .GroupBy(x => x.Length)
-            .Count() == 1;
+    private static bool ShouldHaveSamePageLength(IList<File> files) =>
+        files.Where(x => x.Kind == "drive#file")
+             .Select(x => x.Name)
+             .Where(x => !FileReleaseService.ValidCoverFiles.Contains(x, StringComparer.InvariantCultureIgnoreCase))
+             .Where(x => !FileReleaseService.ValidCreditsFiles.Contains(x, StringComparer.InvariantCultureIgnoreCase))
+             .Select(x => Path.GetFileNameWithoutExtension(x))
+             .SelectMany(x => SplitDoublePages(x))
+             .GroupBy(x => x.Length)
+             .Count() == 1;
 
-    private static IOrderedEnumerable<int> FilesNameAsNumber(FileList fileList) =>
-        fileList.Files
-            .Where(x => x.Kind == "drive#file")
-            .Select(x => x.Name)
-            .Where(x => !FileReleaseService.ValidCoverFiles.Contains(x, StringComparer.InvariantCultureIgnoreCase))
-            .Where(x => !FileReleaseService.ValidCreditsFiles.Contains(x, StringComparer.InvariantCultureIgnoreCase))
-            .Select(x => Path.GetFileNameWithoutExtension(x))
-            .SelectMany(x => SplitDoublePages(x))
-            .Select(x => int.TryParse(x, NumberStyles.Integer, CultureInfo.InvariantCulture, out var intResult)
-                ? intResult
-                : int.MaxValue)
-            .Where(x => x != int.MaxValue)
-            .OrderBy(x => x);
+    private static IOrderedEnumerable<int> FilesNameAsNumber(IList<File> files) =>
+        files.Where(x => x.Kind == "drive#file")
+             .Select(x => x.Name)
+             .Where(x => !FileReleaseService.ValidCoverFiles.Contains(x, StringComparer.InvariantCultureIgnoreCase))
+             .Where(x => !FileReleaseService.ValidCreditsFiles.Contains(x, StringComparer.InvariantCultureIgnoreCase))
+             .Select(x => Path.GetFileNameWithoutExtension(x))
+             .SelectMany(x => SplitDoublePages(x))
+             .Select(x => int.TryParse(x, NumberStyles.Integer, CultureInfo.InvariantCulture, out var intResult)
+                 ? intResult
+                 : int.MaxValue)
+             .Where(x => x != int.MaxValue)
+             .OrderBy(x => x);
 
     private static string[] SplitDoublePages(string pageName)
     {

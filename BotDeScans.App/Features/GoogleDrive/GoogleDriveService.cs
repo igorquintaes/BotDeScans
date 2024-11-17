@@ -3,7 +3,6 @@ using BotDeScans.App.Features.GoogleDrive.InternalServices;
 using BotDeScans.App.Services;
 using FluentResults;
 using FluentValidation;
-using Google.Apis.Drive.v3.Data;
 using Microsoft.Extensions.Configuration;
 using System.Collections.Concurrent;
 using File = Google.Apis.Drive.v3.Data.File;
@@ -15,7 +14,7 @@ public class GoogleDriveService(
     GoogleDriveFoldersService googleDriveFoldersService,
     GoogleDriveResourcesService googleDriveResourcesService,
     GoogleDrivePermissionsService googleDrivePermissionsService,
-    IValidator<FileList> validator,
+    IValidator<IList<File>> validator,
     IConfiguration configuration)
 {
     public async Task<Result<File>> GetOrCreateFolderAsync(
@@ -40,7 +39,7 @@ public class GoogleDriveService(
         CancellationToken cancellationToken = default)
     {
         var fileName = Path.GetFileName(filePath);
-        var fileResult = await googleDriveFilesService.GetFileAsync(fileName, parentId, cancellationToken);
+        var fileResult = await googleDriveFilesService.GetAsync(fileName, parentId, cancellationToken);
         if (fileResult.IsFailed)
             return fileResult.ToResult();
 
@@ -51,10 +50,10 @@ public class GoogleDriveService(
             if (rewriteFile is false)
                 return Result.Fail($"Já existe um arquivo com o nome especificado. Se desejar sobrescrever o arquivo existente, altere a configuração {rewriteKey} para permitir.");
 
-            return await googleDriveFilesService.UpdateFileAsync(filePath, fileResult.Value!.Id, cancellationToken);
+            return await googleDriveFilesService.UpdateAsync(filePath, fileResult.Value!.Id, cancellationToken);
         }
 
-        return await googleDriveFilesService.UploadFileAsync(filePath, parentId, publicAccess, cancellationToken);
+        return await googleDriveFilesService.UploadAsync(filePath, parentId, publicAccess, cancellationToken);
     }
 
     public async Task<Result> DeleteFileByNameAndParentNameAsync(
@@ -68,7 +67,7 @@ public class GoogleDriveService(
                 conditionToAddError: () => folderResult.IsSuccess,
                 error: "Não foi encontrada uma pasta com o nome especificado.");
 
-        var fileResult = await googleDriveFilesService.GetFileAsync(fileName, folderResult.Value.Id, cancellationToken);
+        var fileResult = await googleDriveFilesService.GetAsync(fileName, folderResult.Value.Id, cancellationToken);
         if (fileResult.IsFailed || fileResult.Value is null)
             return fileResult.ToResult().WithConditionalError(
                 conditionToAddError: () => fileResult.IsSuccess,
@@ -86,14 +85,14 @@ public class GoogleDriveService(
         if (!extractionService.TryExtractGoogleDriveIdFromLink(link, out var folderId))
             return Result.Fail("O link informado é inválido.");
 
-        var fileList = await googleDriveFilesService.GetFilesFromFolderAsync(folderId, cancellationToken);
+        var fileList = await googleDriveFilesService.GetManyAsync(folderId, cancellationToken);
         if (fileList.IsFailed)
             return fileList.ToResult();
 
         var errors = new ConcurrentBag<IError>();
-        await Parallel.ForEachAsync(fileList.Value.Files, cancellationToken, async (file, ct) =>
+        await Parallel.ForEachAsync(fileList.Value, cancellationToken, async (file, ct) =>
         {
-            var downloadResult = await googleDriveFilesService.DownloadFileAsync(
+            var downloadResult = await googleDriveFilesService.DownloadAsync(
                 file, directory, cancellationToken);
 
             foreach (var error in downloadResult.Errors)
@@ -110,7 +109,7 @@ public class GoogleDriveService(
         if (!extractionService.TryExtractGoogleDriveIdFromLink(link, out var folderId))
             return Result.Fail("O link informado é inválido.");
 
-        var fileListResult = await googleDriveFilesService.GetFilesFromFolderAsync(folderId, cancellationToken);
+        var fileListResult = await googleDriveFilesService.GetManyAsync(folderId, cancellationToken);
         if (fileListResult.IsFailed)
             return fileListResult.ToResult();
 

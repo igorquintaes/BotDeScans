@@ -35,6 +35,8 @@ public class GoogleDriveResourcesServiceTests : UnitTest,  IDisposable
             .Fake<DriveService>().Files)
             .Returns(fixture.Fake<FilesResource>());
 
+        GoogleDriveSettingsService.BaseFolderId = fixture.Create<string>();
+
         service = fixture.Create<GoogleDriveResourcesService>();
     }
 
@@ -44,11 +46,11 @@ public class GoogleDriveResourcesServiceTests : UnitTest,  IDisposable
         GC.SuppressFinalize(this);
     }
 
-    public class GetResourceByNameAsync : GoogleDriveResourcesServiceTests
+    public class GetResourcesAsync : GoogleDriveResourcesServiceTests
     {
-        public GetResourceByNameAsync()
+        public GetResourcesAsync()
         {
-            fixture.Inject<List<File>>([new File()]);
+            fixture.Inject<List<File>>([new File(), new File()]);
 
             A.CallTo(() => fixture
                 .Fake<FilesResource>().List())
@@ -68,34 +70,40 @@ public class GoogleDriveResourcesServiceTests : UnitTest,  IDisposable
         [Fact]
         public async Task GivenExecutionShouldReturnSuccessResultWithExpectedData()
         {
-            var expectedResult = fixture.Create<List<File>>().Single();
-            var result = await service.GetResourceByNameAsync(
-                fixture.Create<string>(),
-                fixture.Create<string>(),
-                fixture.Create<string>(),
+            var expectedResult = fixture.Create<List<File>>();
+            var result = await service.GetResourcesAsync(
+                mimeType: default,
+                forbiddenMimeType: default,
+                name: default,
+                parentId: default,
+                minResult: default,
+                maxResult: default,
                 cancellationToken);
 
             result.Should().BeSuccess().And.HaveValue(expectedResult);
         }
 
         [Fact]
-        public async Task GivenNoneFileFoundShouldReturnSuccessResultWithNullData()
+        public async Task GivenNoneFileFoundShouldReturnSuccessResultWithEmptyData()
         {
             var files = new List<File>();
             A.CallTo(() => fixture
                 .Fake<FileList>().Files)
                 .Returns(files);
 
-            var result = await service.GetResourceByNameAsync(
-                fixture.Create<string>(),
-                fixture.Create<string>(),
-                fixture.Create<string>(),
+            var result = await service.GetResourcesAsync(
+                mimeType: default,
+                forbiddenMimeType: default,
+                name: default,
+                parentId: default,
+                minResult: default,
+                maxResult: default,
                 cancellationToken);
 
             using (new AssertionScope())
             {
                 result.Should().BeSuccess();
-                result.Value.Should().BeNull();
+                result.Value.Should().BeEmpty();
             }
         }
 
@@ -108,79 +116,129 @@ public class GoogleDriveResourcesServiceTests : UnitTest,  IDisposable
                     cancellationToken))
                 .Returns(Result.Fail("some error"));
 
-            var result = await service.GetResourceByNameAsync(
-                fixture.Create<string>(),
-                fixture.Create<string>(),
-                fixture.Create<string>(),
+            var result = await service.GetResourcesAsync(
+                mimeType: default,
+                forbiddenMimeType: default,
+                name: default,
+                parentId: default,
+                minResult: default,
+                maxResult: default,
                 cancellationToken);
 
             result.Should().BeFailure().And.HaveError("some error");
         }
 
         [Fact]
-        public async Task GivenMultipleFilesReturnShouldReturnFailResult()
+        public async Task GivenMoreThanMaxExpectedFilesShouldReturnFailResult()
         {
+            const int maxResult = 1;
             var files = new List<File> { new File(), new File() };
             A.CallTo(() => fixture
                 .Fake<FileList>().Files)
                 .Returns(files);
 
-            var result = await service.GetResourceByNameAsync(
-                fixture.Create<string>(),
-                fixture.Create<string>(),
-                fixture.Create<string>(),
+            var result = await service.GetResourcesAsync(
+                mimeType: default,
+                forbiddenMimeType: default,
+                name: default,
+                parentId: default,
+                minResult: default,
+                maxResult: maxResult,
                 cancellationToken);
 
-            result.Should().BeFailure().And.HaveError("Foi encontrado mais de um recurso para os dados mencionados, quando era esperado apenas um.");
+            result.Should().BeFailure().And.HaveError($"Foi encontrado mais de um recurso para os dados mencionados, quando era esperado no máximo {maxResult}.");
+        }
+
+        [Fact]
+        public async Task GivenLessThanMinExpectedFilesShouldReturnFailResult()
+        {
+            const int minResult = 2;
+            var files = new List<File> { new File() };
+            A.CallTo(() => fixture
+                .Fake<FileList>().Files)
+                .Returns(files);
+
+            var result = await service.GetResourcesAsync(
+                mimeType: default,
+                forbiddenMimeType: default,
+                name: default,
+                parentId: default,
+                minResult: minResult,
+                maxResult: default,
+                cancellationToken);
+
+            result.Should().BeFailure().And.HaveError($"Foi encontrado mais de um recurso para os dados mencionados, quando era esperado no mínimo {minResult}.");
         }
 
         [Fact]
         public async Task ShouldWriteExpectedQueryWithCustomParentId()
         {
-            const int EXPECTED_PAGE_SIZE = 2;
-            const string EXPECTED_QUERY_FORMAT = @"
-                mimeType = '{0}'
-                and name = '{1}' 
-                and trashed = false
-                and '{2}' in parents";
+            const string EXPECTED_QUERY_FORMAT = @"trashed = false and '{1}' in parents";
 
             var mimeType = fixture.Create<string>();
-            var name = fixture.Create<string>();
             var parentId = fixture.Create<string>();
-            var expectedQuery = string.Format(EXPECTED_QUERY_FORMAT, mimeType, name, parentId);
+            var expectedQuery = string.Format(EXPECTED_QUERY_FORMAT, mimeType, parentId);
 
-            await service.GetResourceByNameAsync(mimeType, name, parentId, cancellationToken);
+            await service.GetResourcesAsync(
+                mimeType: default,
+                forbiddenMimeType: default,
+                name: default, 
+                parentId,
+                minResult: default,
+                maxResult: default, 
+                cancellationToken);
 
-            using (new AssertionScope())
-            {
-                fixture.Freeze<ListRequest>().PageSize.Should().Be(EXPECTED_PAGE_SIZE);
-                fixture.Freeze<ListRequest>().Q.Should().Be(expectedQuery);
-            }
+            fixture.Freeze<ListRequest>().Q.Should().Be(expectedQuery);
         }
 
         [Fact]
         public async Task ShouldWriteExpectedQueryWithRootParentId()
         {
-            const int EXPECTED_PAGE_SIZE = 2;
-            const string EXPECTED_QUERY_FORMAT = @"
-                mimeType = '{0}'
-                and name = '{1}' 
-                and trashed = false
-                and '{2}' in parents";
+            const string EXPECTED_QUERY_FORMAT = @"trashed = false and '{1}' in parents";
+
+            var mimeType = fixture.Create<string>();
+            var parentId = fixture.Create<string>();
+            var expectedQuery = string.Format(
+                EXPECTED_QUERY_FORMAT, 
+                mimeType, 
+                GoogleDriveSettingsService.BaseFolderId);
+
+            await service.GetResourcesAsync(
+                mimeType: default,
+                forbiddenMimeType: default,
+                name: default,
+                parentId: default,
+                minResult: default,
+                maxResult: default, 
+                cancellationToken);
+
+                fixture.Freeze<ListRequest>().Q.Should().Be(expectedQuery);
+        }
+
+        [Fact]
+        public async Task ShouldWriteExpectedQueryWithResourceName()
+        {
+            const string EXPECTED_QUERY_FORMAT = @"trashed = false and name = '{1}' and '{2}' in parents";
 
             var mimeType = fixture.Create<string>();
             var name = fixture.Create<string>();
             var parentId = fixture.Create<string>();
-            var expectedQuery = string.Format(EXPECTED_QUERY_FORMAT, mimeType, name, parentId);
-            GoogleDriveSettingsService.BaseFolderId = parentId;
+            var expectedQuery = string.Format(
+                EXPECTED_QUERY_FORMAT, 
+                mimeType, 
+                name, 
+                GoogleDriveSettingsService.BaseFolderId);
 
-            await service.GetResourceByNameAsync(mimeType, name, null, cancellationToken);
+            await service.GetResourcesAsync(
+                mimeType: default,
+                forbiddenMimeType: default,
+                name: name,
+                parentId: default,
+                minResult: default,
+                maxResult: default,
+                cancellationToken);
 
-            using (new AssertionScope())
-            {
-                fixture.Freeze<ListRequest>().PageSize.Should().Be(EXPECTED_PAGE_SIZE);
-                fixture.Freeze<ListRequest>().Q.Should().Be(expectedQuery);
-            }
+            fixture.Freeze<ListRequest>().Q.Should().Be(expectedQuery);
         }
     }
 
@@ -209,7 +267,6 @@ public class GoogleDriveResourcesServiceTests : UnitTest,  IDisposable
         {
             var mimeType = fixture.Create<string>();
             var name = fixture.Create<string>();
-            GoogleDriveSettingsService.BaseFolderId = fixture.Create<string>();
 
             var expectedResult = new
             {

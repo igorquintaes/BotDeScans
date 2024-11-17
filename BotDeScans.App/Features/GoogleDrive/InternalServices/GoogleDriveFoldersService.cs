@@ -11,15 +11,25 @@ public class GoogleDriveFoldersService(
 {
     public const string FOLDER_MIMETYPE = "application/vnd.google-apps.folder";
 
-    public virtual Task<Result<File?>> GetFolderAsync(
+    public virtual async Task<Result<File?>> GetFolderAsync(
         string folderName,
         string? parentId,
-        CancellationToken cancellationToken = default) =>
-            googleDriveResourcesService.GetResourceByNameAsync(
-                FOLDER_MIMETYPE,
-                folderName,
-                parentId,
-                cancellationToken);
+        CancellationToken cancellationToken = default)
+    {
+        var resourcesResult = await googleDriveResourcesService.GetResourcesAsync(
+            mimeType: FOLDER_MIMETYPE,
+            forbiddenMimeType: default,
+            name: folderName,
+            parentId: parentId,
+            minResult: default,
+            maxResult: 1,
+            cancellationToken);
+
+        if (resourcesResult.IsFailed)
+            return resourcesResult.ToResult();
+
+        return resourcesResult.Value.SingleOrDefault();
+    }
 
     public virtual async Task<Result<File?>> GetFolderByIdAsync(
         string folderId,
