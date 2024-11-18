@@ -22,11 +22,15 @@ public class GoogleDriveCommands(
     [Command("verify-url")]
     [RoleAuthorize("Staff")]
     [Description("Verifica se a url contém ou não erros para publicação")]
-    public async Task<IResult> VerifyUrl(string link)
+    public async Task<IResult> VerifyUrl(string url)
     {
-        var result = await googleDriveService.ValidateFilesFromLinkAsync(link);
-        if (result.IsFailed)
-            return await result.PostErrorOnDiscord(feedbackService, CancellationToken);
+        var folderIdResult = googleDriveService.GetFolderIdFromUrl(url);
+        if (folderIdResult.IsFailed)
+            return await folderIdResult.PostErrorOnDiscord(feedbackService, CancellationToken);
+
+        var validationResult = await googleDriveService.ValidateFilesAsync(folderIdResult.Value, CancellationToken);
+        if (validationResult.IsFailed)
+            return await validationResult.PostErrorOnDiscord(feedbackService, CancellationToken);
 
         var successEmbed = EmbedBuilder.CreateSuccessEmbed("Os arquivos do link estão de acordo com as regras de publicação!");
         return await feedbackService.SendContextualEmbedAsync(successEmbed, ct: CancellationToken);
@@ -117,12 +121,21 @@ public class GoogleDriveCommands(
         [Description("Baixa imagens do Google Drive")]
         public async Task<IResult> DownloadFiles(string url)
         {
-            var accessResult = await googleDriveService.SaveFilesFromLinkAsync(url, Directory.GetCurrentDirectory());
-            var embed = accessResult.IsSuccess
-                ? EmbedBuilder.CreateSuccessEmbed($"Deu bom!")
-                : EmbedBuilder.CreateErrorEmbed(accessResult);
+            var folderIdResult = googleDriveService.GetFolderIdFromUrl(url);
+            if (folderIdResult.IsFailed)
+                return await feedbackService.SendContextualEmbedAsync(
+                    EmbedBuilder.CreateErrorEmbed(folderIdResult),
+                    ct: CancellationToken);
 
-            return await feedbackService.SendContextualEmbedAsync(embed, ct: CancellationToken);
+            var downloadResult = await googleDriveService.SaveFilesAsync(folderIdResult.Value, Directory.GetCurrentDirectory(), CancellationToken);
+            if (downloadResult.IsFailed)
+                return await feedbackService.SendContextualEmbedAsync(
+                    EmbedBuilder.CreateErrorEmbed(downloadResult),
+                    ct: CancellationToken);
+
+            return await feedbackService.SendContextualEmbedAsync(
+                EmbedBuilder.CreateSuccessEmbed($"Funcionando."), 
+                ct: CancellationToken);
         }
 
         [Command("upload-files")]
@@ -143,7 +156,7 @@ public class GoogleDriveCommands(
                 CancellationToken);
 
             var embed = createFileResult.IsSuccess
-                ? EmbedBuilder.CreateSuccessEmbed($"Deu bom!")
+                ? EmbedBuilder.CreateSuccessEmbed($"Funcionando.")
                 : EmbedBuilder.CreateErrorEmbed(createFileResult);
 
             return await feedbackService.SendContextualEmbedAsync(embed, ct: CancellationToken);

@@ -23,7 +23,6 @@ internal static class AddDependencies
         .AddLoggingServices()
         .AddWrappers()
         .AddSingleton<ChartService>()
-        .AddSingleton<ExtractionService>()
         .AddSingleton<FileService>()
         .AddSingleton<ImageService>()
         .AddSingleton<StepsService>()

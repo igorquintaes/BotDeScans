@@ -11,7 +11,7 @@ public class GoogleDriveFoldersService(
 {
     public const string FOLDER_MIMETYPE = "application/vnd.google-apps.folder";
 
-    public virtual async Task<Result<File?>> GetFolderAsync(
+    public virtual async Task<Result<File?>> GetAsync(
         string folderName,
         string? parentId,
         CancellationToken cancellationToken)
@@ -31,7 +31,7 @@ public class GoogleDriveFoldersService(
         return resourcesResult.Value.SingleOrDefault();
     }
 
-    public virtual Task<Result<File>> CreateFolderAsync(
+    public virtual Task<Result<File>> CreateAsync(
         string folderName,
         string? parentId,
         CancellationToken cancellationToken)

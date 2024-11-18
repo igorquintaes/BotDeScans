@@ -13,7 +13,7 @@ public class DownloadStep(
     public StepType StepType => StepType.Management;
 
     public async Task<Result> ValidateBeforeFilesManagementAsync(CancellationToken cancellationToken)
-        => await googleDriveService.ValidateFilesFromLinkAsync(state.Info.Link, cancellationToken);
+        => await googleDriveService.ValidateFilesAsync(state.Info.Link, cancellationToken);
 
     public Task<Result> ValidateAfterFilesManagementAsync(CancellationToken _)
         => Task.FromResult(Result.Ok());
@@ -25,8 +25,12 @@ public class DownloadStep(
 
         state.InternalData.OriginContentFolder = fileReleaseService.CreateScopedDirectory();
 
-        var saveFilesResult = await googleDriveService.SaveFilesFromLinkAsync(
-            state.Info.Link,
+        var folderIdResult = googleDriveService.GetFolderIdFromUrl(state.Info.Link);
+        if (folderIdResult.IsFailed)
+            return folderIdResult.ToResult();
+
+        var saveFilesResult = await googleDriveService.SaveFilesAsync(
+            folderIdResult.Value,
             state.InternalData.OriginContentFolder,
             cancellationToken);
 

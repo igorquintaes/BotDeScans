@@ -9,7 +9,6 @@ using File = Google.Apis.Drive.v3.Data.File;
 namespace BotDeScans.App.Features.GoogleDrive;
 
 public class GoogleDriveService(
-    ExtractionService extractionService,
     GoogleDriveFilesService googleDriveFilesService,
     GoogleDriveFoldersService googleDriveFoldersService,
     GoogleDriveResourcesService googleDriveResourcesService,
@@ -17,26 +16,28 @@ public class GoogleDriveService(
     IValidator<IList<File>> validator,
     IConfiguration configuration)
 {
+    public const string REWRITE_KEY = "GoogleDrive:RewriteExistingFile";
+
     public async Task<Result<File>> GetOrCreateFolderAsync(
         string folderName,
         string? parentId,
-        CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken)
     {
-        var folderResult = await googleDriveFoldersService.GetFolderAsync(folderName, parentId, cancellationToken);
+        var folderResult = await googleDriveFoldersService.GetAsync(folderName, parentId, cancellationToken);
         if (folderResult.IsFailed)
             return folderResult.ToResult<File>();
 
         if (folderResult.ValueOrDefault is not null)
             return folderResult.ToResult(_ => folderResult.Value!);
 
-        return await googleDriveFoldersService.CreateFolderAsync(folderName, parentId, cancellationToken);
+        return await googleDriveFoldersService.CreateAsync(folderName, parentId, cancellationToken);
     }
 
     public async Task<Result<File>> CreateFileAsync(
         string filePath,
         string parentId,
         bool publicAccess,
-        CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken)
     {
         var fileName = Path.GetFileName(filePath);
         var fileResult = await googleDriveFilesService.GetAsync(fileName, parentId, cancellationToken);
@@ -45,10 +46,9 @@ public class GoogleDriveService(
 
         if (fileResult.ValueOrDefault is not null)
         {
-            const string rewriteKey = "GoogleDrive:RewriteExistingFile";
-            var rewriteFile = configuration.GetValue<bool?>(rewriteKey) ?? false;
+            var rewriteFile = configuration.GetValue<bool?>(REWRITE_KEY) ?? false;
             if (rewriteFile is false)
-                return Result.Fail($"Já existe um arquivo com o nome especificado. Se desejar sobrescrever o arquivo existente, altere a configuração {rewriteKey} para permitir.");
+                return Result.Fail($"Já existe um arquivo com o nome especificado. Se desejar sobrescrever o arquivo existente, altere a configuração {REWRITE_KEY} para permitir.");
 
             return await googleDriveFilesService.UpdateAsync(filePath, fileResult.Value!.Id, cancellationToken);
         }
@@ -58,10 +58,10 @@ public class GoogleDriveService(
 
     public async Task<Result> DeleteFileByNameAndParentNameAsync(
         string fileName,
-        string parentName,
-        CancellationToken cancellationToken = default)
+        string parentFolderName,
+        CancellationToken cancellationToken)
     {
-        var folderResult = await googleDriveFoldersService.GetFolderAsync(parentName, GoogleDriveSettingsService.BaseFolderId, cancellationToken);
+        var folderResult = await googleDriveFoldersService.GetAsync(parentFolderName, GoogleDriveSettingsService.BaseFolderId, cancellationToken);
         if (folderResult.IsFailed || folderResult.Value is null)
             return folderResult.ToResult().WithConditionalError(
                 conditionToAddError: () => folderResult.IsSuccess,
@@ -77,14 +77,29 @@ public class GoogleDriveService(
         return deleteResult.ToResult();
     }
 
-    public async Task<Result> SaveFilesFromLinkAsync(
-        string link,
-        string directory,
-        CancellationToken cancellationToken = default)
+    public virtual Result<string> GetFolderIdFromUrl(string url)
     {
-        if (!extractionService.TryExtractGoogleDriveIdFromLink(link, out var folderId))
-            return Result.Fail("O link informado é inválido.");
+        if (!Uri.TryCreate(url, UriKind.Absolute, out var uri) || uri.Authority != "drive.google.com")
+            return Result.Fail("O link informado é inválido."); ;
 
+        var resourceId = url
+            .Replace("?id=", "/")
+            .Replace("?usp=sharing", "")
+            .Replace("?usp=share_link", "")
+            .Split("/")
+            .Last();
+
+
+        return resourceId.Length != 33 
+            ? Result.Fail("O link informado é inválido.") 
+            : Result.Ok(resourceId);
+    }
+
+    public async Task<Result> SaveFilesAsync(
+        string folderId,
+        string directory,
+        CancellationToken cancellationToken)
+    {
         var fileList = await googleDriveFilesService.GetManyAsync(folderId, cancellationToken);
         if (fileList.IsFailed)
             return fileList.ToResult();
@@ -102,13 +117,10 @@ public class GoogleDriveService(
         return new Result().WithErrors(errors);
     }
 
-    public async Task<Result> ValidateFilesFromLinkAsync(
-        string link,
-        CancellationToken cancellationToken = default)
+    public async Task<Result> ValidateFilesAsync(
+        string folderId,
+        CancellationToken cancellationToken)
     {
-        if (!extractionService.TryExtractGoogleDriveIdFromLink(link, out var folderId))
-            return Result.Fail("O link informado é inválido.");
-
         var fileListResult = await googleDriveFilesService.GetManyAsync(folderId, cancellationToken);
         if (fileListResult.IsFailed)
             return fileListResult.ToResult();
@@ -119,7 +131,7 @@ public class GoogleDriveService(
 
     public async Task<Result> GrantReaderAccessToBotFilesAsync(
         string email,
-        CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken)
     {
         var getPermissionsResult = await googleDrivePermissionsService.GetUserPermissionsAsync(email, GoogleDriveSettingsService.BaseFolderId, cancellationToken);
         if (getPermissionsResult.IsFailed || getPermissionsResult.Value.Any())
@@ -131,7 +143,7 @@ public class GoogleDriveService(
 
     public async Task<Result> RevokeReaderAccessToBotFilesAsync(
         string email,
-        CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken)
     {
         var getPermissionsResult = await googleDrivePermissionsService.GetUserPermissionsAsync(email, GoogleDriveSettingsService.BaseFolderId, cancellationToken);
         if (getPermissionsResult.IsFailed)

@@ -37,7 +37,7 @@ public class GoogleDriveSettingsServiceTests : UnitTest
         {
             A.CallTo(() => fixture
                 .Fake<GoogleDriveFoldersService>()
-                .GetFolderAsync(
+                .GetAsync(
                     GoogleDriveSettingsService.BASE_FOLDER_NAME,
                     GoogleDriveSettingsService.ROOT_FOLDER_NAME,
                     cancellationToken))
@@ -45,7 +45,7 @@ public class GoogleDriveSettingsServiceTests : UnitTest
 
             A.CallTo(() => fixture
                 .Fake<GoogleDriveFoldersService>()
-                .CreateFolderAsync(
+                .CreateAsync(
                     GoogleDriveSettingsService.BASE_FOLDER_NAME,
                     GoogleDriveSettingsService.ROOT_FOLDER_NAME,
                     cancellationToken))
@@ -63,7 +63,7 @@ public class GoogleDriveSettingsServiceTests : UnitTest
 
             A.CallTo(() => fixture
                 .Fake<GoogleDriveFoldersService>()
-                .CreateFolderAsync(
+                .CreateAsync(
                     GoogleDriveSettingsService.BASE_FOLDER_NAME,
                     GoogleDriveSettingsService.ROOT_FOLDER_NAME,
                     cancellationToken))
@@ -75,7 +75,7 @@ public class GoogleDriveSettingsServiceTests : UnitTest
         {
             A.CallTo(() => fixture
                 .Fake<GoogleDriveFoldersService>()
-                .GetFolderAsync(
+                .GetAsync(
                     GoogleDriveSettingsService.BASE_FOLDER_NAME,
                     GoogleDriveSettingsService.ROOT_FOLDER_NAME,
                     cancellationToken))
@@ -89,7 +89,7 @@ public class GoogleDriveSettingsServiceTests : UnitTest
 
             A.CallTo(() => fixture
                 .Fake<GoogleDriveFoldersService>()
-                .CreateFolderAsync(
+                .CreateAsync(
                     A<string>.Ignored,
                     A<string>.Ignored,
                     cancellationToken))
@@ -103,7 +103,7 @@ public class GoogleDriveSettingsServiceTests : UnitTest
 
             A.CallTo(() => fixture
                 .Fake<GoogleDriveFoldersService>()
-                .GetFolderAsync(
+                .GetAsync(
                     GoogleDriveSettingsService.BASE_FOLDER_NAME,
                     GoogleDriveSettingsService.ROOT_FOLDER_NAME,
                     cancellationToken))
@@ -121,7 +121,7 @@ public class GoogleDriveSettingsServiceTests : UnitTest
 
             A.CallTo(() => fixture
                 .Fake<GoogleDriveFoldersService>()
-                .CreateFolderAsync(
+                .CreateAsync(
                     GoogleDriveSettingsService.BASE_FOLDER_NAME,
                     GoogleDriveSettingsService.ROOT_FOLDER_NAME,
                     cancellationToken))

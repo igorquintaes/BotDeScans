@@ -19,7 +19,7 @@ public class GoogleDriveSettingsService(
 
     public async Task<Result> SetUpBaseFolderAsync(CancellationToken cancellationToken)
     {
-        var folderResult = await googleDriveFoldersService.GetFolderAsync(
+        var folderResult = await googleDriveFoldersService.GetAsync(
             BASE_FOLDER_NAME,
             ROOT_FOLDER_NAME,
             cancellationToken);
@@ -33,7 +33,7 @@ public class GoogleDriveSettingsService(
             return folderResult.ToResult();
         }
 
-        var createFolderResult = await googleDriveFoldersService.CreateFolderAsync(
+        var createFolderResult = await googleDriveFoldersService.CreateAsync(
             BASE_FOLDER_NAME,
             ROOT_FOLDER_NAME,
             cancellationToken);

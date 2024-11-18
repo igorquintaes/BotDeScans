@@ -42,7 +42,7 @@ public class GoogleDriveFoldersServiceTests : UnitTest
         service = fixture.Create<GoogleDriveFoldersService>();
     }
 
-    public class GetFolderAsync : GoogleDriveFoldersServiceTests
+    public class GetAsync : GoogleDriveFoldersServiceTests
     {
 
         [Fact]
@@ -64,7 +64,7 @@ public class GoogleDriveFoldersServiceTests : UnitTest
                     cancellationToken))
                 .Returns(resources);
 
-            var result = await service.GetFolderAsync(folderName, parentId, cancellationToken);
+            var result = await service.GetAsync(folderName, parentId, cancellationToken);
 
             result.Should().BeSuccess().And.HaveValue(resources.Single());
         }
@@ -84,7 +84,7 @@ public class GoogleDriveFoldersServiceTests : UnitTest
                     cancellationToken))
                 .Returns(new List<File>());
 
-            var result = await service.GetFolderAsync(
+            var result = await service.GetAsync(
                 fixture.Create<string>(), 
                 fixture.Create<string>(), 
                 cancellationToken);
@@ -111,7 +111,7 @@ public class GoogleDriveFoldersServiceTests : UnitTest
                     cancellationToken))
                 .Returns(Result.Fail(ERROR_MESSAGE));
 
-            var result = await service.GetFolderAsync(
+            var result = await service.GetAsync(
                 fixture.Create<string>(),
                 fixture.Create<string>(),
                 cancellationToken);
@@ -120,12 +120,12 @@ public class GoogleDriveFoldersServiceTests : UnitTest
         }
     }
 
-    public class CreateFolderAsync : GoogleDriveFoldersServiceTests
+    public class CreateAsync : GoogleDriveFoldersServiceTests
     {
         private readonly string folderName;
         private readonly string parentId;
 
-        public CreateFolderAsync()
+        public CreateAsync()
         {
             folderName = fixture.Create<string>();
             parentId = fixture.Create<string>();
@@ -153,7 +153,7 @@ public class GoogleDriveFoldersServiceTests : UnitTest
         [Fact]
         public async Task GivenSuccessfulExecutionShouldReturnSuccessResult()
         {
-            var result = await service.CreateFolderAsync(folderName, parentId, cancellationToken);
+            var result = await service.CreateAsync(folderName, parentId, cancellationToken);
 
             result.Should().BeSuccess().And.HaveValue(fixture.Fake<File>());
         }
@@ -167,7 +167,7 @@ public class GoogleDriveFoldersServiceTests : UnitTest
                 .ExecuteAsync(fixture.Fake<CreateRequest>(), cancellationToken))
                 .Returns(Result.Fail(ERROR_MESSAGE));
 
-            var result = await service.CreateFolderAsync(folderName, parentId, cancellationToken);
+            var result = await service.CreateAsync(folderName, parentId, cancellationToken);
 
             result.Should().BeFailure().And.HaveError(ERROR_MESSAGE);
         }
@@ -175,7 +175,7 @@ public class GoogleDriveFoldersServiceTests : UnitTest
         [Fact]
         public async Task ShouldFillCreateRequestMandatoryFields()
         {
-            await service.CreateFolderAsync(folderName, parentId, cancellationToken);
+            await service.CreateAsync(folderName, parentId, cancellationToken);
 
             A.CallTo(() => fixture
                 .Fake<GoogleDriveWrapper>()

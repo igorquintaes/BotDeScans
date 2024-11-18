@@ -66,12 +66,15 @@ public static class ResultExtensions
     public static async Task<Remora.Results.IResult> PostErrorOnDiscord(this Result result, ExtendedFeedbackService feedbackService, CancellationToken cancellationToken)
     {
         // todo: tirar daqui. Mesma classe que EmbedBuilder.HandleTasksAndUpdateMessage, que também precisa mover. E usar IoC pro service
-        if (result.IsSuccess) 
+        if (result.IsSuccess)
             throw new InvalidOperationException("this method need be called only for failed results."); ;
 
         var errorEmbed = EmbedBuilder.CreateErrorEmbed(result);
         return await feedbackService.SendContextualEmbedAsync(errorEmbed, ct: cancellationToken);
     }
+
+    public static Task<Remora.Results.IResult> PostErrorOnDiscord<T>(this Result<T> result, ExtendedFeedbackService feedbackService, CancellationToken cancellationToken) 
+        => result.ToResult().PostErrorOnDiscord(feedbackService, cancellationToken);
 
     private static IEnumerable<Error> GetErrors(MangaDexError[] mangaDexErrors)
         => mangaDexErrors.Length > 0
