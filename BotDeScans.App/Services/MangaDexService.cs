@@ -14,7 +14,7 @@ public class MangaDexService(
     private readonly string? password = configuration.GetValue<string>("Mangadex:Pass");
     private string? token;
 
-    public async Task<Result> LoginAsync(CancellationToken cancellationToken = default)
+    public async Task<Result> LoginAsync()
     {
         if (string.IsNullOrWhiteSpace(username))
             return Result.Fail("No mangadex username defined");
@@ -31,7 +31,7 @@ public class MangaDexService(
         return Result.Ok();
     }
 
-    public async Task<Result> ClearPendingUploadsAsync(CancellationToken cancellationToken = default)
+    public async Task<Result> ClearPendingUploadsAsync()
     {
         var uploadResponse = await mangaDex.Upload.Get(token);
         if (uploadResponse.Errors.Any(x => x.Status == StatusCodes.Status404NotFound))

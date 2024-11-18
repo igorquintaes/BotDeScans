@@ -2,7 +2,7 @@
 using Google.Apis.Requests;
 using Google.Apis.Upload;
 using System.Diagnostics.CodeAnalysis;
-namespace BotDeScans.App.Services.Wrappers;
+namespace BotDeScans.App.Features.GoogleDrive.InternalServices;
 
 [ExcludeFromCodeCoverage(Justification = @"
 Needs a lot of inner wrappers to mock real GoogleDrive calls. 

@@ -3,7 +3,6 @@ using BotDeScans.App.Services.ExternalClients;
 using BotDeScans.App.Services.Wrappers;
 using FluentResults;
 using Google.Apis.Download;
-using Google.Apis.Drive.v3.Data;
 using File = Google.Apis.Drive.v3.Data.File;
 namespace BotDeScans.App.Features.GoogleDrive.InternalServices;
 
@@ -15,32 +14,42 @@ public class GoogleDriveFilesService(
     StreamWrapper streamWrapper,
     GoogleDriveWrapper googleDriveWrapper)
 {
-    public virtual Task<Result<File?>> GetFileAsync(
+    public virtual async Task<Result<File?>> GetAsync(
         string fileName,
         string? parentId,
-        CancellationToken cancellationToken = default) =>
-            googleDriveResourcesService.GetResourceByNameAsync(
-                fileService.GetMimeType(fileName),
-                fileName,
-                parentId,
-                cancellationToken);
+        CancellationToken cancellationToken = default)
+    {
+        var resourcesResult = await googleDriveResourcesService.GetResourcesAsync(
+            mimeType: fileService.GetMimeType(fileName),
+            forbiddenMimeType: default,
+            name: fileName,
+            parentId: parentId,
+            minResult: default,
+            maxResult: 1,
+            cancellationToken);
 
-    public virtual Task<Result<FileList>> GetFilesFromFolderAsync(
+        if (resourcesResult.IsFailed)
+            return resourcesResult.ToResult();
+
+        return resourcesResult.Value.SingleOrDefault();
+    }
+
+    public virtual Task<Result<IList<File>>> GetManyAsync(
         string parentId,
         CancellationToken cancellationToken = default)
     {
-        const int MAX_VALUE_PAGESIZE = 1000;
-        var listRequest = googleDriveClient.Client.Files.List();
-        listRequest.PageSize = MAX_VALUE_PAGESIZE;
-        // todo: criar um query builder
-        listRequest.Q = $"" +
-            $"trashed = false " +
-            $"and '{parentId}' in parents " +
-            $"and mimeType != '{GoogleDriveFoldersService.FOLDER_MIMETYPE}'";
-        return googleDriveWrapper.ExecuteAsync(listRequest, cancellationToken);
+        const string FOLDER_MIMETYPE = "application/vnd.google-apps.folder";
+        return googleDriveResourcesService.GetResourcesAsync(
+            mimeType: default,
+            forbiddenMimeType: FOLDER_MIMETYPE,
+            name: default,
+            parentId: parentId,
+            minResult: default,
+            maxResult: default,
+            cancellationToken);
     }
 
-    public virtual async Task<Result<File>> UploadFileAsync(
+    public virtual async Task<Result<File>> UploadAsync(
         string filePath,
         string parentId,
         bool withPublicUrl,
@@ -66,7 +75,7 @@ public class GoogleDriveFilesService(
         return uploadResult;
     }
 
-    public virtual async Task<Result<File>> UpdateFileAsync(
+    public virtual async Task<Result<File>> UpdateAsync(
         string filePath,
         string oldFileId,
         CancellationToken cancellationToken = default)
@@ -78,7 +87,7 @@ public class GoogleDriveFilesService(
         return await googleDriveWrapper.UploadAsync(uploadRequest, cancellationToken);
     }
 
-    public virtual async Task<Result> DownloadFileAsync(
+    public virtual async Task<Result> DownloadAsync(
         File file,
         string targetDirectory,
         CancellationToken cancellationToken = default)

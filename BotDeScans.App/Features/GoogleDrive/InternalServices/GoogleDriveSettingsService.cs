@@ -1,5 +1,4 @@
 ﻿using BotDeScans.App.Services.ExternalClients;
-using BotDeScans.App.Services.Wrappers;
 using FluentResults;
 namespace BotDeScans.App.Features.GoogleDrive.InternalServices;
 
@@ -8,7 +7,8 @@ public class GoogleDriveSettingsService(
     GoogleDriveWrapper googleDriveWrapper,
     GoogleDriveFoldersService googleDriveFoldersService)
 {
-    public const string BaseFolderName = "BOT_DIRECTORY";
+    public const string ROOT_FOLDER_NAME = "root";
+    public const string BASE_FOLDER_NAME = "BOT_DIRECTORY";
     private static string _baseFolderId = null!;
 
     public static string BaseFolderId
@@ -17,36 +17,35 @@ public class GoogleDriveSettingsService(
         set => _baseFolderId = value;
     }
 
-    public async Task<Result> SetUpBaseFolderAsync(CancellationToken cancellationToken = default)
+    public async Task<Result> SetUpBaseFolderAsync(CancellationToken cancellationToken)
     {
-        const string GOOGLE_DRIVE_BASEST_FOLDER = "root";
-        var folderResult = await googleDriveFoldersService.GetFolderAsync(
-            BaseFolderName,
-            GOOGLE_DRIVE_BASEST_FOLDER,
+        var folderResult = await googleDriveFoldersService.GetAsync(
+            BASE_FOLDER_NAME,
+            ROOT_FOLDER_NAME,
             cancellationToken);
 
         if (folderResult.IsFailed)
             return folderResult.ToResult();
 
-        var folder = folderResult.ValueOrDefault;
-        if (folder is null)
+        if (folderResult.Value is not null)
         {
-            var createFolderResult = await googleDriveFoldersService.CreateFolderAsync(
-                BaseFolderName,
-                GOOGLE_DRIVE_BASEST_FOLDER,
-                cancellationToken);
-
-            if (createFolderResult.IsFailed)
-                return createFolderResult.ToResult();
-
-            folder = createFolderResult.Value;
+            BaseFolderId = folderResult.Value.Id;
+            return folderResult.ToResult();
         }
 
-        BaseFolderId = folder.Id;
+        var createFolderResult = await googleDriveFoldersService.CreateAsync(
+            BASE_FOLDER_NAME,
+            ROOT_FOLDER_NAME,
+            cancellationToken);
+
+        if (createFolderResult.IsFailed)
+            return createFolderResult.ToResult();
+
+        BaseFolderId = createFolderResult.Value.Id;
         return Result.Ok();
     }
 
-    public virtual async Task<Result<ConsumptionData>> GetConsumptionData(CancellationToken cancellationToken = default)
+    public virtual async Task<Result<ConsumptionData>> GetConsumptionDataAsync(CancellationToken cancellationToken)
     {
         var aboutRequest = googleDriveClient.Client.About.Get();
         aboutRequest.Fields = "storageQuota";

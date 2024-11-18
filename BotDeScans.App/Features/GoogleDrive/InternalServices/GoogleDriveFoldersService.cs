@@ -1,45 +1,40 @@
 ﻿using BotDeScans.App.Features.GoogleDrive.InternalServices;
 using BotDeScans.App.Services.ExternalClients;
-using BotDeScans.App.Services.Wrappers;
 using FluentResults;
 using File = Google.Apis.Drive.v3.Data.File;
 namespace BotDeScans.App.Features.GoogleDrive;
 
 public class GoogleDriveFoldersService(
     GoogleDriveClient googleDriveClient,
-    GoogleDriveResourcesService googleDriveResourcesService,
-    GoogleDriveWrapper googleDriveWrapper)
+    GoogleDriveWrapper googleDriveWrapper,
+    GoogleDriveResourcesService googleDriveResourcesService)
 {
     public const string FOLDER_MIMETYPE = "application/vnd.google-apps.folder";
 
-    public virtual Task<Result<File?>> GetFolderAsync(
+    public virtual async Task<Result<File?>> GetAsync(
         string folderName,
         string? parentId,
-        CancellationToken cancellationToken = default) =>
-            googleDriveResourcesService.GetResourceByNameAsync(
-                FOLDER_MIMETYPE,
-                folderName,
-                parentId,
-                cancellationToken);
-
-    public virtual async Task<Result<File?>> GetFolderByIdAsync(
-        string folderId,
-        CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken)
     {
-        var getRequest = googleDriveClient.Client.Files.Get(folderId);
-        var folderResult = await googleDriveWrapper.ExecuteAsync(getRequest, cancellationToken);
+        var resourcesResult = await googleDriveResourcesService.GetResourcesAsync(
+            mimeType: FOLDER_MIMETYPE,
+            forbiddenMimeType: default,
+            name: folderName,
+            parentId: parentId,
+            minResult: default,
+            maxResult: 1,
+            cancellationToken);
 
-        return folderResult.IsFailed
-            || folderResult.ValueOrDefault is null
-            || folderResult.Value.MimeType == FOLDER_MIMETYPE
-                ? folderResult
-                : Result.Ok<File?>(null);
+        if (resourcesResult.IsFailed)
+            return resourcesResult.ToResult();
+
+        return resourcesResult.Value.SingleOrDefault();
     }
 
-    public virtual Task<Result<File>> CreateFolderAsync(
+    public virtual Task<Result<File>> CreateAsync(
         string folderName,
         string? parentId,
-        CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken)
     {
         var resource = googleDriveResourcesService.CreateResourceObject(FOLDER_MIMETYPE, folderName, parentId);
         var createRequest = googleDriveClient.Client.Files.Create(resource);

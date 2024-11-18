@@ -1,4 +1,6 @@
-﻿using Bogus;
+﻿using AutoFixture;
+using AutoFixture.AutoFakeItEasy;
+using Bogus;
 using BotDeScans.App.Features.GoogleDrive.InternalServices;
 using System;
 using System.Threading;
@@ -7,29 +9,9 @@ using Xunit;
 [assembly: CollectionBehavior(DisableTestParallelization = true)]
 namespace BotDeScans.UnitTests.Specs;
 
-public abstract class UnitTest : IDisposable
+public abstract class UnitTest
 {
-    protected static readonly Faker dataGenerator = new();
+    protected readonly IFixture fixture = new Fixture().Customize(new AutoFakeItEasyCustomization());
+    protected readonly Faker dataGenerator = new();
     protected CancellationToken cancellationToken = new();
-
-    private bool disposedValue;
-
-    protected virtual void Dispose(bool disposing)
-    {
-        if (!disposedValue)
-        {
-            if (disposing)
-            {
-                GoogleDriveSettingsService.BaseFolderId = null!;
-            }
-
-            disposedValue = true;
-        }
-    }
-
-    public virtual void Dispose()
-    {
-        Dispose(disposing: true);
-        GC.SuppressFinalize(this);
-    }
 }

@@ -1,599 +1,698 @@
-﻿using BotDeScans;
+﻿using AutoFixture;
 using BotDeScans.App.Features.GoogleDrive;
 using BotDeScans.App.Features.GoogleDrive.InternalServices;
 using BotDeScans.App.Services;
-using BotDeScans.UnitTests;
-using BotDeScans.UnitTests.Specs;
-using BotDeScans.UnitTests.Specs.Features.GoogleDrive;
+using BotDeScans.UnitTests.Specs.Extensions;
 using BotDeScans.UnitTests.Specs.Services;
 using FakeItEasy;
 using FluentAssertions;
+using FluentAssertions.Execution;
 using FluentResults;
 using FluentResults.Extensions.FluentAssertions;
 using FluentValidation;
 using FluentValidation.Results;
 using Google.Apis.Drive.v3.Data;
 using Microsoft.Extensions.Configuration;
-using System;
+using Remora.Discord.API.Abstractions.Rest;
 using System.Collections.Generic;
-using System.IO;
+using System.Drawing.Text;
 using System.Linq;
-using System.Runtime.CompilerServices;
-using System.Threading;
 using System.Threading.Tasks;
 using Xunit;
-using File = Google.Apis.Drive.v3.Data.File;
-namespace BotDeScans.UnitTests.Specs.Features.GoogleDrive;
+
+namespace BotDeScans.UnitTests.Specs.Features.GoogleDrive.InternalServices;
 
 public class GoogleDriveServiceTests : UnitTest
 {
     private readonly GoogleDriveService service;
-    private readonly ExtractionService extractionService;
-    private readonly GoogleDriveFilesService googleDriveFilesService;
-    private readonly GoogleDriveFoldersService googleDriveFoldersService;
-    private readonly GoogleDriveResourcesService googleDriveResourcesService;
-    private readonly GoogleDrivePermissionsService googleDrivePermissionsService;
-    private readonly IConfiguration configuration;
-    private readonly IValidator<FileList> validator;
 
     public GoogleDriveServiceTests()
     {
-        extractionService = A.Fake<ExtractionService>();
-        googleDriveFilesService = A.Fake<GoogleDriveFilesService>();
-        googleDriveFoldersService = A.Fake<GoogleDriveFoldersService>();
-        googleDriveResourcesService = A.Fake<GoogleDriveResourcesService>();
-        googleDrivePermissionsService = A.Fake<GoogleDrivePermissionsService>();
-        configuration = A.Fake<IConfiguration>();
-        validator = A.Fake<IValidator<FileList>>();
+        fixture.Fake<GoogleDriveFilesService>();
+        fixture.Fake<GoogleDriveFoldersService>();
+        fixture.Fake<GoogleDriveResourcesService>();
+        fixture.Fake<GoogleDrivePermissionsService>();
+        fixture.Fake<IValidator<IList<File>>>();
+        fixture.Fake<IConfiguration>();
 
-        GoogleDriveSettingsService.BaseFolderId = dataGenerator.Random.String();
-
-        service = new GoogleDriveService(
-            extractionService,
-            googleDriveFilesService,
-            googleDriveFoldersService,
-            googleDriveResourcesService,
-            googleDrivePermissionsService,
-            validator,
-            configuration);
+        service = fixture.Create<GoogleDriveService>();
     }
 
     public class GetOrCreateFolderAsync : GoogleDriveServiceTests
     {
         private readonly string folderName;
         private readonly string parentId;
-        private readonly File expectedResult;
 
         public GetOrCreateFolderAsync()
         {
-            folderName = dataGenerator.Random.Word();
-            parentId = dataGenerator.Random.Word();
-            expectedResult = new File();
+            folderName = fixture.Create<string>();
+            parentId = fixture.Create<string>();
 
-            A.CallTo(() => googleDriveFoldersService
-                .GetFolderAsync(folderName, parentId, cancellationToken))
-                .Returns(null as File);
+            A.CallTo(() => fixture
+                .Fake<GoogleDriveFoldersService>()
+                .GetAsync(folderName, parentId, cancellationToken))
+                .Returns(Result.Ok<File?>(default));
 
-            A.CallTo(() => googleDriveFoldersService
-                .CreateFolderAsync(folderName, parentId, cancellationToken))
-                .Returns(expectedResult);
+            A.CallTo(() => fixture
+                .Fake<GoogleDriveFoldersService>()
+                .CreateAsync(folderName, parentId, cancellationToken))
+                .Returns(fixture.Fake<File>());
         }
 
         [Fact]
-        public async Task ShouldCreateAndReturnFolderIfItDoesNotExists()
+        public async Task GivenSuccessfulExecutionForNewFolderShouldReturnSuccessResultAndReturnCreatedFolder()
         {
             var result = await service.GetOrCreateFolderAsync(folderName, parentId, cancellationToken);
-            result.Should().BeSuccess().And.HaveValue(expectedResult);
+
+            result.Should().BeSuccess().And.HaveValue(fixture.Fake<File>());
+
+            A.CallTo(() => fixture
+                .Fake<GoogleDriveFoldersService>()
+                .CreateAsync(folderName, parentId, cancellationToken))
+                .MustHaveHappenedOnceExactly();
         }
 
         [Fact]
-        public async Task ShouldGetFolderIfItExists()
+        public async Task GivenSuccessfullExecutionForExistingFolderShouldReturnSuccessResultAndExistingFolder()
         {
-            A.CallTo(() => googleDriveFoldersService
-                .GetFolderAsync(folderName, parentId, cancellationToken))
-                .Returns(expectedResult);
+            A.CallTo(() => fixture
+                .Fake<GoogleDriveFoldersService>()
+                .GetAsync(folderName, parentId, cancellationToken))
+                .Returns(fixture.Fake<File>());
 
             var result = await service.GetOrCreateFolderAsync(folderName, parentId, cancellationToken);
-            result.Should().BeSuccess().And.HaveValue(expectedResult);
+
+            result.Should().BeSuccess().And.HaveValue(fixture.Fake<File>());
+
+            A.CallTo(() => fixture
+                .Fake<GoogleDriveFoldersService>()
+                .CreateAsync(folderName, parentId, cancellationToken))
+                .MustNotHaveHappened();
         }
 
         [Fact]
-        public async Task ShouldRepassGetFolderAsyncError()
+        public async Task GivenErrorWhileCheckingIfFolderExistsShouldReturnFailResult()
         {
-            var failResult = Result.Fail("some error");
-            A.CallTo(() => googleDriveFoldersService
-                .GetFolderAsync(folderName, parentId, cancellationToken))
-                .Returns(failResult);
+            const string ERROR_MESSAGE = "some error";
 
-            object result = await service.GetOrCreateFolderAsync(folderName, parentId, cancellationToken);
-            result.Should().BeEquivalentTo(failResult);
+            A.CallTo(() => fixture
+                .Fake<GoogleDriveFoldersService>()
+                .GetAsync(folderName, parentId, cancellationToken))
+                .Returns(Result.Fail(ERROR_MESSAGE));
+
+            var result = await service.GetOrCreateFolderAsync(folderName, parentId, cancellationToken);
+
+            result.Should().BeFailure().And.HaveError(ERROR_MESSAGE);
         }
 
         [Fact]
-        public async Task ShouldRepassCreateFolderAsyncError()
+        public async Task GivenErrorWhileCreatingFolderExistsShouldReturnFailResult()
         {
-            var failResult = Result.Fail("some error");
-            A.CallTo(() => googleDriveFoldersService
-                .CreateFolderAsync(folderName, parentId, cancellationToken))
-                .Returns(failResult);
+            const string ERROR_MESSAGE = "some error";
 
-            object result = await service.GetOrCreateFolderAsync(folderName, parentId, cancellationToken);
-            result.Should().BeEquivalentTo(failResult);
+            A.CallTo(() => fixture
+                .Fake<GoogleDriveFoldersService>()
+                .CreateAsync(folderName, parentId, cancellationToken))
+                .Returns(Result.Fail(ERROR_MESSAGE));
+
+            var result = await service.GetOrCreateFolderAsync(folderName, parentId, cancellationToken);
+
+            result.Should().BeFailure().And.HaveError(ERROR_MESSAGE);
         }
     }
 
     public class CreateFileAsync : GoogleDriveServiceTests
     {
-        private readonly string fileName;
-        private readonly string filePath;
-        private readonly string parentId;
-        private readonly bool publicAccess;
-        private readonly File expectedResult;
+        private static string filePath = System.IO.Path.Combine("directory", "file.zip");
+        private static string fileName = "file.zip";
+
+        private static string parentId;
+        private static bool publicAccess;
 
         public CreateFileAsync()
         {
-            fileName = dataGenerator.Random.Word();
-            filePath = Path.Combine(dataGenerator.Random.Word(), fileName);
-            parentId = dataGenerator.Random.Word();
-            publicAccess = dataGenerator.Random.Bool();
-            expectedResult = new File();
+            parentId = fixture.Create<string>();
+            publicAccess = fixture.Create<bool>();
 
-            A.CallTo(() => googleDriveFilesService
-                .GetFileAsync(fileName, parentId, cancellationToken))
+            A.CallTo(() => fixture
+                .Fake<GoogleDriveFilesService>()
+                .GetAsync(fileName, parentId, cancellationToken))
                 .Returns(null as File);
 
-            A.CallTo(() => googleDriveFilesService
-                .UploadFileAsync(filePath, parentId, publicAccess, cancellationToken))
-                .Returns(expectedResult);
+            A.CallTo(() => fixture
+                .Fake<GoogleDriveFilesService>()
+                .UploadAsync(filePath, parentId, publicAccess, cancellationToken))
+                .Returns(fixture.Fake<File>());
+
+            A.CallTo(() => fixture
+                .Fake<GoogleDriveFilesService>()
+                .UpdateAsync(filePath, fixture.Fake<File>().Id, cancellationToken))
+                .Returns(fixture.Fake<File>());
+
+            A.CallTo(() => fixture
+                .Fake<IConfiguration>()
+                .GetSection(GoogleDriveService.REWRITE_KEY))
+                .Returns(fixture.Fake<IConfigurationSection>());
+
+            A.CallTo(() => fixture
+                .Fake<IConfigurationSection>().Value)
+                .Returns("true");
         }
 
         [Fact]
-        public async Task ShouldCreateAndReturnFile()
+        public async Task GivenExecutionSuccessfulForANewFileShouldReturnSuccessResultAndNewFileValue()
         {
             var result = await service.CreateFileAsync(filePath, parentId, publicAccess, cancellationToken);
-            result.Should().BeSuccess().And.HaveValue(expectedResult);
+
+            result.Should().BeSuccess().And.HaveValue(fixture.Fake<File>());
+
+            A.CallTo(() => fixture
+                .Fake<GoogleDriveFilesService>()
+                .UploadAsync(filePath, parentId, publicAccess, cancellationToken))
+                .MustHaveHappenedOnceExactly();
+
+            A.CallTo(() => fixture
+                .Fake<GoogleDriveFilesService>()
+                .UpdateAsync(A<string>.Ignored, A<string>.Ignored, cancellationToken))
+                .MustNotHaveHappened();
         }
 
         [Fact]
-        public async Task ShouldReturnErrorIfAFileWithSameNameAlreadyExists()
+        public async Task GivenExecutionSuccessfulForAnExistingFileWithRewriteShouldReturnSuccessResultAndUpdatedFileValue()
         {
-            A.CallTo(() => googleDriveFilesService
-                .GetFileAsync(fileName, parentId, cancellationToken))
-                .Returns(Result.Ok<File?>(new File()));
+            A.CallTo(() => fixture
+                .Fake<GoogleDriveFilesService>()
+                .GetAsync(fileName, parentId, cancellationToken))
+                .Returns(fixture.Fake<File>());
 
             var result = await service.CreateFileAsync(filePath, parentId, publicAccess, cancellationToken);
-            result.Should().BeFailure().And.HaveError("Já existe um arquivo com o nome especificado. Se desejar sobrescrever o arquivo existente, altere a configuração GoogleDrive:RewriteExistingFile para permitir.");
+
+            result.Should().BeSuccess().And.HaveValue(fixture.Fake<File>());
+
+            A.CallTo(() => fixture
+                .Fake<GoogleDriveFilesService>()
+                .UpdateAsync(filePath, fixture.Fake<File>().Id, cancellationToken))
+                .MustHaveHappenedOnceExactly();
+
+            A.CallTo(() => fixture
+                .Fake<GoogleDriveFilesService>()
+                .UploadAsync(A<string>.Ignored, A<string>.Ignored, A<bool>.Ignored, cancellationToken))
+                .MustNotHaveHappened();
         }
 
         [Fact]
-        public async Task ShouldRepassGetFileAsyncError()
+        public async Task GivenExistingFileAndNotAllowedToRewriteShouldReturnFailResult()
         {
-            var failResult = Result.Fail("some error");
-            A.CallTo(() => googleDriveFilesService
-                .GetFileAsync(fileName, parentId, cancellationToken))
-                .Returns(failResult);
+            A.CallTo(() => fixture
+                .Fake<GoogleDriveFilesService>()
+                .GetAsync(fileName, parentId, cancellationToken))
+                .Returns(fixture.Fake<File>());
 
-            object result = await service.CreateFileAsync(filePath, parentId, publicAccess, cancellationToken);
-            result.Should().BeEquivalentTo(failResult);
+            A.CallTo(() => fixture
+                .Fake<IConfigurationSection>().Value)
+                .Returns("false");
+
+            var result = await service.CreateFileAsync(filePath, parentId, publicAccess, cancellationToken);
+
+            result.Should().BeFailure().And.HaveError($"Já existe um arquivo com o nome especificado. Se desejar sobrescrever o arquivo existente, altere a configuração {GoogleDriveService.REWRITE_KEY} para permitir.");
         }
 
         [Fact]
-        public async Task ShouldRepassUploadFileAsyncError()
+        public async Task GivenExistingFileAndNotSpecifiedToRewriteShouldNotAllowActionAndReturnFailResult()
         {
-            var failResult = Result.Fail("some error");
-            A.CallTo(() => googleDriveFilesService
-                .UploadFileAsync(filePath, parentId, publicAccess, cancellationToken))
-                .Returns(failResult);
+            A.CallTo(() => fixture
+                .Fake<GoogleDriveFilesService>()
+                .GetAsync(fileName, parentId, cancellationToken))
+                .Returns(fixture.Fake<File>());
 
-            object result = await service.CreateFileAsync(filePath, parentId, publicAccess, cancellationToken);
-            result.Should().BeEquivalentTo(failResult);
+            A.CallTo(() => fixture
+                .Fake<IConfigurationSection>().Value)
+                .Returns(null as string);
+
+            var result = await service.CreateFileAsync(filePath, parentId, publicAccess, cancellationToken);
+
+            result.Should().BeFailure().And.HaveError($"Já existe um arquivo com o nome especificado. Se desejar sobrescrever o arquivo existente, altere a configuração {GoogleDriveService.REWRITE_KEY} para permitir.");
+        }
+
+        [Fact]
+        public async Task GivenGetFileErrorShouldReturnFailResult()
+        {
+            const string ERROR_MESSAGE = "some error";
+
+            A.CallTo(() => fixture
+                .Fake<GoogleDriveFilesService>()
+                .GetAsync(fileName, parentId, cancellationToken))
+                .Returns(Result.Fail(ERROR_MESSAGE));
+
+            var result = await service.CreateFileAsync(filePath, parentId, publicAccess, cancellationToken);
+
+            result.Should().BeFailure().And.HaveError(ERROR_MESSAGE);
+        }
+
+        [Fact]
+        public async Task GivenUploadNewFileErrorShouldReturnFailResult()
+        {
+            const string ERROR_MESSAGE = "some error";
+
+            A.CallTo(() => fixture
+                .Fake<GoogleDriveFilesService>()
+                .UploadAsync(filePath, parentId, publicAccess, cancellationToken))
+                .Returns(Result.Fail(ERROR_MESSAGE));
+
+            var result = await service.CreateFileAsync(filePath, parentId, publicAccess, cancellationToken);
+
+            result.Should().BeFailure().And.HaveError(ERROR_MESSAGE);
+        }
+
+        [Fact]
+        public async Task GivenUpdateErrorShouldReturnFailResult()
+        {
+            const string ERROR_MESSAGE = "some error";
+
+            A.CallTo(() => fixture
+                .Fake<GoogleDriveFilesService>()
+                .GetAsync(fileName, parentId, cancellationToken))
+                .Returns(fixture.Fake<File>());
+
+            A.CallTo(() => fixture
+                .Fake<GoogleDriveFilesService>()
+                .UpdateAsync(filePath, fixture.Fake<File>().Id, cancellationToken))
+                .Returns(Result.Fail(ERROR_MESSAGE));
+
+            var result = await service.CreateFileAsync(filePath, parentId, publicAccess, cancellationToken);
+
+            result.Should().BeFailure().And.HaveError(ERROR_MESSAGE);
         }
     }
 
     public class DeleteFileByNameAndParentNameAsync : GoogleDriveServiceTests
     {
-        private readonly string fileName;
-        private readonly string parentName;
-        private readonly File folder;
-        private readonly File file;
+        private static string fileName;
+        private static string parentFolderName;
+        private static File[] resources;
 
         public DeleteFileByNameAndParentNameAsync()
         {
-            fileName = dataGenerator.Random.String();
-            parentName = dataGenerator.Random.String();
-            folder = new File();
-            file = new File();
+            GoogleDriveSettingsService.BaseFolderId = fixture.Create<string>();
+            fileName = fixture.Create<string>();
+            parentFolderName = fixture.Create<string>();
+            resources = fixture.Fake<File>(2);
 
-            A.CallTo(() => googleDriveFoldersService
-                .GetFolderAsync(parentName, GoogleDriveSettingsService.BaseFolderId, cancellationToken))
-                .Returns(folder);
+            A.CallTo(() => fixture
+                .Fake<GoogleDriveFoldersService>()
+                .GetAsync(parentFolderName, GoogleDriveSettingsService.BaseFolderId, cancellationToken))
+                .Returns(resources[0]);
 
-            A.CallTo(() => googleDriveFilesService
-                .GetFileAsync(fileName, folder.Id, cancellationToken))
-                .Returns(file);
+            A.CallTo(() => fixture
+                .Fake<GoogleDriveFilesService>()
+                .GetAsync(fileName, resources[0].Id, cancellationToken))
+                .Returns(resources[1]);
 
-            A.CallTo(() => googleDriveResourcesService
-                .DeleteResource(file.Id, cancellationToken))
-                .Returns(Result.Ok());
+            A.CallTo(() => fixture
+                .Fake<GoogleDriveResourcesService>()
+                .DeleteResource(resources[1].Id, cancellationToken))
+                .Returns(resources[1].Id);
         }
 
         [Fact]
-        public async Task ShouldDeleteResourceWhenFileAndFolderExists()
+        public async Task GivenSuccessfulExecutionShouldReturnSuccessResult()
         {
-            var result = await service.DeleteFileByNameAndParentNameAsync(fileName, parentName, cancellationToken);
+            var result = await service.DeleteFileByNameAndParentNameAsync(fileName, parentFolderName, cancellationToken);
 
-            result.Should()
-                .BeSuccess().And
-                .Satisfy(_ => A.CallTo(() => googleDriveResourcesService
-                    .DeleteResource(file.Id, cancellationToken))
-                    .MustHaveHappenedOnceExactly());
+            result.Should().BeSuccess();
         }
 
         [Fact]
-        public async Task ShouldRepassGetFolderAsyncError()
+        public async Task GivenNotFoundParentFolderShouldReturnFailResult()
         {
-            var failResult = Result.Fail("some error");
-            A.CallTo(() => googleDriveFoldersService
-                .GetFolderAsync(parentName, GoogleDriveSettingsService.BaseFolderId, cancellationToken))
-                .Returns(failResult);
+            const string ERROR_MESSAGE = "Não foi encontrada uma pasta com o nome especificado.";
 
-            object result = await service.DeleteFileByNameAndParentNameAsync(fileName, parentName, cancellationToken);
-            result.Should().BeEquivalentTo(failResult);
+            A.CallTo(() => fixture
+                .Fake<GoogleDriveFoldersService>()
+                .GetAsync(parentFolderName, GoogleDriveSettingsService.BaseFolderId, cancellationToken))
+                .Returns(null as File);
+
+            var result = await service.DeleteFileByNameAndParentNameAsync(fileName, parentFolderName, cancellationToken);
+
+            result.Should().BeFailure().And.HaveError(ERROR_MESSAGE);
         }
 
         [Fact]
-        public async Task ShouldRepassGetFileAsyncError()
+        public async Task GivenErrorToGetParentFolderShouldReturnFailResult()
         {
-            var failResult = Result.Fail("some error");
-            A.CallTo(() => googleDriveFilesService
-                .GetFileAsync(fileName, folder.Id, cancellationToken))
-                .Returns(failResult);
+            const string ERROR_MESSAGE = "some error";
 
-            object result = await service.DeleteFileByNameAndParentNameAsync(fileName, parentName, cancellationToken);
-            result.Should().BeEquivalentTo(failResult);
+            A.CallTo(() => fixture
+                .Fake<GoogleDriveFoldersService>()
+                .GetAsync(parentFolderName, GoogleDriveSettingsService.BaseFolderId, cancellationToken))
+                .Returns(Result.Fail(ERROR_MESSAGE));
+
+            var result = await service.DeleteFileByNameAndParentNameAsync(fileName, parentFolderName, cancellationToken);
+
+            result.Should().BeFailure().And.HaveError(ERROR_MESSAGE);
         }
 
         [Fact]
-        public async Task ShouldRepassDeleteResourceError()
+        public async Task GivenNotFoundFileShouldReturnFailResult()
         {
-            var failResult = Result.Fail("some error");
-            A.CallTo(() => googleDriveResourcesService
-                .DeleteResource(file.Id, cancellationToken))
-                .Returns(failResult);
+            const string ERROR_MESSAGE = "Não foi encontrado um arquivo com o nome especificado.";
 
-            object result = await service.DeleteFileByNameAndParentNameAsync(fileName, parentName, cancellationToken);
-            result.Should().BeEquivalentTo(failResult);
+            A.CallTo(() => fixture
+                .Fake<GoogleDriveFilesService>()
+                .GetAsync(fileName, resources[0].Id, cancellationToken))
+                .Returns(null as File);
+
+            var result = await service.DeleteFileByNameAndParentNameAsync(fileName, parentFolderName, cancellationToken);
+
+            result.Should().BeFailure().And.HaveError(ERROR_MESSAGE);
         }
 
         [Fact]
-        public async Task ShouldReturnErrorIfFolderDoesNotExists()
+        public async Task GivenErrorToGetFileShouldReturnFailResult()
         {
-            A.CallTo(() => googleDriveFoldersService
-                .GetFolderAsync(parentName, GoogleDriveSettingsService.BaseFolderId, cancellationToken))
-                .Returns(Result.Ok<File?>(null));
+            const string ERROR_MESSAGE = "some error";
 
-            var result = await service.DeleteFileByNameAndParentNameAsync(fileName, parentName, cancellationToken);
-            result.Should().BeFailure().And.HaveError("Não foi encontrada uma pasta com o nome especificado.");
+            A.CallTo(() => fixture
+                .Fake<GoogleDriveFilesService>()
+                .GetAsync(fileName, resources[0].Id, cancellationToken))
+                .Returns(Result.Fail(ERROR_MESSAGE));
+
+            var result = await service.DeleteFileByNameAndParentNameAsync(fileName, parentFolderName, cancellationToken);
+
+            result.Should().BeFailure().And.HaveError(ERROR_MESSAGE);
         }
 
         [Fact]
-        public async Task ShouldReturnErrorIfFileDoesNotExists()
+        public async Task GivenErrorToDeleteFileShouldReturnFailResult()
         {
-            A.CallTo(() => googleDriveFilesService
-                .GetFileAsync(fileName, folder.Id, cancellationToken))
-                .Returns(Result.Ok<File?>(null));
+            const string ERROR_MESSAGE = "some error";
 
-            var result = await service.DeleteFileByNameAndParentNameAsync(fileName, parentName, cancellationToken);
-            result.Should().BeFailure().And.HaveError("Não foi encontrado um arquivo com o nome especificado.");
+            A.CallTo(() => fixture
+                .Fake<GoogleDriveResourcesService>()
+                .DeleteResource(resources[1].Id, cancellationToken))
+                .Returns(Result.Fail(ERROR_MESSAGE));
+
+            var result = await service.DeleteFileByNameAndParentNameAsync(fileName, parentFolderName, cancellationToken);
+
+            result.Should().BeFailure().And.HaveError(ERROR_MESSAGE);
         }
     }
 
-
-    public class SaveFilesFromLinkAsync : GoogleDriveServiceTests
+    public class GetFolderIdFromUrl : GoogleDriveServiceTests
     {
-        private readonly string link;
+        [Theory]
+        [InlineData("https://drive.google.com/drive/folders/1LXGFGlcqbdUbdnU8C4aSvmnb5x8AldCn?usp=sharing")]
+        [InlineData("https://drive.google.com/drive/folders/1LXGFGlcqbdUbdnU8C4aSvmnb5x8AldCn")]
+        [InlineData("https://drive.google.com/folderview?id=1LXGFGlcqbdUbdnU8C4aSvmnb5x8AldCn")]
+        [InlineData("https://drive.google.com/open?id=1LXGFGlcqbdUbdnU8C4aSvmnb5x8AldCn")]
+        public void IsValid(string url) => 
+            service.GetFolderIdFromUrl(url).Should().BeSuccess().And.HaveValue("1LXGFGlcqbdUbdnU8C4aSvmnb5x8AldCn");
+
+        [Theory]
+        [InlineData(null)]
+        [InlineData("not a valid url")]
+        [InlineData("https://random.drive.google.com/1LXGFGlcqbdUbdnU8C4aSvmnb5x8AldCn")]
+        [InlineData("https://drive.google.com.random/1LXGFGlcqbdUbdnU8C4aSvmnb5x8AldCn")]
+        [InlineData("https://drive.google.com/drive/folders/")]
+        [InlineData("https://drive.google.com/drive/folders/randomValue")]
+        [InlineData("https://drive.google.com/folderview")]
+        [InlineData("https://drive.google.com/folderview?id=")]
+        [InlineData("https://drive.google.com/folderview?id=randomValue")]
+        public void IsInvalid(string url) =>
+            service.GetFolderIdFromUrl(url).Should().BeFailure().And.HaveError("O link informado é inválido.");
+    }
+
+    public class SaveFilesAsync : GoogleDriveServiceTests
+    {
+        private readonly string folderId;
         private readonly string directory;
-        private readonly FileList fileList;
-        private readonly List<File> files;
-        private string folderId;
 
-        public SaveFilesFromLinkAsync()
+        public SaveFilesAsync()
         {
-            link = dataGenerator.Random.Word();
-            directory = dataGenerator.Random.Word();
-            folderId = dataGenerator.Random.Word();
-            fileList = A.Fake<FileList>();
-            files = new List<File> { new(), new(), new() };
+            folderId = fixture.Create<string>();
+            directory = fixture.Create<string>();
 
-            A.CallTo(() => extractionService
-                .TryExtractGoogleDriveIdFromLink(link, out folderId))
-                .Returns(true);
+            A.CallTo(() => fixture
+                .Fake<GoogleDriveFilesService>()
+                .GetManyAsync(folderId, cancellationToken))
+                .Returns(fixture.Fake<File>(2));
 
-            A.CallTo(() => googleDriveFilesService
-                .GetFilesFromFolderAsync(folderId, cancellationToken))
-                .Returns(fileList);
-
-            A.CallTo(() => fileList
-                .Files)
-                .Returns(files);
-
-            A.CallTo(() => googleDriveFilesService
-                .DownloadFileAsync(
-                    A<File>.That.Matches(file => files.Contains(file)),
-                    directory,
+            A.CallTo(() => fixture
+                .Fake<GoogleDriveFilesService>()
+                .DownloadAsync(
+                    A<File>.That.Matches(file => fixture.Fake<File[]>().Contains(file)), 
+                    directory, 
                     cancellationToken))
                 .Returns(Result.Ok());
         }
 
         [Fact]
-        public async Task ShouldDownloadFilesAsExpected()
+        public async Task GivenSuccessfulExewcutionShouldReturnSuccessResult()
         {
-            var result = await service.SaveFilesFromLinkAsync(link, directory);
+            var result = await service.SaveFilesAsync(folderId, directory, cancellationToken);
             result.Should().BeSuccess();
         }
 
         [Fact]
-        public async Task ShouldCallDownloadFileOnceForEachFile()
+        public async Task GivenErrorWhenObtainingFilesShouldReturnFailResult()
         {
-            await service.SaveFilesFromLinkAsync(link, directory);
+            const string ERROR_MESSAGE = "some error";
 
-            foreach (var file in files)
-            {
-                A.CallTo(() => googleDriveFilesService
-                    .DownloadFileAsync(
-                        file,
-                        directory,
-                        cancellationToken))
-                    .MustHaveHappenedOnceExactly();
-            }
+            A.CallTo(() => fixture
+                .Fake<GoogleDriveFilesService>()
+                .GetManyAsync(folderId, cancellationToken))
+                .Returns(Result.Fail(ERROR_MESSAGE));
+
+            var result = await service.SaveFilesAsync(folderId, directory, cancellationToken);
+            result.Should().BeFailure().And.HaveError(ERROR_MESSAGE);
         }
 
         [Theory]
         [InlineData(1)]
         [InlineData(2)]
-        [InlineData(3)]
-        public async Task ShouldReturnErrorsForEachOneReceivedFromGoogleDrive(int errorCallsQuanity)
+        public async Task GivenOneOrMoreErrorsWhenDownloadingFilesShouldReturnFailResult(int errorsCount)
         {
-            var quantitySuccessCalls = files.Count - errorCallsQuanity;
-            var failResults = files.ToDictionary(
-                keySelector: file => file,
-                elementSelector: _ => Result
-                    .Fail(new Error(dataGenerator.Random.Word())
-                    .CausedBy(dataGenerator.System.Exception())));
+            const string FIRST_ERROR_MESSAGE = "some error";
+            const string SECOND_ERROR_MESSAGE = "other error";
 
-            var expectedErrors = failResults
-                .Skip(quantitySuccessCalls)
-                .SelectMany(failResult => failResult.Value.Errors);
-
-            A.CallTo(() => googleDriveFilesService
-                .DownloadFileAsync(
-                    A<File>.That.Matches(file => files.Skip(quantitySuccessCalls).Contains(file)),
+            A.CallTo(() => fixture
+                .Fake<GoogleDriveFilesService>()
+                .DownloadAsync(
+                    A<File>.That.Matches(file => fixture.Fake<File[]>().Contains(file)),
                     directory,
                     cancellationToken))
-                .ReturnsLazily((File file, string _, CancellationToken __) => failResults[file]);
+                .ReturnsNextFromSequence(
+                    Result.Fail(FIRST_ERROR_MESSAGE),
+                    Result.FailIf(errorsCount > 1, SECOND_ERROR_MESSAGE));
 
-            A.CallTo(() => googleDriveFilesService
-                .DownloadFileAsync(
-                    A<File>.That.Matches(file => files.Take(quantitySuccessCalls).Contains(file)),
-                    directory,
-                    cancellationToken))
-                .Returns(Result.Ok());
+            var result = await service.SaveFilesAsync(folderId, directory, cancellationToken);
 
-            var result = await service.SaveFilesFromLinkAsync(link, directory);
-            result.Should()
-                .BeFailure().And.Satisfy(result => result.Errors.Should()
-                .BeEquivalentTo(expectedErrors));
-        }
-
-        [Fact]
-        public async Task ShouldRepassGetFilesFromFolderAsyncError()
-        {
-            var failResult = Result.Fail("some error");
-            A.CallTo(() => googleDriveFilesService
-                .GetFilesFromFolderAsync(folderId, cancellationToken))
-                .Returns(failResult);
-
-            object result = await service.SaveFilesFromLinkAsync(link, directory);
-            result.Should().BeEquivalentTo(failResult);
-        }
-
-        [Fact]
-        public async Task ShouldReturnAFailResultIfLinkBeInvalid()
-        {
-            A.CallTo(() => extractionService
-                .TryExtractGoogleDriveIdFromLink(link, out folderId))
-                .Returns(false);
-
-            var result = await service.SaveFilesFromLinkAsync(link, directory);
-            result.Should().BeFailure().And.HaveError("O link informado é inválido.");
+            using var _ = new AssertionScope();
+            result.Should().BeFailure();
+            result.Should().HaveError(FIRST_ERROR_MESSAGE);
+            result.Errors.Should().HaveCount(errorsCount);
+            if (result.Errors.Count > 1)
+                result.Should().HaveError(SECOND_ERROR_MESSAGE);
         }
     }
 
-    public class ValidateFilesFromLinkAsync : GoogleDriveServiceTests
+    public class ValidateFilesAsync : GoogleDriveServiceTests
     {
-        private readonly string link;
-        private readonly FileList fileList;
-        private readonly ValidationResult validationResult;
-        private string? folderId;
+        private readonly string folderId;
 
-        public ValidateFilesFromLinkAsync()
+        public ValidateFilesAsync()
         {
-            link = dataGenerator.Internet.Url();
-            fileList = A.Fake<FileList>();
-            validationResult = new ValidationResult();
+            folderId = fixture.Create<string>();
 
-            A.CallTo(() => extractionService
-                .TryExtractGoogleDriveIdFromLink(link, out folderId))
-                .Returns(true);
+            A.CallTo(() => fixture
+                .Fake<GoogleDriveFilesService>()
+                .GetManyAsync(folderId, cancellationToken))
+                .Returns(Result.Ok(fixture.Fake<IList<File>>()));
 
-            A.CallTo(() => googleDriveFilesService
-                .GetFilesFromFolderAsync(folderId!, cancellationToken))
-                .Returns(fileList);
-
-            A.CallTo(() => validator
-                .ValidateAsync(fileList, cancellationToken))
-                .Returns(validationResult);
+            A.CallTo(() => fixture
+                .Fake<IValidator<IList<File>>>()
+                .ValidateAsync(fixture.Fake<IList<File>>(), cancellationToken))
+                .Returns(new ValidationResult());
         }
 
         [Fact]
-        public async Task ShouldValidateFilesAsExpected()
+        public async Task GivenSuccessfulExecutionShouldReturnSuccessResult()
         {
-            var result = await service.ValidateFilesFromLinkAsync(link, cancellationToken);
+            var result = await service.ValidateFilesAsync(folderId, cancellationToken);
+
             result.Should().BeSuccess();
         }
 
         [Fact]
-        public async Task ShouldReturnAFailResultIfLinkBeInvalid()
+        public async Task GivenErrorWhenObtainingFilesShouldReturnFailResult()
         {
-            A.CallTo(() => extractionService
-                .TryExtractGoogleDriveIdFromLink(link, out folderId))
-                .Returns(false);
+            const string ERROR_MESSAGE = "some error";
 
-            var result = await service.ValidateFilesFromLinkAsync(link, cancellationToken);
-            result.Should().BeFailure().And.HaveError("O link informado é inválido.");
+            A.CallTo(() => fixture
+                .Fake<GoogleDriveFilesService>()
+                .GetManyAsync(folderId, cancellationToken))
+                .Returns(Result.Fail(ERROR_MESSAGE));
+
+            var result = await service.ValidateFilesAsync(folderId, cancellationToken);
+            result.Should().BeFailure().And.HaveError(ERROR_MESSAGE);
         }
 
         [Fact]
-        public async Task ShouldRepassGetFilesFromFolderAsyncError()
+        public async Task GivenAnyValidationErrorsShouldReturnFailResultWithErrorsMessages()
         {
-            var failResult = Result.Fail("Some error");
-            A.CallTo(() => googleDriveFilesService
-                .GetFilesFromFolderAsync(folderId!, cancellationToken))
-                .Returns(failResult);
+            const string FIRST_ERROR_MESSAGE = "some error";
+            const string SECOND_ERROR_MESSAGE = "other error";
 
-            object result = await service.ValidateFilesFromLinkAsync(link, cancellationToken);
-            result.Should().BeEquivalentTo(failResult);
+            A.CallTo(() => fixture
+                .Fake<IValidator<IList<File>>>()
+                .ValidateAsync(fixture.Fake<IList<File>>(), cancellationToken))
+                .Returns(new ValidationResult(new[] { 
+                    new ValidationFailure("1", FIRST_ERROR_MESSAGE),
+                    new ValidationFailure("2", SECOND_ERROR_MESSAGE) 
+                }));
+
+            var result = await service.ValidateFilesAsync(folderId, cancellationToken);
+            result.Should().BeFailure().And
+                .HaveError(FIRST_ERROR_MESSAGE).And
+                .HaveError(SECOND_ERROR_MESSAGE);
         }
     }
 
-    public class GrantReaderAccessToBotFiles : GoogleDriveServiceTests
+    public class GrantReaderAccessToBotFilesAsync : GoogleDriveServiceTests
     {
         private readonly string email;
-        private readonly IEnumerable<Permission> currentUserPermissions;
-        private readonly Permission createUserPermission;
 
-        public GrantReaderAccessToBotFiles()
+        public GrantReaderAccessToBotFilesAsync()
         {
-            email = dataGenerator.Person.Email;
-            currentUserPermissions = new List<Permission>();
-            createUserPermission = new Permission();
+            GoogleDriveSettingsService.BaseFolderId = fixture.Create<string>();
+            email = fixture.Create<string>();
 
-            A.CallTo(() => googleDrivePermissionsService
-                .GetDriverAccessPermissionsAsync(email, cancellationToken))
-                .Returns(Result.Ok(currentUserPermissions));
+            A.CallTo(() => fixture
+                .Fake<GoogleDrivePermissionsService>()
+                .GetUserPermissionsAsync(email, GoogleDriveSettingsService.BaseFolderId, cancellationToken))
+                .Returns(Result.Ok<IEnumerable<Permission>>([]));
 
-            A.CallTo(() => googleDrivePermissionsService
-                .CreateBaseUserReaderPermissionAsync(email, cancellationToken))
-                .Returns(createUserPermission);
+            A.CallTo(() => fixture
+                .Fake<GoogleDrivePermissionsService>()
+                .CreateUserReaderPermissionAsync(email, GoogleDriveSettingsService.BaseFolderId, cancellationToken))
+                .Returns(fixture.Fake<Permission>());
         }
 
         [Fact]
-        public async Task ShouldCreatePermissionIfUserHasNotAnyPermission()
+        public async Task GivenSuccessfulExecutionShouldReturnSuccessResult()
         {
             var result = await service.GrantReaderAccessToBotFilesAsync(email, cancellationToken);
 
-            result.Should()
-                .BeSuccess().And
-                .Satisfy(_ => A.CallTo(() => googleDrivePermissionsService
-                    .CreateBaseUserReaderPermissionAsync(email, cancellationToken))
-                    .MustHaveHappenedOnceExactly());
+            result.Should().BeSuccess();
         }
 
         [Fact]
-        public async Task ShouldNotCreatePermissionIfUserHasAtLeastOnePermission()
+        public async Task GivenSuccessfulExecutionButWithAnAlreadyExistingPermissionShouldReturnSuccessResultWithoutCreatingANewOne()
         {
-            IEnumerable<Permission> currentUserPermissions = new List<Permission>() { new Permission() };
-            A.CallTo(() => googleDrivePermissionsService
-                .GetDriverAccessPermissionsAsync(email, cancellationToken))
-                .Returns(Result.Ok(currentUserPermissions));
+            A.CallTo(() => fixture
+                .Fake<GoogleDrivePermissionsService>()
+                .GetUserPermissionsAsync(email, GoogleDriveSettingsService.BaseFolderId, cancellationToken))
+                .Returns(Result.Ok<IEnumerable<Permission>>([new Permission()]));
 
             var result = await service.GrantReaderAccessToBotFilesAsync(email, cancellationToken);
 
-            result.Should()
-                .BeSuccess().And
-                .Satisfy(_ => A.CallTo(() => googleDrivePermissionsService
-                    .CreateBaseUserReaderPermissionAsync(email, cancellationToken))
-                    .MustNotHaveHappened());
+            result.Should().BeSuccess();
+
+            A.CallTo(() => fixture
+                .Fake<GoogleDrivePermissionsService>()
+                .CreateUserReaderPermissionAsync(A<string>.Ignored, A<string>.Ignored, cancellationToken))
+                .MustNotHaveHappened();
+        }
+        
+        [Fact]
+        public async Task GivenErrorToObtainPermissionsShouldReturnFailResult()
+        {
+            const string ERROR_MESSAGE = "some error";
+
+            A.CallTo(() => fixture
+                .Fake<GoogleDrivePermissionsService>()
+                .GetUserPermissionsAsync(email, GoogleDriveSettingsService.BaseFolderId, cancellationToken))
+                .Returns(Result.Fail(ERROR_MESSAGE));
+
+            var result = await service.GrantReaderAccessToBotFilesAsync(email, cancellationToken);
+            result.Should().BeFailure().And.HaveError(ERROR_MESSAGE);
         }
 
         [Fact]
-        public async Task ShouldRepassGetDriverAccessPermissionsAsyncError()
+        public async Task GivenErrorToCreatePermissionShouldReturnFailResult()
         {
-            var failResult = Result.Fail("some error");
-            A.CallTo(() => googleDrivePermissionsService
-                .GetDriverAccessPermissionsAsync(email, cancellationToken))
-                .Returns(failResult);
+            const string ERROR_MESSAGE = "some error";
 
-            object result = await service.GrantReaderAccessToBotFilesAsync(email, cancellationToken);
-            result.Should().BeEquivalentTo(failResult);
-        }
+            A.CallTo(() => fixture
+                .Fake<GoogleDrivePermissionsService>()
+                .CreateUserReaderPermissionAsync(email, GoogleDriveSettingsService.BaseFolderId, cancellationToken))
+                .Returns(Result.Fail(ERROR_MESSAGE));
 
-        [Fact]
-        public async Task ShouldRepassCreateBaseUserReaderPermissionAsyncError()
-        {
-            var failResult = Result.Fail("some error");
-            A.CallTo(() => googleDrivePermissionsService
-                .CreateBaseUserReaderPermissionAsync(email, cancellationToken))
-                .Returns(failResult);
-
-            object result = await service.GrantReaderAccessToBotFilesAsync(email, cancellationToken);
-            result.Should().BeEquivalentTo(failResult);
+            var result = await service.GrantReaderAccessToBotFilesAsync(email, cancellationToken);
+            result.Should().BeFailure().And.HaveError(ERROR_MESSAGE);
         }
     }
 
     public class RevokeReaderAccessToBotFilesAsync : GoogleDriveServiceTests
     {
         private readonly string email;
-        private readonly IEnumerable<Permission> currentUserPermissions;
 
         public RevokeReaderAccessToBotFilesAsync()
         {
-            email = dataGenerator.Person.Email;
-            currentUserPermissions = new List<Permission>();
+            GoogleDriveSettingsService.BaseFolderId = fixture.Create<string>();
+            email = fixture.Create<string>();
 
-            A.CallTo(() => googleDrivePermissionsService
-                .GetDriverAccessPermissionsAsync(email, cancellationToken))
-                .Returns(Result.Ok(currentUserPermissions));
+            A.CallTo(() => fixture
+                .Fake<GoogleDrivePermissionsService>()
+                .GetUserPermissionsAsync(email, GoogleDriveSettingsService.BaseFolderId, cancellationToken))
+                .Returns(Result.Ok(fixture.Fake<IEnumerable<Permission>>()));
 
-            A.CallTo(() => googleDrivePermissionsService
-                .DeleteBaseUserPermissionsAsync(currentUserPermissions, cancellationToken))
+            A.CallTo(() => fixture
+                .Fake<GoogleDrivePermissionsService>()
+                .DeleteUserReaderPermissionsAsync(
+                    fixture.Fake<IEnumerable<Permission>>(), 
+                    GoogleDriveSettingsService.BaseFolderId, 
+                    cancellationToken))
                 .Returns(Result.Ok());
         }
 
         [Fact]
-        public async Task ShouldRevokePermissionSuccessfuly()
+        public async Task GivenSuccessfulExecutionShouldReturnSuccessResult()
         {
             var result = await service.RevokeReaderAccessToBotFilesAsync(email, cancellationToken);
 
-            result.Should()
-                .BeSuccess().And
-                .Satisfy(_ => A.CallTo(() => googleDrivePermissionsService
-                    .DeleteBaseUserPermissionsAsync(currentUserPermissions, cancellationToken))
-                    .MustHaveHappenedOnceExactly());
+            result.Should().BeSuccess();
         }
 
         [Fact]
-        public async Task ShouldRepassGetDriverAccessPermissionsAsyncError()
+        public async Task GivenErrorToObtainPermissionsShouldReturnFailResult()
         {
-            var failResult = Result.Fail("some error");
-            A.CallTo(() => googleDrivePermissionsService
-                .GetDriverAccessPermissionsAsync(email, cancellationToken))
-                .Returns(failResult);
+            const string ERROR_MESSAGE = "some error";
 
-            object result = await service.RevokeReaderAccessToBotFilesAsync(email, cancellationToken);
-            result.Should().BeEquivalentTo(failResult);
-        }
-
-        [Fact]
-        public async Task ShouldDeleteBaseUserPermissionsAsyncError()
-        {
-            var failResult = Result.Fail("some error");
-            A.CallTo(() => googleDrivePermissionsService
-                .DeleteBaseUserPermissionsAsync(currentUserPermissions, cancellationToken))
-                .Returns(failResult);
+            A.CallTo(() => fixture
+                .Fake<GoogleDrivePermissionsService>()
+                .GetUserPermissionsAsync(email, GoogleDriveSettingsService.BaseFolderId, cancellationToken))
+                .Returns(Result.Fail(ERROR_MESSAGE));
 
             var result = await service.RevokeReaderAccessToBotFilesAsync(email, cancellationToken);
-            result.Should().BeSameAs(failResult);
+            result.Should().BeFailure().And.HaveError(ERROR_MESSAGE);
+        }
+
+        [Fact]
+        public async Task GivenErrorToDeletePermissionShouldReturnFailResult()
+        {
+            const string ERROR_MESSAGE = "some error";
+
+            A.CallTo(() => fixture
+                .Fake<GoogleDrivePermissionsService>()
+                .DeleteUserReaderPermissionsAsync(
+                    fixture.Fake<IEnumerable<Permission>>(), 
+                    GoogleDriveSettingsService.BaseFolderId, 
+                    cancellationToken))
+                .Returns(Result.Fail(ERROR_MESSAGE));
+
+            var result = await service.RevokeReaderAccessToBotFilesAsync(email, cancellationToken);
+            result.Should().BeFailure().And.HaveError(ERROR_MESSAGE);
         }
     }
 }

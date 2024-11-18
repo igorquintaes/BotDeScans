@@ -30,11 +30,11 @@ public class PublishMangadexStep(
     {
         var mangaDexService = serviceProvider.GetRequiredService<MangaDexService>();
 
-        var loginResult = await mangaDexService.LoginAsync(cancellationToken);
+        var loginResult = await mangaDexService.LoginAsync();
         if (loginResult.IsFailed)
             return loginResult;
 
-        var clearResult = await mangaDexService.ClearPendingUploadsAsync(cancellationToken);
+        var clearResult = await mangaDexService.ClearPendingUploadsAsync();
         if (clearResult.IsFailed)
             return clearResult;
 

@@ -108,11 +108,10 @@ public class FileServiceTests : UnitTest
                 options => options.WithStrictOrdering());
         }
 
-        public override void Dispose()
+        public void Dispose()
         {
             Directory.Delete(destinationDirectory, true);
             Directory.Delete(resourcesDirectory, true);
-            base.Dispose();
             GC.SuppressFinalize(this);
         }
     }
@@ -135,12 +134,11 @@ public class FileServiceTests : UnitTest
             File.ReadAllText(fileName, Encoding.UTF8).Should().Be(fileContentAsString);
         }
 
-        public override void Dispose()
+        public void Dispose()
         {
             if (File.Exists(fileName))
                 File.Delete(fileName);
 
-            base.Dispose();
             GC.SuppressFinalize(this);
         }
     }
