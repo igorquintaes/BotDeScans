@@ -123,15 +123,11 @@ public class GoogleDriveCommands(
         {
             var folderIdResult = googleDriveService.GetFolderIdFromUrl(url);
             if (folderIdResult.IsFailed)
-                return await feedbackService.SendContextualEmbedAsync(
-                    EmbedBuilder.CreateErrorEmbed(folderIdResult),
-                    ct: CancellationToken);
+                return await folderIdResult.PostErrorOnDiscord(feedbackService, CancellationToken);
 
             var downloadResult = await googleDriveService.SaveFilesAsync(folderIdResult.Value, Directory.GetCurrentDirectory(), CancellationToken);
             if (downloadResult.IsFailed)
-                return await feedbackService.SendContextualEmbedAsync(
-                    EmbedBuilder.CreateErrorEmbed(downloadResult),
-                    ct: CancellationToken);
+                return await downloadResult.PostErrorOnDiscord(feedbackService, CancellationToken);
 
             return await feedbackService.SendContextualEmbedAsync(
                 EmbedBuilder.CreateSuccessEmbed($"Funcionando."), 
@@ -145,9 +141,7 @@ public class GoogleDriveCommands(
         {
             var createFolderResult = await googleDriveService.GetOrCreateFolderAsync("algo", default, CancellationToken);
             if (createFolderResult.IsFailed)
-                return await feedbackService.SendContextualEmbedAsync(
-                    EmbedBuilder.CreateErrorEmbed(createFolderResult),
-                    ct: CancellationToken);
+                return await createFolderResult.PostErrorOnDiscord(feedbackService, CancellationToken);
 
             var createFileResult = await googleDriveService.CreateFileAsync(
                 Path.Combine(Directory.GetCurrentDirectory(), "ALGO.zip"),
@@ -155,11 +149,12 @@ public class GoogleDriveCommands(
                 false,
                 CancellationToken);
 
-            var embed = createFileResult.IsSuccess
-                ? EmbedBuilder.CreateSuccessEmbed($"Funcionando.")
-                : EmbedBuilder.CreateErrorEmbed(createFileResult);
+            if (createFileResult.IsFailed)
+                return await createFileResult.PostErrorOnDiscord(feedbackService, CancellationToken);
 
-            return await feedbackService.SendContextualEmbedAsync(embed, ct: CancellationToken);
+            return await feedbackService.SendContextualEmbedAsync(
+                EmbedBuilder.CreateSuccessEmbed($"Funcionando."), 
+                ct: CancellationToken);
         }
     }
 
