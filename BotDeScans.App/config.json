@@ -46,8 +46,10 @@
   },
   "Mangadex": {
     "GroupId": "",
-    "User": "",
-    "Pass": ""
+    "Username": "",
+    "Password": "",
+    "ClientId": "",
+    "ClientSecret": ""
   },
   "Tsuki": {
     "User": "",
