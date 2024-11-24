@@ -13,16 +13,22 @@ public class MangaDexService(
 
     public async Task<Result> LoginAsync()
     {
-        var username = configuration.GetValue<string>("Mangadex:Username");
-        var password = configuration.GetValue<string>("Mangadex:Password");
-        var clientId = configuration.GetValue<string>("Mangadex:ClientId");
-        var clientSecret = configuration.GetValue<string>("Mangadex:ClientSecret");
+        var username = configuration.GetValue<string>("Mangadex:Username", string.Empty);
+        var password = configuration.GetValue<string>("Mangadex:Password", string.Empty);
+        var clientId = configuration.GetValue<string>("Mangadex:ClientId", string.Empty);
+        var clientSecret = configuration.GetValue<string>("Mangadex:ClientSecret", string.Empty);
 
-        if (string.IsNullOrWhiteSpace(clientId))
+        if (string.IsNullOrWhiteSpace(username))
             return Result.Fail("No mangadex username defined");
 
-        if (string.IsNullOrWhiteSpace(clientSecret))
+        if (string.IsNullOrWhiteSpace(password))
             return Result.Fail("No mangadex password defined");
+
+        if (string.IsNullOrWhiteSpace(clientId))
+            return Result.Fail("No mangadex clientId defined");
+
+        if (string.IsNullOrWhiteSpace(clientSecret))
+            return Result.Fail("No mangadex clientSecret defined");
 
         var result = await mangaDex.Auth.Personal(clientId, clientSecret, username, password);
 
