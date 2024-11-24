@@ -17,16 +17,18 @@ public class PublishMangadexStep(
         if (TryGetMangaId(state.Info.DisplayTitle, out var _) is false)
             return Task.FromResult(Result.Fail("Obra não encontrada em 'mangadex-ids.txt'."));
 
-        var username = configuration.GetValue<string?>("Mangadex:Username", null);
-        var password = configuration.GetValue<string?>("Mangadex:Password", null);
-        var clientId = configuration.GetValue<string?>("Mangadex:ClientId", null);
-        var clientSecret = configuration.GetValue<string?>("Mangadex:ClientSecret", null);
+        var username = configuration.GetValue("Mangadex:Username", string.Empty);
+        var password = configuration.GetValue("Mangadex:Password", string.Empty);
+        var clientId = configuration.GetValue("Mangadex:ClientId", string.Empty);
+        var clientSecret = configuration.GetValue("Mangadex:ClientSecret", string.Empty);
+        var groupId = configuration.GetValue("Mangadex:GroupId", string.Empty);
 
-        if (username is null || 
-            password is null ||
-            clientId is null ||
-            clientSecret is null)
-            return Task.FromResult(Result.Fail("As credenciais da MangaDex não estão preenchidas (parcialmente ou totalmente)."));
+        if (string.IsNullOrWhiteSpace(username) ||
+            string.IsNullOrWhiteSpace(password) ||
+            string.IsNullOrWhiteSpace(clientId) ||
+            string.IsNullOrWhiteSpace(clientSecret) ||
+            string.IsNullOrWhiteSpace(groupId))
+            return Task.FromResult(Result.Fail("As configurações da MangaDex não estão preenchidas (parcialmente ou totalmente)."));
 
         return Task.FromResult(Result.Ok());
     }

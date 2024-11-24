@@ -13,10 +13,10 @@ public class MangaDexService(
 
     public async Task<Result> LoginAsync()
     {
-        var username = configuration.GetValue<string>("Mangadex:Username", string.Empty);
-        var password = configuration.GetValue<string>("Mangadex:Password", string.Empty);
-        var clientId = configuration.GetValue<string>("Mangadex:ClientId", string.Empty);
-        var clientSecret = configuration.GetValue<string>("Mangadex:ClientSecret", string.Empty);
+        var username = configuration.GetValue("Mangadex:Username", string.Empty);
+        var password = configuration.GetValue("Mangadex:Password", string.Empty);
+        var clientId = configuration.GetValue("Mangadex:ClientId", string.Empty);
+        var clientSecret = configuration.GetValue("Mangadex:ClientSecret", string.Empty);
 
         if (string.IsNullOrWhiteSpace(username))
             return Result.Fail("No mangadex username defined");
@@ -34,7 +34,8 @@ public class MangaDexService(
 
         if (result is null || 
             result.ExpiresIn is null ||
-            result.ExpiresIn <= 0)
+            result.ExpiresIn <= 0 ||
+            string.IsNullOrWhiteSpace(result.AccessToken))
             return Result.Fail("Unable to login in mangadex.");
 
         accessToken = result.AccessToken;
