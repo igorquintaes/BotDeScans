@@ -1,7 +1,6 @@
 ﻿using BotDeScans.App.Extensions;
 using FluentResults;
 using MangaDexSharp;
-using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
 namespace BotDeScans.App.Services;
 
@@ -45,7 +44,7 @@ public class MangaDexService(
     public async Task<Result> ClearPendingUploadsAsync()
     {
         var uploadResponse = await mangaDex.Upload.Get(accessToken);
-        if (uploadResponse.Errors.Any(x => x.Status == StatusCodes.Status404NotFound))
+        if (uploadResponse.Errors.Any(x => x.Status == 404))
             return Result.Ok();
 
         if (uploadResponse.ErrorOccurred)

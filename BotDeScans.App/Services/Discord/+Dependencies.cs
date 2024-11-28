@@ -14,7 +14,7 @@ internal static class AddDependencies
     internal static IServiceCollection AddDiscordServices(this IServiceCollection services) => services
         .AddDiscordCommands()
         .AddDiscordConditions()
-        .AddSingleton<RolesService>()
+        .AddScoped<RolesService>()
         .AddScoped<ExtendedFeedbackService>();
 
     internal static IHostBuilder AddDiscordToHost(this IHostBuilder hostBuilder) => hostBuilder

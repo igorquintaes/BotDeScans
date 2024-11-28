@@ -1,14 +1,13 @@
 ﻿using BotDeScans.App.Extensions;
 using BotDeScans.App.Features.Publish.Steps;
+using BotDeScans.App.Services.Discord;
 using FluentResults;
 using Microsoft.Extensions.Configuration;
-using Remora.Discord.API.Abstractions.Rest;
-using Remora.Rest.Core;
 namespace BotDeScans.App.Features.Publish;
 
 public class PublishService(
     IConfiguration configuration,
-    IDiscordRestGuildAPI discordRestGuildAPI,
+    RolesService rolesService,
     PublishState publishState,
     IEnumerable<IStep> steps)
 {
@@ -31,11 +30,6 @@ public class PublishService(
         };
     }
 
-    private async Task<Result<string>> GetTitleRole(string title, CancellationToken cancellationToken)
-        => TryGetRoleName(title, out var roleName) is false
-            ? (Result<string>)Result.Fail($"Erro ao encontrar um cargo para o mangá '{title}', no arquivo roles.txt")
-            : await GetRoleFromDiscord(roleName, cancellationToken);
-
     private async Task<Result<string>> GetGlobalAndTitleRoles(string title, CancellationToken cancellationToken)
     {
         var titleRolePing = await GetTitleRole(title, cancellationToken);
@@ -44,26 +38,23 @@ public class PublishService(
 
         const string globalRoleKey = "Settings:Publish:GlobalRole";
         var globalRoleName = configuration.GetRequiredValue<string>(globalRoleKey);
-        var globalRolePing = await GetRoleFromDiscord(globalRoleName, cancellationToken);
-        if (globalRolePing.IsFailed)
-            return globalRolePing;
+        var globalRole = await rolesService.GetRoleFromDiscord(globalRoleName, cancellationToken);
+        if (globalRole.IsFailed)
+            return globalRole.ToResult();
 
-        return $"{titleRolePing.Value}, {globalRolePing.Value}";
+        return $"{titleRolePing.Value}, <@&{globalRole.Value.ID.Value}>";
     }
 
-    // todo: método em classe do discord
-    private async Task<Result<string>> GetRoleFromDiscord(string roleName, CancellationToken cancellationToken)
+    private async Task<Result<string>> GetTitleRole(string title, CancellationToken cancellationToken)
     {
-        var serverId = configuration.GetRequiredValue<ulong>("Discord:ServerId");
-        var guildRolesResult = await discordRestGuildAPI.GetGuildRolesAsync(new Snowflake(serverId), cancellationToken);
+        if (TryGetRoleName(title, out var roleName) is false)
+            return Result.Fail($"Erro ao encontrar um cargo para o mangá '{title}', no arquivo roles.txt");
 
-        if (!guildRolesResult.IsDefined(out var guildRoles))
-            return Result.Fail(guildRolesResult.Error!.Message);
+        var role = await rolesService.GetRoleFromDiscord(roleName, cancellationToken);
+        if (role.IsFailed)
+            return role.ToResult();
 
-        var guildRole = guildRoles.FirstOrDefault(guildRole => roleName.Equals(guildRole.Name, StringComparison.Ordinal));
-        return guildRole is not null
-            ? Result.Ok($"<@&{guildRole.ID.Value}>")
-            : Result.Fail("Cargo não encontrado no servidor.");
+        return $"<@&{role.Value.ID.Value}>";
     }
 
     // isso vai morrer, pode continuar feio

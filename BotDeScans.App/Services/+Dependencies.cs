@@ -1,6 +1,7 @@
 ﻿using BotDeScans.App.Features.GoogleDrive;
 using BotDeScans.App.Features.Publish;
 using BotDeScans.App.Features.Publish.Steps;
+using BotDeScans.App.Features.Titles;
 using BotDeScans.App.Services.Discord;
 using BotDeScans.App.Services.ExternalClients;
 using BotDeScans.App.Services.Initializatiors;
@@ -19,6 +20,7 @@ internal static class AddDependencies
         .AddPublishServices()
         .AddExternalClients()
         .AddGoogleDriveInternalServices()
+        .AddTitleServices()
         .AddInitializators()
         .AddLoggingServices()
         .AddWrappers()

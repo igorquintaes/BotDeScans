@@ -4,6 +4,7 @@ using BotDeScans.UnitTests.Extensions;
 using FakeItEasy;
 using FluentAssertions;
 using FluentAssertions.Execution;
+using FluentResults.Extensions.FluentAssertions;
 using Remora.Discord.API.Abstractions.Objects;
 using Remora.Discord.API.Objects;
 using Remora.Rest.Core;
@@ -15,7 +16,7 @@ namespace BotDeScans.UnitTests.Specs.DiscordServices;
 
 public class RolesServiceTests : UnitTest
 {
-    private readonly RolesService service = new();
+    private readonly RolesService service = new(null, null);
 
     public class ContainsAtLeastOneOfExpectedRoles : RolesServiceTests
     {
@@ -43,16 +44,14 @@ public class RolesServiceTests : UnitTest
 
             roles.AddRange(guildRoles);
 
+            var expectedErrorMessage = $"Invalid request. No role(s) found in server; {string.Join(", ", requiredRoles)}";
+
             var result = service.ContainsAtLeastOneOfExpectedRoles(
                 requiredRoles,
                 guildRoles,
                 userRoles);
 
-            using var _ = new AssertionScope();
-            var errorMessage = $"Invalid request. No role(s) found in server; {string.Join(", ", requiredRoles)}";
-            result.IsSuccess.Should().BeFalse();
-            result.Error.Should().BeOfType<NotFoundError>()
-                  .Which.Message.Should().Be(errorMessage);
+            result.Should().BeFailure().And.HaveError(expectedErrorMessage);
         }
 
         [Fact]
@@ -63,11 +62,8 @@ public class RolesServiceTests : UnitTest
                 new List<Role>(),
                 userRoles);
 
-            using var _ = new AssertionScope();
             var errorMessage = $"Invalid request. No role(s) found in server; {string.Join(", ", requiredRoles)}";
-            result.IsSuccess.Should().BeFalse();
-            result.Error.Should().BeOfType<NotFoundError>()
-                  .Which.Message.Should().Be(errorMessage);
+            result.Should().BeFailure().And.HaveError(errorMessage);
         }
 
         [Theory]
@@ -82,9 +78,7 @@ public class RolesServiceTests : UnitTest
                 guildRoles,
                 rolesIDs);
 
-            using var _ = new AssertionScope();
-            result.IsSuccess.Should().BeTrue();
-            result.Entity.Should().BeFalse();
+            result.Should().BeSuccess().And.HaveValue(false);
         }
 
         [Fact]
@@ -98,9 +92,7 @@ public class RolesServiceTests : UnitTest
                 guildRoles,
                 new List<Snowflake> { randomRole.ID });
 
-            using var _ = new AssertionScope();
-            result.IsSuccess.Should().BeTrue();
-            result.Entity.Should().BeTrue();
+            result.Should().BeSuccess().And.HaveValue(true);
         }
 
         [Fact]
@@ -112,9 +104,7 @@ public class RolesServiceTests : UnitTest
                 guildRoles,
                 new List<Snowflake> { randomRole.ID });
 
-            using var _ = new AssertionScope();
-            result.IsSuccess.Should().BeTrue();
-            result.Entity.Should().BeTrue();
+            result.Should().BeSuccess().And.HaveValue(true);
         }
 
         [Fact]
@@ -128,9 +118,7 @@ public class RolesServiceTests : UnitTest
                 guildRoles,
                 new List<Snowflake> { randomRole.ID, dataGenerator.Random.Snowflake() });
 
-            using var _ = new AssertionScope();
-            result.IsSuccess.Should().BeTrue();
-            result.Entity.Should().BeTrue();
+            result.Should().BeSuccess().And.HaveValue(true);
         }
 
         [Fact]
@@ -144,9 +132,7 @@ public class RolesServiceTests : UnitTest
                 guildRoles,
                 guildMemberRolesIDs);
 
-            using var _ = new AssertionScope();
-            result.IsSuccess.Should().BeTrue();
-            result.Entity.Should().BeTrue();
+            result.Should().BeSuccess().And.HaveValue(true);
         }
     }
 }
