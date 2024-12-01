@@ -70,9 +70,6 @@ public class PublishState
         [Description("MangaDex")]
         public string? MangaDexLink { get; set; }
 
-        [Description("Tsuki")]
-        public string? TsukiLink { get; set; }
-
         public string? BoxPdfReader { get; set; }
     }
 }

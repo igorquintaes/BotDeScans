@@ -37,8 +37,6 @@ public enum StepEnum
     UploadPdfGoogleDrive,
     [Description("Publicar na Mangadex")]
     UploadMangadex,
-    [Description("Publicar na Tsuki")]
-    UploadTsuki,
     [Description("Publicar no Blogspot")]
     PublishBlogspot
 }
