@@ -5,16 +5,9 @@
 /// </summary>
 public class FileReleaseService : IDisposable
 {
+    public static readonly IEnumerable<string> ValidReleaseImageExtensions = ["jpg", "jpeg", "png"];
     private readonly string scopedDirectoryBaseName = Guid.NewGuid().ToString();
     private readonly List<string> scopedDirectories = [];
-
-    public static readonly IEnumerable<string> ValidReleaseImageExtensions =
-        new string[]
-        {
-            "jpg",
-            "jpeg",
-            "png",
-        };
 
     // todo: podemos pensar sobre termos capas dinâmicas. Exemplo: Facebook usar capa-facebook, enquanto o blogger usar capa-blogger;
     // definirmos um nome de capa genérico, caso não ache... e uma configuração de obrigar/não obrigar nomes específicos,

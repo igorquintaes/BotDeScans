@@ -1,4 +1,5 @@
 ﻿using BotDeScans.App.Extensions;
+using BotDeScans.App.Features.Titles;
 using FluentResults;
 using Microsoft.Extensions.Configuration;
 using Remora.Discord.Commands.Services;

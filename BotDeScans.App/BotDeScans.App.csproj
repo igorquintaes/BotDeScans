@@ -69,7 +69,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="Features\Titles\Update\" />
+    <Folder Include="Features\Titles\References\" />
+    <Folder Include="Infra\Migrations\" />
   </ItemGroup>
 
 </Project>

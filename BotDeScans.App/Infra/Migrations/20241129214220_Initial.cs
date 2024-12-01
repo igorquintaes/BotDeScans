@@ -17,7 +17,7 @@ namespace BotDeScans.App.Infra.Migrations
                     Id = table.Column<int>(type: "INTEGER", nullable: false)
                         .Annotation("Sqlite:Autoincrement", true),
                     Name = table.Column<string>(type: "TEXT", nullable: false),
-                    DiscordRole = table.Column<string>(type: "TEXT", nullable: true)
+                    DiscordRoleId = table.Column<ulong>(type: "INTEGER", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -30,9 +30,9 @@ namespace BotDeScans.App.Infra.Migrations
                 {
                     Id = table.Column<int>(type: "INTEGER", nullable: false)
                         .Annotation("Sqlite:Autoincrement", true),
+                    TitleId = table.Column<int>(type: "INTEGER", nullable: false),
                     Key = table.Column<int>(type: "INTEGER", nullable: false),
-                    Value = table.Column<string>(type: "TEXT", nullable: false),
-                    TitleId = table.Column<int>(type: "INTEGER", nullable: true)
+                    Value = table.Column<string>(type: "TEXT", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -41,13 +41,15 @@ namespace BotDeScans.App.Infra.Migrations
                         name: "FK_TitleReferences_Titles_TitleId",
                         column: x => x.TitleId,
                         principalTable: "Titles",
-                        principalColumn: "Id");
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
                 });
 
             migrationBuilder.CreateIndex(
-                name: "IX_TitleReferences_TitleId",
+                name: "IX_TitleReferences_TitleId_Key",
                 table: "TitleReferences",
-                column: "TitleId");
+                columns: new[] { "TitleId", "Key" },
+                unique: true);
         }
 
         /// <inheritdoc />

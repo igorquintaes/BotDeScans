@@ -4,24 +4,34 @@ using BotDeScans.App.Infra;
 using BotDeScans.App.Models;
 using BotDeScans.App.Services.Discord;
 using FluentValidation;
+using Microsoft.EntityFrameworkCore;
 using Remora.Discord.Commands.Feedback.Services;
 using Remora.Discord.Interactivity;
 using Remora.Results;
 using System.ComponentModel;
-namespace BotDeScans.App.Features.Titles.Create;
+namespace BotDeScans.App.Features.Titles.Update;
 
-public class CreateInteractions(
+public class UpdateInteractions(
     DatabaseContext databaseContext,
     FeedbackService feedbackService,
     RolesService rolesService,
     IValidator<Title> validator) : InteractionGroup
 {
-    [Modal(nameof(CreateAsync))]
-    [Description("Cadastra nova obra")]
-    public async Task<IResult> CreateAsync(
+    [Modal(nameof(UpdateAsync))]
+    [Description("Atualiza dados da obra")]
+    public async Task<IResult> UpdateAsync(
     string name,
-    string? role)
+    string? role,
+    string state)
     {
+        var title = await databaseContext.Titles.AsNoTracking()
+            .FirstOrDefaultAsync(x => x.Id == int.Parse(state));
+
+        if (title is null)
+            return await feedbackService.SendContextualWarningAsync(
+                "Obra não encontrada.",
+                ct: CancellationToken);
+
         ulong? roleId = null;
         if (string.IsNullOrEmpty(role) is false)
         {
@@ -34,18 +44,18 @@ public class CreateInteractions(
             roleId = roleResult.Value.ID.Value;
         }
 
-        var title = new Title(name, roleId);
+        var newTitle = title with { Name = name, DiscordRoleId = roleId };
         var validatioResult = await validator.ValidateAsync(title);
         if (validatioResult.IsValid is false)
             return await feedbackService.SendContextualEmbedAsync(
                 embed: EmbedBuilder.CreateErrorEmbed(validatioResult.ToResult()),
                 ct: CancellationToken);
 
-        await databaseContext.AddAsync(title, CancellationToken);
+        databaseContext.Update(newTitle);
         await databaseContext.SaveChangesAsync(CancellationToken);
 
         return await feedbackService.SendContextualEmbedAsync(
-            embed: EmbedBuilder.CreateSuccessEmbed("Obra cadastrada com sucesso!"),
+            embed: EmbedBuilder.CreateSuccessEmbed("Obra atualizada com sucesso!"),
             ct: CancellationToken);
     }
 }

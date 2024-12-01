@@ -11,7 +11,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace BotDeScans.App.Infra.Migrations
 {
     [DbContext(typeof(DatabaseContext))]
-    [Migration("20241125030335_Initial")]
+    [Migration("20241129214220_Initial")]
     partial class Initial
     {
         /// <inheritdoc />
@@ -26,8 +26,8 @@ namespace BotDeScans.App.Infra.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("INTEGER");
 
-                    b.Property<string>("DiscordRole")
-                        .HasColumnType("TEXT");
+                    b.Property<ulong?>("DiscordRoleId")
+                        .HasColumnType("INTEGER");
 
                     b.Property<string>("Name")
                         .IsRequired()
@@ -47,7 +47,7 @@ namespace BotDeScans.App.Infra.Migrations
                     b.Property<int>("Key")
                         .HasColumnType("INTEGER");
 
-                    b.Property<int?>("TitleId")
+                    b.Property<int>("TitleId")
                         .HasColumnType("INTEGER");
 
                     b.Property<string>("Value")
@@ -56,16 +56,21 @@ namespace BotDeScans.App.Infra.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("TitleId");
+                    b.HasIndex("TitleId", "Key")
+                        .IsUnique();
 
                     b.ToTable("TitleReferences");
                 });
 
             modelBuilder.Entity("BotDeScans.App.Models.TitleReference", b =>
                 {
-                    b.HasOne("BotDeScans.App.Models.Title", null)
+                    b.HasOne("BotDeScans.App.Models.Title", "Title")
                         .WithMany("References")
-                        .HasForeignKey("TitleId");
+                        .HasForeignKey("TitleId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Title");
                 });
 
             modelBuilder.Entity("BotDeScans.App.Models.Title", b =>

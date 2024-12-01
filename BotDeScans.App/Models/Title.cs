@@ -1,29 +1,33 @@
-﻿using BotDeScans.App.Extensions;
-using BotDeScans.App.Services.Discord;
-using FluentValidation;
+﻿using FluentValidation;
 namespace BotDeScans.App.Models;
 
-public record Title(string Name, string? DiscordRole)
+public record Title(string Name, ulong? DiscordRoleId)
 {
     public int Id { get; init; }
     public List<TitleReference> References { get; init; } = [];
+
+    public Title UpdateReference(TitleReference titleReference)
+    {
+        var oldReference = References.FirstOrDefault(x => x.Key != titleReference.Key);
+        if (oldReference is null)
+            return this with { References = [.. References, titleReference] };
+
+        return this with
+        {
+            References = 
+            [
+                ..References.Where(x => x.Key != titleReference.Key),
+                oldReference with { Value = titleReference.Value }
+            ]
+        };
+    }
 }
 
 public class FileListValidator : AbstractValidator<Title>
 {
-    public FileListValidator(RolesService rolesService)
+    public FileListValidator()
     {
         RuleFor(x => x.Name).NotEmpty();
-        RuleFor(x => x.DiscordRole).CustomAsync(
-            async (roleName, context, cancellationToken) =>
-            {
-                if (string.IsNullOrWhiteSpace(roleName))
-                    return;
-
-                var role = await rolesService.GetRoleFromDiscord(roleName!, cancellationToken);
-                if (role.IsFailed)
-                    context.AddFailure(nameof(Title.DiscordRole), role.Errors);
-            });
     }
 }
 

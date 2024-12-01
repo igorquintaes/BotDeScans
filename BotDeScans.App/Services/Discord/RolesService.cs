@@ -28,7 +28,7 @@ public class RolesService(IConfiguration configuration, IDiscordRestGuildAPI dis
     }
 
     public virtual async Task<Result<IRole>> GetRoleFromDiscord(
-        string roleName, 
+        string role, 
         CancellationToken cancellationToken)
     {
         var serverId = configuration.GetRequiredValue<ulong>("Discord:ServerId");
@@ -37,9 +37,17 @@ public class RolesService(IConfiguration configuration, IDiscordRestGuildAPI dis
         if (!guildRolesResult.IsDefined(out var guildRoles))
             return Result.Fail(guildRolesResult.Error!.Message);
 
-        var guildRole = guildRoles.FirstOrDefault(guildRole => roleName.Equals(guildRole.Name, StringComparison.Ordinal));
-        return guildRole is not null
-            ? Result.Ok(guildRole)
-            : Result.Fail("Cargo não encontrado no servidor.");
+        var guildRole = guildRoles.FirstOrDefault(guildRole => role.Equals(guildRole.Name, StringComparison.Ordinal));
+        if (guildRole is not null)
+            return Result.Ok(guildRole);
+
+        if (ulong.TryParse(role, out var roleId))
+        {
+            guildRole = guildRoles.FirstOrDefault(guildRole => guildRole.ID.Value.Equals(role)); 
+            if (guildRole is not null)
+                return Result.Ok(guildRole);
+        }
+
+        return Result.Fail("Cargo não encontrado no servidor.");
     }
 }

@@ -11,12 +11,13 @@ public class ModalBuilder(string ModalId, string Title) : List<ActionRowComponen
         string fieldName,
         string label,
         bool isRequired = true,
-        TextInputStyle style = TextInputStyle.Short)
+        TextInputStyle style = TextInputStyle.Short,
+        string? value = null)
     {
         if (Count == 5)
             throw new ArgumentOutOfRangeException(nameof(fieldName), "Cannot build a modal with more than 5 fields (Discord API validation).");
 
-        Add(new ActionRowComponent(new[] {
+        Add(new ActionRowComponent([
             new TextInputComponent(
                 CustomID: fieldName,
                 Style: style,
@@ -24,13 +25,16 @@ public class ModalBuilder(string ModalId, string Title) : List<ActionRowComponen
                 MinLength: default,
                 MaxLength: default,
                 IsRequired: isRequired,
-                Value: string.Empty,
+                Value: value ?? string.Empty,
                 Placeholder: default
-            )}));
+            )]));
 
         return this;
     }
 
-    public OneOf<IInteractionMessageCallbackData, IInteractionAutocompleteCallbackData, IInteractionModalCallbackData> Create() 
+    public OneOf<IInteractionMessageCallbackData, IInteractionAutocompleteCallbackData, IInteractionModalCallbackData> Create()
         => new InteractionModalCallbackData(CustomIDHelpers.CreateModalID(ModalId), Title, this);
+
+    public OneOf<IInteractionMessageCallbackData, IInteractionAutocompleteCallbackData, IInteractionModalCallbackData> CreateWithState(string state)
+        => new InteractionModalCallbackData(CustomIDHelpers.CreateModalIDWithState(ModalId, state), Title, this);
 }

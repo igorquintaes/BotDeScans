@@ -4,7 +4,7 @@ using MangaDexSharp;
 using Microsoft.Extensions.Configuration;
 namespace BotDeScans.App.Services;
 
-public class MangaDexService(
+public partial class MangaDexService(
     IMangaDex mangaDex,
     IConfiguration configuration)
 {
@@ -127,4 +127,24 @@ public class MangaDexService(
             .Select(x => x.Split("$"))
             .ToDictionary(x => x[0].Trim().ToLowerInvariant(), x => x[1].Trim())
             .TryGetValue(mangaName.ToLowerInvariant(), out mangaId!);
+
+    public Result<string> GetTitleIdFromUrl(string url)
+    {
+        const int GUID_CHAR_LENGHT = 36;
+        const string ID_URL_PREFIX = "/title/";
+
+        if (Guid.TryParse(url, out var guidResult))
+            return guidResult.ToString();
+
+        if (!Uri.TryCreate(url, UriKind.Absolute, out var uri) || uri.Authority != "mangadex.org")
+            return Result.Fail("O link informado não é da MangaDex.");
+
+        if (url.Contains(ID_URL_PREFIX) is false)
+            return Result.Fail("O link informado não é de uma página de obra.");
+
+        var titleId = url.Substring(url.IndexOf(ID_URL_PREFIX) + ID_URL_PREFIX.Length, GUID_CHAR_LENGHT);
+        return Guid.TryParse(titleId, out var titleIdResult)
+            ? Result.Ok(titleIdResult.ToString())
+            : Result.Fail("O link informado está em formato inválido.");
+    }
 }
