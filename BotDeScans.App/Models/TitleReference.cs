@@ -13,7 +13,5 @@ public record TitleReference
 public enum ExternalReference
 {
     [Description("MangaDex")]
-    MangaDex,
-    [Description("Tsuki Mangás")]
-    TsukiMangas
+    MangaDex
 }
