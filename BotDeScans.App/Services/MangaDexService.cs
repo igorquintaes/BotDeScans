@@ -9,31 +9,42 @@ public class MangaDexService(
     IMangaDex mangaDex,
     IConfiguration configuration)
 {
-    private readonly string? groupId = configuration.GetValue<string>("Mangadex:GroupId");
-    private readonly string? username = configuration.GetValue<string>("Mangadex:User");
-    private readonly string? password = configuration.GetValue<string>("Mangadex:Pass");
-    private string? token;
+    private string? accessToken;
 
     public async Task<Result> LoginAsync()
     {
+        var username = configuration.GetValue("Mangadex:Username", string.Empty);
+        var password = configuration.GetValue("Mangadex:Password", string.Empty);
+        var clientId = configuration.GetValue("Mangadex:ClientId", string.Empty);
+        var clientSecret = configuration.GetValue("Mangadex:ClientSecret", string.Empty);
+
         if (string.IsNullOrWhiteSpace(username))
             return Result.Fail("No mangadex username defined");
 
         if (string.IsNullOrWhiteSpace(password))
             return Result.Fail("No mangadex password defined");
 
-        // todo: trocar por openidconnect
-        var result = await mangaDex.User.Login(username, password);
-        if (!string.IsNullOrWhiteSpace(result.Message))
-            return Result.Fail(result.Message);
+        if (string.IsNullOrWhiteSpace(clientId))
+            return Result.Fail("No mangadex clientId defined");
 
-        token = result.Data.Session;
+        if (string.IsNullOrWhiteSpace(clientSecret))
+            return Result.Fail("No mangadex clientSecret defined");
+
+        var result = await mangaDex.Auth.Personal(clientId, clientSecret, username, password);
+
+        if (result is null || 
+            result.ExpiresIn is null ||
+            result.ExpiresIn <= 0 ||
+            string.IsNullOrWhiteSpace(result.AccessToken))
+            return Result.Fail("Unable to login in mangadex.");
+
+        accessToken = result.AccessToken;
         return Result.Ok();
     }
 
     public async Task<Result> ClearPendingUploadsAsync()
     {
-        var uploadResponse = await mangaDex.Upload.Get(token);
+        var uploadResponse = await mangaDex.Upload.Get(accessToken);
         if (uploadResponse.Errors.Any(x => x.Status == StatusCodes.Status404NotFound))
             return Result.Ok();
 
@@ -41,7 +52,7 @@ public class MangaDexService(
             return uploadResponse.AsFailResult();
 
         var sessionId = uploadResponse.Data.Id;
-        var uploadDeleteResponse = await mangaDex.Upload.Abandon(sessionId, token);
+        var uploadDeleteResponse = await mangaDex.Upload.Abandon(sessionId, accessToken);
         if (uploadDeleteResponse.Errors.Length != 0)
             return uploadDeleteResponse.AsFailResult();
 
@@ -53,9 +64,10 @@ public class MangaDexService(
         string? title,
         string chapterNumber,
         string? volume,
-        string filesDirectory,
-        CancellationToken cancellationToken = default)
+        string filesDirectory)
     {
+        var groupId = configuration.GetValue<string>("Mangadex:GroupId");
+
         if (string.IsNullOrWhiteSpace(groupId))
             return Result.Fail("Mangadex group id is not defined.");
 
@@ -63,7 +75,7 @@ public class MangaDexService(
             return Result.Fail("Unable to find manga id to upload to MangaDex.");
 
         // todo: permitir múltiplos grupos
-        var uploadResponse = await mangaDex.Upload.Begin(mangaId!, [groupId], token);
+        var uploadResponse = await mangaDex.Upload.Begin(mangaId!, [groupId], accessToken);
         if (uploadResponse.ErrorOccurred)
             return uploadResponse.AsFailResult();
 
@@ -79,7 +91,7 @@ public class MangaDexService(
             // apenas precisamos nos atentar ao tamanho (bytes) limite por request.
             using var stream = File.OpenRead(file);
             var fileUpload = new StreamFileUpload(Path.GetFileName(file), stream);
-            var fileUploadResult = await mangaDex.Upload.Upload(uploadId, token, fileUpload);
+            var fileUploadResult = await mangaDex.Upload.Upload(uploadId, accessToken, fileUpload);
             if (fileUploadResult.ErrorOccurred)
                 return fileUploadResult.AsFailResult();
 
@@ -102,7 +114,7 @@ public class MangaDexService(
             },
             PageOrder = [.. idPages]
         };
-        var uploadCommitResult = await mangaDex.Upload.Commit(uploadId, uploadSessionData, token);
+        var uploadCommitResult = await mangaDex.Upload.Commit(uploadId, uploadSessionData, accessToken);
         if (uploadCommitResult.ErrorOccurred)
             return uploadCommitResult.AsFailResult();
 

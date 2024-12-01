@@ -13,13 +13,11 @@ using FluentValidation;
 using FluentValidation.Results;
 using Google.Apis.Drive.v3.Data;
 using Microsoft.Extensions.Configuration;
-using Remora.Discord.API.Abstractions.Rest;
 using System.Collections.Generic;
 using System.Drawing.Text;
 using System.Linq;
 using System.Threading.Tasks;
 using Xunit;
-
 namespace BotDeScans.UnitTests.Specs.Features.GoogleDrive.InternalServices;
 
 public class GoogleDriveServiceTests : UnitTest

@@ -12,7 +12,7 @@ internal static class AddDependencies
 {
     internal static IServiceCollection AddPublishServices(this IServiceCollection services) => services
         .AddCommandTree()
-            .WithCommandGroup<GoogleDriveCommands>()
+            .WithCommandGroup<PublishCommands>()
             .Finish()
         .AddInteractionGroup<PublishInteractions>()
         .AddPublishSteps()
