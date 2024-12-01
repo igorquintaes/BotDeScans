@@ -31,6 +31,5 @@ internal static class AddDependencies
         .AddScoped<GoogleBloggerService>()
         .AddScoped<MangaDexService>()
         .AddScoped<MegaService>()
-        .AddScoped<TsukiService>()
         .AddValidatorsFromAssemblyContaining<Program>();
 }

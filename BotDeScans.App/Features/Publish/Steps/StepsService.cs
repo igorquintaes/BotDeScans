@@ -26,8 +26,6 @@ public class StepsService(IConfiguration configuration)
                 StepEnum.UploadZipMega or
                 StepEnum.UploadZipGoogleDrive or
                 StepEnum.UploadMangadex or
-                StepEnum.UploadTsuki when steps.NotContains(StepEnum.ZipFiles)
-                    => ErrorFromDependency(step, requiredSteps: StepEnum.ZipFiles),
                 StepEnum.PublishBlogspot when steps.NotContainsAll(requiredBloggerSteps)
                     => ErrorFromDependency(step, requiredSteps: requiredBloggerSteps),
                 _   => new Success("No error in current step :)")
@@ -56,7 +54,6 @@ public class StepsService(IConfiguration configuration)
         StepEnum.UploadZipMega,
         StepEnum.UploadPdfGoogleDrive,
         StepEnum.UploadZipGoogleDrive,
-        StepEnum.UploadMangadex,
-        StepEnum.UploadTsuki
+        StepEnum.UploadMangadex
     ];
 }

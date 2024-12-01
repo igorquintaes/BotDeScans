@@ -9,8 +9,5 @@ internal static class AddDependencies
         .AddSingleton<BloggerClient>()
         .AddSingleton<BoxClient>()
         .AddSingleton<GoogleDriveClient>()
-        .AddSingleton<MegaClient>()
-        // Bellow clients need to be initialized in every interaction
-        // (External limitations)
-        .AddHttpClient<TsukiClient>(client => TsukiClient.SetupClient(client)).Services;
+        .AddSingleton<MegaClient>();
 }
