@@ -26,15 +26,15 @@ public class PublishBloggerStep(
 
         // todo: parametrizar valores abaixo no futuro
         var postResult = await googleBloggerService.PostAsync(
-            title: $"[{state.Info.DisplayTitle}] Capítulo {state.Info.ChapterNumber}",
+            title: $"[{state.Title.Name}] Capítulo {state.ReleaseInfo.ChapterNumber}",
             htmlContent: htmlContentResult.Value,
-            label: state.Info.DisplayTitle,
-            chapterNumber: state.Info.ChapterNumber);
+            label: state.Title.Name,
+            chapterNumber: state.ReleaseInfo.ChapterNumber);
 
         if (postResult.IsFailed)
             return postResult.ToResult();
 
-        state.Links.BloggerLink = postResult.Value.Url;
+        state.ReleaseLinks.BloggerLink = postResult.Value.Url;
         return Result.Ok();
     }
 }

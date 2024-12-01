@@ -37,7 +37,7 @@ public partial class GoogleBloggerService(
         {
             Content = htmlContent,
             Title = title,
-            Labels = new List<string> { label },
+            Labels = [label],
             Url = uri.Host +
                 UrlPattern().Replace(title.ToLower().Replace(" ", "-"), "") + "-" +
                 UrlPattern().Replace(chapterNumber.ToLower().Replace(" ", "-"), "")
@@ -85,26 +85,26 @@ public partial class GoogleBloggerService(
         return template;
     }
 
-    private static IDictionary<string, Func<PublishState, string>> CreateReplacingTemplateKeyMaps(string cover)
+    private static Dictionary<string, Func<PublishState, string>> CreateReplacingTemplateKeyMaps(string cover)
     {
         // todo: precisamos rever isso. O ideal é que seja uma lista de chave/valor reutilizável em todas mensagens da app
         var mainKeyMaps = new Dictionary<string, Func<PublishState, string>>
         {
-            { "##RELEASE_TITLE##",         state => state.Info.DisplayTitle },
-            { "##CHAPTER_TITLE##",         state => state.Info.ChapterName ?? $"Capítulo {state.Info.ChapterNumber}" },
-            { "##CHAPTER_NUMBER##",        state => state.Info.ChapterNumber },
-            { "##VOLUME_NUMBER##",         state => state.Info.ChapterVolume ?? "?"},
-            { "##MESSAGE##",               state => state.Info.Message?.Replace("\n", "<br>") ?? "" },
+            { "##RELEASE_TITLE##",         state => state.Title.Name},
+            { "##CHAPTER_TITLE##",         state => state.ReleaseInfo.ChapterName ?? $"Capítulo {state.ReleaseInfo.ChapterNumber}" },
+            { "##CHAPTER_NUMBER##",        state => state.ReleaseInfo.ChapterNumber },
+            { "##VOLUME_NUMBER##",         state => state.ReleaseInfo.ChapterVolume ?? "?"},
+            { "##MESSAGE##",               state => state.ReleaseInfo.Message?.Replace("\r\n", "<br>").Replace("\n", "<br>") ?? "" },
 
-            { "##MEGA_ZIP_LINK##",         state => state.Links.MegaZip?? $"#" },
-            { "##MEGA_PDF_LINK##",         state => state.Links.MegaPdf ?? $"#" },
-            { "##BOX_ZIP_LINK##",          state => state.Links.BoxZip ?? $"#" },
-            { "##BOX_PDF_LINK##",          state => state.Links.BoxPdf ?? $"#" },
-            { "##GOOGLE_DRIVE_ZIP_LINK##", state => state.Links.DriveZip ?? $"#" },
-            { "##GOOGLE_DRIVE_PDF_LINK##", state => state.Links.DrivePdf ?? $"#" },
-            { "##MANGADEX_LINK##",         state => state.Links.MangaDexLink ?? $"#" },
+            { "##MEGA_ZIP_LINK##",         state => state.ReleaseLinks.MegaZip?? $"#" },
+            { "##MEGA_PDF_LINK##",         state => state.ReleaseLinks.MegaPdf ?? $"#" },
+            { "##BOX_ZIP_LINK##",          state => state.ReleaseLinks.BoxZip ?? $"#" },
+            { "##BOX_PDF_LINK##",          state => state.ReleaseLinks.BoxPdf ?? $"#" },
+            { "##GOOGLE_DRIVE_ZIP_LINK##", state => state.ReleaseLinks.DriveZip ?? $"#" },
+            { "##GOOGLE_DRIVE_PDF_LINK##", state => state.ReleaseLinks.DrivePdf ?? $"#" },
+            { "##MANGADEX_LINK##",         state => state.ReleaseLinks.MangaDexLink ?? $"#" },
 
-            { "##BOX_PDF_READER##",        state => state.Links.BoxPdfReader ?? "" },
+            { "##BOX_PDF_READER##",        state => state.ReleaseLinks.BoxPdfReaderKey ?? "" },
 
             { "##COVER_IMAGE##",           state => $"data:image/png;base64,{cover}" }
         };

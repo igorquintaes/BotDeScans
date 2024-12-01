@@ -19,13 +19,13 @@ public class UploadPdfBoxStep(
     public async Task<Result> ExecuteAsync(CancellationToken cancellationToken)
     {
         var boxService = serviceProvider.GetRequiredService<BoxService>();
-        var titleFolder = await boxService.GetOrCreateFolderAsync(state.Info.DisplayTitle);
+        var titleFolder = await boxService.GetOrCreateFolderAsync(state.Title.Name);
         var file = await boxService.CreateFileAsync(
             filePath: state.InternalData.PdfFilePath,
             parentFolderId: titleFolder.Id);
 
-        state.Links.BoxPdf = file.SharedLink.DownloadUrl;
-        state.Links.BoxPdfReader = file.SharedLink.DownloadUrl
+        state.ReleaseLinks.BoxPdf = file.SharedLink.DownloadUrl;
+        state.ReleaseLinks.BoxPdfReaderKey = file.SharedLink.DownloadUrl
             .Split("/")
             .Last()
             .Replace(".pdf", "", StringComparison.InvariantCultureIgnoreCase);

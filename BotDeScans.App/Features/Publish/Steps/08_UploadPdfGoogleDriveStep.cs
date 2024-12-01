@@ -21,7 +21,7 @@ public class UploadPdfGoogleDriveStep(
     {
         var googleDriveService = serviceProvider.GetRequiredService<GoogleDriveService>();
 
-        var titleFolderResult = await googleDriveService.GetOrCreateFolderAsync(state.Info.DisplayTitle, null, cancellationToken);
+        var titleFolderResult = await googleDriveService.GetOrCreateFolderAsync(state.Title.Name, null, cancellationToken);
         if (titleFolderResult.IsFailed)
             return titleFolderResult.ToResult();
 
@@ -34,7 +34,7 @@ public class UploadPdfGoogleDriveStep(
         if (fileResult.IsFailed)
             return fileResult.ToResult();
 
-        state.Links.DrivePdf = fileResult.Value.WebViewLink;
+        state.ReleaseLinks.DrivePdf = fileResult.Value.WebViewLink;
         return Result.Ok();
     }
 }

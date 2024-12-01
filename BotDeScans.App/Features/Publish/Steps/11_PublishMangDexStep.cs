@@ -14,8 +14,8 @@ public class PublishMangadexStep(
 
     public Task<Result> ValidateBeforeFilesManagementAsync(CancellationToken _)
     {
-        if (TryGetMangaId(state.Info.DisplayTitle, out var _) is false)
-            return Task.FromResult(Result.Fail("Obra não encontrada em 'mangadex-ids.txt'."));
+        if (state.Title.References.All(x => x.Key != Models.ExternalReference.MangaDex))
+            return Task.FromResult(Result.Fail("Não foi definido uma referência para a publicação da obra na MangaDex."));
 
         var username = configuration.GetValue("Mangadex:Username", string.Empty);
         var password = configuration.GetValue("Mangadex:Password", string.Empty);
@@ -56,24 +56,18 @@ public class PublishMangadexStep(
         if (clearResult.IsFailed)
             return clearResult;
 
+        var mangaDexReference = state.Title.References.Single(x => x.Key == Models.ExternalReference.MangaDex);
         var uploadResult = await mangaDexService.UploadChapterAsync(
-            state.Info.DisplayTitle,
-            state.Info.ChapterName,
-            state.Info.ChapterNumber,
-            state.Info.ChapterVolume,
+            mangaDexReference.Value,
+            state.ReleaseInfo.ChapterName,
+            state.ReleaseInfo.ChapterNumber,
+            state.ReleaseInfo.ChapterVolume,
             state.InternalData.OriginContentFolder);
 
         if (uploadResult.IsFailed)
             return uploadResult.ToResult();
 
-        state.Links.MangaDexLink = $"https://mangadex.org/chapter/{uploadResult.Value}/1";
+        state.ReleaseLinks.MangaDexLink = $"https://mangadex.org/chapter/{uploadResult.Value}/1";
         return Result.Ok();
     }
-
-    // isso vai morrer, pode continuar feio
-    private static bool TryGetMangaId(string mangaName, out string mangaId) =>
-        File.ReadAllLines(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "config", "mangadex-ids.txt"))
-            .Select(x => x.Split("$"))
-            .ToDictionary(x => x[0].Trim().ToLowerInvariant(), x => x[1].Trim())
-            .TryGetValue(mangaName.ToLowerInvariant(), out mangaId!);
 }

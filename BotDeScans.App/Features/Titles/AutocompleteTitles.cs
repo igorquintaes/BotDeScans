@@ -6,9 +6,9 @@ using Remora.Discord.API.Objects;
 using Remora.Discord.Commands.Autocomplete;
 namespace BotDeScans.App.Features.Titles;
 
-public class AutocompleteTitleRoles(DatabaseContext databaseContext) : IAutocompleteProvider
+public class AutocompleteTitles(DatabaseContext databaseContext) : IAutocompleteProvider
 {
-    public const string Id = "autocomplete::titleroles";
+    public const string Id = "autocomplete::titles";
     public string Identity => Id;
 
     public async ValueTask<IReadOnlyList<IApplicationCommandOptionChoice>> GetSuggestionsAsync(

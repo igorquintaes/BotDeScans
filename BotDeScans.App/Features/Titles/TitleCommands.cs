@@ -78,7 +78,7 @@ public class TitleCommands(
     [SuppressInteractionResponse(true)]
     [Description("Atualiza dados da obra")]
     public async Task<IResult> Update(
-        [AutocompleteProvider(AutocompleteTitleRoles.Id)]
+        [AutocompleteProvider(AutocompleteTitles.Id)]
         [Description("Nome da obra")] 
         string titleName)
     {
@@ -110,7 +110,7 @@ public class TitleCommands(
     [RoleAuthorize("Staff")]
     [Description("Adiciona ou atualiza referências externas para a obra.")]
     public async Task<IResult> References(
-        [AutocompleteProvider(AutocompleteTitleRoles.Id)]
+        [AutocompleteProvider(AutocompleteTitles.Id)]
         [Description("Nome da obra")]
         string titleName)
     {
@@ -145,7 +145,7 @@ public class TitleCommands(
     [RoleAuthorize("Publisher")]
     [Description("Adiciona ou atualiza referências externas para a obra.")]
     public async Task<IResult> References(
-        [AutocompleteProvider(AutocompleteTitleRoles.Id)]
+        [AutocompleteProvider(AutocompleteTitles.Id)]
         [Description("Nome da obra")]
         string titleName,
         [Description("Nome da referência")]

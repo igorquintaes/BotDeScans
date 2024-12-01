@@ -1,7 +1,9 @@
 ﻿using BotDeScans.App.Builders;
 using BotDeScans.App.Extensions;
 using BotDeScans.App.Features.Publish.Steps;
+using BotDeScans.App.Infra;
 using BotDeScans.App.Services.Discord;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using OneOf;
 using Remora.Discord.API.Abstractions.Objects;
@@ -17,10 +19,8 @@ using System.Reflection;
 using static BotDeScans.App.Features.Publish.PublishState;
 namespace BotDeScans.App.Features.Publish.Discord;
 
-// Todo: Criar cadeia de modals
-// Edit: A API do Discord não permite uma modal chamar outra, F
-//       A ideia é criar um embed paginador com botões que abrem e executam modais.
 public class PublishInteractions(
+    DatabaseContext databaseContext,
     IOperationContext context,
     IConfiguration configuration,
     PublishHandler publishHandler,
@@ -33,20 +33,28 @@ public class PublishInteractions(
     [Description("Publica novo lançamento")]
     public async Task<IResult> PublishAsync(
         string link,
-        string title,
         string? chapterName,
-        string chapterInfo,
-        string? message)
+        string chapterNumber,
+        string chapterVolume,
+        string? message,
+        string state)
     {
         if (context is not InteractionContext interactionContext)
             return Result.FromSuccess();
 
-        publishState.Info.Link = link;
-        publishState.Info.DisplayTitle = title;
-        publishState.Info.ChapterName = chapterName;
-        publishState.Info.ChapterNumber = chapterInfo.Split('$').First().Trim();
-        publishState.Info.ChapterVolume = chapterInfo.Contains('$') ? chapterInfo.Split('$').Last().Trim() : null;
-        publishState.Info.Message = message;
+        var title = await databaseContext.Titles.FirstOrDefaultAsync(x => x.Id == int.Parse(state));
+        if (title is null)
+            return await feedbackService.SendEmbedAsync(
+                channel: interactionContext.Interaction.Channel!.Value.ID!.Value,
+                embed: EmbedBuilder.CreateErrorEmbed(description: "Obra não encontrada"),
+                ct: CancellationToken);
+
+        publishState.Title = title;
+        publishState.ReleaseInfo.DownloadUrl = link;
+        publishState.ReleaseInfo.ChapterName = chapterName;
+        publishState.ReleaseInfo.ChapterNumber = chapterNumber;
+        publishState.ReleaseInfo.ChapterVolume = chapterVolume;
+        publishState.ReleaseInfo.Message = message;
 
         var publishStateMessage = await feedbackService.SendContextualEmbedAsync(new Embed("Iniciando..."), ct: CancellationToken);
         if (publishStateMessage.IsSuccess is false)
@@ -65,9 +73,9 @@ public class PublishInteractions(
         using var cover = new FileStream(publishState.InternalData.CoverFilePath, FileMode.Open);
 
         var embed = new Embed(
-            Title: $"#{publishState.Info.ChapterNumber} {publishState.Info.DisplayTitle}",
+            Title: $"#{publishState.ReleaseInfo.ChapterNumber} {publishState.Title.Name}",
             Image: new EmbedImage($"attachment://{coverFileName}"),
-            Description: publishState.Info.Message ?? string.Empty,
+            Description: publishState.ReleaseInfo.Message ?? string.Empty,
             Colour: Color.Green,
             Fields: linkFields,
             Author: new EmbedAuthor(
@@ -89,15 +97,15 @@ public class PublishInteractions(
             ct: CancellationToken);
     }
 
-    // todo: podemos verificar se faz sentido mudar para botões... e como customizar width
+    // todo: podemos verificar se faz sentido mudar para botões... e se é possível customizar width
     private List<EmbedField> CreatePublishLinkFields()
-        => typeof(ReleaseLinks)
+        => typeof(Links)
             .GetProperties()
             .Where(property => Attribute.IsDefined(property, typeof(DescriptionAttribute)))
             .Select(property => new
             {
                 Label = property.GetCustomAttribute<DescriptionAttribute>()!.Description,
-                Link = property.GetValue(publishState.Links, null)?.ToString()
+                Link = property.GetValue(publishState.ReleaseLinks, null)?.ToString()
             })
             .Where(x => !string.IsNullOrWhiteSpace(x.Link))
             .Select(x => new EmbedField(x.Label, $":white_check_mark:  [Acesse]({x.Link})", true))

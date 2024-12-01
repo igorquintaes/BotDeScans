@@ -1,7 +1,7 @@
 ﻿using FluentResults;
 namespace BotDeScans.App.Features.Publish;
 
-public class PublishHandler(PublishState publishState, PublishService publishService)
+public class PublishHandler(PublishService publishService)
 {
     public async Task<Result<string>> HandleAsync(
         Func<Task<Result>> feedbackFunc,
@@ -11,7 +11,7 @@ public class PublishHandler(PublishState publishState, PublishService publishSer
         if (preValidationResult.IsFailed)
             return preValidationResult;
 
-        var pingResult = await publishService.CreatePingMessageAsync(publishState.Info.DisplayTitle, cancellationToken);
+        var pingResult = await publishService.CreatePingMessageAsync(cancellationToken);
         if (pingResult.IsFailed)
             return pingResult;
 

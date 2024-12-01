@@ -13,7 +13,7 @@ internal static class AddDependencies
         .AddCommandTree()
             .WithCommandGroup<TitleCommands>()
             .Finish()
-        .AddAutocompleteProvider<AutocompleteTitleRoles>()
+        .AddAutocompleteProvider<AutocompleteTitles>()
         .AddTitleCreateServices()
         .AddTitleUpdateServices();
 }

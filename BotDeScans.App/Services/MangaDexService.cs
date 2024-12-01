@@ -59,8 +59,8 @@ public partial class MangaDexService(
     }
 
     public async Task<Result<string>> UploadChapterAsync(
-        string mangaName,
-        string? title,
+        string mangadexTitleId,
+        string? chapterName,
         string chapterNumber,
         string? volume,
         string filesDirectory)
@@ -70,11 +70,8 @@ public partial class MangaDexService(
         if (string.IsNullOrWhiteSpace(groupId))
             return Result.Fail("Mangadex group id is not defined.");
 
-        if (!TryGetMangaId(mangaName, out var mangaId))
-            return Result.Fail("Unable to find manga id to upload to MangaDex.");
-
         // todo: permitir múltiplos grupos
-        var uploadResponse = await mangaDex.Upload.Begin(mangaId!, [groupId], accessToken);
+        var uploadResponse = await mangaDex.Upload.Begin(mangadexTitleId, [groupId], accessToken);
         if (uploadResponse.ErrorOccurred)
             return uploadResponse.AsFailResult();
 
@@ -107,7 +104,7 @@ public partial class MangaDexService(
             Chapter = new()
             {
                 Chapter = chapterNumber.TrimStart('0'),
-                Title = title,
+                Title = chapterName,
                 Volume = volumeNumber,
                 TranslatedLanguage = "pt-br"
             },
@@ -120,13 +117,6 @@ public partial class MangaDexService(
 
         return Result.Ok(uploadCommitResult.Data.Id);
     }
-
-    // isso vai morrer, pode continuar feio
-    private static bool TryGetMangaId(string mangaName, out string mangaId) =>
-        File.ReadAllLines(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "config", "mangadex-ids.txt"))
-            .Select(x => x.Split("$"))
-            .ToDictionary(x => x[0].Trim().ToLowerInvariant(), x => x[1].Trim())
-            .TryGetValue(mangaName.ToLowerInvariant(), out mangaId!);
 
     public Result<string> GetTitleIdFromUrl(string url)
     {

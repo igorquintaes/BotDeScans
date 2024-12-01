@@ -20,7 +20,7 @@ public class UploadZipMegaStep(
     {
         var megaService = serviceProvider.GetRequiredService<MegaService>();
 
-        var titleFolder = await megaService.GetOrCreateFolderAsync(state.Info.DisplayTitle);
+        var titleFolder = await megaService.GetOrCreateFolderAsync(state.Title.Name);
         var fileResult = await megaService.CreateFileAsync(
             filePath: state.InternalData.ZipFilePath,
             parentFolder: titleFolder,
@@ -29,7 +29,7 @@ public class UploadZipMegaStep(
         if (fileResult.IsFailed)
             return fileResult.ToResult();
 
-        state.Links.MegaZip = fileResult.Value.AbsoluteUri;
+        state.ReleaseLinks.MegaZip = fileResult.Value.AbsoluteUri;
         return Result.Ok();
     }
 }
