@@ -32,7 +32,7 @@ public class PublishInteractions(
     [Modal(nameof(PublishAsync))]
     [Description("Publica novo lançamento")]
     public async Task<IResult> PublishAsync(
-        string link,
+        string driveUrl,
         string? chapterName,
         string chapterNumber,
         string chapterVolume,
@@ -50,7 +50,7 @@ public class PublishInteractions(
                 ct: CancellationToken);
 
         publishState.Title = title;
-        publishState.ReleaseInfo.DownloadUrl = link;
+        publishState.ReleaseInfo.DownloadUrl = driveUrl;
         publishState.ReleaseInfo.ChapterName = chapterName;
         publishState.ReleaseInfo.ChapterNumber = chapterNumber;
         publishState.ReleaseInfo.ChapterVolume = chapterVolume;
@@ -93,7 +93,7 @@ public class PublishInteractions(
             content: result.Value,
             embeds: new[] { embed },
             attachments: new[] { OneOf<FileData, IPartialAttachment>.FromT0(new FileData(coverFileName, cover)) },
-            components: new[] { new ActionRowComponent(new[] { promotedButton }) },
+            components: new[] { new ActionRowComponent([promotedButton]) },
             ct: CancellationToken);
     }
 

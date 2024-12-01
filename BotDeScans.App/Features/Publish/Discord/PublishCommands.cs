@@ -28,24 +28,24 @@ public class PublishCommands(
     public async Task<IResult> Publish(
         [AutocompleteProvider(AutocompleteTitles.Id)]
         [Description("Nome da obra")]
-        string titleName)
+        string title)
     {
         if (context is not InteractionContext interactionContext)
             return Result.FromSuccess();
 
-        var title = await databaseContext.Titles.FirstOrDefaultAsync(x => x.Name == titleName);
-        if (title is null)
+        var titleId = await databaseContext.Titles.Where(x => x.Name == title).Select(x => x.Id).SingleOrDefaultAsync();
+        if (titleId == default)
             return await feedbackService.SendContextualWarningAsync(
                 "Obra não encontrada.",
                 ct: CancellationToken);
 
         var modal = new ModalBuilder(nameof(PublishInteractions.PublishAsync), "Publicar novo lançamento")
-            .AddField(fieldName: "link", label: "Link do capítulo")
-            .AddField(fieldName: "chapterName", label: "Nome do mangá")
-            .AddField(fieldName: "chapterNumber", label: "Nome do capítulo")
-            .AddField(fieldName: "chapterVolume", label: "Numero do capítulo", isRequired: false)
+            .AddField(fieldName: "driveUrl", label: "Link do capítulo")
+            .AddField(fieldName: "chapterName", label: "Nome do capítulo")
+            .AddField(fieldName: "chapterNumber", label: "Número do capítulo")
+            .AddField(fieldName: "chapterVolume", label: "Número do Volume", isRequired: false)
             .AddField(fieldName: "message", label: "Mensagem de postagem", isRequired: false, TextInputStyle.Paragraph)
-            .CreateWithState(title.Id.ToString());
+            .CreateWithState(titleId.ToString());
 
         var response = new InteractionResponse(InteractionCallbackType.Modal, modal);
         return await interactionAPI.CreateInteractionResponseAsync
