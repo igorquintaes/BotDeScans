@@ -6,7 +6,7 @@ namespace BotDeScans.App.Services.Initializatiors;
 internal static class AddDependencies
 {
     internal static IServiceCollection AddInitializators(this IServiceCollection services) => services
-        .AddHostedService<SetupDiscordService>()
-        .AddHostedService<SetupStepsService>()
-        .AddHostedService<SetupClientsService>();
+        .AddScoped<SetupDiscordService>()
+        .AddScoped<SetupStepsService>()
+        .AddScoped<SetupClientsService>();
 }

@@ -13,7 +13,13 @@ public class DownloadStep(
     public StepType StepType => StepType.Management;
 
     public async Task<Result> ValidateBeforeFilesManagementAsync(CancellationToken cancellationToken)
-        => await googleDriveService.ValidateFilesAsync(state.Info.Link, cancellationToken);
+    {
+        var folderIdResult = googleDriveService.GetFolderIdFromUrl(state.Info.Link);
+        if (folderIdResult.IsFailed)
+            return folderIdResult.ToResult();
+
+        return await googleDriveService.ValidateFilesAsync(folderIdResult.Value, cancellationToken);
+    }
 
     public Task<Result> ValidateAfterFilesManagementAsync(CancellationToken _)
         => Task.FromResult(Result.Ok());
