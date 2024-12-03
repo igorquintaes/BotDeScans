@@ -42,7 +42,7 @@ public class PublishInteractions(
         if (context is not InteractionContext interactionContext)
             return Result.FromSuccess();
 
-        var title = await databaseContext.Titles.FirstOrDefaultAsync(x => x.Id == int.Parse(state));
+        var title = await databaseContext.Titles.Include(x => x.References).FirstOrDefaultAsync(x => x.Id == int.Parse(state));
         if (title is null)
             return await feedbackService.SendEmbedAsync(
                 channel: interactionContext.Interaction.Channel!.Value.ID!.Value,

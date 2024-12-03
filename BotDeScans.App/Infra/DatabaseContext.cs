@@ -23,5 +23,9 @@ public class DatabaseContext : DbContext
         modelBuilder.Entity<TitleReference>()
             .HasIndex(e => new { e.TitleId, e.Key })
             .IsUnique();
+
+        modelBuilder.Entity<Title>()
+            .HasIndex(e => e.Name)
+            .IsUnique();
     }
 }

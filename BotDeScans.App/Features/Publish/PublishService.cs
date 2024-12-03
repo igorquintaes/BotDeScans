@@ -27,7 +27,7 @@ public class PublishService(
             case PingType.Global:
                 const string globalRoleKey = "Settings:Publish:GlobalRole";
                 var globalRoleName = configuration.GetRequiredValue<string>(globalRoleKey);
-                return await GetRoleAsPingText(globalRoleName, cancellationToken);
+                return $"{await GetRoleAsPingText(globalRoleName, cancellationToken)}, {await GetRoleAsPingText(publishState.Title.DiscordRoleId.ToString()!, cancellationToken)}";
             case PingType.Role: 
                 return await GetRoleAsPingText(publishState.Title.DiscordRoleId.ToString()!, cancellationToken);
             case PingType.None: 
