@@ -37,13 +37,20 @@ public class RolesService(IConfiguration configuration, IDiscordRestGuildAPI dis
         if (!guildRolesResult.IsDefined(out var guildRoles))
             return Result.Fail(guildRolesResult.Error!.Message);
 
-        var guildRole = guildRoles.FirstOrDefault(guildRole => role.Equals(guildRole.Name, StringComparison.Ordinal));
-        if (guildRole is not null)
-            return Result.Ok(guildRole);
+        var guildRolesCaseInsensitive = guildRoles.Where(guildRole => role.Equals(guildRole.Name, StringComparison.InvariantCultureIgnoreCase)).ToList();
+        if (guildRolesCaseInsensitive.Count == 1)
+            return Result.Ok(guildRolesCaseInsensitive[0]);
+
+        if (guildRolesCaseInsensitive.Count > 1)
+        {
+            var guildRoleCaseSensitive = guildRolesCaseInsensitive.FirstOrDefault(guildRole => role.Equals(guildRole.Name, StringComparison.Ordinal));
+            if (guildRoleCaseSensitive is not null)
+                return Result.Ok(guildRoleCaseSensitive);
+        }
 
         if (ulong.TryParse(role, out var roleId))
         {
-            guildRole = guildRoles.FirstOrDefault(guildRole => guildRole.ID.Value.Equals(role)); 
+            var guildRole = guildRoles.FirstOrDefault(guildRole => guildRole.ID.Value.Equals(role)); 
             if (guildRole is not null)
                 return Result.Ok(guildRole);
         }
