@@ -70,7 +70,7 @@ public class RoleAuthorizeConditionTests : UnitTest
 
         A.CallTo(() => rolesService
             .ContainsAtLeastOneOfExpectedRoles(roleAuthorizeAttribute.RoleNames, guildRoles, guildMember.Roles))
-            .Returns(Result<bool>.FromSuccess(true));
+            .Returns(FluentResults.Result.Ok(true));
 
         A.CallTo(() => restInteractionAPI
             .CreateInteractionResponseAsync(commandID, token, A<InteractionResponse>.Ignored, default, cancellationToken))
@@ -144,12 +144,12 @@ public class RoleAuthorizeConditionTests : UnitTest
         }
 
         [Fact]
-        public async Task ShouldReturnErrorIfGuildUserHasSomeOfExpectedRolesReturnsAnInvalidResponse()
+        public async Task ShouldReturnErrorIfContainsAtLeastOneOfExpectedRolesReturnsAnErrorResponse()
         {
-            var errorResult = Result<bool>.FromError(new Exception());
+            const string ERROR_MESSAGE = "some error";
             A.CallTo(() => rolesService
                 .ContainsAtLeastOneOfExpectedRoles(roleAuthorizeAttribute.RoleNames, guildRoles, guildMember.Roles))
-                .Returns(errorResult);
+                .Returns(FluentResults.Result.Fail(ERROR_MESSAGE));
 
             var result = await condition.CheckAsync(
                 roleAuthorizeAttribute,
@@ -157,7 +157,8 @@ public class RoleAuthorizeConditionTests : UnitTest
 
             using var _ = new AssertionScope();
             result.IsSuccess.Should().BeFalse();
-            result.Error.As<ExceptionError>().Should().Be(errorResult.Error);
+            result.Error.Should().NotBeNull();
+            result.Error?.Message.Should().Be(ERROR_MESSAGE);
         }
 
         [Fact]
@@ -165,7 +166,7 @@ public class RoleAuthorizeConditionTests : UnitTest
         {
             A.CallTo(() => rolesService
                 .ContainsAtLeastOneOfExpectedRoles(roleAuthorizeAttribute.RoleNames, guildRoles, guildMember.Roles))
-                .Returns(Result<bool>.FromSuccess(false));
+                .Returns(FluentResults.Result.Ok(false));
 
             var errorResult = Result<bool>.FromError(new Exception());
             A.CallTo(() => restInteractionAPI
@@ -191,7 +192,7 @@ public class RoleAuthorizeConditionTests : UnitTest
         {
             A.CallTo(() => rolesService
                 .ContainsAtLeastOneOfExpectedRoles(roleAuthorizeAttribute.RoleNames, guildRoles, guildMember.Roles))
-                .Returns(Result<bool>.FromSuccess(false));
+                .Returns(FluentResults.Result.Ok(false));
 
             var result = await condition.CheckAsync(
                 roleAuthorizeAttribute,
@@ -220,7 +221,7 @@ public class RoleAuthorizeConditionTests : UnitTest
         {
             A.CallTo(() => rolesService
                 .ContainsAtLeastOneOfExpectedRoles(roleAuthorizeAttribute.RoleNames, guildRoles, guildMember.Roles))
-                .Returns(Result<bool>.FromSuccess(false));
+                .Returns(FluentResults.Result.Ok(false));
 
             A.CallTo(() => guildMember.Roles)
                 .Returns(new List<Snowflake> { guildRoles[0].ID });

@@ -22,7 +22,7 @@ public class PdfFilesStep(
         var fileReleaseService = serviceProvider.GetRequiredService<FileReleaseService>();
 
         state.InternalData.PdfFilePath = await fileService.CreatePdfFileAsync(
-            fileName: $"{state.Info.ChapterNumber}.pdf",
+            fileName: $"{state.ReleaseInfo.ChapterNumber}.pdf",
             resourcesDirectory: state.InternalData.OriginContentFolder,
             destinationDirectory: fileReleaseService.CreateScopedDirectory());
 

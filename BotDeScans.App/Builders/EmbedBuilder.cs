@@ -41,8 +41,19 @@ public static class EmbedBuilder
 
     public static Embed CreateSuccessEmbed(
         Optional<string> title = default,
+        Optional<string> description = default,
         Optional<IEmbedImage> image = default)
         => new(Title: title.HasValue ? title : "Sucesso!",
+               Description: description,
+               Colour: Color.Green,
+               Image: image);
+
+    public static Embed CreateErrorEmbed(
+        Optional<string> title = default,
+        Optional<string> description = default,
+        Optional<IEmbedImage> image = default)
+        => new(Title: title.HasValue ? title : "Erro!",
+               Description: description,
                Colour: Color.Green,
                Image: image);
 }

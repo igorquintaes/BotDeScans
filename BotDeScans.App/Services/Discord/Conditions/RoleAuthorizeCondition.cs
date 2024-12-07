@@ -6,6 +6,7 @@ using Remora.Discord.API.Objects;
 using Remora.Discord.Commands.Contexts;
 using Remora.Results;
 using System.Drawing;
+using System.Linq;
 namespace BotDeScans.App.Services.Discord.Conditions;
 
 // todo: parametrizar a partir de arquivo de configuration... ou banco de dados no futuro!!
@@ -42,10 +43,13 @@ public class RoleAuthorizeCondition(
             guildRoles,
             guildMember.Roles);
 
-        if (!hasRequiredRoleResult.IsDefined(out var hasRequiredRole))
-            return Result.FromError(hasRequiredRoleResult.Error!);
+        if (hasRequiredRoleResult.IsFailed)
+        {
+            var fullErrorMessage = string.Join(". ", hasRequiredRoleResult.Errors.Select(x => x.Message));
+            return Result.FromError(new InvalidOperationError(fullErrorMessage));
+        }
 
-        if (hasRequiredRole)
+        if (hasRequiredRoleResult.Value is true)
             return Result.FromSuccess();
 
         var interactionResponseResult = await discordRestInteractionAPI.CreateInteractionResponseAsync(

@@ -64,7 +64,7 @@ public class BoxServiceTests : UnitTest
                 .Returns(boxFoldersManager);
 
             A.CallTo(() => boxFoldersManager
-                .GetFolderItemsAsync(rootFolderId, maxItemsQuery, default, default, default, default, default))
+                .GetFolderItemsAsync(rootFolderId, maxItemsQuery, default, default, default, default, default, default, default))
                 .Returns(boxCollection);
         }
 
@@ -81,11 +81,11 @@ public class BoxServiceTests : UnitTest
             var folderId = dataGenerator.Random.Word();
 
             A.CallTo(() => boxFoldersManager
-                .GetFolderItemsAsync(rootFolderId, maxItemsQuery, default, default, default, default, default))
+                .GetFolderItemsAsync(rootFolderId, maxItemsQuery, default, default, default, default, default, default, default))
                 .Throws<Exception>();
 
             A.CallTo(() => boxFoldersManager
-                .GetFolderItemsAsync(folderId, maxItemsQuery, default, default, default, default, default))
+                .GetFolderItemsAsync(folderId, maxItemsQuery, default, default, default, default, default, default, default))
                 .Returns(boxCollection);
 
             var boxItem = await service.GetOrCreateFolderAsync(boxCollection.Entries[1].Name, folderId);

@@ -21,7 +21,7 @@ namespace BotDeScans.App.Features.Publish.Steps
         {
             var megaService = serviceProvider.GetRequiredService<MegaService>();
 
-            var titleFolder = await megaService.GetOrCreateFolderAsync(state.Info.DisplayTitle);
+            var titleFolder = await megaService.GetOrCreateFolderAsync(state.Title.Name);
             var fileResult = await megaService.CreateFileAsync(
                 filePath: state.InternalData.PdfFilePath,
                 parentFolder: titleFolder,
@@ -30,7 +30,7 @@ namespace BotDeScans.App.Features.Publish.Steps
             if (fileResult.IsFailed)
                 return fileResult.ToResult();
 
-            state.Links.MegaPdf = fileResult.Value.AbsoluteUri;
+            state.ReleaseLinks.MegaPdf = fileResult.Value.AbsoluteUri;
             return Result.Ok();
         }
     }

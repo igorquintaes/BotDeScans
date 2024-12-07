@@ -1,9 +1,12 @@
-﻿using BotDeScans.App.Services;
+﻿using BotDeScans.App.Infra;
+using BotDeScans.App.Services;
 using BotDeScans.App.Services.Discord;
 using BotDeScans.App.Services.Initializatiors;
 using BotDeScans.App.Services.Logging;
 using FluentResults;
 using MangaDexSharp;
+using Microsoft.Data.Sqlite;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -34,6 +37,7 @@ public class Program
             .AddLoggingToHost()
             .ConfigureServices(services => services
                 .AddServices()
+                .AddInfraDependencies()
                 .AddDiscordCommands(true)
                 .AddInteractivity()
                 .AddLazyCache()
@@ -50,6 +54,12 @@ public class Program
         var warmupResult = Result.Ok();
         using (var scope = host.Services.CreateScope())
         {
+            if (File.Exists(DatabaseContext.DbPath) is false)
+                File.WriteAllBytes(DatabaseContext.DbPath, []);
+
+            var db = scope.ServiceProvider.GetRequiredService<DatabaseContext>();
+            await db.Database.MigrateAsync();
+
             var setupDiscordService = scope.ServiceProvider.GetRequiredService<SetupDiscordService>();
             var discordUpdateResult = await setupDiscordService.SetupAsync(cts.Token);
             warmupResult.WithReasons(discordUpdateResult.Reasons);

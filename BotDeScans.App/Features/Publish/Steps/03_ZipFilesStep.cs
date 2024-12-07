@@ -25,7 +25,7 @@ public class ZipFilesStep(
         var fileReleaseService = serviceProvider.GetRequiredService<FileReleaseService>();
 
         state.InternalData.ZipFilePath = fileService.CreateZipFile(
-            fileName: $"{state.Info.ChapterNumber}.zip",
+            fileName: $"{state.ReleaseInfo.ChapterNumber}.zip",
             resourcesDirectory: state.InternalData.OriginContentFolder,
             destinationDirectory: fileReleaseService.CreateScopedDirectory());
 

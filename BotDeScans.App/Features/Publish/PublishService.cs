@@ -1,77 +1,64 @@
 ﻿using BotDeScans.App.Extensions;
 using BotDeScans.App.Features.Publish.Steps;
+using BotDeScans.App.Services.Discord;
 using FluentResults;
 using Microsoft.Extensions.Configuration;
-using Remora.Discord.API.Abstractions.Rest;
-using Remora.Rest.Core;
 namespace BotDeScans.App.Features.Publish;
 
 public class PublishService(
     IConfiguration configuration,
-    IDiscordRestGuildAPI discordRestGuildAPI,
+    RolesService rolesService,
     PublishState publishState,
     IEnumerable<IStep> steps)
 {
     private readonly IEnumerable<IStep> steps = steps;
     private readonly PublishState publishState = publishState;
 
-
-    public async Task<Result<string>> CreatePingMessageAsync(string title, CancellationToken cancellationToken)
+    public async Task<Result<string>> CreatePingMessageAsync(CancellationToken cancellationToken)
     {
         const string pingTypeKey = "Settings:Publish:PingType";
         var pingType = configuration.GetRequiredValue<PingType>(pingTypeKey);
 
-        return pingType switch
+        switch (pingType)
         {
-            PingType.Everyone => "@everyone",
-            PingType.Global => await GetGlobalAndTitleRoles(title, cancellationToken),
-            PingType.Role => await GetTitleRole(title, cancellationToken),
-            PingType.None => string.Empty,
-            _ => Result.Fail($"invalid value in '{pingTypeKey}'."),
+            case PingType.Everyone: 
+                return "@everyone";
+            case PingType.Global:
+                if (publishState.Title.DiscordRoleId is null)
+                    return Result.Fail("Não foi definida uma role para o Discord nesta obra. Defina, ou mude o tipo de publicação no arquivo de configuração do Bot de Scans.");
+
+                const string globalRoleKey = "Settings:Publish:GlobalRole";
+                var globalRoleName = configuration.GetRequiredValue<string>(globalRoleKey);
+                var globalRoleAsPingResult = await GetRoleAsPingText(globalRoleName, cancellationToken);
+                if (globalRoleAsPingResult.IsFailed)
+                    return globalRoleAsPingResult;
+
+                var titleRoleAsPingResult = await GetRoleAsPingText(publishState.Title.DiscordRoleId.ToString()!, cancellationToken);
+                if (titleRoleAsPingResult.IsFailed)
+                    return titleRoleAsPingResult;
+
+                return $"{globalRoleAsPingResult.Value}, {titleRoleAsPingResult.Value}";
+            case PingType.Role:
+                if (publishState.Title.DiscordRoleId is null)
+                    return Result.Fail("Não foi definida uma role para o Discord nesta obra. Defina, ou mude o tipo de publicação no arquivo de configuração do Bot de Scans.");
+
+                return await GetRoleAsPingText(publishState.Title.DiscordRoleId.ToString()!, cancellationToken);
+            case PingType.None: 
+                return string.Empty;
+            default: 
+                return Result.Fail($"invalid value in '{pingTypeKey}'.");
         };
     }
 
-    private async Task<Result<string>> GetTitleRole(string title, CancellationToken cancellationToken)
-        => TryGetRoleName(title, out var roleName) is false
-            ? (Result<string>)Result.Fail($"Erro ao encontrar um cargo para o mangá '{title}', no arquivo roles.txt")
-            : await GetRoleFromDiscord(roleName, cancellationToken);
-
-    private async Task<Result<string>> GetGlobalAndTitleRoles(string title, CancellationToken cancellationToken)
+    // todo: mover para uma classe que faça mais sentido (talvez relacionada ao discord)
+    private async Task<Result<string>> GetRoleAsPingText(string roleName, CancellationToken cancellationToken)
     {
-        var titleRolePing = await GetTitleRole(title, cancellationToken);
-        if (titleRolePing.IsFailed)
-            return titleRolePing;
+        var role = await rolesService.GetRoleFromDiscord(roleName, cancellationToken);
+        if (role.IsFailed)
+            return role.ToResult();
 
-        const string globalRoleKey = "Settings:Publish:GlobalRole";
-        var globalRoleName = configuration.GetRequiredValue<string>(globalRoleKey);
-        var globalRolePing = await GetRoleFromDiscord(globalRoleName, cancellationToken);
-        if (globalRolePing.IsFailed)
-            return globalRolePing;
-
-        return $"{titleRolePing.Value}, {globalRolePing.Value}";
+        return $"<@&{role.Value.ID.Value}>";
     }
-
-    // todo: método em classe do discord
-    private async Task<Result<string>> GetRoleFromDiscord(string roleName, CancellationToken cancellationToken)
-    {
-        var serverId = configuration.GetRequiredValue<ulong>("Discord:ServerId");
-        var guildRolesResult = await discordRestGuildAPI.GetGuildRolesAsync(new Snowflake(serverId), cancellationToken);
-
-        if (!guildRolesResult.IsDefined(out var guildRoles))
-            return Result.Fail(guildRolesResult.Error!.Message);
-
-        var guildRole = guildRoles.FirstOrDefault(guildRole => roleName.Equals(guildRole.Name, StringComparison.Ordinal));
-        return guildRole is not null
-            ? Result.Ok($"<@&{guildRole.ID.Value}>")
-            : Result.Fail("Cargo não encontrado no servidor.");
-    }
-
-    // isso vai morrer, pode continuar feio
-    private static bool TryGetRoleName(string title, out string roleName) =>
-        File.ReadAllLines(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "config", "roles.txt"))
-            .Select(x => x.Split("$"))
-            .ToDictionary(x => x[0].Trim().ToLowerInvariant(), x => x[1].Trim())
-            .TryGetValue(title.ToLowerInvariant(), out roleName!);
 
     public Task<Result> ValidateBeforeFilesManagementAsync(CancellationToken cancellationToken)
         => RunStepsAsync(

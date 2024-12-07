@@ -20,7 +20,7 @@ public class UploadZipGoogleDriveStep(
     {
         var googleDriveService = serviceProvider.GetRequiredService<GoogleDriveService>();
 
-        var titleFolderResult = await googleDriveService.GetOrCreateFolderAsync(state.Info.DisplayTitle, null, cancellationToken);
+        var titleFolderResult = await googleDriveService.GetOrCreateFolderAsync(state.Title.Name, null, cancellationToken);
         if (titleFolderResult.IsFailed)
             return titleFolderResult.ToResult();
 
@@ -33,7 +33,7 @@ public class UploadZipGoogleDriveStep(
         if (fileResult.IsFailed)
             return fileResult.ToResult();
 
-        state.Links.DriveZip = fileResult.Value.WebViewLink;
+        state.ReleaseLinks.DriveZip = fileResult.Value.WebViewLink;
         return Result.Ok();
     }
 }

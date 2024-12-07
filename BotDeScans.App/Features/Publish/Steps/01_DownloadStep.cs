@@ -14,10 +14,11 @@ public class DownloadStep(
 
     public async Task<Result> ValidateBeforeFilesManagementAsync(CancellationToken cancellationToken)
     {
-        var folderIdResult = googleDriveService.GetFolderIdFromUrl(state.Info.Link);
+        var folderIdResult = googleDriveService.GetFolderIdFromUrl(state.ReleaseInfo.DownloadUrl);
         if (folderIdResult.IsFailed)
             return folderIdResult.ToResult();
 
+        state.InternalData.GoogleDriveFolderId = folderIdResult.Value;
         return await googleDriveService.ValidateFilesAsync(folderIdResult.Value, cancellationToken);
     }
 
@@ -31,12 +32,8 @@ public class DownloadStep(
 
         state.InternalData.OriginContentFolder = fileReleaseService.CreateScopedDirectory();
 
-        var folderIdResult = googleDriveService.GetFolderIdFromUrl(state.Info.Link);
-        if (folderIdResult.IsFailed)
-            return folderIdResult.ToResult();
-
         var saveFilesResult = await googleDriveService.SaveFilesAsync(
-            folderIdResult.Value,
+            state.InternalData.GoogleDriveFolderId,
             state.InternalData.OriginContentFolder,
             cancellationToken);
 

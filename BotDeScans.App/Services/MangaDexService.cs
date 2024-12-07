@@ -1,11 +1,10 @@
 ﻿using BotDeScans.App.Extensions;
 using FluentResults;
 using MangaDexSharp;
-using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
 namespace BotDeScans.App.Services;
 
-public class MangaDexService(
+public partial class MangaDexService(
     IMangaDex mangaDex,
     IConfiguration configuration)
 {
@@ -45,7 +44,7 @@ public class MangaDexService(
     public async Task<Result> ClearPendingUploadsAsync()
     {
         var uploadResponse = await mangaDex.Upload.Get(accessToken);
-        if (uploadResponse.Errors.Any(x => x.Status == StatusCodes.Status404NotFound))
+        if (uploadResponse.Errors.Any(x => x.Status == 404))
             return Result.Ok();
 
         if (uploadResponse.ErrorOccurred)
@@ -60,8 +59,8 @@ public class MangaDexService(
     }
 
     public async Task<Result<string>> UploadChapterAsync(
-        string mangaName,
-        string? title,
+        string mangadexTitleId,
+        string? chapterName,
         string chapterNumber,
         string? volume,
         string filesDirectory)
@@ -71,11 +70,8 @@ public class MangaDexService(
         if (string.IsNullOrWhiteSpace(groupId))
             return Result.Fail("Mangadex group id is not defined.");
 
-        if (!TryGetMangaId(mangaName, out var mangaId))
-            return Result.Fail("Unable to find manga id to upload to MangaDex.");
-
         // todo: permitir múltiplos grupos
-        var uploadResponse = await mangaDex.Upload.Begin(mangaId!, [groupId], accessToken);
+        var uploadResponse = await mangaDex.Upload.Begin(mangadexTitleId, [groupId], accessToken);
         if (uploadResponse.ErrorOccurred)
             return uploadResponse.AsFailResult();
 
@@ -108,7 +104,7 @@ public class MangaDexService(
             Chapter = new()
             {
                 Chapter = chapterNumber.TrimStart('0'),
-                Title = title,
+                Title = chapterName,
                 Volume = volumeNumber,
                 TranslatedLanguage = "pt-br"
             },
@@ -122,10 +118,23 @@ public class MangaDexService(
         return Result.Ok(uploadCommitResult.Data.Id);
     }
 
-    // isso vai morrer, pode continuar feio
-    private static bool TryGetMangaId(string mangaName, out string mangaId) =>
-        File.ReadAllLines(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "config", "mangadex-ids.txt"))
-            .Select(x => x.Split("$"))
-            .ToDictionary(x => x[0].Trim().ToLowerInvariant(), x => x[1].Trim())
-            .TryGetValue(mangaName.ToLowerInvariant(), out mangaId!);
+    public Result<string> GetTitleIdFromUrl(string url)
+    {
+        const int GUID_CHAR_LENGHT = 36;
+        const string ID_URL_PREFIX = "/title/";
+
+        if (Guid.TryParse(url, out var guidResult))
+            return guidResult.ToString();
+
+        if (!Uri.TryCreate(url, UriKind.Absolute, out var uri) || uri.Authority != "mangadex.org")
+            return Result.Fail("O link informado não é da MangaDex.");
+
+        if (url.Contains(ID_URL_PREFIX) is false)
+            return Result.Fail("O link informado não é de uma página de obra.");
+
+        var titleId = url.Substring(url.IndexOf(ID_URL_PREFIX) + ID_URL_PREFIX.Length, GUID_CHAR_LENGHT);
+        return Guid.TryParse(titleId, out var titleIdResult)
+            ? Result.Ok(titleIdResult.ToString())
+            : Result.Fail("O link informado está em formato inválido.");
+    }
 }

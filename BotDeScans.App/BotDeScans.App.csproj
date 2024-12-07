@@ -24,10 +24,10 @@
 	</ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Box.V2.Core" Version="4.6.0" />
+    <PackageReference Include="Box.V2.Core" Version="5.8.0" />
     <PackageReference Include="FluentResults" Version="3.16.0" />
-    <PackageReference Include="FluentValidation" Version="11.3.0" />
-    <PackageReference Include="FluentValidation.DependencyInjectionExtensions" Version="11.3.0" />
+    <PackageReference Include="FluentValidation" Version="11.11.0" />
+    <PackageReference Include="FluentValidation.DependencyInjectionExtensions" Version="11.11.0" />
     <PackageReference Include="Google.Apis.Auth" Version="1.57.0" />
     <PackageReference Include="Google.Apis.Blogger.v3" Version="1.57.0.2764" />
     <PackageReference Include="Google.Apis.Drive.v3" Version="1.57.0.2859" />
@@ -37,8 +37,13 @@
     <PackageReference Include="LazyCache.AspNetCore" Version="2.4.0" />
     <PackageReference Include="MangaDexSharp" Version="1.1.1" />
     <PackageReference Include="MegaApiClient" Version="1.10.3" />
-    <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="8.0.0" />
-    <PackageReference Include="Microsoft.Extensions.Hosting" Version="8.0.0" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="8.0.11" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="8.0.11">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="8.0.1" />
+    <PackageReference Include="Microsoft.Extensions.Hosting" Version="8.0.1" />
     <PackageReference Include="Remora.Discord" Version="2023.3.0" />
     <PackageReference Include="ScottPlot" Version="4.1.59" />
     <PackageReference Include="Scrutor" Version="4.2.0" />
@@ -49,6 +54,8 @@
     <PackageReference Include="Serilog.Sinks.Console" Version="4.1.0" />
     <PackageReference Include="Serilog.Sinks.File" Version="5.0.0" />
     <PackageReference Include="StringToExpression" Version="1.1.1" />
+    <PackageReference Include="System.Drawing.Common" Version="4.7.3" />
+    <PackageReference Include="System.Text.Json" Version="8.0.5" />
   </ItemGroup>
 
   <ItemGroup>
@@ -59,6 +66,11 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
 	  <TargetPath>.\config\config.json</TargetPath>
     </None>
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Features\Titles\References\" />
+    <Folder Include="Infra\Migrations\" />
   </ItemGroup>
 
 </Project>

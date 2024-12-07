@@ -37,7 +37,7 @@ public class BloggerClient(IConfiguration configuration, GoogleDriveWrapper goog
             var clients = await GoogleClientSecrets.FromStreamAsync(stream, cancellationToken);
             var credential = await GoogleWebAuthorizationBroker.AuthorizeAsync(
                 clients.Secrets,
-                new[] { BloggerService.Scope.Blogger },
+                [BloggerService.Scope.Blogger],
                 "user",
                 cancellationToken,
                 new FileDataStore(credentialPath, true));

@@ -1,5 +1,4 @@
-﻿using BotDeScans.App.Features.GoogleDrive.Discord;
-using BotDeScans.App.Features.Publish.Discord;
+﻿using BotDeScans.App.Features.Publish.Discord;
 using BotDeScans.App.Features.Publish.Steps;
 using Microsoft.Extensions.DependencyInjection;
 using Remora.Commands.Extensions;
