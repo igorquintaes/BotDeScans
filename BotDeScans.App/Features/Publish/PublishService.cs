@@ -14,7 +14,6 @@ public class PublishService(
     private readonly IEnumerable<IStep> steps = steps;
     private readonly PublishState publishState = publishState;
 
-
     public async Task<Result<string>> CreatePingMessageAsync(CancellationToken cancellationToken)
     {
         const string pingTypeKey = "Settings:Publish:PingType";
@@ -25,10 +24,24 @@ public class PublishService(
             case PingType.Everyone: 
                 return "@everyone";
             case PingType.Global:
+                if (publishState.Title.DiscordRoleId is null)
+                    return Result.Fail("Não foi definida uma role para o Discord nesta obra. Defina, ou mude o tipo de publicação no arquivo de configuração do Bot de Scans.");
+
                 const string globalRoleKey = "Settings:Publish:GlobalRole";
                 var globalRoleName = configuration.GetRequiredValue<string>(globalRoleKey);
-                return $"{await GetRoleAsPingText(globalRoleName, cancellationToken)}, {await GetRoleAsPingText(publishState.Title.DiscordRoleId.ToString()!, cancellationToken)}";
-            case PingType.Role: 
+                var globalRoleAsPingResult = await GetRoleAsPingText(globalRoleName, cancellationToken);
+                if (globalRoleAsPingResult.IsFailed)
+                    return globalRoleAsPingResult;
+
+                var titleRoleAsPingResult = await GetRoleAsPingText(publishState.Title.DiscordRoleId.ToString()!, cancellationToken);
+                if (titleRoleAsPingResult.IsFailed)
+                    return titleRoleAsPingResult;
+
+                return $"{globalRoleAsPingResult.Value}, {titleRoleAsPingResult.Value}";
+            case PingType.Role:
+                if (publishState.Title.DiscordRoleId is null)
+                    return Result.Fail("Não foi definida uma role para o Discord nesta obra. Defina, ou mude o tipo de publicação no arquivo de configuração do Bot de Scans.");
+
                 return await GetRoleAsPingText(publishState.Title.DiscordRoleId.ToString()!, cancellationToken);
             case PingType.None: 
                 return string.Empty;
