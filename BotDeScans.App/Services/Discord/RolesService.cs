@@ -50,7 +50,7 @@ public class RolesService(IConfiguration configuration, IDiscordRestGuildAPI dis
 
         if (ulong.TryParse(role, out var roleId))
         {
-            var guildRole = guildRoles.FirstOrDefault(guildRole => guildRole.ID.Value.Equals(role)); 
+            var guildRole = guildRoles.FirstOrDefault(guildRole => guildRole.ID.Value.Equals(roleId)); 
             if (guildRole is not null)
                 return Result.Ok(guildRole);
         }
