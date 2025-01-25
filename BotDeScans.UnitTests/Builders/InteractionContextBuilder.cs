@@ -53,7 +53,7 @@ public class InteractionContextBuilder
         A.CallTo(() => member.User).Returns(new Optional<IUser>(user));
 
         return new(new Interaction(
-            id,
+            ID: id,
             ApplicationID: new Snowflake(faker.Random.ULong()),
             Type: InteractionType.ApplicationCommand,
             Data: default,
@@ -63,6 +63,13 @@ public class InteractionContextBuilder
             Member: new Optional<IGuildMember>(member),
             User: default,
             Token: token,
-            Version: 1));
+            Version: 1,
+            Message: default,
+            AppPermissions: default,
+            Locale: default,
+            GuildLocale: default,
+            Entitlements: default,
+            Context: default,
+            AuthorizingIntegrationOwners: default));
     }
 }

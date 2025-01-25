@@ -165,7 +165,7 @@ public class TitleCommands(
         var referenceValueParsedResult = referenceName switch
         {
             ExternalReference.MangaDex => mangaDexService.GetTitleIdFromUrl(referenceValue),
-            _ => FluentResults.Result.Ok(referenceValue)
+            _ => FluentResults.Result.Fail("Referência inválida")
         };
 
         if (referenceValueParsedResult.IsFailed)
