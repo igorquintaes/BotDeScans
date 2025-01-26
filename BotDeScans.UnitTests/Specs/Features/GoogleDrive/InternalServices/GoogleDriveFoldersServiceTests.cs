@@ -12,7 +12,6 @@ using FluentResults.Extensions.FluentAssertions;
 using Google.Apis.Drive.v3;
 using Google.Apis.Drive.v3.Data;
 using iText.Layout.Element;
-using ScottPlot.SnapLogic;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;

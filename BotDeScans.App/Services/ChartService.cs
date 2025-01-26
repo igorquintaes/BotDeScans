@@ -6,18 +6,19 @@ public class ChartService
     public virtual Stream CreatePieChart(
         IDictionary<string, double> labelsValues)
     {
-        var values = labelsValues.Select(x => x.Value).ToArray();
-        var labels = labelsValues.Select(x => x.Key).ToArray();
+        var plt = new Plot();
+        plt.ShowLegend();
+        plt.Axes.Frameless();
+        plt.HideGrid();
 
-        var plt = new Plot(width: 600, height: 400);
-        var pie = plt.AddPie(values);
-        pie.SliceLabels = labels;
-        pie.ShowPercentages = true;
-        pie.ShowValues = false;
-        pie.ShowLabels = true;
-        plt.Legend();
+        var pie = plt.Add.Pie(labelsValues
+            .Select(x => new PieSlice() { Value = x.Value, Label = x.Key })
+            .ToList());
 
-        var imageBytes = plt.GetImageBytes();
+        pie.ExplodeFraction = .1;
+        pie.SliceLabelDistance = 1.4;
+
+        var imageBytes = plt.GetImageBytes(600, 400, ImageFormat.Png);
         return new MemoryStream(imageBytes);
     }
 }

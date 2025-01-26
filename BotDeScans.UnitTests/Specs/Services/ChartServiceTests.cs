@@ -2,9 +2,11 @@
 using FluentAssertions;
 using System.Collections.Generic;
 using System.Drawing;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using System.Threading;
 using Xunit;
 namespace BotDeScans.UnitTests.Specs.Services;
 
@@ -12,9 +14,11 @@ public class ChartServiceTests : UnitTest
 {
     public class CreatePieChart : ChartServiceTests
     {
-        [Fact(Skip = "comma format is not culture insensitive")]
+        [Fact]
         public void ShouldCreatePieChartAsExpected()
         {
+            Thread.CurrentThread.CurrentCulture = new CultureInfo("en-US");
+
             var service = new ChartService();
             var data = new Dictionary<string, double>
             {
