@@ -1,4 +1,4 @@
-name: Windows Build and Sign
+name: Escola de Scans Build and Sign
 
 on:
   push:
