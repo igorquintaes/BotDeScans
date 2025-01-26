@@ -27,7 +27,7 @@ jobs:
       run: dotnet publish BotDeScans.App/BotDeScans.App.csproj  -c Release -r win-x64 -p:PublishSingleFile=true --self-contained true -p:PublishReadyToRunShowWarnings=true -o ${{env.DOTNET_ROOT}}/BotDeScans
 
     - name: Upload artifact for deployment job
-      uses: actions\upload-artifact@v4
+      uses: actions/upload-artifact@v4
       with:
         name: BotDeScans
         path: ${{env.DOTNET_ROOT}}
@@ -42,7 +42,7 @@ jobs:
       with:
         name: BotDeScans.App/BotDeScans.App.csproj
         
-    - name: Sign exe 
+    - name: Code sign a file in Windows using pfx certificate
       uses: markeytos/code-sign-action@v1.02
       with:
         certificate: '${{ secrets.CERTIFICATE }}'
@@ -54,7 +54,7 @@ jobs:
         recursive: true 
 
     - name: Upload artifact for deployment job
-      uses: actions\upload-artifact@v4
+      uses: actions/upload-artifact@v4
       with:
         name: BotDeScansApp
         path: .\BotDeScans
