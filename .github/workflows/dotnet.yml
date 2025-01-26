@@ -1,0 +1,61 @@
+name: Windows Build and Sign
+
+on:
+  push:
+    branches: [ $default-branch ]
+  pull_request:
+    branches: [ $default-branch ]
+    
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+
+    - name: Set up .NET Core
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: 8.0.x
+        
+    - name: Execute unit tests
+      run: dotnet test
+        
+    - name: dotnet publish
+      run: dotnet publish BotDeScans.App/BotDeScans.App.csproj  -c Release -r win-x64 -p:PublishSingleFile=true --self-contained true -p:PublishReadyToRunShowWarnings=true -o ${{env.DOTNET_ROOT}}/BotDeScans
+
+    - name: Upload artifact for deployment job
+      uses: actions\upload-artifact@v4
+      with:
+        name: BotDeScans
+        path: ${{env.DOTNET_ROOT}}
+        
+  package:
+    runs-on: windows-latest
+    needs: build
+
+    steps:
+
+    - name: Download artifact from build job
+      uses: actions/download-artifact@v4
+      with:
+        name: BotDeScans.App/BotDeScans.App.csproj
+        
+    - name: Sign exe 
+      uses: markeytos/code-sign-action@v1.02
+      with:
+        certificate: '${{ secrets.CERTIFICATE }}'
+        password: '${{ secrets.PASSWORD }}'
+        certificatesha1: '${{ secrets.CERTHASH }}'
+        certificatename: '${{ secrets.CERTNAME }}'
+        folder: 'BotDeScans'
+        timestampUrl: 'http://timestamp.digicert.com'
+        recursive: true 
+
+    - name: Upload artifact for deployment job
+      uses: actions\upload-artifact@v4
+      with:
+        name: BotDeScansApp
+        path: .\BotDeScans
