@@ -42,7 +42,7 @@ jobs:
     - name: Download artifact from build job
       uses: actions/download-artifact@v4
       with:
-        name: BotDeScans.App/BotDeScans.App.csproj
+        name: BotDeScans
         
     - name: Code sign a file in Windows using pfx certificate
       uses: markeytos/code-sign-action@v1.02
