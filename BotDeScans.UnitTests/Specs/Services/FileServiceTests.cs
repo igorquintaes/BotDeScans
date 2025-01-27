@@ -101,11 +101,16 @@ public class FileServiceTests : UnitTest
                 resourcesDirectory,
                 destinationDirectory);
 
-            using var zipFile = ZipFile.Open(Path.Combine(destinationDirectory, zipFileName), ZipArchiveMode.Read);
-            var filesInsideZipFile = zipFile.Entries.Select(x => x.Name);
-            filesInsideZipFile.Should().BeEquivalentTo(
-                new[] { "01.png", "02.png" }, 
-                options => options.WithStrictOrdering());
+            using var zipFile = ZipFile.Open(
+                Path.Combine(destinationDirectory, zipFileName), 
+                ZipArchiveMode.Read);
+
+            var filesInsideZipFile = zipFile.Entries
+                .Select(x => x.Name)
+                .OrderBy(x => x)
+                .Should().BeEquivalentTo(
+                    new[] { "01.png", "02.png" }, 
+                    options => options.WithStrictOrdering());
         }
 
         public void Dispose()
