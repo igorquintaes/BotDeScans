@@ -27,16 +27,15 @@ public class ImageService(IConfiguration configuration)
             var (quality, minQuality) = GetImageQuality(filePath);
 
             using var imageJob = new ImageJob();
-            var imageBytes = await File.ReadAllBytesAsync(filePath, ct);
+            await using var fileStream = File.OpenRead(filePath);
             var imageJobResult = await imageJob
-                .Decode(source: new BytesSource(imageBytes),
-                        // Handles ImageMalformed error: https://github.com/imazen/imageflow-dotnet/issues/46
+                .Decode(source: BufferedStreamSource.UseEntireStreamAndDisposeWithSource(fileStream),
                         commands: new DecodeCommands().SetIgnoreColorProfileErrors(true))
                 .EncodeToBytes(new PngQuantEncoder(quality, minQuality))
                 .Finish()
                 .InProcessAsync();
 
-            var bytes = imageJobResult.First.TryGetBytes();
+            var bytes = imageJobResult.First?.TryGetBytes();
             if (bytes != null)
             {
                 var newFileName = $"{Path.GetFileNameWithoutExtension(filePath)}.png";
@@ -66,7 +65,7 @@ public class ImageService(IConfiguration configuration)
             .Finish()
             .InProcessAsync();
 
-        var convertedImageInBytes = imageJobResult.First.TryGetBytes()
+        var convertedImageInBytes = imageJobResult.First?.TryGetBytes()
             ?? throw new Exception("Unable to convert image");
 
         return Convert.ToBase64String(convertedImageInBytes);

@@ -1,0 +1,66 @@
+name: Escola de Scans Build
+
+on:
+  push:
+    branches:
+      - 'main'
+  pull_request:
+    branches:
+      - 'main'
+    
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    permissions:
+      pull-requests: write
+      
+    steps:    
+    - uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+
+    - name: Set up .NET Core
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: 8.0.x
+
+    - name: Restore Dependencies
+      run: dotnet restore BotDeScans.sln
+
+    - name: Build
+      run: dotnet build BotDeScans.sln --configuration Release --no-restore
+        
+    - name: Execute unit tests
+      id: test
+      run: dotnet test BotDeScans.sln --configuration Release --no-build --verbosity normal --collect:"XPlat Code Coverage" --results-directory ./coverage
+        
+    - name: Code Coverage Report
+      id: report
+      if: success() || steps.test.conclusion == 'failure'
+      uses: irongut/CodeCoverageSummary@v1.3.0
+      with:
+        filename: coverage/**/coverage.cobertura.xml
+        badge: true
+        fail_below_min: true
+        format: markdown
+        hide_branch_rate: false
+        hide_complexity: true
+        indicators: true
+        output: both
+        thresholds: '10 20'
+
+    - name: Add Coverage PR Comment
+      uses: marocchino/sticky-pull-request-comment@v2
+      if: github.event_name == 'pull_request' && (success() || steps.test.conclusion == 'failure' || steps.report.conclusion == 'failure')
+      with:
+        recreate: true
+        path: code-coverage-results.md
+        
+    - name: dotnet publish
+      run: dotnet publish BotDeScans.App/BotDeScans.App.csproj  -c Release -r win-x64 -p:PublishSingleFile=true --self-contained true -p:PublishReadyToRunShowWarnings=true -o ${{env.DOTNET_ROOT}}/BotDeScans
+
+    - name: Upload artifact for deployment job
+      uses: actions/upload-artifact@v4
+      with:
+        name: BotDeScans
+        path: ${{env.DOTNET_ROOT}}
