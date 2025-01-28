@@ -12,6 +12,8 @@ public class MegaService(
 {
     private readonly IMegaApiClient megaApiClient = megaClient.Client;
 
+    public const string REWRITE_KEY = "Mega:RewriteExistingFile";
+
     public virtual async Task<INode> GetOrCreateFolderAsync(string folderName, INode? parentFolder = null)
     {
         var nodes = await megaApiClient.GetNodesAsync();
@@ -29,25 +31,25 @@ public class MegaService(
         INode parentFolder,
         CancellationToken cancellationToken = default)
     {
-        const string rewriteKey = "Mega:RewriteExistingFile";
-        var rewriteExistingFile = configuration.GetValue<bool?>(rewriteKey) ?? false;
+        var fileName = Path.GetFileName(filePath);
         var nodes = await megaApiClient.GetNodesAsync(parentFolder);
         var file = nodes.FirstOrDefault(x =>
             x.Name != null &&
-            x.Name.Equals(Path.GetFileName(filePath), StringComparison.InvariantCultureIgnoreCase) &&
+            x.Name.Equals(fileName, StringComparison.InvariantCultureIgnoreCase) &&
             x.ParentId == parentFolder.Id &&
             x.Type == NodeType.File);
 
         if (file is not null)
         {
-            if (!rewriteExistingFile)
-                return Result.Fail($"Já existe um arquivo com o nome especificado. Se desejar sobrescrever o arquivo existente, altere a configuração {rewriteKey} para permitir.");
+            var rewriteExistingFile = configuration.GetValue<bool?>(REWRITE_KEY);
+            if (rewriteExistingFile is not true)
+                return Result.Fail($"Já existe um arquivo com o nome especificado. Se desejar sobrescrever o arquivo existente, altere a configuração {REWRITE_KEY} para permitir.");
 
             await megaApiClient.DeleteAsync(file, false);
         }
 
         await using var stream = streamWrapper.CreateFileStream(filePath, FileMode.Open);
-        file = await megaApiClient.UploadAsync(stream, Path.GetFileName(filePath), parentFolder, cancellationToken: cancellationToken);
-        return await megaApiClient.GetDownloadLinkAsync(file);
+        var newFile = await megaApiClient.UploadAsync(stream, fileName, parentFolder, cancellationToken: cancellationToken);
+        return await megaApiClient.GetDownloadLinkAsync(newFile);
     }
 }

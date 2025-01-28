@@ -57,7 +57,7 @@ public class GoogleDriveResourcesService(
             Name = name,
             Description = name,
             MimeType = mimeType,
-            Parents = new[] { parentId ?? GoogleDriveSettingsService.BaseFolderId }
+            Parents = [parentId ?? GoogleDriveSettingsService.BaseFolderId]
         };
 
     public virtual Task<Result<string>> DeleteResource(

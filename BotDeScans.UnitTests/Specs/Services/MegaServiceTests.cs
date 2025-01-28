@@ -1,14 +1,20 @@
-﻿using BotDeScans.App.Services;
+﻿using AutoFixture;
+using Bogus.DataSets;
+using BotDeScans.App.Features.GoogleDrive;
+using BotDeScans.App.Services;
 using BotDeScans.App.Services.ExternalClients;
 using BotDeScans.App.Services.Wrappers;
+using BotDeScans.UnitTests.Specs.Extensions;
 using CG.Web.MegaApiClient;
 using FakeItEasy;
 using FluentAssertions;
 using FluentResults;
 using FluentResults.Extensions.FluentAssertions;
 using Microsoft.Extensions.Configuration;
+using Remora.Commands.Trees.Nodes;
 using System;
 using System.IO;
+using System.Threading;
 using System.Threading.Tasks;
 using Xunit;
 namespace BotDeScans.UnitTests.Specs.Services;
@@ -16,67 +22,86 @@ namespace BotDeScans.UnitTests.Specs.Services;
 public class MegaServiceTests : UnitTest
 {
     private readonly MegaService service;
-    private readonly IMegaApiClient megaApiClient;
-    private readonly StreamWrapper streamWrapper;
-    private readonly IConfiguration configuration;
 
     public MegaServiceTests()
     {
-        streamWrapper = A.Fake<StreamWrapper>();
-        configuration = A.Fake<IConfiguration>();
-        megaApiClient = A.Fake<IMegaApiClient>();
+        fixture.Fake<MegaClient>();
+        fixture.Fake<StreamWrapper>();
+        fixture.Fake<IConfiguration>();
+        fixture.Fake<IMegaApiClient>();
 
-        var megaClient = A.Fake<MegaClient>();
-        A.CallTo(() => megaClient.Client).Returns(megaApiClient);
+        A.CallTo(() => fixture
+            .Fake<MegaClient>().Client)
+            .Returns(fixture.Fake<IMegaApiClient>());
 
-        service = new(megaClient, streamWrapper, configuration);
+        service = fixture.Create<MegaService>();
     }
 
     public class GetOrCreateFolderAsync : MegaServiceTests
     {
-        private readonly INode[] nodes;
+        private readonly INode rootNode;
 
         public GetOrCreateFolderAsync()
         {
-            nodes = new INode[]
-            {
-                A.Fake<INode>(),
-                A.Fake<INode>(),
-                A.Fake<INode>(),
-            };
-
-            A.CallTo(() => nodes[0].Type).Returns(NodeType.Root);
-            A.CallTo(() => nodes[0].Id).Returns(dataGenerator.Random.Word());
-            A.CallTo(() => nodes[1].Name).Returns(dataGenerator.Random.Word());
-            A.CallTo(() => nodes[1].Id).Returns(dataGenerator.Random.Word());
-            A.CallTo(() => nodes[1].ParentId).Returns(nodes[0].Id);
-            A.CallTo(() => nodes[1].Type).Returns(NodeType.Directory);
-            A.CallTo(() => nodes[2].Name).Returns(dataGenerator.Random.Word());
-            A.CallTo(() => nodes[2].Id).Returns(dataGenerator.Random.Word());
-            A.CallTo(() => nodes[2].Type).Returns(NodeType.Directory);
-
-            A.CallTo(() => megaApiClient
-                .GetNodesAsync())
-                .Returns(nodes);
+            rootNode = A.Fake<INode>();
+            A.CallTo(() => rootNode.Id).Returns(dataGenerator.Random.Word());
+            A.CallTo(() => rootNode.Name).Returns(null);
+            A.CallTo(() => rootNode.Type).Returns(NodeType.Root);
         }
 
-        [Fact]
-        public async Task ShouldGetFolderWhenItExists()
+        [Theory]
+        [InlineData("foldername")]
+        [InlineData("FolDerNAMe")]
+        public async Task ShouldGetFolderWhenItExists(string folderName)
         {
-            var result = await service.GetOrCreateFolderAsync(nodes[1].Name);
-            result.Should().Be(nodes[1]);
-            A.CallTo(() => megaApiClient
+            const string nodeFolderName = "foldername";
+            var folderNode = A.Fake<INode>();
+            A.CallTo(() => folderNode.Name).Returns(nodeFolderName);
+            A.CallTo(() => folderNode.ParentId).Returns(rootNode.Id);
+            A.CallTo(() => folderNode.Type).Returns(NodeType.Directory);
+
+            A.CallTo(() => fixture
+                .Fake<IMegaApiClient>()
+                .GetNodesAsync())
+                .Returns([rootNode, folderNode]);
+
+            var result = await service.GetOrCreateFolderAsync(folderName);
+            result.Should().Be(folderNode);
+
+            A.CallTo(() => fixture
+                .Fake<IMegaApiClient>()
                 .CreateFolderAsync(A<string>.Ignored, A<INode>.Ignored))
                 .MustNotHaveHappened();
         }
 
-        [Fact]
-        public async Task ShouldGetFolderWhenItExists_WithParentFolder()
+        [Theory]
+        [InlineData("foldername")]
+        [InlineData("FolDerNAMe")]
+        public async Task ShouldGetFolderWhenItExists_WithParentFolder(string folderName)
         {
-            A.CallTo(() => nodes[1].ParentId).Returns(nodes[2].Id);
-            var result = await service.GetOrCreateFolderAsync(nodes[1].Name, nodes[2]);
-            result.Should().Be(nodes[1]);
-            A.CallTo(() => megaApiClient
+            const string nodeFolderName = "foldername";
+            var parentNode = A.Fake<INode>();
+            A.CallTo(() => parentNode.Id).Returns(dataGenerator.Random.Word());
+            A.CallTo(() => parentNode.Type).Returns(NodeType.Directory);
+
+            var folderNode = A.Fake<INode>();
+            A.CallTo(() => folderNode.Name).Returns(nodeFolderName);
+            A.CallTo(() => folderNode.ParentId).Returns(parentNode.Id);
+            A.CallTo(() => folderNode.Type).Returns(NodeType.Directory);
+
+            A.CallTo(() => fixture
+                .Fake<IMegaApiClient>()
+                .GetNodesAsync())
+                .Returns([parentNode, folderNode]);
+
+            var result = await service.GetOrCreateFolderAsync(
+                folderName: folderName, 
+                parentFolder: parentNode);
+
+            result.Should().Be(folderNode);
+
+            A.CallTo(() => fixture
+                .Fake<IMegaApiClient>()
                 .CreateFolderAsync(A<string>.Ignored, A<INode>.Ignored))
                 .MustNotHaveHappened();
         }
@@ -84,27 +109,45 @@ public class MegaServiceTests : UnitTest
         [Fact]
         public async Task ShouldCreateFolderWhenItDoesNotExists()
         {
-            var folderName = dataGenerator.Random.Word();
+            const string newFolderName = "foldername";
             var newNode = A.Fake<INode>();
-            A.CallTo(() => megaApiClient
-                .CreateFolderAsync(folderName, nodes[0]))
+
+            A.CallTo(() => fixture
+                .Fake<IMegaApiClient>()
+                .GetNodesAsync())
+                .Returns([rootNode]);
+
+            A.CallTo(() => fixture
+                .Fake<IMegaApiClient>()
+                .CreateFolderAsync(newFolderName, rootNode))
                 .Returns(newNode);
 
-            var result = await service.GetOrCreateFolderAsync(folderName);
+            var result = await service.GetOrCreateFolderAsync(newFolderName);
+
             result.Should().Be(newNode);
         }
 
         [Fact]
         public async Task ShouldCreateFolderWhenItDoesNotExists_WithParentFolder()
         {
-            var folderName = dataGenerator.Random.Word();
+            const string nodeFolderName = "foldername";
             var newNode = A.Fake<INode>();
             var parentNode = A.Fake<INode>();
-            A.CallTo(() => megaApiClient
-                .CreateFolderAsync(folderName, parentNode))
+            A.CallTo(() => parentNode.Id).Returns(dataGenerator.Random.Word());
+            A.CallTo(() => parentNode.Type).Returns(NodeType.Directory);
+
+            A.CallTo(() => fixture
+                .Fake<IMegaApiClient>()
+                .GetNodesAsync())
+                .Returns([rootNode, parentNode]);
+
+            A.CallTo(() => fixture
+                .Fake<IMegaApiClient>()
+                .CreateFolderAsync(nodeFolderName, parentNode))
                 .Returns(newNode);
 
-            var result = await service.GetOrCreateFolderAsync(folderName, parentNode);
+            var result = await service.GetOrCreateFolderAsync(nodeFolderName, parentNode);
+
             result.Should().Be(newNode);
         }
 
@@ -115,76 +158,161 @@ public class MegaServiceTests : UnitTest
         [InlineData(NodeType.Trash)]
         public async Task ShouldFilterFoldersBasedOnDirectoryType(NodeType nodeType)
         {
-            A.CallTo(() => nodes[1].Type).Returns(nodeType);
-
+            const string name = "name";
             var newNode = A.Fake<INode>();
-            A.CallTo(() => megaApiClient
-                .CreateFolderAsync(nodes[1].Name, nodes[0]))
+            var notFolderNode = A.Fake<INode>();
+            A.CallTo(() => notFolderNode.Name).Returns(name);
+            A.CallTo(() => notFolderNode.Type).Returns(nodeType);
+
+            A.CallTo(() => fixture
+                .Fake<IMegaApiClient>()
+                .GetNodesAsync())
+                .Returns([rootNode, notFolderNode]);
+
+            A.CallTo(() => fixture
+                .Fake<IMegaApiClient>()
+                .CreateFolderAsync(name, rootNode))
                 .Returns(newNode);
 
-            var result = await service.GetOrCreateFolderAsync(nodes[1].Name);
+            var result = await service.GetOrCreateFolderAsync(name);
             result.Should().Be(newNode);
         }
     }
 
     public class CreateFileAsync : MegaServiceTests, IDisposable
     {
-        private readonly string filePath;
-        private readonly Stream stream;
-        private readonly INode fileNode;
-        private readonly Uri uri;
+        private readonly string fileName = "some-file.jpg";
+        private readonly string filePath = Path.Combine("C:", "some-path", "some-file.jpg");
+        private readonly INode rootNode;
 
         public CreateFileAsync()
         {
-            filePath = Path.Combine("C:", "some-path", "some-file.jpg");
-            stream = A.Fake<Stream>();
-            fileNode = A.Fake<INode>();
-            uri = new Uri("http://www.google.com");
+            rootNode = A.Fake<INode>();
+            A.CallTo(() => rootNode.Id).Returns("rootNode.Id");
+            A.CallTo(() => rootNode.Type).Returns(NodeType.Root); 
+            
+            A.CallTo(() => fixture
+                .Fake<IMegaApiClient>()
+                .GetNodesAsync(rootNode))
+                .Returns([]);
 
-            A.CallTo(() => streamWrapper
+            A.CallTo(() => fixture
+                .Fake<IConfiguration>()
+                .GetSection(MegaService.REWRITE_KEY))
+                .Returns(fixture.Fake<IConfigurationSection>());
+
+            A.CallTo(() => fixture
+                .Fake<IConfigurationSection>().Value)
+                .Returns("true");
+
+            A.CallTo(() => fixture
+                .Fake<StreamWrapper>()
                 .CreateFileStream(filePath, FileMode.Open))
-                .Returns(stream);
+                .Returns(fixture.Fake<Stream>());
+
+            A.CallTo(() => fixture
+                .Fake<IMegaApiClient>()
+                .UploadAsync(fixture.Fake<Stream>(), fileName, rootNode, null, null, cancellationToken))
+                .Returns(fixture.Fake<INode>());
+
+            A.CallTo(() => fixture
+                .Fake<IMegaApiClient>()
+                .GetDownloadLinkAsync(fixture.Fake<INode>()))
+                .Returns(fixture.Fake<Uri>());
         }
 
         [Fact]
-        public async Task ShouldCreateFileSuccessfuly()
+        public async Task ShouldCreateFileSuccessfulyWhenFileDoesNotExists()
         {
-            A.CallTo(() => megaApiClient
-                .UploadAsync(stream, "some-file.jpg", null, null, null, cancellationToken))
-                .Returns(fileNode);
+            var result = await service.CreateFileAsync(filePath, rootNode, cancellationToken);
+            result.Should().BeSuccess().And.HaveValue(fixture.Fake<Uri>());
 
-            A.CallTo(() => megaApiClient
-                .GetDownloadLinkAsync(fileNode))
-                .Returns(uri);
+            A.CallTo(() => fixture
+                .Fake<IMegaApiClient>()
+                .DeleteAsync(A<INode>.Ignored, A<bool>.Ignored))
+                .MustNotHaveHappened();
 
-            var result = await service.CreateFileAsync(filePath, null, cancellationToken);
-            result.Should().BeSuccess().And.HaveValue(uri);
         }
 
-        [Fact]
-        public async Task ShouldCreateFileSuccessfuly_WithParentFolder()
+        [Theory]
+        [InlineData("some-file.jpg")]
+        [InlineData("SoMe-FIle.jPG")]
+        public async Task ShouldDeleteAndCreateFileWhenItAlreadyExistsAndAllowsRewrite(string inputFileName)
         {
-            var parentNode = A.Fake<INode>();
+            var filePath = Path.Combine("C:", "some-path", inputFileName);
+            var fileNode = A.Fake<INode>();
+            const string fileNodeName = "some-file.jpg";
+            A.CallTo(() => fileNode.ParentId).Returns(rootNode.Id);
+            A.CallTo(() => fileNode.Type).Returns(NodeType.File);
+            A.CallTo(() => fileNode.Name).Returns(fileNodeName);
 
-            A.CallTo(() => megaApiClient
-                .UploadAsync(stream, "some-file.jpg", null, null, null, cancellationToken))
-                .Throws<Exception>();
+            A.CallTo(() => fixture
+                .Fake<IMegaApiClient>()
+                .GetNodesAsync(rootNode))
+                .Returns([fileNode]);
 
-            A.CallTo(() => megaApiClient
-                .UploadAsync(stream, "some-file.jpg", parentNode, null, null, cancellationToken))
-                .Returns(fileNode);
+            A.CallTo(() => fixture
+                .Fake<StreamWrapper>()
+                .CreateFileStream(filePath, FileMode.Open))
+                .Returns(fixture.Fake<Stream>());
 
-            A.CallTo(() => megaApiClient
-                .GetDownloadLinkAsync(fileNode))
-                .Returns(uri);
+            A.CallTo(() => fixture
+                .Fake<IMegaApiClient>()
+                .UploadAsync(fixture.Fake<Stream>(), inputFileName, rootNode, null, null, cancellationToken))
+                .Returns(fixture.Fake<INode>());
 
-            var result = await service.CreateFileAsync(filePath, parentNode, cancellationToken);
-            result.Should().BeSuccess().And.HaveValue(uri);
+            var result = await service.CreateFileAsync(filePath, rootNode, cancellationToken);
+            result.Should().BeSuccess().And.HaveValue(fixture.Fake<Uri>());
+
+            A.CallTo(() => fixture
+                .Fake<IMegaApiClient>()
+                .DeleteAsync(fileNode, A<bool>.Ignored))
+                .MustHaveHappenedOnceExactly();
+        }
+
+        [Theory]
+        [InlineData(null)]
+        [InlineData("false")]
+
+        public async Task ShouldReturnFailResultWhenItAlreadyExistsAndDoesNotAllowsRewrite(string? rewriteKey)
+        {
+            var fileNode = A.Fake<INode>();
+            A.CallTo(() => fileNode.ParentId).Returns(rootNode.Id);
+            A.CallTo(() => fileNode.Type).Returns(NodeType.File);
+            A.CallTo(() => fileNode.Name).Returns(fileName);
+
+            A.CallTo(() => fixture
+                .Fake<IMegaApiClient>()
+                .GetNodesAsync(rootNode))
+                .Returns([fileNode]);
+
+            A.CallTo(() => fixture
+                .Fake<IConfigurationSection>().Value)
+                .Returns(rewriteKey);
+
+            var result = await service.CreateFileAsync(filePath, rootNode, cancellationToken);
+            result.Should().BeFailure().And.HaveError($"Já existe um arquivo com o nome especificado. Se desejar sobrescrever o arquivo existente, altere a configuração {MegaService.REWRITE_KEY} para permitir.");
+
+            A.CallTo(() => fixture
+                .Fake<IMegaApiClient>()
+                .DeleteAsync(A<INode>.Ignored, A<bool>.Ignored))
+                .MustNotHaveHappened();
+
+            A.CallTo(() => fixture
+                .Fake<IMegaApiClient>()
+                .UploadAsync(
+                    A<Stream>.Ignored, 
+                    A<string>.Ignored, 
+                    A<INode>.Ignored, 
+                    A<IProgress<double>>.Ignored, 
+                    A<DateTime?>.Ignored, 
+                    A<CancellationToken>.Ignored))
+                .MustNotHaveHappened();
         }
 
         public void Dispose()
         {
-            stream?.Dispose();
+            fixture.Fake<Stream>()?.Dispose();
             GC.SuppressFinalize(this);
         }
     }
