@@ -51,7 +51,7 @@ jobs:
         password: '${{ secrets.CERTIFICATE_PASSWORD }}'
         recursive: true
         files: |
-          .\BotDeScans\BotDeScans.App.exe
+          BotDeScans\BotDeScans.App.exe
         description: 'BotDeScans'
 
     - name: Upload artifact for deployment job
