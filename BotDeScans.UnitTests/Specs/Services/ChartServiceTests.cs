@@ -6,8 +6,10 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using System.Runtime.InteropServices;
 using System.Threading;
 using Xunit;
+using static ScottPlot.Colors;
 namespace BotDeScans.UnitTests.Specs.Services;
 
 public class ChartServiceTests : UnitTest
@@ -17,6 +19,9 @@ public class ChartServiceTests : UnitTest
         [Fact]
         public void ShouldCreatePieChartAsExpected()
         {
+            var runningInWindows = RuntimeInformation.IsOSPlatform(OSPlatform.Windows);
+            Assert.SkipWhen(runningInWindows is false, "Feature only supported in windows.");
+
             Thread.CurrentThread.CurrentCulture = new CultureInfo("en-US");
 
             var service = new ChartService();
