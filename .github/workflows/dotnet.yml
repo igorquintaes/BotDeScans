@@ -45,14 +45,14 @@ jobs:
         name: BotDeScans
         
     - name: Code sign a file in Windows using pfx certificate
-      uses: markeytos/code-sign-action@v1.02
+      uses: dlemstra/code-sign-action@v1
       with:
         certificate: '${{ secrets.CERTIFICATE }}'
-        password: '${{ secrets.PASSWORD }}'
-        certificatename: '${{ secrets.CERTNAME }}'
-        folder: 'BotDeScans'
-        timestampUrl: 'http://timestamp.digicert.com'
-        recursive: true 
+        password: '${{ secrets.CERTIFICATE_PASSWORD }}'
+        recursive: true
+        files: |
+          .\BotDeScans\BotDeScans.App.exe
+        description: 'BotDeScans'
 
     - name: Upload artifact for deployment job
       uses: actions/upload-artifact@v4
