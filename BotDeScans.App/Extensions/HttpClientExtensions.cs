@@ -14,7 +14,7 @@ public static class HttpClientExtensions
         if (!httpResponseMessage.IsSuccessStatusCode)
         {
             var errorMessage = $"Unsuccessful response to login, statuscode: {httpResponseMessage.StatusCode}. " +
-                               $"Attempted url: {httpResponseMessage.RequestMessage!.RequestUri!.AbsoluteUri}. " + 
+                               $"Attempted url: {httpResponseMessage.RequestMessage!.RequestUri!.AbsoluteUri}. " +
                                 "More details in inner error.";
 
             var error = new Error(errorMessage);
@@ -28,8 +28,8 @@ public static class HttpClientExtensions
             return Result.Ok((T)Convert.ChangeType(stringContent, typeof(string)));
 
         var data = JsonSerializer.Deserialize<T>(stringContent, jsonSerializerOptions);
-        return data is null 
-            ? Result.Fail<T>($"Request returned an empty object response. Raw response: {stringContent}") 
+        return data is null
+            ? Result.Fail<T>($"Request returned an empty object response. Raw response: {stringContent}")
             : Result.Ok(data);
     }
 

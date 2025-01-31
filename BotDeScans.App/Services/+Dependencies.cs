@@ -1,4 +1,5 @@
 ﻿using BotDeScans.App.Features.GoogleDrive;
+using BotDeScans.App.Features.Mega;
 using BotDeScans.App.Features.Publish;
 using BotDeScans.App.Features.Publish.Steps;
 using BotDeScans.App.Features.Titles;
@@ -19,7 +20,8 @@ internal static class AddDependencies
         .AddDiscordServices()
         .AddPublishServices()
         .AddExternalClients()
-        .AddGoogleDriveInternalServices()
+        .AddGoogleDrive()
+        .AddMega()
         .AddTitleServices()
         .AddInitializators()
         .AddLoggingServices()
@@ -32,6 +34,5 @@ internal static class AddDependencies
         .AddScoped<FileReleaseService>()
         .AddScoped<GoogleBloggerService>()
         .AddScoped<MangaDexService>()
-        .AddScoped<MegaService>()
         .AddValidatorsFromAssemblyContaining<Program>();
 }

@@ -2,7 +2,6 @@
 using BotDeScans.App.Features.GoogleDrive;
 using BotDeScans.App.Features.GoogleDrive.InternalServices;
 using BotDeScans.App.Services.ExternalClients;
-using BotDeScans.UnitTests.Specs;
 using BotDeScans.UnitTests.Specs.Extensions;
 using FakeItEasy;
 using FluentAssertions;
@@ -11,7 +10,6 @@ using FluentResults;
 using FluentResults.Extensions.FluentAssertions;
 using Google.Apis.Drive.v3;
 using Google.Apis.Drive.v3.Data;
-using iText.Layout.Element;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -84,8 +82,8 @@ public class GoogleDriveFoldersServiceTests : UnitTest
                 .Returns(new List<File>());
 
             var result = await service.GetAsync(
-                fixture.Create<string>(), 
-                fixture.Create<string>(), 
+                fixture.Create<string>(),
+                fixture.Create<string>(),
                 cancellationToken);
 
             using var _ = new AssertionScope();

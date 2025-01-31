@@ -21,7 +21,7 @@ public static class ResultExtensions
     public static Result AsFailResult(this MangaDexRoot mangaDexResponse)
         => Result.Fail(GetErrors(mangaDexResponse.Errors));
 
-    public static Result ToResult(this ValidationResult validationResult) 
+    public static Result ToResult(this ValidationResult validationResult)
         => validationResult.IsValid
             ? Result.Ok()
             : Result.Fail(validationResult.Errors.Select(validationError =>
@@ -73,11 +73,11 @@ public static class ResultExtensions
         return await feedbackService.SendContextualEmbedAsync(errorEmbed, ct: cancellationToken);
     }
 
-    public static Task<Remora.Results.IResult> PostErrorOnDiscord<T>(this Result<T> result, ExtendedFeedbackService feedbackService, CancellationToken cancellationToken) 
+    public static Task<Remora.Results.IResult> PostErrorOnDiscord<T>(this Result<T> result, ExtendedFeedbackService feedbackService, CancellationToken cancellationToken)
         => result.ToResult().PostErrorOnDiscord(feedbackService, cancellationToken);
 
     private static IEnumerable<Error> GetErrors(MangaDexError[] mangaDexErrors)
         => mangaDexErrors.Length > 0
             ? mangaDexErrors.Select(x => new Error($"{x.Status} - {x.Title} - {x.Detail}"))
-            : (IEnumerable<Error>)(new[] { new Error("Generic error") });
+            : (IEnumerable<Error>)([new Error("Generic error")]);
 }

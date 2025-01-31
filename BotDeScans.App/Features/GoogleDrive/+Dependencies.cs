@@ -8,7 +8,7 @@ namespace BotDeScans.App.Features.GoogleDrive;
 [ExcludeFromCodeCoverage]
 internal static class AddDependencies
 {
-    internal static IServiceCollection AddGoogleDriveInternalServices(this IServiceCollection services) => services
+    internal static IServiceCollection AddGoogleDrive(this IServiceCollection services) => services
         .AddCommandTree()
             .WithCommandGroup<GoogleDriveCommands>()
             .Finish()

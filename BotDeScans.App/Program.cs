@@ -5,7 +5,6 @@ using BotDeScans.App.Services.Initializatiors;
 using BotDeScans.App.Services.Logging;
 using FluentResults;
 using MangaDexSharp;
-using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;

@@ -11,14 +11,12 @@ using Google.Apis.Drive.v3;
 using Google.Apis.Drive.v3.Data;
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Threading.Tasks;
 using Xunit;
 using static Google.Apis.Drive.v3.FilesResource;
-
 namespace BotDeScans.UnitTests.Specs.Features.GoogleDrive.InternalServices;
 
-public class GoogleDriveResourcesServiceTests : UnitTest,  IDisposable
+public class GoogleDriveResourcesServiceTests : UnitTest, IDisposable
 {
     private readonly GoogleDriveResourcesService service;
 
@@ -58,7 +56,7 @@ public class GoogleDriveResourcesServiceTests : UnitTest,  IDisposable
 
             A.CallTo(() => fixture
                 .Fake<GoogleDriveWrapper>().ExecuteAsync(
-                    fixture.Fake<ListRequest>(), 
+                    fixture.Fake<ListRequest>(),
                     cancellationToken))
                 .Returns(fixture.Fake<FileList>());
 
@@ -182,10 +180,10 @@ public class GoogleDriveResourcesServiceTests : UnitTest,  IDisposable
             await service.GetResourcesAsync(
                 mimeType: default,
                 forbiddenMimeType: default,
-                name: default, 
+                name: default,
                 parentId,
                 minResult: default,
-                maxResult: default, 
+                maxResult: default,
                 cancellationToken);
 
             fixture.Freeze<ListRequest>().Q.Should().Be(expectedQuery);
@@ -199,8 +197,8 @@ public class GoogleDriveResourcesServiceTests : UnitTest,  IDisposable
             var mimeType = fixture.Create<string>();
             var parentId = fixture.Create<string>();
             var expectedQuery = string.Format(
-                EXPECTED_QUERY_FORMAT, 
-                mimeType, 
+                EXPECTED_QUERY_FORMAT,
+                mimeType,
                 GoogleDriveSettingsService.BaseFolderId);
 
             await service.GetResourcesAsync(
@@ -209,10 +207,10 @@ public class GoogleDriveResourcesServiceTests : UnitTest,  IDisposable
                 name: default,
                 parentId: default,
                 minResult: default,
-                maxResult: default, 
+                maxResult: default,
                 cancellationToken);
 
-                fixture.Freeze<ListRequest>().Q.Should().Be(expectedQuery);
+            fixture.Freeze<ListRequest>().Q.Should().Be(expectedQuery);
         }
 
         [Fact]
@@ -224,9 +222,9 @@ public class GoogleDriveResourcesServiceTests : UnitTest,  IDisposable
             var name = fixture.Create<string>();
             var parentId = fixture.Create<string>();
             var expectedQuery = string.Format(
-                EXPECTED_QUERY_FORMAT, 
-                mimeType, 
-                name, 
+                EXPECTED_QUERY_FORMAT,
+                mimeType,
+                name,
                 GoogleDriveSettingsService.BaseFolderId);
 
             await service.GetResourcesAsync(

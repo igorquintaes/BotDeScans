@@ -17,6 +17,7 @@ using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using Xunit;
 namespace BotDeScans.UnitTests.Specs.Conditions;
@@ -41,7 +42,7 @@ public class RoleAuthorizeConditionTests : UnitTest
         cancellationToken = new();
         userID = dataGenerator.Random.Snowflake();
         guildRoles = AutoFaker.Generate<Role>(2);
-        roleAuthorizeAttribute = new(AutoFaker.Generate<string>(3).ToArray()) ;
+        roleAuthorizeAttribute = new(AutoFaker.Generate<string>(3).ToArray());
         guildID = dataGenerator.Random.Snowflake();
         var commandID = dataGenerator.Random.Snowflake();
         var token = dataGenerator.Random.String();
@@ -66,7 +67,7 @@ public class RoleAuthorizeConditionTests : UnitTest
 
         A.CallTo(() => guildMember
             .Roles)
-            .Returns(new[] { dataGenerator.Random.Snowflake() });
+            .Returns([dataGenerator.Random.Snowflake()]);
 
         A.CallTo(() => rolesService
             .ContainsAtLeastOneOfExpectedRoles(roleAuthorizeAttribute.RoleNames, guildRoles, guildMember.Roles))
@@ -96,12 +97,14 @@ public class RoleAuthorizeConditionTests : UnitTest
         public async Task ShouldReturnErrorWhenContextIsNotSlashCommand()
         {
             var condition = new RoleAuthorizeCondition(
-                A.Fake<ICommandContext>(), 
+                A.Fake<ICommandContext>(),
                 A.Fake<IDiscordRestGuildAPI>(),
                 A.Fake<IDiscordRestInteractionAPI>(),
                 A.Fake<RolesService>());
 
-            var result = await condition.CheckAsync(roleAuthorizeAttribute);
+            var result = await condition.CheckAsync(
+                roleAuthorizeAttribute, 
+                cancellationToken);
 
             using var _ = new AssertionScope();
             result.IsSuccess.Should().BeFalse();
@@ -172,9 +175,9 @@ public class RoleAuthorizeConditionTests : UnitTest
             A.CallTo(() => restInteractionAPI
                 .CreateInteractionResponseAsync(
                     A<Snowflake>.Ignored,
-                    A<string>.Ignored, 
-                    A<InteractionResponse>.Ignored, 
-                    default, 
+                    A<string>.Ignored,
+                    A<InteractionResponse>.Ignored,
+                    default,
                     cancellationToken))
                 .Returns(Task.FromResult(Result.FromError(errorResult)));
 

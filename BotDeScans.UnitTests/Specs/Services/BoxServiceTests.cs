@@ -1,12 +1,10 @@
 ﻿using BotDeScans.App.Services;
-using BotDeScans.App.Services.ExternalClients;
 using BotDeScans.App.Services.Wrappers;
 using Box.V2;
 using Box.V2.Managers;
 using Box.V2.Models;
 using FakeItEasy;
 using FluentAssertions;
-using FluentResults;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -36,7 +34,7 @@ public class BoxServiceTests : UnitTest
 
     public class GetOrCreateFolderAsync : BoxServiceTests
     {
-        const string folderType = "folder"; 
+        const string folderType = "folder";
         const int maxItemsQuery = 1000;
         private readonly IBoxFoldersManager boxFoldersManager;
         private readonly BoxCollection<BoxItem> boxCollection;
@@ -46,13 +44,14 @@ public class BoxServiceTests : UnitTest
             boxFoldersManager = A.Fake<IBoxFoldersManager>();
             boxCollection = new BoxCollection<BoxItem>
             {
-                Entries = new List<BoxItem>(new[] 
-                {
+                Entries = new List<BoxItem>(
+                [
                     A.Fake<BoxFolder>(),
                     A.Fake<BoxFolder>(),
                     A.Fake<BoxFolder>()
-                }
-            )};
+                ]
+            )
+            };
 
             A.CallTo(() => boxCollection.Entries[0].Name).Returns(dataGenerator.Random.Word());
             A.CallTo(() => boxCollection.Entries[0].Type).Returns(folderType);
@@ -118,7 +117,7 @@ public class BoxServiceTests : UnitTest
                 .CreateAsync(
                     A<BoxFolderRequest>.That.Matches(x =>
                         x.Name == newBoxItem.Name &&
-                        x.Parent.Id == folderId), 
+                        x.Parent.Id == folderId),
                     null))
                 .Returns(newBoxItem);
 
@@ -161,18 +160,18 @@ public class BoxServiceTests : UnitTest
                 .UploadAsync(
                     A<BoxFileRequest>.That.Matches(x =>
                         x.Name == "some-file.jpg" &&
-                        x.Parent.Id == rootFolderId), 
-                    stream, 
+                        x.Parent.Id == rootFolderId),
+                    stream,
                     default, default, default, true, default))
                 .Returns(boxFile);
 
             A.CallTo(() => boxFilesManager
                 .CreateSharedLinkAsync(
-                    boxFile.Id, 
+                    boxFile.Id,
                     A<BoxSharedLinkRequest>.That.Matches(x =>
                         x.Access == BoxSharedLinkAccessType.open &&
                         x.Permissions.Download == true &&
-                        x.UnsharedAt == null), 
+                        x.UnsharedAt == null),
                     null))
                 .Returns(boxFileWithSharedLink);
 
@@ -184,52 +183,6 @@ public class BoxServiceTests : UnitTest
                 .DownloadUrl)
                 .Returns(downloadUrl);
         }
-
-        //[Fact]
-        //public async Task ShouldCreateFileSuccessfuly()
-        //{
-        //   var result = await service.CreateFileAsync(filePath);
-        //    result.Should().Be(downloadUrl);
-        //}
-
-        //[Fact]
-        //public async Task ShouldCreateFileSuccessfuly_WithParentFolder()
-        //{
-        //    var folderId = dataGenerator.Random.Word();
-
-        //    A.CallTo(() => boxFilesManager
-        //        .UploadAsync(
-        //            A<BoxFileRequest>.That.Matches(x =>
-        //                x.Name == "some-file.jpg" &&
-        //                x.Parent.Id == rootFolderId),
-        //            stream,
-        //            default, default, default, true, default))
-        //        .Throws<Exception>();
-
-        //    A.CallTo(() => boxFilesManager
-        //        .UploadAsync(
-        //            A<BoxFileRequest>.That.Matches(x =>
-        //                x.Name == "some-file.jpg" &&
-        //                x.Parent.Id == folderId),
-        //            stream,
-        //            default, default, default, true, default))
-        //        .Returns(boxFile);
-
-        //    A.CallTo(() => boxFilesManager
-        //        .CreateSharedLinkAsync(
-        //            boxFile.Id,
-        //            new BoxSharedLinkRequest()
-        //            {
-        //                Access = BoxSharedLinkAccessType.open,
-        //                Permissions = new BoxPermissionsRequest { Download = true },
-        //                UnsharedAt = null
-        //            },
-        //            null))
-        //        .Returns(boxFile);
-
-        //    var result = await service.CreateFileAsync(filePath, folderId);
-        //    result.Should().Be(boxFile);
-        //}
 
         public void Dispose()
         {

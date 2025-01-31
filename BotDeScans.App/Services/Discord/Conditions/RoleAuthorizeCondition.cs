@@ -6,7 +6,6 @@ using Remora.Discord.API.Objects;
 using Remora.Discord.Commands.Contexts;
 using Remora.Results;
 using System.Drawing;
-using System.Linq;
 namespace BotDeScans.App.Services.Discord.Conditions;
 
 // todo: parametrizar a partir de arquivo de configuration... ou banco de dados no futuro!!

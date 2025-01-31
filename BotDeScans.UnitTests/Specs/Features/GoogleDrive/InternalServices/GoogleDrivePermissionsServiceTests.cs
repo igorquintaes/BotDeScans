@@ -8,13 +8,11 @@ using FluentResults;
 using FluentResults.Extensions.FluentAssertions;
 using Google.Apis.Drive.v3;
 using Google.Apis.Drive.v3.Data;
-using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Xunit;
 using static Google.Apis.Drive.v3.PermissionsResource;
-
 namespace BotDeScans.UnitTests.Specs.Features.GoogleDrive.InternalServices;
 
 public class GoogleDrivePermissionsServiceTests : UnitTest
@@ -115,7 +113,7 @@ public class GoogleDrivePermissionsServiceTests : UnitTest
             A.CallTo(() => fixture
                 .Fake<GoogleDriveWrapper>()
                 .ExecuteAsync(
-                    A<ListRequest>.That.Matches(x => x.Fields == "*"), 
+                    A<ListRequest>.That.Matches(x => x.Fields == "*"),
                     cancellationToken))
                 .MustHaveHappenedOnceExactly();
         }
@@ -123,7 +121,7 @@ public class GoogleDrivePermissionsServiceTests : UnitTest
 
     public class CreatePublicReaderPermissionAsync : GoogleDrivePermissionsServiceTests
     {
-        public static string resourceId;
+        private readonly string resourceId;
 
         public CreatePublicReaderPermissionAsync()
         {
@@ -169,8 +167,8 @@ public class GoogleDrivePermissionsServiceTests : UnitTest
 
     public class CreateUserReaderPermissionAsync : GoogleDrivePermissionsServiceTests
     {
-        public static string email;
-        public static string resourceId;
+        private readonly string email;
+        private readonly string resourceId;
 
         public CreateUserReaderPermissionAsync()
         {
@@ -254,7 +252,7 @@ public class GoogleDrivePermissionsServiceTests : UnitTest
                 .Fake<GoogleDriveWrapper>()
                 .ExecuteAsync(fixture.Fake<DeleteRequest>(), cancellationToken))
                 .ReturnsNextFromSequence(
-                    fixture.Create<string>(), 
+                    fixture.Create<string>(),
                     Result.Fail(ERROR_MESSAGE));
 
             var result = await service.DeleteUserReaderPermissionsAsync(permissions, resourceId, cancellationToken);
@@ -272,7 +270,7 @@ public class GoogleDrivePermissionsServiceTests : UnitTest
                 .Fake<GoogleDriveWrapper>()
                 .ExecuteAsync(fixture.Fake<DeleteRequest>(), cancellationToken))
                 .ReturnsNextFromSequence(
-                    Result.Fail(FIRST_ERROR_MESSAGE), 
+                    Result.Fail(FIRST_ERROR_MESSAGE),
                     Result.Fail(SECOND_ERROR_MESSAGE));
 
             var result = await service.DeleteUserReaderPermissionsAsync(permissions, resourceId, cancellationToken);

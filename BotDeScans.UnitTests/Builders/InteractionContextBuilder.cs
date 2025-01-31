@@ -8,7 +8,7 @@ namespace BotDeScans.UnitTests.Builders;
 
 public class InteractionContextBuilder
 {
-    private Faker faker = new();
+    private readonly Faker faker = new();
     private Snowflake id;
     private Snowflake guildID;
     private IUser user;
@@ -65,10 +65,10 @@ public class InteractionContextBuilder
             Token: token,
             Version: 1,
             Message: default,
-            AppPermissions: default,
+            AppPermissions: default!,
             Locale: default,
             GuildLocale: default,
-            Entitlements: default,
+            Entitlements: default!,
             Context: default,
             AuthorizingIntegrationOwners: default));
     }

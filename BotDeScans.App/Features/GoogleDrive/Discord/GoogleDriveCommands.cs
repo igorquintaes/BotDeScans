@@ -9,7 +9,6 @@ using Remora.Commands.Groups;
 using Remora.Discord.API.Objects;
 using Remora.Results;
 using System.ComponentModel;
-using System.Diagnostics.CodeAnalysis;
 namespace BotDeScans.App.Features.GoogleDrive.Discord;
 
 [Group("googledrive")]

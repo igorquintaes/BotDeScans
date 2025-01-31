@@ -1,9 +1,7 @@
 ﻿using AutoFixture;
 using BotDeScans.App.Features.GoogleDrive;
 using BotDeScans.App.Features.GoogleDrive.InternalServices;
-using BotDeScans.App.Services;
 using BotDeScans.UnitTests.Specs.Extensions;
-using BotDeScans.UnitTests.Specs.Services;
 using FakeItEasy;
 using FluentAssertions;
 using FluentAssertions.Execution;
@@ -14,11 +12,10 @@ using FluentValidation.Results;
 using Google.Apis.Drive.v3.Data;
 using Microsoft.Extensions.Configuration;
 using System.Collections.Generic;
-using System.Drawing.Text;
 using System.Linq;
 using System.Threading.Tasks;
 using Xunit;
-namespace BotDeScans.UnitTests.Specs.Features.GoogleDrive.InternalServices;
+namespace BotDeScans.UnitTests.Specs.Features.GoogleDrive;
 
 public class GoogleDriveServiceTests : UnitTest
 {
@@ -121,11 +118,11 @@ public class GoogleDriveServiceTests : UnitTest
 
     public class CreateFileAsync : GoogleDriveServiceTests
     {
-        private static string filePath = System.IO.Path.Combine("directory", "file.zip");
-        private static string fileName = "file.zip";
+        private readonly string filePath = System.IO.Path.Combine("directory", "file.zip");
+        private readonly string fileName = "file.zip";
 
-        private static string parentId;
-        private static bool publicAccess;
+        private readonly string parentId;
+        private readonly bool publicAccess;
 
         public CreateFileAsync()
         {
@@ -285,9 +282,9 @@ public class GoogleDriveServiceTests : UnitTest
 
     public class DeleteFileByNameAndParentNameAsync : GoogleDriveServiceTests
     {
-        private static string fileName;
-        private static string parentFolderName;
-        private static File[] resources;
+        private readonly string fileName;
+        private readonly string parentFolderName;
+        private readonly File[] resources;
 
         public DeleteFileByNameAndParentNameAsync()
         {
@@ -403,7 +400,7 @@ public class GoogleDriveServiceTests : UnitTest
         [InlineData("https://drive.google.com/drive/folders/1LXGFGlcqbdUbdnU8C4aSvmnb5x8AldCn")]
         [InlineData("https://drive.google.com/folderview?id=1LXGFGlcqbdUbdnU8C4aSvmnb5x8AldCn")]
         [InlineData("https://drive.google.com/open?id=1LXGFGlcqbdUbdnU8C4aSvmnb5x8AldCn")]
-        public void IsValid(string url) => 
+        public void IsValid(string url) =>
             service.GetFolderIdFromUrl(url).Should().BeSuccess().And.HaveValue("1LXGFGlcqbdUbdnU8C4aSvmnb5x8AldCn");
 
         [Theory]
@@ -416,7 +413,7 @@ public class GoogleDriveServiceTests : UnitTest
         [InlineData("https://drive.google.com/folderview")]
         [InlineData("https://drive.google.com/folderview?id=")]
         [InlineData("https://drive.google.com/folderview?id=randomValue")]
-        public void IsInvalid(string url) =>
+        public void IsInvalid(string? url) =>
             service.GetFolderIdFromUrl(url).Should().BeFailure().And.HaveError("O link informado é inválido.");
     }
 
@@ -438,8 +435,8 @@ public class GoogleDriveServiceTests : UnitTest
             A.CallTo(() => fixture
                 .Fake<GoogleDriveFilesService>()
                 .DownloadAsync(
-                    A<File>.That.Matches(file => fixture.Fake<File[]>().Contains(file)), 
-                    directory, 
+                    A<File>.That.Matches(file => fixture.Fake<File[]>().Contains(file)),
+                    directory,
                     cancellationToken))
                 .Returns(Result.Ok());
         }
@@ -544,10 +541,10 @@ public class GoogleDriveServiceTests : UnitTest
             A.CallTo(() => fixture
                 .Fake<IValidator<IList<File>>>()
                 .ValidateAsync(fixture.Fake<IList<File>>(), cancellationToken))
-                .Returns(new ValidationResult(new[] { 
+                .Returns(new ValidationResult([
                     new ValidationFailure("1", FIRST_ERROR_MESSAGE),
-                    new ValidationFailure("2", SECOND_ERROR_MESSAGE) 
-                }));
+                    new ValidationFailure("2", SECOND_ERROR_MESSAGE)
+                ]));
 
             var result = await service.ValidateFilesAsync(folderId, cancellationToken);
             result.Should().BeFailure().And
@@ -601,7 +598,7 @@ public class GoogleDriveServiceTests : UnitTest
                 .CreateUserReaderPermissionAsync(A<string>.Ignored, A<string>.Ignored, cancellationToken))
                 .MustNotHaveHappened();
         }
-        
+
         [Fact]
         public async Task GivenErrorToObtainPermissionsShouldReturnFailResult()
         {
@@ -648,8 +645,8 @@ public class GoogleDriveServiceTests : UnitTest
             A.CallTo(() => fixture
                 .Fake<GoogleDrivePermissionsService>()
                 .DeleteUserReaderPermissionsAsync(
-                    fixture.Fake<IEnumerable<Permission>>(), 
-                    GoogleDriveSettingsService.BaseFolderId, 
+                    fixture.Fake<IEnumerable<Permission>>(),
+                    GoogleDriveSettingsService.BaseFolderId,
                     cancellationToken))
                 .Returns(Result.Ok());
         }
@@ -684,8 +681,8 @@ public class GoogleDriveServiceTests : UnitTest
             A.CallTo(() => fixture
                 .Fake<GoogleDrivePermissionsService>()
                 .DeleteUserReaderPermissionsAsync(
-                    fixture.Fake<IEnumerable<Permission>>(), 
-                    GoogleDriveSettingsService.BaseFolderId, 
+                    fixture.Fake<IEnumerable<Permission>>(),
+                    GoogleDriveSettingsService.BaseFolderId,
                     cancellationToken))
                 .Returns(Result.Fail(ERROR_MESSAGE));
 

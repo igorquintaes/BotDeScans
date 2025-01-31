@@ -28,7 +28,7 @@ public class StepsService(IConfiguration configuration)
                 StepEnum.UploadMangadex or
                 StepEnum.PublishBlogspot when steps.NotContainsAll(requiredBloggerSteps)
                     => ErrorFromDependency(step, requiredSteps: requiredBloggerSteps),
-                _   => new Success("No error in current step :)")
+                _ => new Success("No error in current step :)")
             });
         }
 

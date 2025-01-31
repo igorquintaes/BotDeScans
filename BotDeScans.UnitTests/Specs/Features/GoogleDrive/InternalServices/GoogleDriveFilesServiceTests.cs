@@ -11,7 +11,6 @@ using FluentResults;
 using FluentResults.Extensions.FluentAssertions;
 using Google.Apis.Download;
 using Google.Apis.Drive.v3;
-using Google.Apis.Drive.v3.Data;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -20,7 +19,6 @@ using System.Threading.Tasks;
 using Xunit;
 using static Google.Apis.Drive.v3.FilesResource;
 using File = Google.Apis.Drive.v3.Data.File;
-
 namespace BotDeScans.UnitTests.Specs.Features.GoogleDrive.InternalServices;
 
 public class GoogleDriveFilesServiceTests : UnitTest
@@ -47,7 +45,7 @@ public class GoogleDriveFilesServiceTests : UnitTest
         service = fixture.Create<GoogleDriveFilesService>();
     }
 
-    public class GetAsync : GoogleDriveFilesServiceTests 
+    public class GetAsync : GoogleDriveFilesServiceTests
     {
         [Fact]
         public async Task GivenSuccessExecutionAndFoundFileShouldReturnSuccessResultWithData()
@@ -94,8 +92,8 @@ public class GoogleDriveFilesServiceTests : UnitTest
                 .Returns(new List<File>());
 
             var result = await service.GetAsync(
-                fixture.Create<string>(), 
-                fixture.Create<string>(), 
+                fixture.Create<string>(),
+                fixture.Create<string>(),
                 cancellationToken);
 
             using var _ = new AssertionScope();

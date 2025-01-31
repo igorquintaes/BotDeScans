@@ -8,7 +8,7 @@ namespace BotDeScans.UnitTests.Specs.Features.GoogleDrive;
 
 public class FileListValidatorTests : UnitTest
 {
-    private readonly FileListValidator validator = new FileListValidator();
+    private readonly FileListValidator validator = new();
     private readonly IList<File> data =
     [
         new File { Kind = "drive#file", Name = "01.png" },
@@ -20,7 +20,7 @@ public class FileListValidatorTests : UnitTest
     ];
 
     [Fact]
-    public void ShouldBeValid() => 
+    public void ShouldBeValid() =>
         validator.TestValidate(data).ShouldNotHaveAnyValidationErrors();
 
     [Fact]

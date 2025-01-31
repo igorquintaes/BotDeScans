@@ -1,15 +1,14 @@
 ﻿using BotDeScans.App.Services;
 using FluentAssertions;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Drawing;
 using System.Globalization;
 using System.IO;
-using System.Linq;
 using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Threading;
 using Xunit;
-using static ScottPlot.Colors;
 namespace BotDeScans.UnitTests.Specs.Services;
 
 public class ChartServiceTests : UnitTest
@@ -17,6 +16,8 @@ public class ChartServiceTests : UnitTest
     public class CreatePieChart : ChartServiceTests
     {
         [Fact]
+        [SuppressMessage("Interoperability", "CA1416", Justification = "Test only runs in Windows OS")]
+        [SuppressMessage("CodeQuality", "IDE0079", Justification = "Dumb analysis")]
         public void ShouldCreatePieChartAsExpected()
         {
             var runningInWindows = RuntimeInformation.IsOSPlatform(OSPlatform.Windows);
@@ -53,7 +54,7 @@ public class ChartServiceTests : UnitTest
                 {
                     for (int j = 0; j < resultChartImage.Height; j++)
                     {
-                        // TODO: rewrite this comparison (or use a lib). It have a bad performance.
+                        // We can rewrite this comparison (or use a lib). It have a bad performance.
                         if (resultChartImage.GetPixel(i, j).ToString() !=
                             expectedChartImage.GetPixel(i, j).ToString())
                         {

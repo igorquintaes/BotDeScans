@@ -1,7 +1,6 @@
 ﻿using BotDeScans.App.Services;
 using FluentAssertions;
 using System;
-using System.Collections.Generic;
 using System.IO;
 using System.IO.Compression;
 using System.Linq;
@@ -17,16 +16,19 @@ public class FileServiceTests : UnitTest
 
     public class GetMimeType : FileServiceTests
     {
-        public readonly static IEnumerable<object[]> MimeTypes =
-            FileService.MimeTypes.Select(x => new object[] { x });
+        public class MimeTypeTestData : TheoryData<string, string>
+        {
+            public MimeTypeTestData() =>
+                AddRange(FileService.MimeTypes.Select(x => (x.Key, x.Value)));
+        }
 
         [Theory]
-        [MemberData(nameof(FileService.MimeTypes))]
-        public void ShouldGetExpectedMimeType(KeyValuePair<string, string> mimeType)
+        [ClassData(typeof(MimeTypeTestData))]
+        public void ShouldGetExpectedMimeType(string key, string value)
         {
-            var filePath = dataGenerator.System.FilePath() + mimeType.Key;
+            var filePath = dataGenerator.System.FilePath() + key;
             var result = service.GetMimeType(filePath);
-            result.Should().Be(mimeType.Value);
+            result.Should().Be(value);
         }
     }
 
@@ -34,12 +36,12 @@ public class FileServiceTests : UnitTest
     {
         private static readonly string resourcesDirectory =
             Path.Combine(
-                Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)!, 
+                Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)!,
                 nameof(CreateZipFile) + "-resources-test");
 
         private static readonly string destinationDirectory =
             Path.Combine(
-                Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)!, 
+                Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)!,
                 nameof(CreateZipFile) + "-destination-test");
 
         private const string zipFileName = "file.zip";
@@ -102,14 +104,14 @@ public class FileServiceTests : UnitTest
                 destinationDirectory);
 
             using var zipFile = ZipFile.Open(
-                Path.Combine(destinationDirectory, zipFileName), 
+                Path.Combine(destinationDirectory, zipFileName),
                 ZipArchiveMode.Read);
 
             var filesInsideZipFile = zipFile.Entries
                 .Select(x => x.Name)
                 .OrderBy(x => x)
                 .Should().BeEquivalentTo(
-                    new[] { "01.png", "02.png" }, 
+                    ["01.png", "02.png"],
                     options => options.WithStrictOrdering());
         }
 

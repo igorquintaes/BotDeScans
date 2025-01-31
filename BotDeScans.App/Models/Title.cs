@@ -14,7 +14,7 @@ public record Title(string Name, ulong? DiscordRoleId)
 
         return this with
         {
-            References = 
+            References =
             [
                 ..References.Where(x => x.Key != titleReference.Key),
                 oldReference with { Value = titleReference.Value }

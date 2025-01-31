@@ -21,7 +21,7 @@ public class PublishService(
 
         switch (pingType)
         {
-            case PingType.Everyone: 
+            case PingType.Everyone:
                 return "@everyone";
             case PingType.Global:
                 if (publishState.Title.DiscordRoleId is null)
@@ -43,9 +43,9 @@ public class PublishService(
                     return Result.Fail("Não foi definida uma role para o Discord nesta obra. Defina, ou mude o tipo de publicação no arquivo de configuração do Bot de Scans.");
 
                 return await GetRoleAsPingText(publishState.Title.DiscordRoleId.ToString()!, cancellationToken);
-            case PingType.None: 
+            case PingType.None:
                 return string.Empty;
-            default: 
+            default:
                 return Result.Fail($"invalid value in '{pingTypeKey}'.");
         };
     }

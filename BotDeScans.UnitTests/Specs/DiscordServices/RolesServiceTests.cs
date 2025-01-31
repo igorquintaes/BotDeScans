@@ -1,14 +1,11 @@
 ﻿using AutoBogus;
 using BotDeScans.App.Services.Discord;
 using BotDeScans.UnitTests.Extensions;
-using FakeItEasy;
 using FluentAssertions;
-using FluentAssertions.Execution;
 using FluentResults.Extensions.FluentAssertions;
 using Remora.Discord.API.Abstractions.Objects;
 using Remora.Discord.API.Objects;
 using Remora.Rest.Core;
-using Remora.Results;
 using System.Collections.Generic;
 using System.Linq;
 using Xunit;
@@ -16,7 +13,7 @@ namespace BotDeScans.UnitTests.Specs.DiscordServices;
 
 public class RolesServiceTests : UnitTest
 {
-    private readonly RolesService service = new(null, null);
+    private readonly RolesService service = new(null!, null!);
 
     public class ContainsAtLeastOneOfExpectedRoles : RolesServiceTests
     {

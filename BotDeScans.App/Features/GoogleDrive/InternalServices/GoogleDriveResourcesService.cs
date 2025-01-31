@@ -51,7 +51,7 @@ public class GoogleDriveResourcesService(
     public virtual File CreateResourceObject(
         string mimeType,
         string name,
-        string? parentId = null) 
+        string? parentId = null)
         => new()
         {
             Name = name,

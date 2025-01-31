@@ -28,7 +28,7 @@ public class RolesService(IConfiguration configuration, IDiscordRestGuildAPI dis
     }
 
     public virtual async Task<Result<IRole>> GetRoleFromDiscord(
-        string role, 
+        string role,
         CancellationToken cancellationToken)
     {
         var serverId = configuration.GetRequiredValue<ulong>("Discord:ServerId");
@@ -50,7 +50,7 @@ public class RolesService(IConfiguration configuration, IDiscordRestGuildAPI dis
 
         if (ulong.TryParse(role, out var roleId))
         {
-            var guildRole = guildRoles.FirstOrDefault(guildRole => guildRole.ID.Value.Equals(roleId)); 
+            var guildRole = guildRoles.FirstOrDefault(guildRole => guildRole.ID.Value.Equals(roleId));
             if (guildRole is not null)
                 return Result.Ok(guildRole);
         }

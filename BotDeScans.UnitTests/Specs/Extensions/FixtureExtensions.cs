@@ -1,11 +1,7 @@
 ﻿using AutoFixture;
 using AutoFixture.Dsl;
 using FakeItEasy;
-using iText.StyledXmlParser.Node;
-using System;
-using System.Collections.Concurrent;
 using System.Linq;
-
 namespace BotDeScans.UnitTests.Specs.Extensions;
 
 public static class FixtureExtensions

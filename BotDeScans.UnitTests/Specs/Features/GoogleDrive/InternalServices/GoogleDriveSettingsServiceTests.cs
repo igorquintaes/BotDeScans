@@ -12,10 +12,8 @@ using Google.Apis.Drive.v3;
 using Google.Apis.Drive.v3.Data;
 using System.Threading.Tasks;
 using Xunit;
-using static BotDeScans.App.Features.GoogleDrive.InternalServices.GoogleDriveSettingsService;
 using static Google.Apis.Drive.v3.AboutResource;
 using static Google.Apis.Drive.v3.Data.About;
-
 namespace BotDeScans.UnitTests.Specs.Features.GoogleDrive.InternalServices;
 
 public class GoogleDriveSettingsServiceTests : UnitTest
@@ -169,7 +167,7 @@ public class GoogleDriveSettingsServiceTests : UnitTest
 
             var result = await service.GetConsumptionDataAsync(cancellationToken);
             result.Should().BeSuccess();
-            result.Value.Should().BeEquivalentTo(new ConsumptionData(100, 500));
+            result.Value.Should().BeEquivalentTo(new GoogleDriveSettingsService.ConsumptionData(100, 500));
         }
 
         [Fact]
