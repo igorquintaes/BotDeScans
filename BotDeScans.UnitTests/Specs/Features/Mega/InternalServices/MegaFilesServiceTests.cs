@@ -7,7 +7,6 @@ using CG.Web.MegaApiClient;
 using FakeItEasy;
 using FluentAssertions;
 using FluentResults.Extensions.FluentAssertions;
-using Remora.Commands.Trees.Nodes;
 using System;
 using System.IO;
 using System.Threading;
@@ -41,7 +40,7 @@ public class MegaFilesServiceTests : UnitTest
                 .GetResourcesAsync(
                     A<string?>.Ignored,
                     A<string?>.Ignored,
-                    A<NodeType?>.Ignored))
+                    NodeType.File))
                 .Returns([fixture.Fake<INode>()]);
         }
 
@@ -61,7 +60,7 @@ public class MegaFilesServiceTests : UnitTest
                 .GetResourcesAsync(
                     A<string?>.Ignored,
                     A<string?>.Ignored,
-                    A<NodeType?>.Ignored))
+                    NodeType.File))
                 .Returns([]);
 
             var result = await service.GetAsync(fixture.Create<string>(), A.Fake<INode>());
@@ -74,24 +73,24 @@ public class MegaFilesServiceTests : UnitTest
         {
             var parentNode = A.Fake<INode>();
             var parentNodeId = fixture.Create<string>();
+            var parentNodeName = fixture.Create<string>();
             var fileName = fixture.Create<string>();
 
-            A.CallTo(() => parentNode.Id)
-                .Returns(parentNodeId);
-
+            A.CallTo(() => parentNode.Id).Returns(parentNodeId);
+            A.CallTo(() => parentNode.Name).Returns(parentNodeName);
             A.CallTo(() => fixture
                 .Fake<MegaResourcesService>()
                 .GetResourcesAsync(
-                    A<string?>.Ignored,
-                    A<string?>.Ignored,
-                    A<NodeType?>.Ignored))
+                    fileName,
+                    parentNodeId,
+                    NodeType.File))
                 .Returns([fixture.Fake<INode>(), fixture.Fake<INode>()]);
 
             var result = await service.GetAsync(fileName, parentNode);
 
             result.Should().BeFailure().And.HaveError(
                 $"Mais de um resultado foi encontrado para a busca de arquivos no Mega. " +
-                $"fileName: {fileName}, parent: {parentNode.Name}");
+                $"fileName: {fileName}, parent: {parentNodeName}");
         }
     }
 

@@ -21,9 +21,9 @@ namespace BotDeScans.App.Features.Publish.Steps
         public async Task<Result> ExecuteAsync(CancellationToken cancellationToken)
         {
             var megaService = serviceProvider.GetRequiredService<MegaService>();
-            var megaResourceService = serviceProvider.GetRequiredService<MegaResourcesService>();
+            var megaFoldersService = serviceProvider.GetRequiredService<MegaFoldersService>();
 
-            var root = await megaResourceService.GetRootNodeAsync();
+            var root = await megaFoldersService.GetRootFolderAsync();
             var titleFolder = await megaService.GetOrCreateFolderAsync(state.Title.Name, root);
             if (titleFolder.IsFailed)
                 return titleFolder.ToResult();
