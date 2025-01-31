@@ -9,6 +9,7 @@ using Remora.Commands.Groups;
 using Remora.Discord.API.Objects;
 using Remora.Results;
 using System.ComponentModel;
+using System.Diagnostics.CodeAnalysis;
 namespace BotDeScans.App.Features.GoogleDrive.Discord;
 
 [Group("googledrive")]
@@ -86,13 +87,7 @@ public class GoogleDriveCommands(
                 .CreateErrorEmbed(dataUsageResult), ct: CancellationToken);
 
         var usageInfo = dataUsageResult.Value;
-        await using var chartStream = chartService.CreatePieChart(
-            new Dictionary<string, double>
-            {
-                { "Utilizado", usageInfo.UsedSpace },
-                { "Livre", usageInfo.FreeSpace },
-
-            });
+        await using var chartStream = chartService.CreatePieChart(usageInfo);
 
         var fileName = $"{nameof(DataUsage)}.png";
         return await feedbackService.SendContextualEmbedAsync(

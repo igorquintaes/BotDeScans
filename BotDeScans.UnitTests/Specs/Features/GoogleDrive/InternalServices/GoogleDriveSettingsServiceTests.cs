@@ -1,6 +1,7 @@
 ﻿using AutoFixture;
 using BotDeScans.App.Features.GoogleDrive;
 using BotDeScans.App.Features.GoogleDrive.InternalServices;
+using BotDeScans.App.Models;
 using BotDeScans.App.Services.ExternalClients;
 using BotDeScans.UnitTests.Specs.Extensions;
 using FakeItEasy;
@@ -167,7 +168,7 @@ public class GoogleDriveSettingsServiceTests : UnitTest
 
             var result = await service.GetConsumptionDataAsync(cancellationToken);
             result.Should().BeSuccess();
-            result.Value.Should().BeEquivalentTo(new GoogleDriveSettingsService.ConsumptionData(100, 500));
+            result.Value.Should().BeEquivalentTo(new ConsumptionData(100, 500));
         }
 
         [Fact]

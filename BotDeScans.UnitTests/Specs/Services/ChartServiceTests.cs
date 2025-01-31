@@ -1,6 +1,6 @@
-﻿using BotDeScans.App.Services;
+﻿using BotDeScans.App.Models;
+using BotDeScans.App.Services;
 using FluentAssertions;
-using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Drawing;
 using System.Globalization;
@@ -26,13 +26,7 @@ public class ChartServiceTests : UnitTest
             Thread.CurrentThread.CurrentCulture = new CultureInfo("en-US");
 
             var service = new ChartService();
-            var data = new Dictionary<string, double>
-            {
-                { "Some label", 500d },
-                { "Other", 75.3d },
-                { "Last", 10d },
-            };
-
+            var data = new ConsumptionData(500, 100);
             using var resultChartStream = service.CreatePieChart(data);
             using var resultChartImage = (Bitmap)Image.FromStream(resultChartStream);
 

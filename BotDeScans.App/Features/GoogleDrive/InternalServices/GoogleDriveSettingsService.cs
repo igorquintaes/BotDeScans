@@ -1,4 +1,5 @@
-﻿using BotDeScans.App.Services.ExternalClients;
+﻿using BotDeScans.App.Models;
+using BotDeScans.App.Services.ExternalClients;
 using FluentResults;
 namespace BotDeScans.App.Features.GoogleDrive.InternalServices;
 
@@ -59,6 +60,4 @@ public class GoogleDriveSettingsService(
 
         return Result.Ok(new ConsumptionData(usedSpace, freeSpace));
     }
-
-    public record ConsumptionData(long UsedSpace, long FreeSpace);
 }

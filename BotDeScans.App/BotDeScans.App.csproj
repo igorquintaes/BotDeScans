@@ -69,6 +69,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Folder Include="Features\Mega\Discord\" />
     <Folder Include="Features\Titles\References\" />
     <Folder Include="Infra\Migrations\" />
   </ItemGroup>
