@@ -1,4 +1,5 @@
 ﻿using BotDeScans.App.Attributes;
+using BotDeScans.App.Extensions;
 using Remora.Commands.Conditions;
 using Remora.Discord.API.Abstractions.Objects;
 using Remora.Discord.API.Abstractions.Rest;
@@ -6,10 +7,9 @@ using Remora.Discord.API.Objects;
 using Remora.Discord.Commands.Contexts;
 using Remora.Results;
 using System.Drawing;
-using System.Linq;
 namespace BotDeScans.App.Services.Discord.Conditions;
 
-// todo: parametrizar a partir de arquivo de configuration... ou banco de dados no futuro!!
+// todo: parametrizar a partir de arquivo de configuration
 public class RoleAuthorizeCondition(
     IOperationContext commandContext,
     IDiscordRestGuildAPI discordRestGuildAPI,
@@ -23,33 +23,17 @@ public class RoleAuthorizeCondition(
         if (commandContext is not InteractionContext interactionContext)
             return new InvalidOperationError($"slash-command is mandatory!");
 
-        var guildMemberResult = await discordRestGuildAPI.GetGuildMemberAsync(
-            interactionContext.Interaction.GuildID.Value,
-            interactionContext.Interaction.Member.Value.User.Value.ID,
-            ct);
-
+        var guildId = interactionContext.Interaction.GuildID.Value;
+        var memberId = interactionContext.Interaction.Member.Value.User.Value.ID;
+        var guildMemberResult = await discordRestGuildAPI.GetGuildMemberAsync(guildId, memberId, ct);
         if (!guildMemberResult.IsDefined(out var guildMember))
             return Result.FromError(guildMemberResult.Error!);
 
-        var guildRolesResult = await discordRestGuildAPI.GetGuildRolesAsync(
-            interactionContext.Interaction.GuildID.Value,
-            ct);
+        var expectedRoles = await rolesService.GetRoleFromGuildAsync(attribute.RoleName, ct);
+        if (expectedRoles.IsFailed)
+            return Result.FromError(expectedRoles.Errors.ToDiscordError());
 
-        if (!guildRolesResult.IsDefined(out var guildRoles))
-            return Result.FromError(guildRolesResult.Error!);
-
-        var hasRequiredRoleResult = rolesService.ContainsAtLeastOneOfExpectedRoles(
-            attribute.RoleNames,
-            guildRoles,
-            guildMember.Roles);
-
-        if (hasRequiredRoleResult.IsFailed)
-        {
-            var fullErrorMessage = string.Join(". ", hasRequiredRoleResult.Errors.Select(x => x.Message));
-            return Result.FromError(new InvalidOperationError(fullErrorMessage));
-        }
-
-        if (hasRequiredRoleResult.Value is true)
+        if (guildMember.Roles.Any(expectedRoles.Value.ID.Equals))
             return Result.FromSuccess();
 
         var interactionResponseResult = await discordRestInteractionAPI.CreateInteractionResponseAsync(
@@ -60,13 +44,16 @@ public class RoleAuthorizeCondition(
                  new(new InteractionMessageCallbackData(Embeds: new[] {
                     new Embed(
                         Title: "Unauthorized!",
-                        Description: $"You aren't in any of {string.Join(", ", attribute.RoleNames)} role(s)!",
+                        Description: $"You aren't in any of {string.Join(", ", attribute.RoleName)} role(s)!",
                         Colour: Color.Red)
                  }))),
              ct: ct);
 
+        var userName = interactionContext.Interaction.Member.Value.User.Value.Username;
         return interactionResponseResult.IsSuccess
-            ? new InvalidOperationError($"Invalid request for {interactionContext.Interaction.Member.Value.User.Value.ID} user. No role authorization for the user.")
+            ? new InvalidOperationError(
+                $"Invalid request for user: {userName}, Id: {memberId}. " +
+                $"No role authorization for the user.")
             : interactionResponseResult;
     }
 }

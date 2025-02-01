@@ -2,7 +2,7 @@
 namespace BotDeScans.App.Attributes;
 
 [AttributeUsage(AttributeTargets.Method)]
-public class RoleAuthorizeAttribute(params string[] roleNames) : ConditionAttribute
+public class RoleAuthorizeAttribute(string roleName) : ConditionAttribute
 {
-    public readonly string[] RoleNames = roleNames;
+    public readonly string RoleName = roleName;
 }

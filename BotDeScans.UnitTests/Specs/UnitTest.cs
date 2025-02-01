@@ -1,8 +1,6 @@
 ﻿using AutoFixture;
 using AutoFixture.AutoFakeItEasy;
 using Bogus;
-using BotDeScans.App.Features.GoogleDrive.InternalServices;
-using System;
 using System.Threading;
 using Xunit;
 
@@ -12,6 +10,6 @@ namespace BotDeScans.UnitTests.Specs;
 public abstract class UnitTest
 {
     protected readonly IFixture fixture = new Fixture().Customize(new AutoFakeItEasyCustomization());
+    protected readonly CancellationToken cancellationToken = TestContext.Current.CancellationToken;
     protected readonly Faker dataGenerator = new();
-    protected CancellationToken cancellationToken = new();
 }

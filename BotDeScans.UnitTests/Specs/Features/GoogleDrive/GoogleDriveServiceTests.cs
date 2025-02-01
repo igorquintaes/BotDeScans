@@ -1,9 +1,7 @@
 ﻿using AutoFixture;
 using BotDeScans.App.Features.GoogleDrive;
 using BotDeScans.App.Features.GoogleDrive.InternalServices;
-using BotDeScans.App.Services;
-using BotDeScans.UnitTests.Specs.Extensions;
-using BotDeScans.UnitTests.Specs.Services;
+using BotDeScans.UnitTests.Extensions;
 using FakeItEasy;
 using FluentAssertions;
 using FluentAssertions.Execution;
@@ -14,11 +12,10 @@ using FluentValidation.Results;
 using Google.Apis.Drive.v3.Data;
 using Microsoft.Extensions.Configuration;
 using System.Collections.Generic;
-using System.Drawing.Text;
 using System.Linq;
 using System.Threading.Tasks;
 using Xunit;
-namespace BotDeScans.UnitTests.Specs.Features.GoogleDrive.InternalServices;
+namespace BotDeScans.UnitTests.Specs.Features.GoogleDrive;
 
 public class GoogleDriveServiceTests : UnitTest
 {
@@ -26,12 +23,12 @@ public class GoogleDriveServiceTests : UnitTest
 
     public GoogleDriveServiceTests()
     {
-        fixture.Fake<GoogleDriveFilesService>();
-        fixture.Fake<GoogleDriveFoldersService>();
-        fixture.Fake<GoogleDriveResourcesService>();
-        fixture.Fake<GoogleDrivePermissionsService>();
-        fixture.Fake<IValidator<IList<File>>>();
-        fixture.Fake<IConfiguration>();
+        fixture.FreezeFake<GoogleDriveFilesService>();
+        fixture.FreezeFake<GoogleDriveFoldersService>();
+        fixture.FreezeFake<GoogleDriveResourcesService>();
+        fixture.FreezeFake<GoogleDrivePermissionsService>();
+        fixture.FreezeFake<IValidator<IList<File>>>();
+        fixture.FreezeFake<IConfiguration>();
 
         service = fixture.Create<GoogleDriveService>();
     }
@@ -47,14 +44,14 @@ public class GoogleDriveServiceTests : UnitTest
             parentId = fixture.Create<string>();
 
             A.CallTo(() => fixture
-                .Fake<GoogleDriveFoldersService>()
+                .FreezeFake<GoogleDriveFoldersService>()
                 .GetAsync(folderName, parentId, cancellationToken))
                 .Returns(Result.Ok<File?>(default));
 
             A.CallTo(() => fixture
-                .Fake<GoogleDriveFoldersService>()
+                .FreezeFake<GoogleDriveFoldersService>()
                 .CreateAsync(folderName, parentId, cancellationToken))
-                .Returns(fixture.Fake<File>());
+                .Returns(fixture.FreezeFake<File>());
         }
 
         [Fact]
@@ -62,10 +59,10 @@ public class GoogleDriveServiceTests : UnitTest
         {
             var result = await service.GetOrCreateFolderAsync(folderName, parentId, cancellationToken);
 
-            result.Should().BeSuccess().And.HaveValue(fixture.Fake<File>());
+            result.Should().BeSuccess().And.HaveValue(fixture.FreezeFake<File>());
 
             A.CallTo(() => fixture
-                .Fake<GoogleDriveFoldersService>()
+                .FreezeFake<GoogleDriveFoldersService>()
                 .CreateAsync(folderName, parentId, cancellationToken))
                 .MustHaveHappenedOnceExactly();
         }
@@ -74,16 +71,16 @@ public class GoogleDriveServiceTests : UnitTest
         public async Task GivenSuccessfullExecutionForExistingFolderShouldReturnSuccessResultAndExistingFolder()
         {
             A.CallTo(() => fixture
-                .Fake<GoogleDriveFoldersService>()
+                .FreezeFake<GoogleDriveFoldersService>()
                 .GetAsync(folderName, parentId, cancellationToken))
-                .Returns(fixture.Fake<File>());
+                .Returns(fixture.FreezeFake<File>());
 
             var result = await service.GetOrCreateFolderAsync(folderName, parentId, cancellationToken);
 
-            result.Should().BeSuccess().And.HaveValue(fixture.Fake<File>());
+            result.Should().BeSuccess().And.HaveValue(fixture.FreezeFake<File>());
 
             A.CallTo(() => fixture
-                .Fake<GoogleDriveFoldersService>()
+                .FreezeFake<GoogleDriveFoldersService>()
                 .CreateAsync(folderName, parentId, cancellationToken))
                 .MustNotHaveHappened();
         }
@@ -94,7 +91,7 @@ public class GoogleDriveServiceTests : UnitTest
             const string ERROR_MESSAGE = "some error";
 
             A.CallTo(() => fixture
-                .Fake<GoogleDriveFoldersService>()
+                .FreezeFake<GoogleDriveFoldersService>()
                 .GetAsync(folderName, parentId, cancellationToken))
                 .Returns(Result.Fail(ERROR_MESSAGE));
 
@@ -109,7 +106,7 @@ public class GoogleDriveServiceTests : UnitTest
             const string ERROR_MESSAGE = "some error";
 
             A.CallTo(() => fixture
-                .Fake<GoogleDriveFoldersService>()
+                .FreezeFake<GoogleDriveFoldersService>()
                 .CreateAsync(folderName, parentId, cancellationToken))
                 .Returns(Result.Fail(ERROR_MESSAGE));
 
@@ -121,11 +118,11 @@ public class GoogleDriveServiceTests : UnitTest
 
     public class CreateFileAsync : GoogleDriveServiceTests
     {
-        private static string filePath = System.IO.Path.Combine("directory", "file.zip");
-        private static string fileName = "file.zip";
+        private readonly string filePath = System.IO.Path.Combine("directory", "file.zip");
+        private readonly string fileName = "file.zip";
 
-        private static string parentId;
-        private static bool publicAccess;
+        private readonly string parentId;
+        private readonly bool publicAccess;
 
         public CreateFileAsync()
         {
@@ -133,27 +130,27 @@ public class GoogleDriveServiceTests : UnitTest
             publicAccess = fixture.Create<bool>();
 
             A.CallTo(() => fixture
-                .Fake<GoogleDriveFilesService>()
+                .FreezeFake<GoogleDriveFilesService>()
                 .GetAsync(fileName, parentId, cancellationToken))
                 .Returns(null as File);
 
             A.CallTo(() => fixture
-                .Fake<GoogleDriveFilesService>()
+                .FreezeFake<GoogleDriveFilesService>()
                 .UploadAsync(filePath, parentId, publicAccess, cancellationToken))
-                .Returns(fixture.Fake<File>());
+                .Returns(fixture.FreezeFake<File>());
 
             A.CallTo(() => fixture
-                .Fake<GoogleDriveFilesService>()
-                .UpdateAsync(filePath, fixture.Fake<File>().Id, cancellationToken))
-                .Returns(fixture.Fake<File>());
+                .FreezeFake<GoogleDriveFilesService>()
+                .UpdateAsync(filePath, fixture.FreezeFake<File>().Id, cancellationToken))
+                .Returns(fixture.FreezeFake<File>());
 
             A.CallTo(() => fixture
-                .Fake<IConfiguration>()
+                .FreezeFake<IConfiguration>()
                 .GetSection(GoogleDriveService.REWRITE_KEY))
-                .Returns(fixture.Fake<IConfigurationSection>());
+                .Returns(fixture.FreezeFake<IConfigurationSection>());
 
             A.CallTo(() => fixture
-                .Fake<IConfigurationSection>().Value)
+                .FreezeFake<IConfigurationSection>().Value)
                 .Returns("true");
         }
 
@@ -162,15 +159,15 @@ public class GoogleDriveServiceTests : UnitTest
         {
             var result = await service.CreateFileAsync(filePath, parentId, publicAccess, cancellationToken);
 
-            result.Should().BeSuccess().And.HaveValue(fixture.Fake<File>());
+            result.Should().BeSuccess().And.HaveValue(fixture.FreezeFake<File>());
 
             A.CallTo(() => fixture
-                .Fake<GoogleDriveFilesService>()
+                .FreezeFake<GoogleDriveFilesService>()
                 .UploadAsync(filePath, parentId, publicAccess, cancellationToken))
                 .MustHaveHappenedOnceExactly();
 
             A.CallTo(() => fixture
-                .Fake<GoogleDriveFilesService>()
+                .FreezeFake<GoogleDriveFilesService>()
                 .UpdateAsync(A<string>.Ignored, A<string>.Ignored, cancellationToken))
                 .MustNotHaveHappened();
         }
@@ -179,21 +176,21 @@ public class GoogleDriveServiceTests : UnitTest
         public async Task GivenExecutionSuccessfulForAnExistingFileWithRewriteShouldReturnSuccessResultAndUpdatedFileValue()
         {
             A.CallTo(() => fixture
-                .Fake<GoogleDriveFilesService>()
+                .FreezeFake<GoogleDriveFilesService>()
                 .GetAsync(fileName, parentId, cancellationToken))
-                .Returns(fixture.Fake<File>());
+                .Returns(fixture.FreezeFake<File>());
 
             var result = await service.CreateFileAsync(filePath, parentId, publicAccess, cancellationToken);
 
-            result.Should().BeSuccess().And.HaveValue(fixture.Fake<File>());
+            result.Should().BeSuccess().And.HaveValue(fixture.FreezeFake<File>());
 
             A.CallTo(() => fixture
-                .Fake<GoogleDriveFilesService>()
-                .UpdateAsync(filePath, fixture.Fake<File>().Id, cancellationToken))
+                .FreezeFake<GoogleDriveFilesService>()
+                .UpdateAsync(filePath, fixture.FreezeFake<File>().Id, cancellationToken))
                 .MustHaveHappenedOnceExactly();
 
             A.CallTo(() => fixture
-                .Fake<GoogleDriveFilesService>()
+                .FreezeFake<GoogleDriveFilesService>()
                 .UploadAsync(A<string>.Ignored, A<string>.Ignored, A<bool>.Ignored, cancellationToken))
                 .MustNotHaveHappened();
         }
@@ -202,12 +199,12 @@ public class GoogleDriveServiceTests : UnitTest
         public async Task GivenExistingFileAndNotAllowedToRewriteShouldReturnFailResult()
         {
             A.CallTo(() => fixture
-                .Fake<GoogleDriveFilesService>()
+                .FreezeFake<GoogleDriveFilesService>()
                 .GetAsync(fileName, parentId, cancellationToken))
-                .Returns(fixture.Fake<File>());
+                .Returns(fixture.FreezeFake<File>());
 
             A.CallTo(() => fixture
-                .Fake<IConfigurationSection>().Value)
+                .FreezeFake<IConfigurationSection>().Value)
                 .Returns("false");
 
             var result = await service.CreateFileAsync(filePath, parentId, publicAccess, cancellationToken);
@@ -219,12 +216,12 @@ public class GoogleDriveServiceTests : UnitTest
         public async Task GivenExistingFileAndNotSpecifiedToRewriteShouldNotAllowActionAndReturnFailResult()
         {
             A.CallTo(() => fixture
-                .Fake<GoogleDriveFilesService>()
+                .FreezeFake<GoogleDriveFilesService>()
                 .GetAsync(fileName, parentId, cancellationToken))
-                .Returns(fixture.Fake<File>());
+                .Returns(fixture.FreezeFake<File>());
 
             A.CallTo(() => fixture
-                .Fake<IConfigurationSection>().Value)
+                .FreezeFake<IConfigurationSection>().Value)
                 .Returns(null as string);
 
             var result = await service.CreateFileAsync(filePath, parentId, publicAccess, cancellationToken);
@@ -238,7 +235,7 @@ public class GoogleDriveServiceTests : UnitTest
             const string ERROR_MESSAGE = "some error";
 
             A.CallTo(() => fixture
-                .Fake<GoogleDriveFilesService>()
+                .FreezeFake<GoogleDriveFilesService>()
                 .GetAsync(fileName, parentId, cancellationToken))
                 .Returns(Result.Fail(ERROR_MESSAGE));
 
@@ -253,7 +250,7 @@ public class GoogleDriveServiceTests : UnitTest
             const string ERROR_MESSAGE = "some error";
 
             A.CallTo(() => fixture
-                .Fake<GoogleDriveFilesService>()
+                .FreezeFake<GoogleDriveFilesService>()
                 .UploadAsync(filePath, parentId, publicAccess, cancellationToken))
                 .Returns(Result.Fail(ERROR_MESSAGE));
 
@@ -268,13 +265,13 @@ public class GoogleDriveServiceTests : UnitTest
             const string ERROR_MESSAGE = "some error";
 
             A.CallTo(() => fixture
-                .Fake<GoogleDriveFilesService>()
+                .FreezeFake<GoogleDriveFilesService>()
                 .GetAsync(fileName, parentId, cancellationToken))
-                .Returns(fixture.Fake<File>());
+                .Returns(fixture.FreezeFake<File>());
 
             A.CallTo(() => fixture
-                .Fake<GoogleDriveFilesService>()
-                .UpdateAsync(filePath, fixture.Fake<File>().Id, cancellationToken))
+                .FreezeFake<GoogleDriveFilesService>()
+                .UpdateAsync(filePath, fixture.FreezeFake<File>().Id, cancellationToken))
                 .Returns(Result.Fail(ERROR_MESSAGE));
 
             var result = await service.CreateFileAsync(filePath, parentId, publicAccess, cancellationToken);
@@ -285,29 +282,29 @@ public class GoogleDriveServiceTests : UnitTest
 
     public class DeleteFileByNameAndParentNameAsync : GoogleDriveServiceTests
     {
-        private static string fileName;
-        private static string parentFolderName;
-        private static File[] resources;
+        private readonly string fileName;
+        private readonly string parentFolderName;
+        private readonly File[] resources;
 
         public DeleteFileByNameAndParentNameAsync()
         {
             GoogleDriveSettingsService.BaseFolderId = fixture.Create<string>();
             fileName = fixture.Create<string>();
             parentFolderName = fixture.Create<string>();
-            resources = fixture.Fake<File>(2);
+            resources = fixture.FreezeFakes<File>(2);
 
             A.CallTo(() => fixture
-                .Fake<GoogleDriveFoldersService>()
+                .FreezeFake<GoogleDriveFoldersService>()
                 .GetAsync(parentFolderName, GoogleDriveSettingsService.BaseFolderId, cancellationToken))
                 .Returns(resources[0]);
 
             A.CallTo(() => fixture
-                .Fake<GoogleDriveFilesService>()
+                .FreezeFake<GoogleDriveFilesService>()
                 .GetAsync(fileName, resources[0].Id, cancellationToken))
                 .Returns(resources[1]);
 
             A.CallTo(() => fixture
-                .Fake<GoogleDriveResourcesService>()
+                .FreezeFake<GoogleDriveResourcesService>()
                 .DeleteResource(resources[1].Id, cancellationToken))
                 .Returns(resources[1].Id);
         }
@@ -326,7 +323,7 @@ public class GoogleDriveServiceTests : UnitTest
             const string ERROR_MESSAGE = "Não foi encontrada uma pasta com o nome especificado.";
 
             A.CallTo(() => fixture
-                .Fake<GoogleDriveFoldersService>()
+                .FreezeFake<GoogleDriveFoldersService>()
                 .GetAsync(parentFolderName, GoogleDriveSettingsService.BaseFolderId, cancellationToken))
                 .Returns(null as File);
 
@@ -341,7 +338,7 @@ public class GoogleDriveServiceTests : UnitTest
             const string ERROR_MESSAGE = "some error";
 
             A.CallTo(() => fixture
-                .Fake<GoogleDriveFoldersService>()
+                .FreezeFake<GoogleDriveFoldersService>()
                 .GetAsync(parentFolderName, GoogleDriveSettingsService.BaseFolderId, cancellationToken))
                 .Returns(Result.Fail(ERROR_MESSAGE));
 
@@ -356,7 +353,7 @@ public class GoogleDriveServiceTests : UnitTest
             const string ERROR_MESSAGE = "Não foi encontrado um arquivo com o nome especificado.";
 
             A.CallTo(() => fixture
-                .Fake<GoogleDriveFilesService>()
+                .FreezeFake<GoogleDriveFilesService>()
                 .GetAsync(fileName, resources[0].Id, cancellationToken))
                 .Returns(null as File);
 
@@ -371,7 +368,7 @@ public class GoogleDriveServiceTests : UnitTest
             const string ERROR_MESSAGE = "some error";
 
             A.CallTo(() => fixture
-                .Fake<GoogleDriveFilesService>()
+                .FreezeFake<GoogleDriveFilesService>()
                 .GetAsync(fileName, resources[0].Id, cancellationToken))
                 .Returns(Result.Fail(ERROR_MESSAGE));
 
@@ -386,7 +383,7 @@ public class GoogleDriveServiceTests : UnitTest
             const string ERROR_MESSAGE = "some error";
 
             A.CallTo(() => fixture
-                .Fake<GoogleDriveResourcesService>()
+                .FreezeFake<GoogleDriveResourcesService>()
                 .DeleteResource(resources[1].Id, cancellationToken))
                 .Returns(Result.Fail(ERROR_MESSAGE));
 
@@ -403,7 +400,7 @@ public class GoogleDriveServiceTests : UnitTest
         [InlineData("https://drive.google.com/drive/folders/1LXGFGlcqbdUbdnU8C4aSvmnb5x8AldCn")]
         [InlineData("https://drive.google.com/folderview?id=1LXGFGlcqbdUbdnU8C4aSvmnb5x8AldCn")]
         [InlineData("https://drive.google.com/open?id=1LXGFGlcqbdUbdnU8C4aSvmnb5x8AldCn")]
-        public void IsValid(string url) => 
+        public void IsValid(string url) =>
             service.GetFolderIdFromUrl(url).Should().BeSuccess().And.HaveValue("1LXGFGlcqbdUbdnU8C4aSvmnb5x8AldCn");
 
         [Theory]
@@ -416,7 +413,7 @@ public class GoogleDriveServiceTests : UnitTest
         [InlineData("https://drive.google.com/folderview")]
         [InlineData("https://drive.google.com/folderview?id=")]
         [InlineData("https://drive.google.com/folderview?id=randomValue")]
-        public void IsInvalid(string url) =>
+        public void IsInvalid(string? url) =>
             service.GetFolderIdFromUrl(url).Should().BeFailure().And.HaveError("O link informado é inválido.");
     }
 
@@ -431,15 +428,15 @@ public class GoogleDriveServiceTests : UnitTest
             directory = fixture.Create<string>();
 
             A.CallTo(() => fixture
-                .Fake<GoogleDriveFilesService>()
+                .FreezeFake<GoogleDriveFilesService>()
                 .GetManyAsync(folderId, cancellationToken))
-                .Returns(fixture.Fake<File>(2));
+                .Returns(fixture.FreezeFakes<File>(2));
 
             A.CallTo(() => fixture
-                .Fake<GoogleDriveFilesService>()
+                .FreezeFake<GoogleDriveFilesService>()
                 .DownloadAsync(
-                    A<File>.That.Matches(file => fixture.Fake<File[]>().Contains(file)), 
-                    directory, 
+                    A<File>.That.Matches(file => fixture.FreezeFake<File[]>().Contains(file)),
+                    directory,
                     cancellationToken))
                 .Returns(Result.Ok());
         }
@@ -457,7 +454,7 @@ public class GoogleDriveServiceTests : UnitTest
             const string ERROR_MESSAGE = "some error";
 
             A.CallTo(() => fixture
-                .Fake<GoogleDriveFilesService>()
+                .FreezeFake<GoogleDriveFilesService>()
                 .GetManyAsync(folderId, cancellationToken))
                 .Returns(Result.Fail(ERROR_MESSAGE));
 
@@ -474,9 +471,9 @@ public class GoogleDriveServiceTests : UnitTest
             const string SECOND_ERROR_MESSAGE = "other error";
 
             A.CallTo(() => fixture
-                .Fake<GoogleDriveFilesService>()
+                .FreezeFake<GoogleDriveFilesService>()
                 .DownloadAsync(
-                    A<File>.That.Matches(file => fixture.Fake<File[]>().Contains(file)),
+                    A<File>.That.Matches(file => fixture.FreezeFake<File[]>().Contains(file)),
                     directory,
                     cancellationToken))
                 .ReturnsNextFromSequence(
@@ -503,13 +500,13 @@ public class GoogleDriveServiceTests : UnitTest
             folderId = fixture.Create<string>();
 
             A.CallTo(() => fixture
-                .Fake<GoogleDriveFilesService>()
+                .FreezeFake<GoogleDriveFilesService>()
                 .GetManyAsync(folderId, cancellationToken))
-                .Returns(Result.Ok(fixture.Fake<IList<File>>()));
+                .Returns(Result.Ok(fixture.FreezeFake<IList<File>>()));
 
             A.CallTo(() => fixture
-                .Fake<IValidator<IList<File>>>()
-                .ValidateAsync(fixture.Fake<IList<File>>(), cancellationToken))
+                .FreezeFake<IValidator<IList<File>>>()
+                .ValidateAsync(fixture.FreezeFake<IList<File>>(), cancellationToken))
                 .Returns(new ValidationResult());
         }
 
@@ -527,7 +524,7 @@ public class GoogleDriveServiceTests : UnitTest
             const string ERROR_MESSAGE = "some error";
 
             A.CallTo(() => fixture
-                .Fake<GoogleDriveFilesService>()
+                .FreezeFake<GoogleDriveFilesService>()
                 .GetManyAsync(folderId, cancellationToken))
                 .Returns(Result.Fail(ERROR_MESSAGE));
 
@@ -542,12 +539,12 @@ public class GoogleDriveServiceTests : UnitTest
             const string SECOND_ERROR_MESSAGE = "other error";
 
             A.CallTo(() => fixture
-                .Fake<IValidator<IList<File>>>()
-                .ValidateAsync(fixture.Fake<IList<File>>(), cancellationToken))
-                .Returns(new ValidationResult(new[] { 
+                .FreezeFake<IValidator<IList<File>>>()
+                .ValidateAsync(fixture.FreezeFake<IList<File>>(), cancellationToken))
+                .Returns(new ValidationResult([
                     new ValidationFailure("1", FIRST_ERROR_MESSAGE),
-                    new ValidationFailure("2", SECOND_ERROR_MESSAGE) 
-                }));
+                    new ValidationFailure("2", SECOND_ERROR_MESSAGE)
+                ]));
 
             var result = await service.ValidateFilesAsync(folderId, cancellationToken);
             result.Should().BeFailure().And
@@ -566,14 +563,14 @@ public class GoogleDriveServiceTests : UnitTest
             email = fixture.Create<string>();
 
             A.CallTo(() => fixture
-                .Fake<GoogleDrivePermissionsService>()
+                .FreezeFake<GoogleDrivePermissionsService>()
                 .GetUserPermissionsAsync(email, GoogleDriveSettingsService.BaseFolderId, cancellationToken))
                 .Returns(Result.Ok<IEnumerable<Permission>>([]));
 
             A.CallTo(() => fixture
-                .Fake<GoogleDrivePermissionsService>()
+                .FreezeFake<GoogleDrivePermissionsService>()
                 .CreateUserReaderPermissionAsync(email, GoogleDriveSettingsService.BaseFolderId, cancellationToken))
-                .Returns(fixture.Fake<Permission>());
+                .Returns(fixture.FreezeFake<Permission>());
         }
 
         [Fact]
@@ -588,7 +585,7 @@ public class GoogleDriveServiceTests : UnitTest
         public async Task GivenSuccessfulExecutionButWithAnAlreadyExistingPermissionShouldReturnSuccessResultWithoutCreatingANewOne()
         {
             A.CallTo(() => fixture
-                .Fake<GoogleDrivePermissionsService>()
+                .FreezeFake<GoogleDrivePermissionsService>()
                 .GetUserPermissionsAsync(email, GoogleDriveSettingsService.BaseFolderId, cancellationToken))
                 .Returns(Result.Ok<IEnumerable<Permission>>([new Permission()]));
 
@@ -597,18 +594,18 @@ public class GoogleDriveServiceTests : UnitTest
             result.Should().BeSuccess();
 
             A.CallTo(() => fixture
-                .Fake<GoogleDrivePermissionsService>()
+                .FreezeFake<GoogleDrivePermissionsService>()
                 .CreateUserReaderPermissionAsync(A<string>.Ignored, A<string>.Ignored, cancellationToken))
                 .MustNotHaveHappened();
         }
-        
+
         [Fact]
         public async Task GivenErrorToObtainPermissionsShouldReturnFailResult()
         {
             const string ERROR_MESSAGE = "some error";
 
             A.CallTo(() => fixture
-                .Fake<GoogleDrivePermissionsService>()
+                .FreezeFake<GoogleDrivePermissionsService>()
                 .GetUserPermissionsAsync(email, GoogleDriveSettingsService.BaseFolderId, cancellationToken))
                 .Returns(Result.Fail(ERROR_MESSAGE));
 
@@ -622,7 +619,7 @@ public class GoogleDriveServiceTests : UnitTest
             const string ERROR_MESSAGE = "some error";
 
             A.CallTo(() => fixture
-                .Fake<GoogleDrivePermissionsService>()
+                .FreezeFake<GoogleDrivePermissionsService>()
                 .CreateUserReaderPermissionAsync(email, GoogleDriveSettingsService.BaseFolderId, cancellationToken))
                 .Returns(Result.Fail(ERROR_MESSAGE));
 
@@ -641,15 +638,15 @@ public class GoogleDriveServiceTests : UnitTest
             email = fixture.Create<string>();
 
             A.CallTo(() => fixture
-                .Fake<GoogleDrivePermissionsService>()
+                .FreezeFake<GoogleDrivePermissionsService>()
                 .GetUserPermissionsAsync(email, GoogleDriveSettingsService.BaseFolderId, cancellationToken))
-                .Returns(Result.Ok(fixture.Fake<IEnumerable<Permission>>()));
+                .Returns(Result.Ok(fixture.FreezeFake<IEnumerable<Permission>>()));
 
             A.CallTo(() => fixture
-                .Fake<GoogleDrivePermissionsService>()
+                .FreezeFake<GoogleDrivePermissionsService>()
                 .DeleteUserReaderPermissionsAsync(
-                    fixture.Fake<IEnumerable<Permission>>(), 
-                    GoogleDriveSettingsService.BaseFolderId, 
+                    fixture.FreezeFake<IEnumerable<Permission>>(),
+                    GoogleDriveSettingsService.BaseFolderId,
                     cancellationToken))
                 .Returns(Result.Ok());
         }
@@ -668,7 +665,7 @@ public class GoogleDriveServiceTests : UnitTest
             const string ERROR_MESSAGE = "some error";
 
             A.CallTo(() => fixture
-                .Fake<GoogleDrivePermissionsService>()
+                .FreezeFake<GoogleDrivePermissionsService>()
                 .GetUserPermissionsAsync(email, GoogleDriveSettingsService.BaseFolderId, cancellationToken))
                 .Returns(Result.Fail(ERROR_MESSAGE));
 
@@ -682,10 +679,10 @@ public class GoogleDriveServiceTests : UnitTest
             const string ERROR_MESSAGE = "some error";
 
             A.CallTo(() => fixture
-                .Fake<GoogleDrivePermissionsService>()
+                .FreezeFake<GoogleDrivePermissionsService>()
                 .DeleteUserReaderPermissionsAsync(
-                    fixture.Fake<IEnumerable<Permission>>(), 
-                    GoogleDriveSettingsService.BaseFolderId, 
+                    fixture.FreezeFake<IEnumerable<Permission>>(),
+                    GoogleDriveSettingsService.BaseFolderId,
                     cancellationToken))
                 .Returns(Result.Fail(ERROR_MESSAGE));
 

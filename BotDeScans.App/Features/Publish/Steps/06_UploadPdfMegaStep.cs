@@ -1,4 +1,5 @@
-﻿using BotDeScans.App.Services;
+﻿using BotDeScans.App.Features.Mega;
+using BotDeScans.App.Features.Mega.InternalServices;
 using FluentResults;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -20,11 +21,16 @@ namespace BotDeScans.App.Features.Publish.Steps
         public async Task<Result> ExecuteAsync(CancellationToken cancellationToken)
         {
             var megaService = serviceProvider.GetRequiredService<MegaService>();
+            var megaFoldersService = serviceProvider.GetRequiredService<MegaFoldersService>();
 
-            var titleFolder = await megaService.GetOrCreateFolderAsync(state.Title.Name);
+            var root = await megaFoldersService.GetRootFolderAsync();
+            var titleFolder = await megaService.GetOrCreateFolderAsync(state.Title.Name, root);
+            if (titleFolder.IsFailed)
+                return titleFolder.ToResult();
+
             var fileResult = await megaService.CreateFileAsync(
                 filePath: state.InternalData.PdfFilePath,
-                parentFolder: titleFolder,
+                parentNode: root,
                 cancellationToken);
 
             if (fileResult.IsFailed)

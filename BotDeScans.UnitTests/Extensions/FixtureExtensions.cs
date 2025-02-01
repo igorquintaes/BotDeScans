@@ -1,12 +1,8 @@
 ﻿using AutoFixture;
 using AutoFixture.Dsl;
 using FakeItEasy;
-using iText.StyledXmlParser.Node;
-using System;
-using System.Collections.Concurrent;
 using System.Linq;
-
-namespace BotDeScans.UnitTests.Specs.Extensions;
+namespace BotDeScans.UnitTests.Extensions;
 
 public static class FixtureExtensions
 {
@@ -16,10 +12,10 @@ public static class FixtureExtensions
     /// <typeparam name="T">type</typeparam>
     /// <param name="fixture">AutoFixture instance</param>
     /// <returns>faked object</returns>
-    public static T Fake<T>(this IFixture fixture) where T : class
+    public static T FreezeFake<T>(this IFixture fixture) where T : class
     {
         if (!fixture.Customizations.Any(x => x is NodeComposer<T>))
-            fixture.Inject<T>(A.Fake<T>());
+            fixture.Inject(A.Fake<T>());
 
         return fixture.Freeze<T>();
     }
@@ -29,12 +25,12 @@ public static class FixtureExtensions
     /// <typeparam name="T">type</typeparam>
     /// <param name="fixture">AutoFixture instance</param>
     /// <returns>faked object</returns>
-    public static T[] Fake<T>(this IFixture fixture, int quantity) where T : class
+    public static T[] FreezeFakes<T>(this IFixture fixture, int quantity) where T : class
     {
         if (!fixture.Customizations.Any(x => x is NodeComposer<T[]>))
         {
             var fakes = Enumerable.Repeat(() => A.Fake<T>(), quantity).Select(x => x.Invoke()).ToArray();
-            fixture.Inject<T[]>(fakes);
+            fixture.Inject(fakes);
         }
 
         return fixture.Freeze<T[]>();

@@ -31,7 +31,7 @@ public partial class MangaDexService(
 
         var result = await mangaDex.Auth.Personal(clientId, clientSecret, username, password);
 
-        if (result is null || 
+        if (result is null ||
             result.ExpiresIn is null ||
             result.ExpiresIn <= 0 ||
             string.IsNullOrWhiteSpace(result.AccessToken))

@@ -1,20 +1,18 @@
 ﻿using AutoFixture;
 using BotDeScans.App.Features.GoogleDrive.InternalServices;
 using BotDeScans.App.Services.ExternalClients;
-using BotDeScans.UnitTests.Specs.Extensions;
+using BotDeScans.UnitTests.Extensions;
 using FakeItEasy;
 using FluentAssertions;
 using FluentResults;
 using FluentResults.Extensions.FluentAssertions;
 using Google.Apis.Drive.v3;
 using Google.Apis.Drive.v3.Data;
-using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Xunit;
 using static Google.Apis.Drive.v3.PermissionsResource;
-
 namespace BotDeScans.UnitTests.Specs.Features.GoogleDrive.InternalServices;
 
 public class GoogleDrivePermissionsServiceTests : UnitTest
@@ -23,16 +21,16 @@ public class GoogleDrivePermissionsServiceTests : UnitTest
 
     public GoogleDrivePermissionsServiceTests()
     {
-        fixture.Fake<GoogleDriveClient>();
-        fixture.Fake<GoogleDriveWrapper>();
+        fixture.FreezeFake<GoogleDriveClient>();
+        fixture.FreezeFake<GoogleDriveWrapper>();
 
         A.CallTo(() => fixture
-            .Fake<GoogleDriveClient>().Client)
-            .Returns(fixture.Fake<DriveService>());
+            .FreezeFake<GoogleDriveClient>().Client)
+            .Returns(fixture.FreezeFake<DriveService>());
 
         A.CallTo(() => fixture
-            .Fake<DriveService>().Permissions)
-            .Returns(fixture.Fake<PermissionsResource>());
+            .FreezeFake<DriveService>().Permissions)
+            .Returns(fixture.FreezeFake<PermissionsResource>());
 
         service = fixture.Create<GoogleDrivePermissionsService>();
     }
@@ -61,13 +59,13 @@ public class GoogleDrivePermissionsServiceTests : UnitTest
                 .Create();
 
             A.CallTo(() => fixture
-                .Fake<PermissionsResource>()
+                .FreezeFake<PermissionsResource>()
                 .List(resourceId))
-                .Returns(fixture.Fake<ListRequest>());
+                .Returns(fixture.FreezeFake<ListRequest>());
 
             A.CallTo(() => fixture
-                .Fake<GoogleDriveWrapper>()
-                .ExecuteAsync(fixture.Fake<ListRequest>(), cancellationToken))
+                .FreezeFake<GoogleDriveWrapper>()
+                .ExecuteAsync(fixture.FreezeFake<ListRequest>(), cancellationToken))
                 .Returns(permissionList);
         }
 
@@ -83,9 +81,9 @@ public class GoogleDrivePermissionsServiceTests : UnitTest
         public async Task GivenSuccessFulRequestWithoutEmailPermissionsShouldReturnSuccessResultWithEmptyData()
         {
             A.CallTo(() => fixture
-                .Fake<GoogleDriveWrapper>()
-                .ExecuteAsync(fixture.Fake<ListRequest>(), cancellationToken))
-                .Returns(fixture.Fake<PermissionList>());
+                .FreezeFake<GoogleDriveWrapper>()
+                .ExecuteAsync(fixture.FreezeFake<ListRequest>(), cancellationToken))
+                .Returns(fixture.FreezeFake<PermissionList>());
 
             var result = await service.GetUserPermissionsAsync(email, resourceId, cancellationToken);
 
@@ -98,8 +96,8 @@ public class GoogleDrivePermissionsServiceTests : UnitTest
             const string ERROR_MESSAGE = "some error";
 
             A.CallTo(() => fixture
-                .Fake<GoogleDriveWrapper>()
-                .ExecuteAsync(fixture.Fake<ListRequest>(), cancellationToken))
+                .FreezeFake<GoogleDriveWrapper>()
+                .ExecuteAsync(fixture.FreezeFake<ListRequest>(), cancellationToken))
                 .Returns(Result.Fail(ERROR_MESSAGE));
 
             var result = await service.GetUserPermissionsAsync(email, resourceId, cancellationToken);
@@ -113,9 +111,9 @@ public class GoogleDrivePermissionsServiceTests : UnitTest
             await service.GetUserPermissionsAsync(email, resourceId, cancellationToken);
 
             A.CallTo(() => fixture
-                .Fake<GoogleDriveWrapper>()
+                .FreezeFake<GoogleDriveWrapper>()
                 .ExecuteAsync(
-                    A<ListRequest>.That.Matches(x => x.Fields == "*"), 
+                    A<ListRequest>.That.Matches(x => x.Fields == "*"),
                     cancellationToken))
                 .MustHaveHappenedOnceExactly();
         }
@@ -123,32 +121,32 @@ public class GoogleDrivePermissionsServiceTests : UnitTest
 
     public class CreatePublicReaderPermissionAsync : GoogleDrivePermissionsServiceTests
     {
-        public static string resourceId;
+        private readonly string resourceId;
 
         public CreatePublicReaderPermissionAsync()
         {
             resourceId = fixture.Create<string>();
 
             A.CallTo(() => fixture
-                .Fake<PermissionsResource>()
+                .FreezeFake<PermissionsResource>()
                 .Create(A<Permission>.That.Matches(permission =>
                     permission.Type == GoogleDrivePermissionsService.PUBLIC_PERMISSION_TYPE &&
                     permission.Role == GoogleDrivePermissionsService.READER_ROLE),
                     resourceId))
-                .Returns(fixture.Fake<CreateRequest>());
+                .Returns(fixture.FreezeFake<CreateRequest>());
         }
 
         [Fact]
         public async Task GivenSuccessfulExecutionShouldReturnSuccessResultAndPermissionData()
         {
             A.CallTo(() => fixture
-                .Fake<GoogleDriveWrapper>()
-                .ExecuteAsync(fixture.Fake<CreateRequest>(), cancellationToken))
-                .Returns(fixture.Fake<Permission>());
+                .FreezeFake<GoogleDriveWrapper>()
+                .ExecuteAsync(fixture.FreezeFake<CreateRequest>(), cancellationToken))
+                .Returns(fixture.FreezeFake<Permission>());
 
             var result = await service.CreatePublicReaderPermissionAsync(resourceId, cancellationToken);
 
-            result.Should().BeSuccess().And.HaveValue(fixture.Fake<Permission>());
+            result.Should().BeSuccess().And.HaveValue(fixture.FreezeFake<Permission>());
         }
 
         [Fact]
@@ -157,8 +155,8 @@ public class GoogleDrivePermissionsServiceTests : UnitTest
             const string ERROR_MESSAGE = "some error";
 
             A.CallTo(() => fixture
-                .Fake<GoogleDriveWrapper>()
-                .ExecuteAsync(fixture.Fake<CreateRequest>(), cancellationToken))
+                .FreezeFake<GoogleDriveWrapper>()
+                .ExecuteAsync(fixture.FreezeFake<CreateRequest>(), cancellationToken))
                 .Returns(Result.Fail(ERROR_MESSAGE));
 
             var result = await service.CreatePublicReaderPermissionAsync(resourceId, cancellationToken);
@@ -169,8 +167,8 @@ public class GoogleDrivePermissionsServiceTests : UnitTest
 
     public class CreateUserReaderPermissionAsync : GoogleDrivePermissionsServiceTests
     {
-        public static string email;
-        public static string resourceId;
+        private readonly string email;
+        private readonly string resourceId;
 
         public CreateUserReaderPermissionAsync()
         {
@@ -178,26 +176,26 @@ public class GoogleDrivePermissionsServiceTests : UnitTest
             resourceId = fixture.Create<string>();
 
             A.CallTo(() => fixture
-                .Fake<PermissionsResource>()
+                .FreezeFake<PermissionsResource>()
                 .Create(A<Permission>.That.Matches(permission =>
                     permission.Type == GoogleDrivePermissionsService.USER_PERMISSION_TYPE &&
                     permission.Role == GoogleDrivePermissionsService.READER_ROLE &&
                     permission.EmailAddress == email),
                     resourceId))
-                .Returns(fixture.Fake<CreateRequest>());
+                .Returns(fixture.FreezeFake<CreateRequest>());
         }
 
         [Fact]
         public async Task GivenSuccessfulExecutionShouldReturnSuccessResultAndPermissionData()
         {
             A.CallTo(() => fixture
-                .Fake<GoogleDriveWrapper>()
-                .ExecuteAsync(fixture.Fake<CreateRequest>(), cancellationToken))
-                .Returns(fixture.Fake<Permission>());
+                .FreezeFake<GoogleDriveWrapper>()
+                .ExecuteAsync(fixture.FreezeFake<CreateRequest>(), cancellationToken))
+                .Returns(fixture.FreezeFake<Permission>());
 
             var result = await service.CreateUserReaderPermissionAsync(email, resourceId, cancellationToken);
 
-            result.Should().BeSuccess().And.HaveValue(fixture.Fake<Permission>());
+            result.Should().BeSuccess().And.HaveValue(fixture.FreezeFake<Permission>());
         }
 
         [Fact]
@@ -206,8 +204,8 @@ public class GoogleDrivePermissionsServiceTests : UnitTest
             const string ERROR_MESSAGE = "some error";
 
             A.CallTo(() => fixture
-                .Fake<GoogleDriveWrapper>()
-                .ExecuteAsync(fixture.Fake<CreateRequest>(), cancellationToken))
+                .FreezeFake<GoogleDriveWrapper>()
+                .ExecuteAsync(fixture.FreezeFake<CreateRequest>(), cancellationToken))
                 .Returns(Result.Fail(ERROR_MESSAGE));
 
             var result = await service.CreateUserReaderPermissionAsync(email, resourceId, cancellationToken);
@@ -227,13 +225,13 @@ public class GoogleDrivePermissionsServiceTests : UnitTest
             resourceId = fixture.Create<string>();
 
             A.CallTo(() => fixture
-                .Fake<PermissionsResource>()
+                .FreezeFake<PermissionsResource>()
                 .Delete(resourceId, A<string>.That.Matches(permissionId => permissions.Select(x => x.Id).Contains(permissionId))))
-                .Returns(fixture.Fake<DeleteRequest>());
+                .Returns(fixture.FreezeFake<DeleteRequest>());
 
             A.CallTo(() => fixture
-                .Fake<GoogleDriveWrapper>()
-                .ExecuteAsync(fixture.Fake<DeleteRequest>(), cancellationToken))
+                .FreezeFake<GoogleDriveWrapper>()
+                .ExecuteAsync(fixture.FreezeFake<DeleteRequest>(), cancellationToken))
                 .Returns(fixture.Create<string>());
         }
 
@@ -251,10 +249,10 @@ public class GoogleDrivePermissionsServiceTests : UnitTest
             const string ERROR_MESSAGE = "some error";
 
             A.CallTo(() => fixture
-                .Fake<GoogleDriveWrapper>()
-                .ExecuteAsync(fixture.Fake<DeleteRequest>(), cancellationToken))
+                .FreezeFake<GoogleDriveWrapper>()
+                .ExecuteAsync(fixture.FreezeFake<DeleteRequest>(), cancellationToken))
                 .ReturnsNextFromSequence(
-                    fixture.Create<string>(), 
+                    fixture.Create<string>(),
                     Result.Fail(ERROR_MESSAGE));
 
             var result = await service.DeleteUserReaderPermissionsAsync(permissions, resourceId, cancellationToken);
@@ -269,10 +267,10 @@ public class GoogleDrivePermissionsServiceTests : UnitTest
             const string SECOND_ERROR_MESSAGE = "second error";
 
             A.CallTo(() => fixture
-                .Fake<GoogleDriveWrapper>()
-                .ExecuteAsync(fixture.Fake<DeleteRequest>(), cancellationToken))
+                .FreezeFake<GoogleDriveWrapper>()
+                .ExecuteAsync(fixture.FreezeFake<DeleteRequest>(), cancellationToken))
                 .ReturnsNextFromSequence(
-                    Result.Fail(FIRST_ERROR_MESSAGE), 
+                    Result.Fail(FIRST_ERROR_MESSAGE),
                     Result.Fail(SECOND_ERROR_MESSAGE));
 
             var result = await service.DeleteUserReaderPermissionsAsync(permissions, resourceId, cancellationToken);

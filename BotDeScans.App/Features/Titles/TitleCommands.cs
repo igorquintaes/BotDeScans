@@ -79,7 +79,7 @@ public class TitleCommands(
     [Description("Atualiza dados da obra")]
     public async Task<IResult> Update(
         [AutocompleteProvider(AutocompleteTitles.Id)]
-        [Description("Nome da obra")] 
+        [Description("Nome da obra")]
         string titleName)
     {
         if (context is not InteractionContext interactionContext)

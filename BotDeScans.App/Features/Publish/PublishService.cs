@@ -21,7 +21,7 @@ public class PublishService(
 
         switch (pingType)
         {
-            case PingType.Everyone: 
+            case PingType.Everyone:
                 return "@everyone";
             case PingType.Global:
                 if (publishState.Title.DiscordRoleId is null)
@@ -43,9 +43,9 @@ public class PublishService(
                     return Result.Fail("Não foi definida uma role para o Discord nesta obra. Defina, ou mude o tipo de publicação no arquivo de configuração do Bot de Scans.");
 
                 return await GetRoleAsPingText(publishState.Title.DiscordRoleId.ToString()!, cancellationToken);
-            case PingType.None: 
+            case PingType.None:
                 return string.Empty;
-            default: 
+            default:
                 return Result.Fail($"invalid value in '{pingTypeKey}'.");
         };
     }
@@ -53,7 +53,7 @@ public class PublishService(
     // todo: mover para uma classe que faça mais sentido (talvez relacionada ao discord)
     private async Task<Result<string>> GetRoleAsPingText(string roleName, CancellationToken cancellationToken)
     {
-        var role = await rolesService.GetRoleFromDiscord(roleName, cancellationToken);
+        var role = await rolesService.GetRoleFromGuildAsync(roleName, cancellationToken);
         if (role.IsFailed)
             return role.ToResult();
 

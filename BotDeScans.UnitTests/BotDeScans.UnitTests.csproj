@@ -4,15 +4,6 @@
     <TargetFramework>net8.0</TargetFramework>
     <IsPackable>false</IsPackable>
     <Nullable>enable</Nullable>
-    <UserSecretsId>915d75d7-3af7-4a57-ae29-4a2bc21051e6</UserSecretsId>
-  </PropertyGroup>
-
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
-    <WarningLevel>0</WarningLevel>
-  </PropertyGroup>
-
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
-    <WarningLevel>0</WarningLevel>
   </PropertyGroup>
 
   <ItemGroup>

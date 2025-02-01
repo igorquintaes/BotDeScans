@@ -51,13 +51,13 @@ public class GoogleDriveResourcesService(
     public virtual File CreateResourceObject(
         string mimeType,
         string name,
-        string? parentId = null) 
+        string? parentId = null)
         => new()
         {
             Name = name,
             Description = name,
             MimeType = mimeType,
-            Parents = new[] { parentId ?? GoogleDriveSettingsService.BaseFolderId }
+            Parents = [parentId ?? GoogleDriveSettingsService.BaseFolderId]
         };
 
     public virtual Task<Result<string>> DeleteResource(

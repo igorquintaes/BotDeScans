@@ -35,7 +35,7 @@ public class UpdateInteractions(
         ulong? roleId = null;
         if (string.IsNullOrEmpty(role) is false)
         {
-            var roleResult = await rolesService.GetRoleFromDiscord(role!, CancellationToken);
+            var roleResult = await rolesService.GetRoleFromGuildAsync(role!, CancellationToken);
             if (roleResult.IsFailed)
                 return await feedbackService.SendContextualEmbedAsync(
                 embed: EmbedBuilder.CreateErrorEmbed(roleResult.ToResult()),

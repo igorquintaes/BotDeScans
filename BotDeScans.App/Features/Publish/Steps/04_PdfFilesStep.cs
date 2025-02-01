@@ -21,11 +21,15 @@ public class PdfFilesStep(
         var fileService = serviceProvider.GetRequiredService<FileService>();
         var fileReleaseService = serviceProvider.GetRequiredService<FileReleaseService>();
 
-        state.InternalData.PdfFilePath = await fileService.CreatePdfFileAsync(
-            fileName: $"{state.ReleaseInfo.ChapterNumber}.pdf",
+        var pdfFileResult = await fileService.CreatePdfFileAsync(
+            fileName: state.ReleaseInfo.ChapterNumber,
             resourcesDirectory: state.InternalData.OriginContentFolder,
             destinationDirectory: fileReleaseService.CreateScopedDirectory());
 
+        if (pdfFileResult.IsFailed)
+            return pdfFileResult.ToResult();
+
+        state.InternalData.PdfFilePath = pdfFileResult.Value;
         return Result.Ok();
     }
 }

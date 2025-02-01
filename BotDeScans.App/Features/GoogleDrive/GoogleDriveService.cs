@@ -76,7 +76,7 @@ public class GoogleDriveService(
         return deleteResult.ToResult();
     }
 
-    public virtual Result<string> GetFolderIdFromUrl(string url)
+    public virtual Result<string> GetFolderIdFromUrl(string? url)
     {
         if (!Uri.TryCreate(url, UriKind.Absolute, out var uri) || uri.Authority != "drive.google.com")
             return Result.Fail("O link informado é inválido."); ;
@@ -89,8 +89,8 @@ public class GoogleDriveService(
             .Last();
 
 
-        return resourceId.Length != 33 
-            ? Result.Fail("O link informado é inválido.") 
+        return resourceId.Length != 33
+            ? Result.Fail("O link informado é inválido.")
             : Result.Ok(resourceId);
     }
 

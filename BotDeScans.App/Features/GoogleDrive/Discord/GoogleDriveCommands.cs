@@ -87,13 +87,7 @@ public class GoogleDriveCommands(
                 .CreateErrorEmbed(dataUsageResult), ct: CancellationToken);
 
         var usageInfo = dataUsageResult.Value;
-        await using var chartStream = chartService.CreatePieChart(
-            new Dictionary<string, double>
-            {
-                { "Utilizado", usageInfo.UsedSpace },
-                { "Livre", usageInfo.FreeSpace },
-
-            });
+        await using var chartStream = chartService.CreatePieChart(usageInfo);
 
         var fileName = $"{nameof(DataUsage)}.png";
         return await feedbackService.SendContextualEmbedAsync(
@@ -130,7 +124,7 @@ public class GoogleDriveCommands(
                 return await downloadResult.PostErrorOnDiscord(feedbackService, CancellationToken);
 
             return await feedbackService.SendContextualEmbedAsync(
-                EmbedBuilder.CreateSuccessEmbed($"Funcionando."), 
+                EmbedBuilder.CreateSuccessEmbed($"Funcionando."),
                 ct: CancellationToken);
         }
 
@@ -153,7 +147,7 @@ public class GoogleDriveCommands(
                 return await createFileResult.PostErrorOnDiscord(feedbackService, CancellationToken);
 
             return await feedbackService.SendContextualEmbedAsync(
-                EmbedBuilder.CreateSuccessEmbed($"Funcionando."), 
+                EmbedBuilder.CreateSuccessEmbed($"Funcionando."),
                 ct: CancellationToken);
         }
     }

@@ -32,7 +32,8 @@
     <PackageReference Include="Google.Apis.Blogger.v3" Version="1.68.0.2925" />
     <PackageReference Include="Google.Apis.Drive.v3" Version="1.68.0.3627" />
     <PackageReference Include="Imageflow.AllPlatforms" Version="0.13.2" />
-    <PackageReference Include="itext7" Version="9.0.0" />
+    <PackageReference Include="itext.bouncy-castle-adapter" Version="9.0.0" />
+    <PackageReference Include="itext" Version="9.0.0" />
     <PackageReference Include="LazyCache" Version="2.4.0" />
     <PackageReference Include="LazyCache.AspNetCore" Version="2.4.0" />
     <PackageReference Include="MangaDexSharp" Version="1.1.4" />
@@ -69,6 +70,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Folder Include="Features\Mega\Discord\" />
     <Folder Include="Features\Titles\References\" />
     <Folder Include="Infra\Migrations\" />
   </ItemGroup>
