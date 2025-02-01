@@ -2,7 +2,7 @@
 using BotDeScans.App.Features.Mega.InternalServices;
 using BotDeScans.App.Services.ExternalClients;
 using BotDeScans.App.Services.Wrappers;
-using BotDeScans.UnitTests.Specs.Extensions;
+using BotDeScans.UnitTests.Extensions;
 using CG.Web.MegaApiClient;
 using FakeItEasy;
 using FluentAssertions;
@@ -20,13 +20,13 @@ public class MegaFilesServiceTests : UnitTest
 
     public MegaFilesServiceTests()
     {
-        fixture.Fake<MegaClient>();
-        fixture.Fake<MegaResourcesService>();
-        fixture.Fake<StreamWrapper>();
+        fixture.FreezeFake<MegaClient>();
+        fixture.FreezeFake<MegaResourcesService>();
+        fixture.FreezeFake<StreamWrapper>();
 
         A.CallTo(() => fixture
-            .Fake<MegaClient>().Client)
-            .Returns(fixture.Fake<IMegaApiClient>());
+            .FreezeFake<MegaClient>().Client)
+            .Returns(fixture.FreezeFake<IMegaApiClient>());
 
         service = fixture.Create<MegaFilesService>();
     }
@@ -36,12 +36,12 @@ public class MegaFilesServiceTests : UnitTest
         public GetAsync()
         {
             A.CallTo(() => fixture
-                .Fake<MegaResourcesService>()
+                .FreezeFake<MegaResourcesService>()
                 .GetResourcesAsync(
                     A<string?>.Ignored,
                     A<string?>.Ignored,
                     NodeType.File))
-                .Returns([fixture.Fake<INode>()]);
+                .Returns([fixture.FreezeFake<INode>()]);
         }
 
         [Fact]
@@ -49,14 +49,14 @@ public class MegaFilesServiceTests : UnitTest
         {
             var result = await service.GetAsync(fixture.Create<string>(), A.Fake<INode>());
 
-            result.Should().BeSuccess().And.HaveValue(fixture.Fake<INode>());
+            result.Should().BeSuccess().And.HaveValue(fixture.FreezeFake<INode>());
         }
 
         [Fact]
         public async Task GivenNoneExistingNodeShouldReturnNull()
         {
             A.CallTo(() => fixture
-                .Fake<MegaResourcesService>()
+                .FreezeFake<MegaResourcesService>()
                 .GetResourcesAsync(
                     A<string?>.Ignored,
                     A<string?>.Ignored,
@@ -79,12 +79,12 @@ public class MegaFilesServiceTests : UnitTest
             A.CallTo(() => parentNode.Id).Returns(parentNodeId);
             A.CallTo(() => parentNode.Name).Returns(parentNodeName);
             A.CallTo(() => fixture
-                .Fake<MegaResourcesService>()
+                .FreezeFake<MegaResourcesService>()
                 .GetResourcesAsync(
                     fileName,
                     parentNodeId,
                     NodeType.File))
-                .Returns([fixture.Fake<INode>(), fixture.Fake<INode>()]);
+                .Returns([fixture.FreezeFake<INode>(), fixture.FreezeFake<INode>()]);
 
             var result = await service.GetAsync(fileName, parentNode);
 
@@ -103,32 +103,32 @@ public class MegaFilesServiceTests : UnitTest
             var parentNode = A.Fake<INode>();
 
             A.CallTo(() => fixture
-                .Fake<StreamWrapper>()
+                .FreezeFake<StreamWrapper>()
                 .CreateFileStream(filePath, FileMode.Open))
-                .Returns(fixture.Fake<Stream>());
+                .Returns(fixture.FreezeFake<Stream>());
 
             A.CallTo(() => fixture
-                .Fake<IMegaApiClient>()
+                .FreezeFake<IMegaApiClient>()
                 .UploadAsync(
-                    fixture.Fake<Stream>(),
+                    fixture.FreezeFake<Stream>(),
                     "file.zip",
                     parentNode,
                     null,
                     null,
                     CancellationToken.None))
-                .Returns(fixture.Fake<INode>());
+                .Returns(fixture.FreezeFake<INode>());
 
             A.CallTo(() => fixture
-                .Fake<IMegaApiClient>()
-                .GetDownloadLinkAsync(fixture.Fake<INode>()))
-                .Returns(fixture.Fake<Uri>());
+                .FreezeFake<IMegaApiClient>()
+                .GetDownloadLinkAsync(fixture.FreezeFake<INode>()))
+                .Returns(fixture.FreezeFake<Uri>());
 
             var result = await service.UploadAsync(
                 filePath, 
                 parentNode, 
                 CancellationToken.None);
 
-            result.Should().Be(fixture.Fake<Uri>());
+            result.Should().Be(fixture.FreezeFake<Uri>());
         }
     }
 
@@ -137,11 +137,11 @@ public class MegaFilesServiceTests : UnitTest
         [Fact]
         public async Task GivenRequestShouldCallDeleteResourceMethod()
         {
-            await service.DeleteAsync(fixture.Fake<INode>());
+            await service.DeleteAsync(fixture.FreezeFake<INode>());
 
             A.CallTo(() => fixture
-                .Fake<MegaResourcesService>()
-                .DeleteAsync(fixture.Fake<INode>()))
+                .FreezeFake<MegaResourcesService>()
+                .DeleteAsync(fixture.FreezeFake<INode>()))
                 .MustHaveHappenedOnceExactly();
         }
     }

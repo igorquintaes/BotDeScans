@@ -8,53 +8,23 @@ namespace BotDeScans.App.Services.Discord;
 
 public class RolesService(IConfiguration configuration, IDiscordRestGuildAPI discordRestGuildAPI)
 {
-    public virtual Result<bool> ContainsAtLeastOneOfExpectedRoles(
-        IEnumerable<string> expectedRoles,
-        IEnumerable<IRole> guildRoles,
-        IEnumerable<Snowflake> userRoles)
+    public const string DISCORD_SERVERID_KEY = "Discord:ServerId";
+
+    public virtual async Task<Result<IRole>> GetRoleFromGuildAsync(
+        string roleToGet,
+        CancellationToken cancellationToken = default)
     {
-        var serverExpectedRoles = guildRoles
-            .Where(guildRole => expectedRoles
-            .Contains(guildRole.Name));
-
-        if (!serverExpectedRoles.Any())
-            return Result.Fail($"Invalid request. No role(s) found in server; {string.Join(", ", expectedRoles)}");
-
-        var hasRequiredRole = userRoles
-            .Any(id => serverExpectedRoles
-            .Any(requiredRole => requiredRole.ID == id));
-
-        return Result.Ok(hasRequiredRole);
-    }
-
-    public virtual async Task<Result<IRole>> GetRoleFromDiscord(
-        string role,
-        CancellationToken cancellationToken)
-    {
-        var serverId = configuration.GetRequiredValue<ulong>("Discord:ServerId");
-        var guildRolesResult = await discordRestGuildAPI.GetGuildRolesAsync(new Snowflake(serverId), cancellationToken);
-
+        var serverId = new Snowflake(configuration.GetRequiredValue<ulong>(DISCORD_SERVERID_KEY));
+        var guildRolesResult = await discordRestGuildAPI.GetGuildRolesAsync(serverId, cancellationToken);
         if (!guildRolesResult.IsDefined(out var guildRoles))
             return Result.Fail(guildRolesResult.Error!.Message);
 
-        var guildRolesCaseInsensitive = guildRoles.Where(guildRole => role.Equals(guildRole.Name, StringComparison.InvariantCultureIgnoreCase)).ToList();
-        if (guildRolesCaseInsensitive.Count == 1)
-            return Result.Ok(guildRolesCaseInsensitive[0]);
+        var role = guildRoles.FirstOrDefault(guildRole =>
+            guildRole.ID.Value.ToString().Equals(roleToGet, StringComparison.Ordinal) ||
+            guildRole.Name.Equals(roleToGet, StringComparison.Ordinal));
 
-        if (guildRolesCaseInsensitive.Count > 1)
-        {
-            var guildRoleCaseSensitive = guildRolesCaseInsensitive.FirstOrDefault(guildRole => role.Equals(guildRole.Name, StringComparison.Ordinal));
-            if (guildRoleCaseSensitive is not null)
-                return Result.Ok(guildRoleCaseSensitive);
-        }
-
-        if (ulong.TryParse(role, out var roleId))
-        {
-            var guildRole = guildRoles.FirstOrDefault(guildRole => guildRole.ID.Value.Equals(roleId));
-            if (guildRole is not null)
-                return Result.Ok(guildRole);
-        }
-
-        return Result.Fail("Cargo não encontrado no servidor.");
+        return role is null
+            ? Result.Fail($"Cargo não encontrado no servidor: {roleToGet}")
+            : Result.Ok(role);
     }
 }

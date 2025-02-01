@@ -1,7 +1,7 @@
 ﻿using AutoFixture;
 using BotDeScans.App.Features.Mega.InternalServices;
 using BotDeScans.App.Services.ExternalClients;
-using BotDeScans.UnitTests.Specs.Extensions;
+using BotDeScans.UnitTests.Extensions;
 using CG.Web.MegaApiClient;
 using FakeItEasy;
 using FluentAssertions;
@@ -20,11 +20,11 @@ public class MegaResourcesServiceTests : UnitTest
 
     public MegaResourcesServiceTests()
     {
-        fixture.Fake<MegaClient>();
+        fixture.FreezeFake<MegaClient>();
 
         A.CallTo(() => fixture
-            .Fake<MegaClient>().Client)
-            .Returns(fixture.Fake<IMegaApiClient>());
+            .FreezeFake<MegaClient>().Client)
+            .Returns(fixture.FreezeFake<IMegaApiClient>());
 
         service = fixture.Create<MegaResourcesService>();
     }
@@ -46,7 +46,7 @@ public class MegaResourcesServiceTests : UnitTest
                 .Returns(nameof(unexpectedNode));
 
             A.CallTo(() => fixture
-                .Fake<IMegaApiClient>()
+                .FreezeFake<IMegaApiClient>()
                 .GetNodesAsync())
                 .Returns([expectedNode, unexpectedNode]);
 
@@ -69,7 +69,7 @@ public class MegaResourcesServiceTests : UnitTest
                 .Returns(nameof(unexpectedNode));
 
             A.CallTo(() => fixture
-                .Fake<IMegaApiClient>()
+                .FreezeFake<IMegaApiClient>()
                 .GetNodesAsync())
                 .Returns([expectedNode, unexpectedNode]);
 
@@ -92,7 +92,7 @@ public class MegaResourcesServiceTests : UnitTest
                 .Returns(NodeType.Directory);
 
             A.CallTo(() => fixture
-                .Fake<IMegaApiClient>()
+                .FreezeFake<IMegaApiClient>()
                 .GetNodesAsync())
                 .Returns([expectedNode, unexpectedNode]);
 
@@ -106,10 +106,10 @@ public class MegaResourcesServiceTests : UnitTest
         [Fact]
         public async Task GivenQueryWithoutFiltersShouldReturnAllResults()
         {
-            var expectedReturn = fixture.Fake<INode>(10);
+            var expectedReturn = fixture.FreezeFakes<INode>(10);
 
             A.CallTo(() => fixture
-                .Fake<IMegaApiClient>()
+                .FreezeFake<IMegaApiClient>()
                 .GetNodesAsync())
                 .Returns(expectedReturn);
 
@@ -124,11 +124,11 @@ public class MegaResourcesServiceTests : UnitTest
         [Fact]
         public async Task ShouldCallDeleteInMegaApi()
         {
-            await service.DeleteAsync(fixture.Fake<INode>());
+            await service.DeleteAsync(fixture.FreezeFake<INode>());
 
             A.CallTo(() => fixture
-                .Fake<IMegaApiClient>()
-                .DeleteAsync(fixture.Fake<INode>(), false))
+                .FreezeFake<IMegaApiClient>()
+                .DeleteAsync(fixture.FreezeFake<INode>(), false))
                 .MustHaveHappenedOnceExactly();
         }
     }

@@ -53,7 +53,7 @@ public class PublishService(
     // todo: mover para uma classe que faça mais sentido (talvez relacionada ao discord)
     private async Task<Result<string>> GetRoleAsPingText(string roleName, CancellationToken cancellationToken)
     {
-        var role = await rolesService.GetRoleFromDiscord(roleName, cancellationToken);
+        var role = await rolesService.GetRoleFromGuildAsync(roleName, cancellationToken);
         if (role.IsFailed)
             return role.ToResult();
 

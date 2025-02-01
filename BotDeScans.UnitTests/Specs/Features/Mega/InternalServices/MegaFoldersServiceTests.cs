@@ -1,7 +1,7 @@
 ﻿using AutoFixture;
 using BotDeScans.App.Features.Mega.InternalServices;
 using BotDeScans.App.Services.ExternalClients;
-using BotDeScans.UnitTests.Specs.Extensions;
+using BotDeScans.UnitTests.Extensions;
 using CG.Web.MegaApiClient;
 using FakeItEasy;
 using FluentAssertions;
@@ -19,12 +19,12 @@ public class MegaFoldersServiceTests : UnitTest
 
     public MegaFoldersServiceTests()
     {
-        fixture.Fake<MegaClient>();
-        fixture.Fake<MegaResourcesService>();
+        fixture.FreezeFake<MegaClient>();
+        fixture.FreezeFake<MegaResourcesService>();
 
         A.CallTo(() => fixture
-            .Fake<MegaClient>().Client)
-            .Returns(fixture.Fake<IMegaApiClient>());
+            .FreezeFake<MegaClient>().Client)
+            .Returns(fixture.FreezeFake<IMegaApiClient>());
 
         service = fixture.Create<MegaFoldersService>();
     }
@@ -54,7 +54,7 @@ public class MegaFoldersServiceTests : UnitTest
 
 
             A.CallTo(() => fixture
-                .Fake<IMegaApiClient>()
+                .FreezeFake<IMegaApiClient>()
                 .GetNodesAsync())
                 .Returns([
                     rootNode,
@@ -80,7 +80,7 @@ public class MegaFoldersServiceTests : UnitTest
                 .Returns(NodeType.Root);
 
             A.CallTo(() => fixture
-                .Fake<IMegaApiClient>()
+                .FreezeFake<IMegaApiClient>()
                 .GetNodesAsync())
                 .Returns([rootNode]);
 
@@ -93,7 +93,7 @@ public class MegaFoldersServiceTests : UnitTest
             service.Should().NotBe(otherServiceInstance);
 
             A.CallTo(() => fixture
-                .Fake<IMegaApiClient>()
+                .FreezeFake<IMegaApiClient>()
                 .GetNodesAsync())
                 .MustHaveHappenedOnceExactly();
         }
@@ -112,26 +112,26 @@ public class MegaFoldersServiceTests : UnitTest
     {
         public GetAsync() => 
             A.CallTo(() => fixture
-                .Fake<MegaResourcesService>()
+                .FreezeFake<MegaResourcesService>()
                 .GetResourcesAsync(
                     A<string?>.Ignored,
                     A<string?>.Ignored,
                     NodeType.Directory))
-                .Returns([fixture.Fake<INode>()]);
+                .Returns([fixture.FreezeFake<INode>()]);
 
         [Fact]
         public async Task GivenExistingSingleNodeShouldReturnIt()
         {
             var result = await service.GetAsync(fixture.Create<string>(), A.Fake<INode>());
 
-            result.Should().BeSuccess().And.HaveValue(fixture.Fake<INode>());
+            result.Should().BeSuccess().And.HaveValue(fixture.FreezeFake<INode>());
         }
 
         [Fact]
         public async Task GivenNoneExistingNodeShouldReturnNull()
         {
             A.CallTo(() => fixture
-                .Fake<MegaResourcesService>()
+                .FreezeFake<MegaResourcesService>()
                 .GetResourcesAsync(
                     A<string?>.Ignored,
                     A<string?>.Ignored,
@@ -154,12 +154,12 @@ public class MegaFoldersServiceTests : UnitTest
             A.CallTo(() => parentNode.Id).Returns(parentNodeId);
             A.CallTo(() => parentNode.Name).Returns(parentNodeName);
             A.CallTo(() => fixture
-                .Fake<MegaResourcesService>()
+                .FreezeFake<MegaResourcesService>()
                 .GetResourcesAsync(
                     folderName,
                     parentNodeId,
                     NodeType.Directory))
-                .Returns([fixture.Fake<INode>(), fixture.Fake<INode>()]);
+                .Returns([fixture.FreezeFake<INode>(), fixture.FreezeFake<INode>()]);
 
             var result = await service.GetAsync(folderName, parentNode);
 
@@ -173,11 +173,11 @@ public class MegaFoldersServiceTests : UnitTest
             [Fact]
             public async Task GivenRequestShouldCallDeleteResourceMethod()
             {
-                await service.CreateAsync(fixture.Freeze<string>(), fixture.Fake<INode>());
+                await service.CreateAsync(fixture.Freeze<string>(), fixture.FreezeFake<INode>());
 
                 A.CallTo(() => fixture
-                    .Fake<IMegaApiClient>()
-                    .CreateFolderAsync(fixture.Freeze<string>(), fixture.Fake<INode>()))
+                    .FreezeFake<IMegaApiClient>()
+                    .CreateFolderAsync(fixture.Freeze<string>(), fixture.FreezeFake<INode>()))
                     .MustHaveHappenedOnceExactly();
             }
         }
@@ -187,11 +187,11 @@ public class MegaFoldersServiceTests : UnitTest
             [Fact]
             public async Task GivenRequestShouldCallDeleteResourceMethod()
             {
-                await service.DeleteAsync(fixture.Fake<INode>());
+                await service.DeleteAsync(fixture.FreezeFake<INode>());
 
                 A.CallTo(() => fixture
-                    .Fake<MegaResourcesService>()
-                    .DeleteAsync(fixture.Fake<INode>()))
+                    .FreezeFake<MegaResourcesService>()
+                    .DeleteAsync(fixture.FreezeFake<INode>()))
                     .MustHaveHappenedOnceExactly();
             }
         }

@@ -1,4 +1,5 @@
-﻿using Bogus;
+﻿using AutoFixture;
+using BotDeScans.UnitTests.Extensions;
 using FakeItEasy;
 using Remora.Discord.API.Abstractions.Objects;
 using Remora.Discord.API.Objects;
@@ -6,63 +7,20 @@ using Remora.Discord.Commands.Contexts;
 using Remora.Rest.Core;
 namespace BotDeScans.UnitTests.Builders;
 
-public class InteractionContextBuilder
+public record InteractionContextFake : InteractionContext
 {
-    private readonly Faker faker = new();
-    private Snowflake id;
-    private Snowflake guildID;
-    private IUser user;
-    private IGuildMember member;
-    private string token;
-
-    public InteractionContextBuilder()
-    {
-        id = new Snowflake(faker.Random.ULong());
-        guildID = new Snowflake(faker.Random.ULong());
-        token = faker.Random.String();
-        user = A.Fake<IUser>();
-        member = A.Fake<IGuildMember>();
-    }
-
-    public InteractionContextBuilder WithID(Snowflake id)
-    {
-        this.id = id;
-        return this;
-    }
-
-    public InteractionContextBuilder WithGuildID(Snowflake guildID)
-    {
-        this.guildID = guildID;
-        return this;
-    }
-
-    public InteractionContextBuilder WithGuildUser(IUser user)
-    {
-        this.user = user;
-        return this;
-    }
-
-    public InteractionContextBuilder WithToken(string token)
-    {
-        this.token = token;
-        return this;
-    }
-
-    public InteractionContext Build()
-    {
-        A.CallTo(() => member.User).Returns(new Optional<IUser>(user));
-
-        return new(new Interaction(
-            ID: id,
-            ApplicationID: new Snowflake(faker.Random.ULong()),
+    public InteractionContextFake(IFixture fixture)
+        : base(new Interaction(
+            ID: fixture.Create<Snowflake>(),
+            ApplicationID: fixture.Create<Snowflake>(),
             Type: InteractionType.ApplicationCommand,
             Data: default,
-            GuildID: guildID,
+            GuildID: fixture.Create<Snowflake>(),
             Channel: default,
             ChannelID: default,
-            Member: new Optional<IGuildMember>(member),
+            Member: new Optional<IGuildMember>(fixture.FreezeFake<IGuildMember>()),
             User: default,
-            Token: token,
+            Token: fixture.Create<string>(),
             Version: 1,
             Message: default,
             AppPermissions: default!,
@@ -70,6 +28,10 @@ public class InteractionContextBuilder
             GuildLocale: default,
             Entitlements: default!,
             Context: default,
-            AuthorizingIntegrationOwners: default));
+            AuthorizingIntegrationOwners: default))
+    {
+        fixture.FreezeFake<IUser>();
+        A.CallTo(() => fixture.FreezeFake<IGuildMember>().User)
+            .Returns(new Optional<IUser>(fixture.FreezeFake<IUser>()));
     }
 }

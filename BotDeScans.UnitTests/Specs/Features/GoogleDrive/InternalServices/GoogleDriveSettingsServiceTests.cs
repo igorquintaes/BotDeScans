@@ -3,7 +3,7 @@ using BotDeScans.App.Features.GoogleDrive;
 using BotDeScans.App.Features.GoogleDrive.InternalServices;
 using BotDeScans.App.Models;
 using BotDeScans.App.Services.ExternalClients;
-using BotDeScans.UnitTests.Specs.Extensions;
+using BotDeScans.UnitTests.Extensions;
 using FakeItEasy;
 using FluentAssertions;
 using FluentAssertions.Execution;
@@ -23,9 +23,9 @@ public class GoogleDriveSettingsServiceTests : UnitTest
 
     public GoogleDriveSettingsServiceTests()
     {
-        fixture.Fake<GoogleDriveClient>();
-        fixture.Fake<GoogleDriveWrapper>();
-        fixture.Fake<GoogleDriveFoldersService>();
+        fixture.FreezeFake<GoogleDriveClient>();
+        fixture.FreezeFake<GoogleDriveWrapper>();
+        fixture.FreezeFake<GoogleDriveFoldersService>();
 
         service = fixture.Create<GoogleDriveSettingsService>();
     }
@@ -35,7 +35,7 @@ public class GoogleDriveSettingsServiceTests : UnitTest
         public SetUpBaseFolderAsync()
         {
             A.CallTo(() => fixture
-                .Fake<GoogleDriveFoldersService>()
+                .FreezeFake<GoogleDriveFoldersService>()
                 .GetAsync(
                     GoogleDriveSettingsService.BASE_FOLDER_NAME,
                     GoogleDriveSettingsService.ROOT_FOLDER_NAME,
@@ -43,12 +43,12 @@ public class GoogleDriveSettingsServiceTests : UnitTest
                 .Returns(Result.Ok<File?>(default));
 
             A.CallTo(() => fixture
-                .Fake<GoogleDriveFoldersService>()
+                .FreezeFake<GoogleDriveFoldersService>()
                 .CreateAsync(
                     GoogleDriveSettingsService.BASE_FOLDER_NAME,
                     GoogleDriveSettingsService.ROOT_FOLDER_NAME,
                     cancellationToken))
-                .Returns(fixture.Fake<File>());
+                .Returns(fixture.FreezeFake<File>());
         }
 
         [Fact]
@@ -58,10 +58,10 @@ public class GoogleDriveSettingsServiceTests : UnitTest
 
             using var _ = new AssertionScope();
             result.Should().BeSuccess();
-            GoogleDriveSettingsService.BaseFolderId.Should().Be(fixture.Fake<File>().Id);
+            GoogleDriveSettingsService.BaseFolderId.Should().Be(fixture.FreezeFake<File>().Id);
 
             A.CallTo(() => fixture
-                .Fake<GoogleDriveFoldersService>()
+                .FreezeFake<GoogleDriveFoldersService>()
                 .CreateAsync(
                     GoogleDriveSettingsService.BASE_FOLDER_NAME,
                     GoogleDriveSettingsService.ROOT_FOLDER_NAME,
@@ -73,21 +73,21 @@ public class GoogleDriveSettingsServiceTests : UnitTest
         public async Task GivenSuccessfulExecutionWithExistingFolderShouldReturnSuccess()
         {
             A.CallTo(() => fixture
-                .Fake<GoogleDriveFoldersService>()
+                .FreezeFake<GoogleDriveFoldersService>()
                 .GetAsync(
                     GoogleDriveSettingsService.BASE_FOLDER_NAME,
                     GoogleDriveSettingsService.ROOT_FOLDER_NAME,
                     cancellationToken))
-                .Returns(fixture.Fake<File>());
+                .Returns(fixture.FreezeFake<File>());
 
             var result = await service.SetUpBaseFolderAsync(cancellationToken);
 
             using var _ = new AssertionScope();
             result.Should().BeSuccess();
-            GoogleDriveSettingsService.BaseFolderId.Should().Be(fixture.Fake<File>().Id);
+            GoogleDriveSettingsService.BaseFolderId.Should().Be(fixture.FreezeFake<File>().Id);
 
             A.CallTo(() => fixture
-                .Fake<GoogleDriveFoldersService>()
+                .FreezeFake<GoogleDriveFoldersService>()
                 .CreateAsync(
                     A<string>.Ignored,
                     A<string>.Ignored,
@@ -101,7 +101,7 @@ public class GoogleDriveSettingsServiceTests : UnitTest
             const string ERROR_MESSAGE = "some error";
 
             A.CallTo(() => fixture
-                .Fake<GoogleDriveFoldersService>()
+                .FreezeFake<GoogleDriveFoldersService>()
                 .GetAsync(
                     GoogleDriveSettingsService.BASE_FOLDER_NAME,
                     GoogleDriveSettingsService.ROOT_FOLDER_NAME,
@@ -119,7 +119,7 @@ public class GoogleDriveSettingsServiceTests : UnitTest
             const string ERROR_MESSAGE = "some error";
 
             A.CallTo(() => fixture
-                .Fake<GoogleDriveFoldersService>()
+                .FreezeFake<GoogleDriveFoldersService>()
                 .CreateAsync(
                     GoogleDriveSettingsService.BASE_FOLDER_NAME,
                     GoogleDriveSettingsService.ROOT_FOLDER_NAME,
@@ -137,16 +137,16 @@ public class GoogleDriveSettingsServiceTests : UnitTest
         public GetConsumptionDataAsync()
         {
             A.CallTo(() => fixture
-                .Fake<GoogleDriveClient>().Client)
-                .Returns(fixture.Fake<DriveService>());
+                .FreezeFake<GoogleDriveClient>().Client)
+                .Returns(fixture.FreezeFake<DriveService>());
 
             A.CallTo(() => fixture
-                .Fake<DriveService>().About)
-                .Returns(fixture.Fake<AboutResource>());
+                .FreezeFake<DriveService>().About)
+                .Returns(fixture.FreezeFake<AboutResource>());
 
             A.CallTo(() => fixture
-                .Fake<AboutResource>().Get())
-                .Returns(fixture.Fake<GetRequest>());
+                .FreezeFake<AboutResource>().Get())
+                .Returns(fixture.FreezeFake<GetRequest>());
         }
 
         [Fact]
@@ -162,8 +162,8 @@ public class GoogleDriveSettingsServiceTests : UnitTest
                 .Create();
 
             A.CallTo(() => fixture
-                .Fake<GoogleDriveWrapper>()
-                .ExecuteAsync(fixture.Fake<GetRequest>(), cancellationToken))
+                .FreezeFake<GoogleDriveWrapper>()
+                .ExecuteAsync(fixture.FreezeFake<GetRequest>(), cancellationToken))
                 .Returns(about);
 
             var result = await service.GetConsumptionDataAsync(cancellationToken);
@@ -177,8 +177,8 @@ public class GoogleDriveSettingsServiceTests : UnitTest
             const string ERROR_MESSAGE = "some error";
 
             A.CallTo(() => fixture
-                .Fake<GoogleDriveWrapper>()
-                .ExecuteAsync(fixture.Fake<GetRequest>(), cancellationToken))
+                .FreezeFake<GoogleDriveWrapper>()
+                .ExecuteAsync(fixture.FreezeFake<GetRequest>(), cancellationToken))
                 .Returns(Result.Fail(ERROR_MESSAGE));
 
             var result = await service.GetConsumptionDataAsync(cancellationToken);

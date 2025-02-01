@@ -11,5 +11,5 @@ public abstract class UnitTest
 {
     protected readonly IFixture fixture = new Fixture().Customize(new AutoFakeItEasyCustomization());
     protected readonly Faker dataGenerator = new();
-    protected CancellationToken cancellationToken = new();
+    protected CancellationToken cancellationToken = TestContext.Current.CancellationToken;
 }

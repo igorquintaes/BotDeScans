@@ -5,10 +5,11 @@ using FluentResults;
 using FluentValidation.Results;
 using Google;
 using MangaDexSharp;
+using System.Text.Json;
 
 namespace BotDeScans.App.Extensions;
 
-public static class ResultExtensions
+public static class FluentResultExtensions
 {
     public static Result WithConditionalError(this Result result, Func<bool> conditionToAddError, string error)
         => conditionToAddError.Invoke()
@@ -63,6 +64,13 @@ public static class ResultExtensions
         return false;
     }
 
+    public static Remora.Results.InvalidOperationError ToDiscordError(this List<IError> errors)
+    {
+        var errorsInfo = errors.GetErrorsInfo();
+        var errorsInfoAsString = JsonSerializer.Serialize(errorsInfo);
+        return new Remora.Results.InvalidOperationError(errorsInfoAsString);
+    }
+
     public static async Task<Remora.Results.IResult> PostErrorOnDiscord(this Result result, ExtendedFeedbackService feedbackService, CancellationToken cancellationToken)
     {
         // todo: tirar daqui. Mesma classe que EmbedBuilder.HandleTasksAndUpdateMessage, que também precisa mover. E usar IoC pro service
@@ -79,5 +87,5 @@ public static class ResultExtensions
     private static IEnumerable<Error> GetErrors(MangaDexError[] mangaDexErrors)
         => mangaDexErrors.Length > 0
             ? mangaDexErrors.Select(x => new Error($"{x.Status} - {x.Title} - {x.Detail}"))
-            : (IEnumerable<Error>)([new Error("Generic error")]);
+            : ([new Error("Generic error")]);
 }

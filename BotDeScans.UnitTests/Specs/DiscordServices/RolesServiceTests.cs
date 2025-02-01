@@ -1,135 +1,95 @@
-﻿using AutoBogus;
+﻿using AutoFixture;
 using BotDeScans.App.Services.Discord;
 using BotDeScans.UnitTests.Extensions;
+using FakeItEasy;
 using FluentAssertions;
 using FluentResults.Extensions.FluentAssertions;
+using Microsoft.Extensions.Configuration;
 using Remora.Discord.API.Abstractions.Objects;
+using Remora.Discord.API.Abstractions.Rest;
 using Remora.Discord.API.Objects;
 using Remora.Rest.Core;
+using Remora.Results;
 using System.Collections.Generic;
-using System.Linq;
+using System.Threading.Tasks;
 using Xunit;
 namespace BotDeScans.UnitTests.Specs.DiscordServices;
 
 public class RolesServiceTests : UnitTest
 {
-    private readonly RolesService service = new(null!, null!);
+    private readonly RolesService service;
 
-    public class ContainsAtLeastOneOfExpectedRoles : RolesServiceTests
+    public RolesServiceTests()
     {
-        private readonly IEnumerable<string> requiredRoles;
-        private readonly IEnumerable<IRole> guildRoles;
-        private readonly IEnumerable<Snowflake> userRoles;
+        fixture.FreezeFake<IConfiguration>();
+        fixture.FreezeFake<IDiscordRestGuildAPI>();
+        fixture.Inject<IRole>(fixture.Create<Role>());
 
-        public ContainsAtLeastOneOfExpectedRoles()
+        A.CallTo(() => fixture
+            .FreezeFake<IConfiguration>()
+            .GetSection(RolesService.DISCORD_SERVERID_KEY))
+            .Returns(fixture.FreezeFake<IConfigurationSection>());
+
+        A.CallTo(() => fixture
+            .FreezeFake<IConfigurationSection>().Value)
+            .Returns(fixture.Create<ulong>().ToString());
+
+        A.CallTo(() => fixture
+            .FreezeFake<IDiscordRestGuildAPI>()
+            .GetGuildRolesAsync(A<Snowflake>.Ignored, cancellationToken))
+            .Returns(Result<IReadOnlyList<IRole>>.FromSuccess([fixture.Freeze<IRole>()]));
+
+        service = fixture.Create<RolesService>();
+    }
+
+    public class GetRoleFromGuildAsync : RolesServiceTests
+    {
+        [Fact]
+        public async Task GivenSuccessSearchByNameShouldReturnSuccessResultWithRoles()
         {
-            guildRoles = AutoFaker.Generate<Role>(2);
-            requiredRoles = guildRoles.Select(x => x.Name);
-            userRoles = guildRoles.Select(x => x.ID).ToList();
-        }
+            var result = await service.GetRoleFromGuildAsync(
+                fixture.Freeze<IRole>().Name,
+                cancellationToken);
 
-        [Theory]
-        [InlineData("guildRole1")]
-        [InlineData("guildRole1", "guildRole2")]
-        public void ShouldReturnErrorWhenNotFoundGuildRolesWithExpectedNames(params string[] guildRolesNames)
-        {
-            var roles = new List<IRole>();
-            var guildRoles = guildRolesNames
-                .Select(roleName => new AutoFaker<Role>()
-                .RuleFor(role => role.Name, roleName)
-                .Generate());
-
-            roles.AddRange(guildRoles);
-
-            var expectedErrorMessage = $"Invalid request. No role(s) found in server; {string.Join(", ", requiredRoles)}";
-
-            var result = service.ContainsAtLeastOneOfExpectedRoles(
-                requiredRoles,
-                guildRoles,
-                userRoles);
-
-            result.Should().BeFailure().And.HaveError(expectedErrorMessage);
+            result.Should().BeSuccess().And.HaveValue(fixture.Freeze<IRole>());
         }
 
         [Fact]
-        public void ShouldReturnErrorWhenThereIsNoneRoleRegisteredInServerAndCommandNeedsARole()
+        public async Task GivenSuccessSearchByIdShouldReturnSuccessResultWithRoles()
         {
-            var result = service.ContainsAtLeastOneOfExpectedRoles(
-                requiredRoles,
-                new List<Role>(),
-                userRoles);
+            var result = await service.GetRoleFromGuildAsync(
+                fixture.Freeze<IRole>().ID.ToString(),
+                cancellationToken);
 
-            var errorMessage = $"Invalid request. No role(s) found in server; {string.Join(", ", requiredRoles)}";
-            result.Should().BeFailure().And.HaveError(errorMessage);
-        }
-
-        [Theory]
-        [InlineData(0)]
-        [InlineData(1)]
-        [InlineData(2)]
-        public void ShouldReturnFalseWhenGuildMemberIsNotRelatedWithAnyExpectedRoles(int guildMemberRolesQuantity)
-        {
-            var rolesIDs = dataGenerator.Random.Snowflake(guildMemberRolesQuantity);
-            var result = service.ContainsAtLeastOneOfExpectedRoles(
-                requiredRoles,
-                guildRoles,
-                rolesIDs);
-
-            result.Should().BeSuccess().And.HaveValue(false);
+            result.Should().BeSuccess().And.HaveValue(fixture.Freeze<IRole>());
         }
 
         [Fact]
-        public void ShouldReturnTrueWhenGuildMemberHasExactlyOneOfExpectedSingleRole()
+        public async Task GivenErroroGetGuildRolesFromApiShouldReturnFailResult()
         {
-            var randomRole = dataGenerator.PickRandom(guildRoles);
-            var requiredRoles = new[] { randomRole.Name };
+            const string ERROR_MESSAGE = "error message";
 
-            var result = service.ContainsAtLeastOneOfExpectedRoles(
-                requiredRoles,
-                guildRoles,
-                new List<Snowflake> { randomRole.ID });
+            A.CallTo(() => fixture
+               .FreezeFake<IDiscordRestGuildAPI>()
+                .GetGuildRolesAsync(A<Snowflake>.Ignored, cancellationToken))
+                .Returns(Result<IReadOnlyList<IRole>>.FromError(new InvalidOperationError(ERROR_MESSAGE)));
 
-            result.Should().BeSuccess().And.HaveValue(true);
+            var result = await service.GetRoleFromGuildAsync(
+                fixture.Freeze<IRole>().Name,
+                cancellationToken);
+
+            result.Should().BeFailure().And.HaveError(ERROR_MESSAGE);
         }
 
         [Fact]
-        public void ShouldReturnTrueWhenGuildMemberHasExactlyOneOfExpectedMultipleRoles()
+        public async Task GivenNotFoundRoleShouldReturnFailResult()
         {
-            var randomRole = dataGenerator.PickRandom(guildRoles);
-            var result = service.ContainsAtLeastOneOfExpectedRoles(
-                requiredRoles,
-                guildRoles,
-                new List<Snowflake> { randomRole.ID });
+            var roleToGet = fixture.Create<string>();
+            var result = await service.GetRoleFromGuildAsync(
+                roleToGet,
+                cancellationToken);
 
-            result.Should().BeSuccess().And.HaveValue(true);
-        }
-
-        [Fact]
-        public void ShouldReturnTrueWhenGuildMemberHasOneOfExpectedRolesAndOtherNonRelatedRole()
-        {
-
-            var randomRole = dataGenerator.PickRandom(guildRoles);
-            var requiredRoles = new[] { randomRole.Name };
-            var result = service.ContainsAtLeastOneOfExpectedRoles(
-                requiredRoles,
-                guildRoles,
-                new List<Snowflake> { randomRole.ID, dataGenerator.Random.Snowflake() });
-
-            result.Should().BeSuccess().And.HaveValue(true);
-        }
-
-        [Fact]
-        public void ShouldReturnTrueWhenGuildMemberHasMoreThanOneOfExpectedRolesAndOtherNonRelatedRole()
-        {
-            var guildMemberRolesIDs = guildRoles.Select(x => x.ID).ToList();
-            guildMemberRolesIDs.Add(dataGenerator.Random.Snowflake());
-
-            var result = service.ContainsAtLeastOneOfExpectedRoles(
-                requiredRoles,
-                guildRoles,
-                guildMemberRolesIDs);
-
-            result.Should().BeSuccess().And.HaveValue(true);
+            result.Should().BeFailure().And.HaveError($"Cargo não encontrado no servidor: {roleToGet}");
         }
     }
 }

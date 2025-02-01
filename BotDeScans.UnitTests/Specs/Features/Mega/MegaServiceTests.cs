@@ -1,7 +1,7 @@
 ﻿using AutoFixture;
 using BotDeScans.App.Features.Mega;
 using BotDeScans.App.Features.Mega.InternalServices;
-using BotDeScans.UnitTests.Specs.Extensions;
+using BotDeScans.UnitTests.Extensions;
 using CG.Web.MegaApiClient;
 using FakeItEasy;
 using FluentAssertions;
@@ -18,9 +18,9 @@ public class MegaServiceTests : UnitTest
 
     public MegaServiceTests()
     {
-        fixture.Fake<MegaFilesService>();
-        fixture.Fake<MegaFoldersService>();
-        fixture.Fake<IConfiguration>();
+        fixture.FreezeFake<MegaFilesService>();
+        fixture.FreezeFake<MegaFoldersService>();
+        fixture.FreezeFake<IConfiguration>();
 
         service = fixture.Create<MegaService>();
     }
@@ -30,14 +30,14 @@ public class MegaServiceTests : UnitTest
         public GetOrCreateFolderAsync()
         {
             A.CallTo(() => fixture
-                .Fake<MegaFoldersService>()
+                .FreezeFake<MegaFoldersService>()
                 .GetAsync(A<string>.Ignored, A<INode>.Ignored))
                 .Returns(Result.Ok(null as INode));
 
             A.CallTo(() => fixture
-                .Fake<MegaFoldersService>()
+                .FreezeFake<MegaFoldersService>()
                 .CreateAsync(A<string>.Ignored, A<INode>.Ignored))
-                .Returns(fixture.Fake<INode>());
+                .Returns(fixture.FreezeFake<INode>());
         }
 
         [Fact]
@@ -45,7 +45,7 @@ public class MegaServiceTests : UnitTest
         {
             var result = await service.GetOrCreateFolderAsync(fixture.Create<string>(), fixture.Create<INode>());
 
-            result.Should().BeSuccess().And.HaveValue(fixture.Fake<INode>());
+            result.Should().BeSuccess().And.HaveValue(fixture.FreezeFake<INode>());
         }
 
         [Fact]
@@ -56,7 +56,7 @@ public class MegaServiceTests : UnitTest
             var existingNode = fixture.Create<INode>();
 
             A.CallTo(() => fixture
-                .Fake<MegaFoldersService>()
+                .FreezeFake<MegaFoldersService>()
                 .GetAsync(folderName, parentNode))
                 .Returns(Result.Ok<INode?>(existingNode));
 
@@ -65,7 +65,7 @@ public class MegaServiceTests : UnitTest
             result.Should().BeSuccess().And.HaveValue(existingNode);
 
             A.CallTo(() => fixture
-                .Fake<MegaFoldersService>()
+                .FreezeFake<MegaFoldersService>()
                 .CreateAsync(folderName, parentNode))
                 .MustNotHaveHappened();
         }
@@ -78,7 +78,7 @@ public class MegaServiceTests : UnitTest
             var parentNode = fixture.Create<INode>();
 
             A.CallTo(() => fixture
-                .Fake<MegaFoldersService>()
+                .FreezeFake<MegaFoldersService>()
                 .GetAsync(folderName, parentNode))
                 .Returns(Result.Fail(ERROR_MESSAGE));
 
