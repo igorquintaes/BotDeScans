@@ -6,9 +6,7 @@ using CG.Web.MegaApiClient;
 using FakeItEasy;
 using FluentAssertions;
 using FluentAssertions.Execution;
-using System;
 using System.Linq;
-using System.Reflection;
 using System.Threading.Tasks;
 using Xunit;
 

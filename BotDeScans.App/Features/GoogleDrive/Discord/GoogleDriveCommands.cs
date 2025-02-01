@@ -124,7 +124,7 @@ public class GoogleDriveCommands(
                 return await downloadResult.PostErrorOnDiscord(feedbackService, CancellationToken);
 
             return await feedbackService.SendContextualEmbedAsync(
-                EmbedBuilder.CreateSuccessEmbed($"Funcionando."), 
+                EmbedBuilder.CreateSuccessEmbed($"Funcionando."),
                 ct: CancellationToken);
         }
 
@@ -147,7 +147,7 @@ public class GoogleDriveCommands(
                 return await createFileResult.PostErrorOnDiscord(feedbackService, CancellationToken);
 
             return await feedbackService.SendContextualEmbedAsync(
-                EmbedBuilder.CreateSuccessEmbed($"Funcionando."), 
+                EmbedBuilder.CreateSuccessEmbed($"Funcionando."),
                 ct: CancellationToken);
         }
     }

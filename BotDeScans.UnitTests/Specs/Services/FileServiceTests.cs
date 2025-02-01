@@ -1,9 +1,6 @@
 ﻿using BotDeScans.App.Services;
 using FluentAssertions;
 using FluentResults.Extensions.FluentAssertions;
-using iText.Kernel.Pdf;
-using iText.Layout;
-using Remora.Discord.API.Abstractions.Rest;
 using System;
 using System.IO;
 using System.IO.Compression;
@@ -74,7 +71,7 @@ public class FileServiceTests : UnitTest
         public void ShouldReturnZipPath()
         {
             var expectedPath = Path.Combine(
-                destinationDirectory, 
+                destinationDirectory,
                 "fileName.zip");
 
             var result = service.CreateZipFile(

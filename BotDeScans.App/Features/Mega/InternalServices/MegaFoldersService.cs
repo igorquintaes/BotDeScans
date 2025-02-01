@@ -36,9 +36,9 @@ public class MegaFoldersService(
             : Result.Ok(resources.SingleOrDefault());
     }
 
-    public virtual async Task<INode> CreateAsync(string folderName, INode parentNode) 
+    public virtual async Task<INode> CreateAsync(string folderName, INode parentNode)
         => await megaApiClient.CreateFolderAsync(folderName, parentNode);
 
-    public virtual async Task DeleteAsync(INode folderNode) 
+    public virtual async Task DeleteAsync(INode folderNode)
         => await megaResourcesService.DeleteAsync(folderNode);
 }

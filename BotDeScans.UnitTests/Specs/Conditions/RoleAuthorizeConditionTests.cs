@@ -58,7 +58,7 @@ public class RoleAuthorizeConditionTests : UnitTest
         public async Task GivenSuccessfulCallShouldReturnSuccess()
         {
             var result = await condition.CheckAsync(
-                new RoleAuthorizeAttribute(fixture.FreezeFake<IRole>().Name), 
+                new RoleAuthorizeAttribute(fixture.FreezeFake<IRole>().Name),
                 cancellationToken);
 
             result.IsSuccess.Should().BeTrue();

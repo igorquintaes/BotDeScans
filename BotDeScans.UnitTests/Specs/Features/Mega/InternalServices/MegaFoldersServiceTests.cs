@@ -110,7 +110,7 @@ public class MegaFoldersServiceTests : UnitTest
 
     public class GetAsync : MegaFoldersServiceTests
     {
-        public GetAsync() => 
+        public GetAsync() =>
             A.CallTo(() => fixture
                 .FreezeFake<MegaResourcesService>()
                 .GetResourcesAsync(

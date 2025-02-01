@@ -124,8 +124,8 @@ public class MegaFilesServiceTests : UnitTest
                 .Returns(fixture.FreezeFake<Uri>());
 
             var result = await service.UploadAsync(
-                filePath, 
-                parentNode, 
+                filePath,
+                parentNode,
                 CancellationToken.None);
 
             result.Should().Be(fixture.FreezeFake<Uri>());
