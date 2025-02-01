@@ -1,11 +1,14 @@
 ﻿using BotDeScans.App.Services;
 using FluentAssertions;
+using FluentResults.Extensions.FluentAssertions;
+using iText.Kernel.Pdf;
+using iText.Layout;
+using Remora.Discord.API.Abstractions.Rest;
 using System;
 using System.IO;
 using System.IO.Compression;
 using System.Linq;
 using System.Reflection;
-using System.Text;
 using System.Threading.Tasks;
 using Xunit;
 namespace BotDeScans.UnitTests.Specs.Services;
@@ -44,12 +47,11 @@ public class FileServiceTests : UnitTest
                 Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)!,
                 nameof(CreateZipFile) + "-destination-test");
 
-        private const string zipFileName = "file.zip";
-
         public CreateZipFile()
         {
             if (Directory.Exists(destinationDirectory))
                 Directory.Delete(destinationDirectory, true);
+
             if (Directory.Exists(resourcesDirectory))
                 Directory.Delete(resourcesDirectory, true);
 
@@ -60,36 +62,38 @@ public class FileServiceTests : UnitTest
         [Fact]
         public void ShouldCreateZipInExpectedDirectory()
         {
-            service.CreateZipFile(
-                zipFileName,
+            var result = service.CreateZipFile(
+                "fileName",
                 resourcesDirectory,
                 destinationDirectory);
 
-            File.Exists(Path.Combine(destinationDirectory, zipFileName)).Should().BeTrue();
+            File.Exists(result.Value).Should().BeTrue();
         }
 
         [Fact]
-        public void ShouldThrowExceptionIfFileNameExtensionIsNotZip()
+        public void ShouldReturnZipPath()
         {
-            Action action = () => service.CreateZipFile(
-                "file.extension",
+            var expectedPath = Path.Combine(
+                destinationDirectory, 
+                "fileName.zip");
+
+            var result = service.CreateZipFile(
+                "fileName",
                 resourcesDirectory,
                 destinationDirectory);
 
-            action.Should().ThrowExactly<ArgumentException>()
-                .WithMessage("Desired zip file name must has .zip extension.");
+            result.Should().BeSuccess().And.HaveValue(expectedPath);
         }
 
         [Fact]
-        public void ShouldThrowExceptionIfResourcesDirectoryIsSameThanDestinationDirectory()
+        public void ShouldReturnFailResultIfResourcesDirectoryIsSameThanDestinationDirectory()
         {
-            Action action = () => service.CreateZipFile(
-                zipFileName,
-                resourcesDirectory.ToUpper(),
-                resourcesDirectory.ToLower());
+            var result = service.CreateZipFile(
+                "fileName",
+                resourcesDirectory.ToLower(),
+                resourcesDirectory.ToUpper());
 
-            action.Should().ThrowExactly<ArgumentException>()
-                .WithMessage("Source and destination directories should not be the same.");
+            result.Should().BeFailure().And.HaveError("Source and destination directories should not be the same.");
         }
 
         [Fact]
@@ -98,14 +102,12 @@ public class FileServiceTests : UnitTest
             File.Create(Path.Combine(resourcesDirectory, "01.png")).Dispose();
             File.Create(Path.Combine(resourcesDirectory, "02.png")).Dispose();
 
-            service.CreateZipFile(
-                zipFileName,
+            var result = service.CreateZipFile(
+                "fileName",
                 resourcesDirectory,
                 destinationDirectory);
 
-            using var zipFile = ZipFile.Open(
-                Path.Combine(destinationDirectory, zipFileName),
-                ZipArchiveMode.Read);
+            using var zipFile = ZipFile.Open(result.Value, ZipArchiveMode.Read);
 
             var filesInsideZipFile = zipFile.Entries
                 .Select(x => x.Name)
@@ -123,29 +125,71 @@ public class FileServiceTests : UnitTest
         }
     }
 
-    public class CreateFileAsync : FileServiceTests, IDisposable
+    public class CreatePdfFileAsync : FileServiceTests, IDisposable
     {
-        private static readonly string fileName =
+        private static readonly string resourcesDirectory =
             Path.Combine(
                 Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)!,
-                "file-name.txt");
+                nameof(CreatePdfFileAsync) + "-resources-test");
+
+        private static readonly string destinationDirectory =
+            Path.Combine(
+                Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)!,
+                nameof(CreatePdfFileAsync) + "-destination-test");
+
+        public CreatePdfFileAsync()
+        {
+            if (Directory.Exists(destinationDirectory))
+                Directory.Delete(destinationDirectory, true);
+
+            if (Directory.Exists(resourcesDirectory))
+                Directory.Delete(resourcesDirectory, true);
+
+            Directory.CreateDirectory(resourcesDirectory);
+            Directory.CreateDirectory(destinationDirectory);
+        }
 
         [Fact]
-        public async Task ShouldCreateExpectedFile()
+        public async Task ShouldCreatePdfInExpectedDirectory()
         {
-            var fileContentAsString = dataGenerator.Lorem.Paragraph();
-            var fileContentAsByteArray = Encoding.UTF8.GetBytes(fileContentAsString);
+            var result = await service.CreatePdfFileAsync(
+                "fileName",
+                resourcesDirectory,
+                destinationDirectory);
 
-            await service.CreateFileAsync(fileContentAsByteArray, fileName);
+            File.Exists(result.Value).Should().BeTrue();
+        }
 
-            File.ReadAllText(fileName, Encoding.UTF8).Should().Be(fileContentAsString);
+        [Fact]
+        public async Task ShouldReturnPdfPath()
+        {
+            var expectedPath = Path.Combine(
+                destinationDirectory,
+                "fileName.pdf");
+
+            var result = await service.CreatePdfFileAsync(
+                "fileName",
+                resourcesDirectory,
+                destinationDirectory);
+
+            result.Should().BeSuccess().And.HaveValue(expectedPath);
+        }
+
+        [Fact]
+        public async Task ShouldReturnFailResultIfResourcesDirectoryIsSameThanDestinationDirectory()
+        {
+            var result = await service.CreatePdfFileAsync(
+                "fileName",
+                resourcesDirectory.ToLower(),
+                resourcesDirectory.ToUpper());
+
+            result.Should().BeFailure().And.HaveError("Source and destination directories should not be the same.");
         }
 
         public void Dispose()
         {
-            if (File.Exists(fileName))
-                File.Delete(fileName);
-
+            Directory.Delete(destinationDirectory, true);
+            Directory.Delete(resourcesDirectory, true);
             GC.SuppressFinalize(this);
         }
     }

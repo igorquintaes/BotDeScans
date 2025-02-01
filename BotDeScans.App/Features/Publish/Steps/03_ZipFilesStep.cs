@@ -24,11 +24,15 @@ public class ZipFilesStep(
         var fileService = serviceProvider.GetRequiredService<FileService>();
         var fileReleaseService = serviceProvider.GetRequiredService<FileReleaseService>();
 
-        state.InternalData.ZipFilePath = fileService.CreateZipFile(
-            fileName: $"{state.ReleaseInfo.ChapterNumber}.zip",
+        var zipFileResult = fileService.CreateZipFile(
+            fileName: state.ReleaseInfo.ChapterNumber,
             resourcesDirectory: state.InternalData.OriginContentFolder,
             destinationDirectory: fileReleaseService.CreateScopedDirectory());
 
+        if (zipFileResult.IsFailed)
+            return Task.FromResult(zipFileResult.ToResult());
+
+        state.InternalData.ZipFilePath = zipFileResult.Value;
         return Task.FromResult(Result.Ok());
     }
 }
