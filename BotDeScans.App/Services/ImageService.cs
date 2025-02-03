@@ -89,25 +89,33 @@ public class ImageService(IConfiguration configuration)
     {
         //Load image
         var image = Image.Load<Rgba32>(filePath);
-        for (int y = 0; y < image.Height; y++)
+        bool isGrayscale = true;
+
+        // Process Pixel
+        // source: https://github.com/SixLabors/ImageSharp/issues/1739
+        image.ProcessPixelRows(accessor =>
         {
-            // Get the row of pixels
-            Memory<Rgba32> row = image.DangerousGetPixelRowMemory(y);
-            Span<Rgba32> data = row.Span;
-
-            for (int x = 0; x < image.Width; x++)
+            for (int y = 0; y < accessor.Height; y++)
             {
-                var pixel = data[x];
+                var pixelRow = accessor.GetRowSpan(y);
 
-                if (pixel.A == 0)
-                    continue;
+                for (int x = 0; x < accessor.Width; x++)
+                {
+                    var pixel = pixelRow[x];
 
-                if (GetRgbDelta(pixel.R, pixel.G, pixel.B) > threshold)
-                    return false;
+                    if (pixel.A == 0) // Ignore fully transparent pixels
+                        continue;
+
+                    if (GetRgbDelta(pixel.R, pixel.G, pixel.B) > threshold)
+                    {
+                        isGrayscale = false;
+                        return;
+                    }
+                }
             }
-        }
+        });
 
-        return true;
+        return isGrayscale;
 
         static int GetRgbDelta(byte r, byte g, byte b)
             => Math.Abs(r - g) +
