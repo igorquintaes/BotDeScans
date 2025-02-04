@@ -51,16 +51,18 @@ jobs:
 
     - name: Add Coverage PR Comment
       uses: marocchino/sticky-pull-request-comment@v2
-      if: github.event_name == 'pull_request' && (success() || steps.test.conclusion == 'failure' || steps.report.conclusion == 'failure')
+      if: github.event_name == 'pull_request' && github.repository == 'igorquintaes/BotDeScans' && (success() || steps.test.conclusion == 'failure' || steps.report.conclusion == 'failure')
       with:
         recreate: true
         path: code-coverage-results.md
         
     - name: dotnet publish
+      if: github.repository == 'igorquintaes/BotDeScans'
       run: dotnet publish BotDeScans.App/BotDeScans.App.csproj  -c Release -r win-x64 -p:PublishSingleFile=true --self-contained true -p:PublishReadyToRunShowWarnings=true -o ${{env.DOTNET_ROOT}}/BotDeScans
 
     - name: Upload artifact for deployment job
       uses: actions/upload-artifact@v4
+      if: github.repository == 'igorquintaes/BotDeScans'
       with:
         name: BotDeScans
         path: ${{env.DOTNET_ROOT}}
