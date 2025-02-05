@@ -4,6 +4,7 @@ using FluentResults;
 using Google.Apis.Blogger.v3;
 using Google.Apis.Blogger.v3.Data;
 using Microsoft.Extensions.Configuration;
+using Remora.Discord.API.Abstractions.Rest;
 using System.Text.RegularExpressions;
 namespace BotDeScans.App.Services;
 
@@ -53,7 +54,10 @@ public partial class GoogleBloggerService(
         if (templateResult.IsFailed)
             return templateResult;
 
-        var cover = await imageService.CreateBase64File(publishState.InternalData.CoverFilePath, 200, 300, cancellationToken);
+        var coverPath = publishState.InternalData.CoverFilePath;
+        var isGrayScale = imageService.IsGrayscale(coverPath);
+        var cover = await imageService.CreateBase64String(coverPath, 200, 300, isGrayScale, cancellationToken);
+
         return ReplaceTemplateKeys(templateResult.Value, publishState, cover);
     }
 
