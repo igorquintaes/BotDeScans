@@ -4,7 +4,6 @@ using FluentResults;
 using Google.Apis.Blogger.v3;
 using Google.Apis.Blogger.v3.Data;
 using Microsoft.Extensions.Configuration;
-using Remora.Discord.API.Abstractions.Rest;
 using System.Text.RegularExpressions;
 namespace BotDeScans.App.Services;
 

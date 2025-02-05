@@ -11,7 +11,6 @@ using System.IO;
 using System.Reflection;
 using System.Threading.Tasks;
 using Xunit;
-using static BotDeScans.UnitTests.Specs.Services.ImageServiceTests;
 
 namespace BotDeScans.UnitTests.Specs.Services;
 
