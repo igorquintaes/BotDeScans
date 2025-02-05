@@ -14,17 +14,15 @@ public class ImageService(IConfiguration configuration)
     {
         var (quality, minQuality) = GetImageQuality(isGrayscale);
         var imageBytes = await TryCompressAsync(filePath, quality, minQuality);
-        if (imageBytes == null)
-            return;
 
         using var stream = File.Create(Path.ChangeExtension(filePath, ".png"));
-        await stream.WriteAsync(imageBytes.Value, cancellationToken);
+        await stream.WriteAsync(imageBytes, cancellationToken);
 
         if (Path.GetExtension(filePath) != ".png")
             File.Delete(filePath);
     }
 
-    public virtual async Task<string> CreateBase64String(
+    public virtual async Task<string> CreateBase64StringAsync(
         string filePath,
         int maxWidth,
         int maxHeight,
@@ -35,7 +33,7 @@ public class ImageService(IConfiguration configuration)
         var (quality, minQuality) = GetImageQuality(isGrayscale);
         var imageBytes = await TryCompressAsync(filePath, quality, minQuality, command);
 
-        return Convert.ToBase64String(imageBytes ?? throw new Exception("Unable to convert image to base64"));
+        return Convert.ToBase64String(imageBytes);
     }
 
     /// <summary>
@@ -53,9 +51,6 @@ public class ImageService(IConfiguration configuration)
         foreach (var row in image.GetPixelMemoryGroup())
         foreach (var pixel in row.Span)
         {
-            if (pixel.A == 0) //ignore fully transparent pixels 
-                continue;
-
             if (GetRgbDelta(pixel.R, pixel.G, pixel.B) > threshold)
                 return false;
         }
@@ -66,10 +61,9 @@ public class ImageService(IConfiguration configuration)
             => Math.Abs(r - g) +
                Math.Abs(g - b) +
                Math.Abs(b - r);
-
     }
 
-    private static async Task<ArraySegment<byte>?> TryCompressAsync(
+    private static async Task<ArraySegment<byte>> TryCompressAsync(
         string filePath,
         int quality,
         int minQuality,
@@ -85,7 +79,7 @@ public class ImageService(IConfiguration configuration)
             .Finish()
             .InProcessAsync();
 
-        return imageJobResult.First?.TryGetBytes();
+        return imageJobResult.First!.TryGetBytes()!.Value;
     }
 
     private (int quality, int minQuality) GetImageQuality(bool isGrayscale)

@@ -56,7 +56,7 @@ public partial class GoogleBloggerService(
 
         var coverPath = publishState.InternalData.CoverFilePath;
         var isGrayScale = imageService.IsGrayscale(coverPath);
-        var cover = await imageService.CreateBase64String(coverPath, 200, 300, isGrayScale, cancellationToken);
+        var cover = await imageService.CreateBase64StringAsync(coverPath, 200, 300, isGrayScale, cancellationToken);
 
         return ReplaceTemplateKeys(templateResult.Value, publishState, cover);
     }
