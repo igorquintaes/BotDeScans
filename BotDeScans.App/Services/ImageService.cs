@@ -38,13 +38,6 @@ public class ImageService(IConfiguration configuration)
         return Convert.ToBase64String(imageBytes ?? throw new Exception("Unable to convert image to base64"));
     }
 
-    private (int quality, int minQuality) GetImageQuality(bool isGrayscale)
-        => isGrayscale
-            ? (configuration.GetValue<int?>("Compress:Grayscale:Quality") ?? 50,
-               configuration.GetValue<int?>("Compress:Grayscale:MinimumQuality") ?? 30)
-            : (configuration.GetValue<int?>("Compress:Colorful:Quality") ?? 90,
-               configuration.GetValue<int?>("Compress:Colorful:MinimumQuality") ?? 85);
-
     /// <summary>
     /// Source: https://stackoverflow.com/a/62961179
     /// Determine if an image is greyscale
@@ -52,10 +45,10 @@ public class ImageService(IConfiguration configuration)
     /// <param name="filePath">The path to the image file.</param>
     /// <param name="threshold">Color variation to ignore</param>
     /// <returns></returns>
-    public virtual bool IsGrayscale(string filePath, int threshold = 10)
+    public virtual bool IsGrayscale(string filePath, int threshold = 20)
     {
         //Load image
-        using var fileStream = new FileStream(filePath, FileMode.Open, FileAccess.Read);
+        using var fileStream = File.OpenRead(filePath);
         using var image = Image.Load<Rgba32>(fileStream);
         foreach (var row in image.GetPixelMemoryGroup())
         foreach (var pixel in row.Span)
@@ -94,4 +87,11 @@ public class ImageService(IConfiguration configuration)
 
         return imageJobResult.First?.TryGetBytes();
     }
+
+    private (int quality, int minQuality) GetImageQuality(bool isGrayscale)
+        => isGrayscale
+            ? (configuration.GetValue<int?>("Compress:Grayscale:Quality") ?? 50,
+               configuration.GetValue<int?>("Compress:Grayscale:MinimumQuality") ?? 30)
+            : (configuration.GetValue<int?>("Compress:Colorful:Quality") ?? 90,
+               configuration.GetValue<int?>("Compress:Colorful:MinimumQuality") ?? 85);
 }
