@@ -12,6 +12,7 @@ using FluentResults.Extensions.FluentAssertions;
 using Google.Apis.Drive.v3;
 using Google.Apis.Drive.v3.Data;
 using System;
+using System.Reflection;
 using System.Threading.Tasks;
 using Xunit;
 using static Google.Apis.Drive.v3.AboutResource;
@@ -36,6 +37,10 @@ public class GoogleDriveSettingsServiceTests : UnitTest
         [Fact]
         public void GivenNotDefinedBaseFolderShouldThrowException()
         {
+            typeof(GoogleDriveSettingsService)
+                .GetField("_baseFolderId", BindingFlags.NonPublic | BindingFlags.Static)!
+                .SetValue(null, null);
+
             Func<string> call = () => GoogleDriveSettingsService.BaseFolderId;
             call.Should().Throw<InvalidOperationException>().WithMessage("Base folder not set.");
         }
