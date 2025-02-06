@@ -1,6 +1,5 @@
 #tool "nuget:?package=ReportGenerator&version=5.4.3"
-#addin nuget:?package=Cake.FileHelpers&version=7.0.0
-#addin nuget:?package=Cake.Coverlet
+#addin nuget:?package=Cake.Coverlet&version=4.0.1
 using Spectre.Console
 
 var target = Argument("target", "Default");
@@ -60,7 +59,7 @@ Task("Report")
     var summaries = GetFiles($"{coverageDirectory}/Summary.txt");
     foreach(var file in summaries) 
     {
-        var summary = FileReadText(file);
+        var summary = System.IO.File.ReadAllText(file.FullPath);
         AnsiConsole.Markup($"[teal]{summary}[/]");
     }
 });
