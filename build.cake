@@ -1,6 +1,6 @@
 // add package directives
-#tool "nuget:?package=ReportGenerator&version=5.1.11"
-#addin nuget:?package=Cake.FileHelpers&version=5.0.0
+#tool "nuget:?package=ReportGenerator&version=5.4.3"
+#addin nuget:?package=Cake.FileHelpers&version=7.0.0
 #r "Spectre.Console"
 
 // import spectre for colored console output
@@ -15,8 +15,8 @@ Task("Restore")
     .Does(() =>
     {
         DotNetRestore();
-
     });
+	
 Task("Build")
     .IsDependentOn("Restore")
     .Does(() =>
@@ -87,12 +87,12 @@ Task("Format")
     var projects = GetFiles("./*.csproj}").Select(p => p.FullPath);
     foreach(var project in projects)
     {
-        DotNetCoreTool($"dotnet-format {project}");
+        DotNetTool($"dotnet-format {project}");
     }
 });
 
 Task("Default").Does(() => {
-    DotNetCoreTool("cake", new DotNetCoreToolSettings{
+    DotNetTool("cake", new DotNetToolSettings{
         ArgumentCustomization = args => args.Append("--showdescription")
     });
 });

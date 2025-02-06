@@ -171,11 +171,10 @@ public class GoogleDriveResourcesServiceTests : UnitTest, IDisposable
         [Fact]
         public async Task ShouldWriteExpectedQueryWithCustomParentId()
         {
-            const string EXPECTED_QUERY_FORMAT = @"trashed = false and '{1}' in parents";
+            const string EXPECTED_QUERY_FORMAT = @"trashed = false and '{0}' in parents";
 
-            var mimeType = fixture.Create<string>();
             var parentId = fixture.Create<string>();
-            var expectedQuery = string.Format(EXPECTED_QUERY_FORMAT, mimeType, parentId);
+            var expectedQuery = string.Format(EXPECTED_QUERY_FORMAT, parentId);
 
             await service.GetResourcesAsync(
                 mimeType: default,
@@ -192,13 +191,11 @@ public class GoogleDriveResourcesServiceTests : UnitTest, IDisposable
         [Fact]
         public async Task ShouldWriteExpectedQueryWithRootParentId()
         {
-            const string EXPECTED_QUERY_FORMAT = @"trashed = false and '{1}' in parents";
+            const string EXPECTED_QUERY_FORMAT = @"trashed = false and '{0}' in parents";
 
-            var mimeType = fixture.Create<string>();
             var parentId = fixture.Create<string>();
             var expectedQuery = string.Format(
                 EXPECTED_QUERY_FORMAT,
-                mimeType,
                 GoogleDriveSettingsService.BaseFolderId);
 
             await service.GetResourcesAsync(
@@ -216,14 +213,12 @@ public class GoogleDriveResourcesServiceTests : UnitTest, IDisposable
         [Fact]
         public async Task ShouldWriteExpectedQueryWithResourceName()
         {
-            const string EXPECTED_QUERY_FORMAT = @"trashed = false and name = '{1}' and '{2}' in parents";
+            const string EXPECTED_QUERY_FORMAT = @"trashed = false and name = '{0}' and '{1}' in parents";
 
-            var mimeType = fixture.Create<string>();
             var name = fixture.Create<string>();
             var parentId = fixture.Create<string>();
             var expectedQuery = string.Format(
                 EXPECTED_QUERY_FORMAT,
-                mimeType,
                 name,
                 GoogleDriveSettingsService.BaseFolderId);
 
@@ -232,6 +227,80 @@ public class GoogleDriveResourcesServiceTests : UnitTest, IDisposable
                 forbiddenMimeType: default,
                 name: name,
                 parentId: default,
+                minResult: default,
+                maxResult: default,
+                cancellationToken);
+
+            fixture.Freeze<ListRequest>().Q.Should().Be(expectedQuery);
+        }
+
+        [Fact]
+        public async Task ShouldWriteExpectedQueryWithMimeType()
+        {
+            const string EXPECTED_QUERY_FORMAT = @"trashed = false and mimeType = '{0}' and '{1}' in parents";
+
+            var mimeType = fixture.Create<string>();
+            var expectedQuery = string.Format(
+                EXPECTED_QUERY_FORMAT, 
+                mimeType, 
+                GoogleDriveSettingsService.BaseFolderId);
+
+            await service.GetResourcesAsync(
+                mimeType: mimeType,
+                forbiddenMimeType: default,
+                name: default,
+                parentId: default,
+                minResult: default,
+                maxResult: default,
+                cancellationToken);
+
+            fixture.Freeze<ListRequest>().Q.Should().Be(expectedQuery);
+        }
+
+        [Fact]
+        public async Task ShouldWriteExpectedQueryWithForbiddenMimeType()
+        {
+            const string EXPECTED_QUERY_FORMAT = @"trashed = false and mimeType != '{0}' and '{1}' in parents";
+
+            var forbiddenMimeType = fixture.Create<string>();
+            var expectedQuery = string.Format(
+                EXPECTED_QUERY_FORMAT, 
+                forbiddenMimeType, 
+                GoogleDriveSettingsService.BaseFolderId);
+
+            await service.GetResourcesAsync(
+                mimeType: default,
+                forbiddenMimeType: forbiddenMimeType,
+                name: default,
+                parentId: default,
+                minResult: default,
+                maxResult: default,
+                cancellationToken);
+
+            fixture.Freeze<ListRequest>().Q.Should().Be(expectedQuery);
+        }
+
+        [Fact]
+        public async Task ShouldWriteExpectedQueryWithAllFilledFields()
+        {
+            const string EXPECTED_QUERY_FORMAT = @"trashed = false and mimeType = '{0}' and mimeType != '{1}' and name = '{2}' and '{3}' in parents";
+
+            var mimeType = fixture.Create<string>();
+            var forbiddenMimeType = fixture.Create<string>();
+            var name = fixture.Create<string>();
+            var parentId = fixture.Create<string>();
+            var expectedQuery = string.Format(
+                EXPECTED_QUERY_FORMAT, 
+                mimeType,
+                forbiddenMimeType,
+                name,
+                parentId);
+
+            await service.GetResourcesAsync(
+                mimeType: mimeType,
+                forbiddenMimeType: forbiddenMimeType,
+                name: name,
+                parentId: parentId,
                 minResult: default,
                 maxResult: default,
                 cancellationToken);

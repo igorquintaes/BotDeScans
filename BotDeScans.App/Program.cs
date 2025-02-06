@@ -57,7 +57,7 @@ public class Program
                 File.WriteAllBytes(DatabaseContext.DbPath, []);
 
             var db = scope.ServiceProvider.GetRequiredService<DatabaseContext>();
-            await db.Database.MigrateAsync();
+            await db.Database.MigrateAsync(cts.Token);
 
             var setupDiscordService = scope.ServiceProvider.GetRequiredService<SetupDiscordService>();
             var discordUpdateResult = await setupDiscordService.SetupAsync(cts.Token);
@@ -65,11 +65,11 @@ public class Program
 
             var setupPublishStepsService = scope.ServiceProvider.GetRequiredService<SetupClientsService>();
             var setupPublishStepsResult = await setupPublishStepsService.SetupAsync(cts.Token);
-            warmupResult.WithReasons(discordUpdateResult.Reasons);
+            warmupResult.WithReasons(setupPublishStepsResult.Reasons);
 
             var setupClientsService = scope.ServiceProvider.GetRequiredService<SetupStepsService>();
             var setupClientsResult = setupClientsService.Setup();
-            warmupResult.WithReasons(discordUpdateResult.Reasons);
+            warmupResult.WithReasons(setupClientsResult.Reasons);
         }
 
         if (warmupResult.IsFailed)
