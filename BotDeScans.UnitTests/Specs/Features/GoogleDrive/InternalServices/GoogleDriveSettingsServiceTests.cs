@@ -11,6 +11,7 @@ using FluentResults;
 using FluentResults.Extensions.FluentAssertions;
 using Google.Apis.Drive.v3;
 using Google.Apis.Drive.v3.Data;
+using System;
 using System.Threading.Tasks;
 using Xunit;
 using static Google.Apis.Drive.v3.AboutResource;
@@ -28,6 +29,16 @@ public class GoogleDriveSettingsServiceTests : UnitTest
         fixture.FreezeFake<GoogleDriveFoldersService>();
 
         service = fixture.Create<GoogleDriveSettingsService>();
+    }
+
+    public class BaseFolderId : GoogleDriveSettingsServiceTests
+    {
+        [Fact]
+        public void GivenNotDefinedBaseFolderShouldThrowException()
+        {
+            Func<string> call = () => GoogleDriveSettingsService.BaseFolderId;
+            call.Should().Throw<InvalidOperationException>().WithMessage("Base folder not set.");
+        }
     }
 
     public class SetUpBaseFolderAsync : GoogleDriveSettingsServiceTests
