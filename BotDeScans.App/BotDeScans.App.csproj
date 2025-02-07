@@ -20,9 +20,9 @@
     <WarningLevel>9999</WarningLevel>
   </PropertyGroup>
 	
-	<ItemGroup>
-		<RuntimeHostConfigurationOption Include="System.Drawing.EnableUnixSupport" Value="true" />
-	</ItemGroup>
+  <ItemGroup>
+	<RuntimeHostConfigurationOption Include="System.Drawing.EnableUnixSupport" Value="true" />
+  </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="Box.V2.Core" Version="5.8.0" />
