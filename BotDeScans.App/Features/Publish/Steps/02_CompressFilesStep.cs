@@ -1,10 +1,9 @@
 ﻿using BotDeScans.App.Services;
 using FluentResults;
-using Microsoft.Extensions.DependencyInjection;
 namespace BotDeScans.App.Features.Publish.Steps;
 
 public class CompressFilesStep(
-    IServiceProvider serviceProvider,
+    ImageService imageService,
     PublishState state) : IStep
 {
     public StepEnum StepName => StepEnum.Compress;
@@ -18,7 +17,6 @@ public class CompressFilesStep(
 
     public async Task<Result> ExecuteAsync(CancellationToken cancellationToken)
     {
-        var imageService = serviceProvider.GetRequiredService<ImageService>();
         var maxDegreeOfParallelism = Convert.ToInt32(Math.Ceiling((Environment.ProcessorCount * 0.75) * 2.0));
         var parallelOptions = new ParallelOptions
         {

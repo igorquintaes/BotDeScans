@@ -7,9 +7,9 @@ using Remora.Discord.Commands.Contexts;
 using Remora.Rest.Core;
 namespace BotDeScans.UnitTests.Builders;
 
-public record InteractionContextFake : InteractionContext
+public record FakeInteractionContext : InteractionContext
 {
-    public InteractionContextFake(IFixture fixture)
+    public FakeInteractionContext(IFixture fixture)
         : base(new Interaction(
             ID: fixture.Create<Snowflake>(),
             ApplicationID: fixture.Create<Snowflake>(),

@@ -9,7 +9,7 @@ using Remora.Discord.API.Objects;
 using Remora.Results;
 using System.ComponentModel;
 
-namespace BotDeScans.App.Features.Mega;
+namespace BotDeScans.App.Features.Mega.Discord;
 [Group("mega")]
 public class MegaCommands(
     MegaSettingsService megaSettingsService,

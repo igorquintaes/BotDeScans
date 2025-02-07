@@ -1,4 +1,5 @@
-﻿using BotDeScans.App.Features.Mega.InternalServices;
+﻿using BotDeScans.App.Features.Mega.Discord;
+using BotDeScans.App.Features.Mega.InternalServices;
 using Microsoft.Extensions.DependencyInjection;
 using Remora.Commands.Extensions;
 using System.Diagnostics.CodeAnalysis;

@@ -1,7 +1,7 @@
 ﻿using BotDeScans.App.Attributes;
 using BotDeScans.App.Builders;
-using BotDeScans.App.Features.Titles;
 using BotDeScans.App.Infra;
+using BotDeScans.App.Services.Discord.Autocomplete;
 using Microsoft.EntityFrameworkCore;
 using Remora.Commands.Attributes;
 using Remora.Commands.Groups;

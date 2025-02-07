@@ -52,7 +52,7 @@ public class FileReleaseService : IDisposable
     public virtual string CreateScopedDirectory()
     {
         var folderName = Guid.NewGuid().ToString();
-        var folderPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "release-status", scopedDirectoryBaseName, folderName);
+        var folderPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "scoped", scopedDirectoryBaseName, folderName);
 
         Directory.CreateDirectory(folderPath);
         scopedDirectories.Add(folderPath);
@@ -73,7 +73,7 @@ public class FileReleaseService : IDisposable
 
         if (scopedDirectories.Count > 0)
         {
-            var scopedDirectoryBasePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "release-status", scopedDirectoryBaseName);
+            var scopedDirectoryBasePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "scoped", scopedDirectoryBaseName);
             Directory.Delete(scopedDirectoryBasePath, true);
         }
 

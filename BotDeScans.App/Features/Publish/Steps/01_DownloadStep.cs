@@ -1,11 +1,10 @@
 ﻿using BotDeScans.App.Features.GoogleDrive;
 using BotDeScans.App.Services;
 using FluentResults;
-using Microsoft.Extensions.DependencyInjection;
 namespace BotDeScans.App.Features.Publish.Steps;
 
 public class DownloadStep(
-    IServiceProvider serviceProvider,
+    FileReleaseService fileReleaseService,
     GoogleDriveService googleDriveService,
     PublishState state) : IStep
 {
@@ -18,8 +17,12 @@ public class DownloadStep(
         if (folderIdResult.IsFailed)
             return folderIdResult.ToResult();
 
+        var validationResult = await googleDriveService.ValidateFilesAsync(folderIdResult.Value, cancellationToken);
+        if (validationResult.IsFailed)
+            return validationResult;
+
         state.InternalData.GoogleDriveFolderId = folderIdResult.Value;
-        return await googleDriveService.ValidateFilesAsync(folderIdResult.Value, cancellationToken);
+        return Result.Ok();
     }
 
     public Task<Result> ValidateAfterFilesManagementAsync(CancellationToken _)
@@ -27,22 +30,21 @@ public class DownloadStep(
 
     public async Task<Result> ExecuteAsync(CancellationToken cancellationToken)
     {
-        var googleDriveService = serviceProvider.GetRequiredService<GoogleDriveService>();
-        var fileReleaseService = serviceProvider.GetRequiredService<FileReleaseService>();
-
-        state.InternalData.OriginContentFolder = fileReleaseService.CreateScopedDirectory();
+        var downloadDirectory = fileReleaseService.CreateScopedDirectory();
+        var coverDirectory = fileReleaseService.CreateScopedDirectory();
 
         var saveFilesResult = await googleDriveService.SaveFilesAsync(
             state.InternalData.GoogleDriveFolderId,
-            state.InternalData.OriginContentFolder,
+            downloadDirectory,
             cancellationToken);
 
         if (saveFilesResult.IsFailed)
             return saveFilesResult;
 
+        state.InternalData.OriginContentFolder = downloadDirectory;
         state.InternalData.CoverFilePath = fileReleaseService.MoveCoverFile(
-            state.InternalData.OriginContentFolder,
-            fileReleaseService.CreateScopedDirectory());
+            downloadDirectory,
+            coverDirectory);
 
         return Result.Ok();
     }

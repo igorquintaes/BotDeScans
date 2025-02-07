@@ -1,8 +1,10 @@
 ﻿using BotDeScans.App.Extensions;
+using BotDeScans.App.Services.Discord.Autocomplete;
 using BotDeScans.App.Services.Discord.Conditions;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Remora.Commands.Extensions;
 using Remora.Discord.Commands.Extensions;
 using Remora.Discord.Hosting.Extensions;
 using System.Diagnostics.CodeAnalysis;
@@ -13,7 +15,8 @@ internal static class AddDependencies
 {
     internal static IServiceCollection AddDiscordServices(this IServiceCollection services) => services
         .AddDiscordCommands()
-        .AddDiscordConditions()
+        .AddAutocompleteProvider<AutocompleteTitles>()
+        .AddCondition<RoleAuthorizeCondition>()
         .AddScoped<RolesService>()
         .AddScoped<ExtendedFeedbackService>();
 
