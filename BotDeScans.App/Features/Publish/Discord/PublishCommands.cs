@@ -2,6 +2,7 @@
 using BotDeScans.App.Builders;
 using BotDeScans.App.Features.Titles;
 using BotDeScans.App.Infra;
+using BotDeScans.App.Services;
 using Microsoft.EntityFrameworkCore;
 using Remora.Commands.Attributes;
 using Remora.Commands.Groups;
@@ -13,13 +14,15 @@ using Remora.Discord.Commands.Contexts;
 using Remora.Discord.Commands.Feedback.Services;
 using Remora.Results;
 using System.ComponentModel;
+using static Google.Apis.Requests.BatchRequest;
 namespace BotDeScans.App.Features.Publish.Discord;
 
 public class PublishCommands(
     DatabaseContext databaseContext,
     IOperationContext context,
     IFeedbackService feedbackService,
-    IDiscordRestInteractionAPI interactionAPI) : CommandGroup
+    IDiscordRestInteractionAPI interactionAPI,
+    SlimeReadService slimeReadService) : CommandGroup
 {
     [Command("publish")]
     [RoleAuthorize("Publisher")]
@@ -55,5 +58,26 @@ public class PublishCommands(
             response,
             ct: CancellationToken
         );
+    }
+
+    [Command("debug")]
+    public async Task<IResult> Debug()
+    {
+        if (context is not InteractionContext interactionContext)
+            return Result.FromSuccess();
+
+        var result = await slimeReadService.LoginAsync(CancellationToken);
+
+        if (result.IsSuccess)
+            return await feedbackService.SendEmbedAsync(
+                channel: interactionContext.Interaction.Channel!.Value.ID!.Value,
+                embed: EmbedBuilder.CreateSuccessEmbed(description: "Sucesso"),
+                ct: CancellationToken);
+
+        return await feedbackService.SendEmbedAsync(
+            channel: interactionContext.Interaction.Channel!.Value.ID!.Value,
+            embed: EmbedBuilder.CreateErrorEmbed(description: result.Errors.First().Message),
+            ct: CancellationToken);
+
     }
 }

@@ -71,6 +71,9 @@ public class PublishState
         [Description("MangaDex")]
         public string? MangaDexLink { get; set; }
 
+        [Description("SlimeRead")]
+        public string? SlimeReadLink { get; set; }
+
         public string? BoxPdfReaderKey { get; set; }
     }
 }

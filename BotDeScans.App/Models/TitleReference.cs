@@ -13,5 +13,7 @@ public record TitleReference
 public enum ExternalReference
 {
     [Description("MangaDex")]
-    MangaDex
+    MangaDex,
+    [Description("SlimeRead")]
+    SlimeRead
 }

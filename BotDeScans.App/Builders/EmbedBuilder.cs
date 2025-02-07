@@ -54,6 +54,6 @@ public static class EmbedBuilder
         Optional<IEmbedImage> image = default)
         => new(Title: title.HasValue ? title : "Erro!",
                Description: description,
-               Colour: Color.Green,
+               Colour: Color.Red,
                Image: image);
 }

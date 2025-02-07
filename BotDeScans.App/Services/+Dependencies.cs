@@ -34,5 +34,22 @@ internal static class AddDependencies
         .AddScoped<FileReleaseService>()
         .AddScoped<GoogleBloggerService>()
         .AddScoped<MangaDexService>()
+        .AddHttpClient<SlimeReadService>()
+            .ConfigureHttpClient(client => {
+                client.DefaultRequestHeaders.Clear();
+                client.DefaultRequestHeaders.Add("Accept", "application/json");
+                client.DefaultRequestHeaders.Add("Accept-Encoding", "pt-BR,pt;q=0.8,en-US;q=0.5,en;q=0.3");
+                client.DefaultRequestHeaders.Add("Connection", "keep-alive");
+                client.DefaultRequestHeaders.Add("Host", "tipaeupapai.slimeread.com:8443");
+                client.DefaultRequestHeaders.Add("Origin", "https://slimeread.com");
+                client.DefaultRequestHeaders.Add("User-Agent", "BotDeScans/1.0.0");
+                client.DefaultRequestHeaders.Add("Priority", "u=0");
+                client.DefaultRequestHeaders.Add("requestId", "miueo");
+                client.DefaultRequestHeaders.Add("Sec-Fetch-Dest", "empty");
+                client.DefaultRequestHeaders.Add("Sec-Fetch-Mode", "cors");
+                client.DefaultRequestHeaders.Add("Sec-Fetch-Site", "same-site");
+                client.DefaultRequestHeaders.Add("TE", "trailers");
+            })
+            .Services
         .AddValidatorsFromAssemblyContaining<Program>();
 }

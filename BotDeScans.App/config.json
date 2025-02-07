@@ -51,6 +51,10 @@
     "ClientId": "",
     "ClientSecret": ""
   },
+  "SlimeRead": {
+    "Username": "",
+    "Password": ""
+  },
   "UserAgent": "BotDeScans/0.0.1",
   "Compress": {
     "Grayscale": {
