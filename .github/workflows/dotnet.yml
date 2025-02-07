@@ -65,4 +65,4 @@ jobs:
       if: github.repository_owner == 'igorquintaes'
       with:
         name: BotDeScans
-        path: ${{env.DOTNET_ROOT}}
+        path: ${{env.DOTNET_ROOT}}/BotDeScans
