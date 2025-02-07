@@ -1,6 +1,8 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
+using System.Diagnostics.CodeAnalysis;
 namespace BotDeScans.App.Features.Publish.Steps;
 
+[ExcludeFromCodeCoverage]
 internal static class AddDependencies
 {
     internal static IServiceCollection AddPublishSteps(this IServiceCollection services) => services

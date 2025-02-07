@@ -1,6 +1,8 @@
 ﻿using BotDeScans.App.Services;
 using FluentAssertions;
 using FluentResults.Extensions.FluentAssertions;
+using SixLabors.ImageSharp.PixelFormats;
+using SixLabors.ImageSharp;
 using System;
 using System.IO;
 using System.IO.Compression;
@@ -8,6 +10,7 @@ using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
 using Xunit;
+using SixLabors.ImageSharp.Processing;
 namespace BotDeScans.UnitTests.Specs.Services;
 
 public class FileServiceTests : UnitTest
@@ -149,6 +152,12 @@ public class FileServiceTests : UnitTest
         [Fact]
         public async Task ShouldCreatePdfInExpectedDirectory()
         {
+            var imagePath = Path.Combine(resourcesDirectory, "file.png");
+            using (var image = new Image<Rgba32>(1, 1))
+            {
+                await image.SaveAsync(imagePath, cancellationToken);
+            }
+
             var result = await service.CreatePdfFileAsync(
                 "fileName",
                 resourcesDirectory,
