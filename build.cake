@@ -38,7 +38,7 @@ Task("Test")
 			Exclude = ["**BotDeScans.App.Infra.Migrations**"]
 		};
 		
-		DotNetTest(solution, new(), coverletSettings);
+		DotNetTest(solution, new() { NoBuild = true }, coverletSettings);
     });
 
 Task("Report")
