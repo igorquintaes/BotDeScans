@@ -12,7 +12,7 @@ public class MegaService(
 {
     public const string REWRITE_KEY = "Mega:RewriteExistingFile";
 
-    public async Task<Result<INode>> GetOrCreateFolderAsync(
+    public virtual async Task<Result<INode>> GetOrCreateFolderAsync(
         string folderName,
         INode parentNode)
     {
@@ -27,7 +27,7 @@ public class MegaService(
         return Result.Ok(newFolderNode);
     }
 
-    public async Task<Result<Uri>> CreateFileAsync(
+    public virtual async Task<Result<Uri>> CreateFileAsync(
         string filePath,
         INode parentNode,
         CancellationToken cancellationToken)

@@ -30,7 +30,7 @@ namespace BotDeScans.App.Features.Publish.Steps
 
             var fileResult = await megaService.CreateFileAsync(
                 filePath: state.InternalData.PdfFilePath,
-                parentNode: root,
+                parentNode: titleFolder.Value,
                 cancellationToken);
 
             if (fileResult.IsFailed)

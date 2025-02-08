@@ -88,7 +88,7 @@ public class PdfFilesStepTests : UnitTest
         }
 
         [Fact]
-        public async Task GivenSuccessfulExecutionShouldSetZipFilePath()
+        public async Task GivenSuccessfulExecutionShouldSetPdfFilePath()
         {
             fixture.Freeze<PublishState>().InternalData.PdfFilePath = null!;
 
@@ -98,7 +98,7 @@ public class PdfFilesStepTests : UnitTest
         }
 
         [Fact]
-        public async Task GivenErrorToCreazeZipShouldReturnFailResult()
+        public async Task GivenErrorToCreazePdfShouldReturnFailResult()
         {
             const string ERROR_MESSAGE = "some error.";
 

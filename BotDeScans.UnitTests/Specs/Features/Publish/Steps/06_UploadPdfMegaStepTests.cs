@@ -16,29 +16,29 @@ using Xunit;
 
 namespace BotDeScans.UnitTests.Specs.Features.Publish.Steps;
 
-public class UploadZipMegaStepTests : UnitTest
+public class UploadPdfMegaStepTests : UnitTest
 {
     private readonly IStep step;
 
-    public UploadZipMegaStepTests()
+    public UploadPdfMegaStepTests()
     {
         fixture.FreezeFake<IServiceProvider>();
         fixture.Inject(PublishStateBuilder.Create(fixture, StepEnum.UploadZipMega));
-        step = fixture.Create<UploadZipMegaStep>();
+        step = fixture.Create<UploadPdfMegaStep>();
     }
 
-    public class Properties : UploadZipMegaStepTests
+    public class Properties : UploadPdfMegaStepTests
     {
         [Fact]
         public void ShouldHaveExpectedName() =>
-            step.StepName.Should().Be(StepEnum.UploadZipMega);
+            step.StepName.Should().Be(StepEnum.UploadPdfMega);
 
         [Fact]
         public void ShouldHaveExpectedType() =>
             step.StepType.Should().Be(StepType.Publish);
     }
 
-    public class ValidateBeforeFilesManagementAsync : UploadZipMegaStepTests
+    public class ValidateBeforeFilesManagementAsync : UploadPdfMegaStepTests
     {
         [Fact]
         public async Task ShouldReturnSuccess()
@@ -49,7 +49,7 @@ public class UploadZipMegaStepTests : UnitTest
         }
     }
 
-    public class ValidateAfterFilesManagementAsync : UploadZipMegaStepTests
+    public class ValidateAfterFilesManagementAsync : UploadPdfMegaStepTests
     {
         [Fact]
         public async Task ShouldReturnSuccess()
@@ -60,7 +60,7 @@ public class UploadZipMegaStepTests : UnitTest
         }
     }
 
-    public class ExecuteAsync : UploadZipMegaStepTests
+    public class ExecuteAsync : UploadPdfMegaStepTests
     {
         private const string FILE_LINK = "http://www.escoladescans.com/sample";
 
@@ -92,7 +92,7 @@ public class UploadZipMegaStepTests : UnitTest
             A.CallTo(() => fixture
                 .FreezeFake<MegaService>()
                 .CreateFileAsync(
-                    fixture.Freeze<PublishState>().InternalData.ZipFilePath,
+                    fixture.Freeze<PublishState>().InternalData.PdfFilePath,
                     titleFolderNode,
                     cancellationToken))
                 .Returns(Result.Ok(new Uri(FILE_LINK)));
@@ -107,13 +107,13 @@ public class UploadZipMegaStepTests : UnitTest
         }
 
         [Fact]
-        public async Task GivenSuccessfulExecutionShouldSetMegaZipStateValue()
+        public async Task GivenSuccessfulExecutionShouldSetMegaPdfStateValue()
         {
-            fixture.Freeze<PublishState>().ReleaseLinks.MegaZip = null!;
+            fixture.Freeze<PublishState>().ReleaseLinks.MegaPdf = null!;
 
             await step.ExecuteAsync(cancellationToken);
 
-            fixture.Freeze<PublishState>().ReleaseLinks.MegaZip.Should().Be(FILE_LINK);
+            fixture.Freeze<PublishState>().ReleaseLinks.MegaPdf.Should().Be(FILE_LINK);
         }
 
         [Fact]
