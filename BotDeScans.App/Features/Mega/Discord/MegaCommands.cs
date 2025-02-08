@@ -13,7 +13,6 @@ namespace BotDeScans.App.Features.Mega.Discord;
 [Group("mega")]
 public class MegaCommands(
     MegaSettingsService megaSettingsService,
-    MegaFoldersService megaFoldersService,
     ExtendedFeedbackService feedbackService,
     ChartService chartService) : CommandGroup
 {
@@ -22,7 +21,7 @@ public class MegaCommands(
     [Description("Obtém informação do uso de dados e espaço livre.")]
     public async Task<IResult> DataUsage()
     {
-        var root = await megaFoldersService.GetRootFolderAsync();
+        var root = await megaSettingsService.GetRootFolderAsync();
         var dataUsageResult = await megaSettingsService.GetConsumptionDataAsync(root.Id);
         if (dataUsageResult.IsFailed)
             return await feedbackService

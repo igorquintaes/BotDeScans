@@ -8,18 +8,6 @@ public class MegaFoldersService(
     MegaClient megaClient)
 {
     private readonly IMegaApiClient megaApiClient = megaClient.Client;
-    private static INode? Root;
-
-    public virtual async Task<INode> GetRootFolderAsync()
-    {
-        if (Root is null)
-        {
-            var resources = await megaApiClient.GetNodesAsync();
-            Root = resources.Single(x => x.Type == NodeType.Root);
-        }
-
-        return Root;
-    }
 
     public virtual async Task<Result<INode?>> GetAsync(string folderName, INode parentNode)
     {

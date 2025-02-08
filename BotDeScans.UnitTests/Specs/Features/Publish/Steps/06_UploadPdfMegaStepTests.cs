@@ -76,11 +76,11 @@ public class UploadPdfMegaStepTests : UnitTest
 
             A.CallTo(() => fixture
                 .FreezeFake<IServiceProvider>()
-                .GetService(typeof(MegaFoldersService)))
-                .Returns(fixture.FreezeFake<MegaFoldersService>());
+                .GetService(typeof(MegaSettingsService)))
+                .Returns(fixture.FreezeFake<MegaSettingsService>());
 
             A.CallTo(() => fixture
-                .FreezeFake<MegaFoldersService>()
+                .FreezeFake<MegaSettingsService>()
                 .GetRootFolderAsync())
                 .Returns(rootNode);
 
