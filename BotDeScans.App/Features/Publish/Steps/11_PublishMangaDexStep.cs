@@ -4,7 +4,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 namespace BotDeScans.App.Features.Publish.Steps;
 
-public class PublishMangadexStep(
+public class PublishMangaDexStep(
     IServiceProvider serviceProvider,
     IConfiguration configuration,
     PublishState state) : IStep

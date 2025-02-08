@@ -10,7 +10,7 @@ public partial class MangaDexService(
 {
     private string? accessToken;
 
-    public async Task<Result> LoginAsync()
+    public virtual async Task<Result> LoginAsync()
     {
         var username = configuration.GetValue("Mangadex:Username", string.Empty);
         var password = configuration.GetValue("Mangadex:Password", string.Empty);
@@ -41,7 +41,7 @@ public partial class MangaDexService(
         return Result.Ok();
     }
 
-    public async Task<Result> ClearPendingUploadsAsync()
+    public virtual async Task<Result> ClearPendingUploadsAsync()
     {
         var uploadResponse = await mangaDex.Upload.Get(accessToken);
         if (uploadResponse.Errors.Any(x => x.Status == 404))
@@ -58,7 +58,7 @@ public partial class MangaDexService(
         return Result.Ok();
     }
 
-    public async Task<Result<string>> UploadChapterAsync(
+    public virtual async Task<Result<string>> UploadChapterAsync(
         string mangadexTitleId,
         string? chapterName,
         string chapterNumber,
@@ -118,7 +118,7 @@ public partial class MangaDexService(
         return Result.Ok(uploadCommitResult.Data.Id);
     }
 
-    public Result<string> GetTitleIdFromUrl(string url)
+    public virtual Result<string> GetTitleIdFromUrl(string url)
     {
         const int GUID_CHAR_LENGHT = 36;
         const string ID_URL_PREFIX = "/title/";
