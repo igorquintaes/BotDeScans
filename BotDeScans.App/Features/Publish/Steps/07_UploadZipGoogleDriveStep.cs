@@ -14,13 +14,14 @@ public class UploadZipGoogleDriveStep(
         => Task.FromResult(Result.Ok());
 
     public Task<Result> ValidateAfterFilesManagementAsync(CancellationToken _)
-        => Task.FromResult(Result.Ok());
+        => Task.FromResult(Result.Ok()); 
+    // todo: pegar o tamanho do arquivo e ver se tem espaço disponível no Google Drive
 
     public async Task<Result> ExecuteAsync(CancellationToken cancellationToken)
     {
         var googleDriveService = serviceProvider.GetRequiredService<GoogleDriveService>();
 
-        var titleFolderResult = await googleDriveService.GetOrCreateFolderAsync(state.Title.Name, null, cancellationToken);
+        var titleFolderResult = await googleDriveService.GetOrCreateFolderAsync(state.Title.Name, default, cancellationToken);
         if (titleFolderResult.IsFailed)
             return titleFolderResult.ToResult();
 
