@@ -58,7 +58,7 @@ public partial class MangaDexService(
         if (string.IsNullOrWhiteSpace(groupId))
             return Result.Fail("Mangadex group id is not defined.");
 
-        // todo: permitir múltiplos grupos
+        // todo: permitir múltiplos grupos, ou sem vínculo a grupos
         var uploadResponse = await mangaDex.Upload.Begin(mangadexTitleId, [groupId], accessToken);
         if (uploadResponse.ErrorOccurred)
             return uploadResponse.AsFailResult();
