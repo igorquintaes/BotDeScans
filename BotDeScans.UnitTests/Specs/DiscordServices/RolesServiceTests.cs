@@ -21,18 +21,12 @@ public class RolesServiceTests : UnitTest
 
     public RolesServiceTests()
     {
-        fixture.FreezeFake<IConfiguration>();
         fixture.FreezeFake<IDiscordRestGuildAPI>();
         fixture.Inject<IRole>(fixture.Create<Role>());
 
-        A.CallTo(() => fixture
-            .FreezeFake<IConfiguration>()
-            .GetSection(RolesService.DISCORD_SERVERID_KEY))
-            .Returns(fixture.FreezeFake<IConfigurationSection>());
-
-        A.CallTo(() => fixture
-            .FreezeFake<IConfigurationSection>().Value)
-            .Returns(fixture.Create<ulong>().ToString());
+        fixture.FreezeFakeConfiguration(
+            RolesService.DISCORD_SERVERID_KEY, 
+            fixture.Create<ulong>().ToString());
 
         A.CallTo(() => fixture
             .FreezeFake<IDiscordRestGuildAPI>()

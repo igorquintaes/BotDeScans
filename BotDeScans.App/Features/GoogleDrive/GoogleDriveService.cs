@@ -17,7 +17,7 @@ public class GoogleDriveService(
 {
     public const string REWRITE_KEY = "GoogleDrive:RewriteExistingFile";
 
-    public async Task<Result<File>> GetOrCreateFolderAsync(
+    public virtual async Task<Result<File>> GetOrCreateFolderAsync(
         string folderName,
         string? parentId,
         CancellationToken cancellationToken)
@@ -32,7 +32,7 @@ public class GoogleDriveService(
         return await googleDriveFoldersService.CreateAsync(folderName, parentId, cancellationToken);
     }
 
-    public async Task<Result<File>> CreateFileAsync(
+    public virtual async Task<Result<File>> CreateFileAsync(
         string filePath,
         string parentId,
         bool publicAccess,
@@ -55,7 +55,7 @@ public class GoogleDriveService(
         return await googleDriveFilesService.UploadAsync(filePath, parentId, publicAccess, cancellationToken);
     }
 
-    public async Task<Result> DeleteFileByNameAndParentNameAsync(
+    public virtual async Task<Result> DeleteFileByNameAndParentNameAsync(
         string fileName,
         string parentFolderName,
         CancellationToken cancellationToken)
@@ -94,7 +94,7 @@ public class GoogleDriveService(
             : Result.Ok(resourceId);
     }
 
-    public async Task<Result> SaveFilesAsync(
+    public virtual async Task<Result> SaveFilesAsync(
         string folderId,
         string directory,
         CancellationToken cancellationToken)
@@ -116,7 +116,7 @@ public class GoogleDriveService(
         return new Result().WithErrors(errors);
     }
 
-    public async Task<Result> ValidateFilesAsync(
+    public virtual async Task<Result> ValidateFilesAsync(
         string folderId,
         CancellationToken cancellationToken)
     {
@@ -128,7 +128,7 @@ public class GoogleDriveService(
         return validationResult.ToResult();
     }
 
-    public async Task<Result> GrantReaderAccessToBotFilesAsync(
+    public virtual async Task<Result> GrantReaderAccessToBotFilesAsync(
         string email,
         CancellationToken cancellationToken)
     {
@@ -140,7 +140,7 @@ public class GoogleDriveService(
         return setPermissionResult.ToResult();
     }
 
-    public async Task<Result> RevokeReaderAccessToBotFilesAsync(
+    public virtual async Task<Result> RevokeReaderAccessToBotFilesAsync(
         string email,
         CancellationToken cancellationToken)
     {

@@ -144,14 +144,7 @@ public class GoogleDriveServiceTests : UnitTest
                 .UpdateAsync(filePath, fixture.FreezeFake<File>().Id, cancellationToken))
                 .Returns(fixture.FreezeFake<File>());
 
-            A.CallTo(() => fixture
-                .FreezeFake<IConfiguration>()
-                .GetSection(GoogleDriveService.REWRITE_KEY))
-                .Returns(fixture.FreezeFake<IConfigurationSection>());
-
-            A.CallTo(() => fixture
-                .FreezeFake<IConfigurationSection>().Value)
-                .Returns("true");
+            fixture.FreezeFakeConfiguration(GoogleDriveService.REWRITE_KEY, "true");
         }
 
         [Fact]
@@ -198,14 +191,12 @@ public class GoogleDriveServiceTests : UnitTest
         [Fact]
         public async Task GivenExistingFileAndNotAllowedToRewriteShouldReturnFailResult()
         {
+            fixture.FreezeFakeConfiguration(GoogleDriveService.REWRITE_KEY, "false");
+
             A.CallTo(() => fixture
                 .FreezeFake<GoogleDriveFilesService>()
                 .GetAsync(fileName, parentId, cancellationToken))
                 .Returns(fixture.FreezeFake<File>());
-
-            A.CallTo(() => fixture
-                .FreezeFake<IConfigurationSection>().Value)
-                .Returns("false");
 
             var result = await service.CreateFileAsync(filePath, parentId, publicAccess, cancellationToken);
 
@@ -215,14 +206,12 @@ public class GoogleDriveServiceTests : UnitTest
         [Fact]
         public async Task GivenExistingFileAndNotSpecifiedToRewriteShouldNotAllowActionAndReturnFailResult()
         {
+            fixture.FreezeFakeConfiguration(GoogleDriveService.REWRITE_KEY, null as string);
+
             A.CallTo(() => fixture
                 .FreezeFake<GoogleDriveFilesService>()
                 .GetAsync(fileName, parentId, cancellationToken))
                 .Returns(fixture.FreezeFake<File>());
-
-            A.CallTo(() => fixture
-                .FreezeFake<IConfigurationSection>().Value)
-                .Returns(null as string);
 
             var result = await service.CreateFileAsync(filePath, parentId, publicAccess, cancellationToken);
 

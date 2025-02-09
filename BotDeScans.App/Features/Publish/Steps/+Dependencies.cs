@@ -7,7 +7,7 @@ internal static class AddDependencies
 {
     internal static IServiceCollection AddPublishSteps(this IServiceCollection services) => services
         .AddScoped<IStep, PublishBloggerStep>()
-        .AddScoped<IStep, PublishMangadexStep>()
+        .AddScoped<IStep, PublishMangaDexStep>()
         .AddScoped<IStep, UploadPdfBoxStep>()
         .AddScoped<IStep, UploadZipBoxStep>()
         .AddScoped<IStep, UploadPdfGoogleDriveStep>()

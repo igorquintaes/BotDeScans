@@ -4,7 +4,7 @@ using Microsoft.EntityFrameworkCore;
 using Remora.Discord.API.Abstractions.Objects;
 using Remora.Discord.API.Objects;
 using Remora.Discord.Commands.Autocomplete;
-namespace BotDeScans.App.Features.Titles;
+namespace BotDeScans.App.Services.Discord.Autocomplete;
 
 public class AutocompleteTitles(DatabaseContext databaseContext) : IAutocompleteProvider
 {

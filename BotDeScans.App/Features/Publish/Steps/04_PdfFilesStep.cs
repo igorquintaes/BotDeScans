@@ -1,10 +1,10 @@
 ﻿using BotDeScans.App.Services;
 using FluentResults;
-using Microsoft.Extensions.DependencyInjection;
 namespace BotDeScans.App.Features.Publish.Steps;
 
 public class PdfFilesStep(
-    IServiceProvider serviceProvider,
+    FileService fileService,
+    FileReleaseService fileReleaseService,
     PublishState state) : IStep
 {
     public StepEnum StepName => StepEnum.PdfFiles;
@@ -18,9 +18,6 @@ public class PdfFilesStep(
 
     public async Task<Result> ExecuteAsync(CancellationToken cancellationToken)
     {
-        var fileService = serviceProvider.GetRequiredService<FileService>();
-        var fileReleaseService = serviceProvider.GetRequiredService<FileReleaseService>();
-
         var pdfFileResult = await fileService.CreatePdfFileAsync(
             fileName: state.ReleaseInfo.ChapterNumber,
             resourcesDirectory: state.InternalData.OriginContentFolder,

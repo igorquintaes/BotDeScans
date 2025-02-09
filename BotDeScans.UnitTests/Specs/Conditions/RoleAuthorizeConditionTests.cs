@@ -26,7 +26,7 @@ public class RoleAuthorizeConditionTests : UnitTest
         fixture.FreezeFake<IDiscordRestGuildAPI>();
         fixture.FreezeFake<IDiscordRestInteractionAPI>();
         fixture.FreezeFake<RolesService>();
-        fixture.Inject<IOperationContext>(new InteractionContextFake(fixture));
+        fixture.Inject<IOperationContext>(new FakeInteractionContext(fixture));
 
         condition = fixture.Create<RoleAuthorizeCondition>();
     }

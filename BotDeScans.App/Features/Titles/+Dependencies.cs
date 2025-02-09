@@ -2,7 +2,7 @@
 using BotDeScans.App.Features.Titles.Update;
 using Microsoft.Extensions.DependencyInjection;
 using Remora.Commands.Extensions;
-using Remora.Discord.Commands.Extensions;
+using Remora.Discord.Interactivity.Extensions;
 using System.Diagnostics.CodeAnalysis;
 namespace BotDeScans.App.Features.Titles;
 
@@ -13,7 +13,6 @@ internal static class AddDependencies
         .AddCommandTree()
             .WithCommandGroup<TitleCommands>()
             .Finish()
-        .AddAutocompleteProvider<AutocompleteTitles>()
-        .AddTitleCreateServices()
-        .AddTitleUpdateServices();
+        .AddInteractionGroup<CreateInteractions>()
+        .AddInteractionGroup<UpdateInteractions>();
 }

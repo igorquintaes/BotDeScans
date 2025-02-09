@@ -7,12 +7,12 @@ public static class ConfigurationExtensions
         => configuration.GetValue<T?>(key)
         ?? throw new ArgumentNullException(nameof(key), $"'{key}' config value not found.");
 
-    public static T[] GetRequiredValues<T>(this IConfiguration configuration, string key, Func<string, object> parser)
+    public static T[] GetRequiredValues<T>(this IConfiguration configuration, string key, Func<string, object> parser) 
         => configuration
             .GetRequiredSection(key)
-            .AsEnumerable()
-            .Where(x => x.Value is not null)
-            .Select(x => (T)parser(x.Value!))
+            .Get<List<string>>()!
+            .Where(x => x is not null)
+            .Select(x => (T)parser(x))
             .Distinct()
             .ToArray();
-}
+    }

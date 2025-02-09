@@ -10,24 +10,12 @@ public partial class MangaDexService(
 {
     private string? accessToken;
 
-    public async Task<Result> LoginAsync()
+    public virtual async Task<Result> LoginAsync()
     {
-        var username = configuration.GetValue("Mangadex:Username", string.Empty);
-        var password = configuration.GetValue("Mangadex:Password", string.Empty);
-        var clientId = configuration.GetValue("Mangadex:ClientId", string.Empty);
-        var clientSecret = configuration.GetValue("Mangadex:ClientSecret", string.Empty);
-
-        if (string.IsNullOrWhiteSpace(username))
-            return Result.Fail("No mangadex username defined");
-
-        if (string.IsNullOrWhiteSpace(password))
-            return Result.Fail("No mangadex password defined");
-
-        if (string.IsNullOrWhiteSpace(clientId))
-            return Result.Fail("No mangadex clientId defined");
-
-        if (string.IsNullOrWhiteSpace(clientSecret))
-            return Result.Fail("No mangadex clientSecret defined");
+        var username = configuration.GetRequiredValue<string>("Mangadex:Username");
+        var password = configuration.GetRequiredValue<string>("Mangadex:Password");
+        var clientId = configuration.GetRequiredValue<string>("Mangadex:ClientId");
+        var clientSecret = configuration.GetRequiredValue<string>("Mangadex:ClientSecret");
 
         var result = await mangaDex.Auth.Personal(clientId, clientSecret, username, password);
 
@@ -41,7 +29,7 @@ public partial class MangaDexService(
         return Result.Ok();
     }
 
-    public async Task<Result> ClearPendingUploadsAsync()
+    public virtual async Task<Result> ClearPendingUploadsAsync()
     {
         var uploadResponse = await mangaDex.Upload.Get(accessToken);
         if (uploadResponse.Errors.Any(x => x.Status == 404))
@@ -58,7 +46,7 @@ public partial class MangaDexService(
         return Result.Ok();
     }
 
-    public async Task<Result<string>> UploadChapterAsync(
+    public virtual async Task<Result<string>> UploadChapterAsync(
         string mangadexTitleId,
         string? chapterName,
         string chapterNumber,
@@ -70,7 +58,7 @@ public partial class MangaDexService(
         if (string.IsNullOrWhiteSpace(groupId))
             return Result.Fail("Mangadex group id is not defined.");
 
-        // todo: permitir múltiplos grupos
+        // todo: permitir múltiplos grupos, ou sem vínculo a grupos
         var uploadResponse = await mangaDex.Upload.Begin(mangadexTitleId, [groupId], accessToken);
         if (uploadResponse.ErrorOccurred)
             return uploadResponse.AsFailResult();
@@ -118,7 +106,7 @@ public partial class MangaDexService(
         return Result.Ok(uploadCommitResult.Data.Id);
     }
 
-    public Result<string> GetTitleIdFromUrl(string url)
+    public virtual Result<string> GetTitleIdFromUrl(string url)
     {
         const int GUID_CHAR_LENGHT = 36;
         const string ID_URL_PREFIX = "/title/";
