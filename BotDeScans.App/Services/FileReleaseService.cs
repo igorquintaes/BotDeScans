@@ -12,14 +12,14 @@ public class FileReleaseService : IDisposable
     // todo: podemos pensar sobre termos capas dinâmicas. Exemplo: Facebook usar capa-facebook, enquanto o blogger usar capa-blogger;
     // definirmos um nome de capa genérico, caso não ache... e uma configuração de obrigar/não obrigar nomes específicos,
     // além de deixar o usuário definir quais nomes. Podemos usar o app.config inicialmente. Configuração a nível de app, não de obra.
-    public const string CoverPageName = "capa";
-    public const string CreditPageName = "creditos";
+    public const string COVER_PAGE_NAME = "capa";
+    public const string CREDIT_PAGE_NAME = "creditos";
 
     public static readonly IEnumerable<string> ValidCoverFiles =
-        ValidReleaseImageExtensions.Select(x => $"{CoverPageName}.{x}");
+        ValidReleaseImageExtensions.Select(x => $"{COVER_PAGE_NAME}.{x}");
 
     public static readonly IEnumerable<string> ValidCreditsFiles =
-        ValidReleaseImageExtensions.Select(x => $"{CreditPageName}.{x}");
+        ValidReleaseImageExtensions.Select(x => $"{CREDIT_PAGE_NAME}.{x}");
 
     /// <summary>
     /// Move single cover file to covers directory
@@ -28,16 +28,13 @@ public class FileReleaseService : IDisposable
     /// <returns>
     /// Cover file path.
     /// </returns>
-    public virtual string MoveCoverFile(string releaseDirectory, string coverDirectory)
+    public virtual string MoveCoverFile(string fromDirectory, string toDirectory)
     {
-        if (Directory.GetFiles(coverDirectory).Length != 0)
-            throw new InvalidOperationException("Cover directory is not empty.");
-
         var coverFilePath = Directory
-            .GetFiles(releaseDirectory)
+            .GetFiles(fromDirectory)
             .Single(filePath => ValidCoverFiles.Any(coverName => filePath.EndsWith(coverName)));
 
-        var coverFileNewPath = Path.Combine(coverDirectory, Path.GetFileName(coverFilePath));
+        var coverFileNewPath = Path.Combine(toDirectory, Path.GetFileName(coverFilePath));
         File.Move(coverFilePath, coverFileNewPath);
 
         return coverFileNewPath;
@@ -60,14 +57,8 @@ public class FileReleaseService : IDisposable
         return folderPath;
     }
 
-    private bool disposed;
     public void Dispose()
     {
-        if (disposed)
-            return;
-
-        disposed = true;
-
         foreach (var scopedDirectory in scopedDirectories)
             Directory.Delete(scopedDirectory, true);
 
