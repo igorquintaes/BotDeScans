@@ -12,8 +12,6 @@ public class PublishMangaDexStep(
     public StepEnum StepName => StepEnum.UploadMangadex;
     public StepType StepType => StepType.Publish;
 
-    public IConfiguration teste => configuration;
-
     public Task<Result> ValidateBeforeFilesManagementAsync(CancellationToken _)
     {
         if (state.Title.References.All(x => x.Key != Models.ExternalReference.MangaDex))

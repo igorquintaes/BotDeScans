@@ -23,7 +23,7 @@ public class PublishMangDexStepTests : UnitTest
     {
         fixture.FreezeFake<IServiceProvider>();
         fixture.FreezeFake<IConfiguration>();
-        fixture.FreezeFake<PublishState>();
+        fixture.Freeze<PublishState>();
 
         step = fixture.Create<PublishMangaDexStep>();
     }
