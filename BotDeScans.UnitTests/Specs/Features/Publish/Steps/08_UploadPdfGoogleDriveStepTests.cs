@@ -3,7 +3,6 @@ using BotDeScans.App.Features.GoogleDrive;
 using BotDeScans.App.Features.Publish;
 using BotDeScans.App.Features.Publish.Steps;
 using BotDeScans.UnitTests.Extensions;
-using BotDeScans.UnitTests.FakeObjects;
 using FakeItEasy;
 using FluentAssertions;
 using FluentResults;
@@ -21,8 +20,8 @@ public class UploadPdfGoogleDriveStepTests : UnitTest
 
     public UploadPdfGoogleDriveStepTests()
     {
+        fixture.Freeze<PublishState>();
         fixture.FreezeFake<IServiceProvider>();
-        fixture.Inject(PublishStateBuilder.Create(fixture, StepEnum.UploadPdfGoogleDrive));
         step = fixture.Create<UploadPdfGoogleDriveStep>();
     }
 

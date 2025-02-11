@@ -3,7 +3,6 @@ using BotDeScans.App.Features.Publish;
 using BotDeScans.App.Features.Publish.Steps;
 using BotDeScans.App.Services;
 using BotDeScans.UnitTests.Extensions;
-using BotDeScans.UnitTests.FakeObjects;
 using Box.V2.Models;
 using FakeItEasy;
 using FluentAssertions;
@@ -20,8 +19,8 @@ public class UploadZipBoxStepTests : UnitTest
 
     public UploadZipBoxStepTests()
     {
+        fixture.Freeze<PublishState>();
         fixture.FreezeFake<IServiceProvider>();
-        fixture.Inject(PublishStateBuilder.Create(fixture, StepEnum.UploadZipBox));
         step = fixture.Create<UploadZipBoxStep>();
     }
 

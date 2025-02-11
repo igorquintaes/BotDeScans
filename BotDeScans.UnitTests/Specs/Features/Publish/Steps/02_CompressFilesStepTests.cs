@@ -3,7 +3,6 @@ using BotDeScans.App.Features.Publish;
 using BotDeScans.App.Features.Publish.Steps;
 using BotDeScans.App.Services;
 using BotDeScans.UnitTests.Extensions;
-using BotDeScans.UnitTests.FakeObjects;
 using FakeItEasy;
 using FluentAssertions;
 using FluentResults.Extensions.FluentAssertions;
@@ -25,8 +24,8 @@ public class CompressFilesStepTests : UnitTest
 
     public CompressFilesStepTests()
     {
+        fixture.Freeze<PublishState>();
         fixture.FreezeFake<ImageService>();
-        fixture.Inject(PublishStateBuilder.Create(fixture, StepEnum.Compress));
         step = fixture.Create<CompressFilesStep>();
     }
 

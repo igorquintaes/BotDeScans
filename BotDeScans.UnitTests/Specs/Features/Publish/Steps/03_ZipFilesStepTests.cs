@@ -3,9 +3,7 @@ using BotDeScans.App.Features.Publish;
 using BotDeScans.App.Features.Publish.Steps;
 using BotDeScans.App.Services;
 using BotDeScans.UnitTests.Extensions;
-using BotDeScans.UnitTests.FakeObjects;
 using FakeItEasy;
-using Fare;
 using FluentAssertions;
 using FluentResults;
 using FluentResults.Extensions.FluentAssertions;
@@ -20,9 +18,9 @@ public class ZipFilesStepTests : UnitTest
 
     public ZipFilesStepTests()
     {
+        fixture.Freeze<PublishState>();
         fixture.FreezeFake<FileService>();
         fixture.FreezeFake<FileReleaseService>();
-        fixture.Inject(PublishStateBuilder.Create(fixture, StepEnum.ZipFiles));
         step = fixture.Create<ZipFilesStep>();
     }
 

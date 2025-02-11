@@ -1,23 +1,18 @@
 ﻿using AutoFixture;
-using BotDeScans.App.Features.GoogleDrive;
 using BotDeScans.App.Features.Publish;
 using BotDeScans.App.Features.Publish.Steps;
 using BotDeScans.App.Models;
 using BotDeScans.App.Services;
 using BotDeScans.UnitTests.Extensions;
-using BotDeScans.UnitTests.FakeObjects;
-using Box.V2.Models;
-using Castle.Core.Configuration;
 using FakeItEasy;
-using Fare;
 using FluentAssertions;
 using FluentResults;
 using FluentResults.Extensions.FluentAssertions;
 using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Xunit;
+using Microsoft.Extensions.Configuration;
 namespace BotDeScans.UnitTests.Specs.Features.Publish.Steps;
 
 public class PublishMangDexStepTests : UnitTest
@@ -28,7 +23,8 @@ public class PublishMangDexStepTests : UnitTest
     {
         fixture.FreezeFake<IServiceProvider>();
         fixture.FreezeFake<IConfiguration>();
-        fixture.Inject(PublishStateBuilder.Create(fixture, StepEnum.UploadMangadex));
+        fixture.FreezeFake<PublishState>();
+
         step = fixture.Create<PublishMangaDexStep>();
     }
 

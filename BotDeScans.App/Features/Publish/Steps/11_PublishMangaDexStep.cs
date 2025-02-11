@@ -12,6 +12,8 @@ public class PublishMangaDexStep(
     public StepEnum StepName => StepEnum.UploadMangadex;
     public StepType StepType => StepType.Publish;
 
+    public IConfiguration teste => configuration;
+
     public Task<Result> ValidateBeforeFilesManagementAsync(CancellationToken _)
     {
         if (state.Title.References.All(x => x.Key != Models.ExternalReference.MangaDex))
@@ -36,11 +38,11 @@ public class PublishMangaDexStep(
     // API validations
     // (OK) 1 active upload session per account -> You need to either commit or abandon your current upload session before starting a new one 
     // (OK) Max 10 files per one PUT request
-    // Max 20MB per file
-    // Max 500 files per upload session
-    // Max 150MB per upload session
     // (OK) File format must be JPEG, PNG, or GIF
-    // File resolution must be below 10'000 pixels in both width and height 
+    // (NOK) Max 20MB per file
+    // (NOK) Max 500 files per upload session
+    // (NOK) Max 150MB per upload session
+    // (NOK) File resolution must be below 10'000 pixels in both width and height 
     public Task<Result> ValidateAfterFilesManagementAsync(CancellationToken _)
         => Task.FromResult(Result.Ok());
 

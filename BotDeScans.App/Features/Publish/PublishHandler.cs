@@ -7,13 +7,13 @@ public class PublishHandler(PublishService publishService)
         Func<Task<Result>> feedbackFunc,
         CancellationToken cancellationToken)
     {
-        var preValidationResult = await publishService.ValidateBeforeFilesManagementAsync(cancellationToken);
-        if (preValidationResult.IsFailed)
-            return preValidationResult;
-
         var pingResult = await publishService.CreatePingMessageAsync(cancellationToken);
         if (pingResult.IsFailed)
             return pingResult;
+
+        var preValidationResult = await publishService.ValidateBeforeFilesManagementAsync(cancellationToken);
+        if (preValidationResult.IsFailed)
+            return preValidationResult;
 
         var initialFeedbackResult = await feedbackFunc();
         if (initialFeedbackResult.IsFailed)
