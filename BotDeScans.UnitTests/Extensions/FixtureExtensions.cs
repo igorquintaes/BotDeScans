@@ -1,7 +1,9 @@
 ﻿using AutoFixture;
 using AutoFixture.Dsl;
 using FakeItEasy;
+using FakeItEasy.Creation;
 using Microsoft.Extensions.Configuration;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 namespace BotDeScans.UnitTests.Extensions;
@@ -21,6 +23,22 @@ public static class FixtureExtensions
 
         return fixture.Freeze<T>();
     }
+
+    /// <summary>
+    /// Gets or create a freezed fake object
+    /// </summary>
+    /// <typeparam name="T">type</typeparam>
+    /// <param name="fixture">AutoFixture instance</param>
+    /// <param name="optionsBuilder">FakeItEasy options to create fake object</param>
+    /// <returns>faked object</returns>
+    public static T FreezeFake<T>(this IFixture fixture, Action<IFakeOptions<T>> optionsBuilder) where T : class
+    {
+        if (!fixture.Customizations.Any(x => x is NodeComposer<T>))
+            fixture.Inject(A.Fake<T>(optionsBuilder));
+
+        return fixture.Freeze<T>();
+    }
+
     /// <summary>
     /// Gets or create an array of freezed fake object
     /// </summary>
@@ -40,8 +58,7 @@ public static class FixtureExtensions
 
     public static void FreezeFakeConfiguration(this IFixture fixture, string key, string? value)
     {
-        if (!fixture.Customizations.Any(x => x is NodeComposer<IConfiguration>))
-            fixture.Inject(A.Fake<IConfiguration>());
+        fixture.FreezeFake<IConfiguration>();
 
         var fakeSection = A.Fake<IConfigurationSection>();
         A.CallTo(() => fakeSection.Value).Returns(value);
@@ -54,8 +71,7 @@ public static class FixtureExtensions
 
     public static void FreezeFakeConfiguration(this IFixture fixture, string key, IEnumerable<string> values)
     {
-        if (!fixture.Customizations.Any(x => x is NodeComposer<IConfiguration>))
-            fixture.Inject(A.Fake<IConfiguration>());
+        fixture.FreezeFake<IConfiguration>();
 
         var innerFakeSections = values.Select(value =>
         {

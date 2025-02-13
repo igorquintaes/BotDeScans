@@ -11,10 +11,7 @@ public class PublishService(
     PublishState publishState,
     IEnumerable<IStep> steps)
 {
-    private readonly IEnumerable<IStep> steps = steps;
-    private readonly PublishState publishState = publishState;
-
-    public async Task<Result<string>> CreatePingMessageAsync(CancellationToken cancellationToken)
+    public virtual async Task<Result<string>> CreatePingMessageAsync(CancellationToken cancellationToken)
     {
         const string pingTypeKey = "Settings:Publish:PingType";
         var pingType = configuration.GetRequiredValue<PingType>(pingTypeKey);
@@ -60,7 +57,7 @@ public class PublishService(
         return $"<@&{role.Value.ID.Value}>";
     }
 
-    public Task<Result> ValidateBeforeFilesManagementAsync(CancellationToken cancellationToken)
+    public virtual Task<Result> ValidateBeforeFilesManagementAsync(CancellationToken cancellationToken)
         => RunStepsAsync(
             stepFunc: async (step, ct) => await step.ValidateBeforeFilesManagementAsync(ct),
             feedbackFunc: null,
@@ -69,7 +66,7 @@ public class PublishService(
             changeStateOnSuccess: false,
             cancellationToken: cancellationToken);
 
-    public Task<Result> ValidateAfterFilesManagementAsync(CancellationToken cancellationToken)
+    public virtual Task<Result> ValidateAfterFilesManagementAsync(CancellationToken cancellationToken)
         => RunStepsAsync(
             stepFunc: async (step, ct) => await step.ValidateAfterFilesManagementAsync(ct),
             feedbackFunc: null,
@@ -78,7 +75,7 @@ public class PublishService(
             changeStateOnSuccess: false,
             cancellationToken: cancellationToken);
 
-    public Task<Result> RunManagementStepsAsync(
+    public virtual Task<Result> RunManagementStepsAsync(
         Func<Task<Result>>? feedbackFunc,
         CancellationToken cancellationToken)
         => RunStepsAsync(
@@ -89,7 +86,7 @@ public class PublishService(
             changeStateOnSuccess: true,
             cancellationToken: cancellationToken);
 
-    public Task<Result> RunPublishStepsAsync(
+    public virtual Task<Result> RunPublishStepsAsync(
         Func<Task<Result>>? feedbackFunc,
         CancellationToken cancellationToken)
         => RunStepsAsync(
@@ -149,10 +146,6 @@ public class PublishService(
 
         return result;
     }
-
-    // todo: método de revert no futuro (?)
-    // talvez não seja necessário... estamos ampliando os casos validação e casos de rewrite
-    // podemos tratar como cenários exceção e reversão manual em caso de erros.
 }
 
 public enum PingType

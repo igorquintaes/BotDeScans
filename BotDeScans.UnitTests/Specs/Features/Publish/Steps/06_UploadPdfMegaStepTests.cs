@@ -4,7 +4,6 @@ using BotDeScans.App.Features.Mega.InternalServices;
 using BotDeScans.App.Features.Publish;
 using BotDeScans.App.Features.Publish.Steps;
 using BotDeScans.UnitTests.Extensions;
-using BotDeScans.UnitTests.FakeObjects;
 using CG.Web.MegaApiClient;
 using FakeItEasy;
 using FluentAssertions;
@@ -22,8 +21,8 @@ public class UploadPdfMegaStepTests : UnitTest
 
     public UploadPdfMegaStepTests()
     {
+        fixture.Freeze<PublishState>();
         fixture.FreezeFake<IServiceProvider>();
-        fixture.Inject(PublishStateBuilder.Create(fixture, StepEnum.UploadZipMega));
         step = fixture.Create<UploadPdfMegaStep>();
     }
 

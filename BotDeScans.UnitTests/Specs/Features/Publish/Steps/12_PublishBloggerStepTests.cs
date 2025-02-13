@@ -1,11 +1,7 @@
 ﻿using AutoFixture;
 using BotDeScans.App.Features.Publish;
 using BotDeScans.App.Features.Publish.Steps;
-using BotDeScans.App.Services;
 using BotDeScans.UnitTests.Extensions;
-using BotDeScans.UnitTests.FakeObjects;
-using Box.V2.Models;
-using FakeItEasy;
 using FluentAssertions;
 using FluentResults.Extensions.FluentAssertions;
 using System;
@@ -20,8 +16,8 @@ public class PublishBloggerStepTests : UnitTest
 
     public PublishBloggerStepTests()
     {
+        fixture.Freeze<PublishState>();
         fixture.FreezeFake<IServiceProvider>();
-        fixture.Inject(PublishStateBuilder.Create(fixture, StepEnum.PublishBlogspot));
         step = fixture.Create<PublishBloggerStep>();
     }
 

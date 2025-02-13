@@ -17,5 +17,6 @@ internal static class AddDependencies
         .AddPublishSteps()
         .AddScoped<PublishHandler>()
         .AddScoped<PublishService>()
-        .AddScoped<PublishState>();
+        .AddScoped<PublishState>()
+        .AddScoped<MessageService>();
 }

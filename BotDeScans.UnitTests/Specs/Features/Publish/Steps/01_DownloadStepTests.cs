@@ -4,7 +4,6 @@ using BotDeScans.App.Features.Publish;
 using BotDeScans.App.Features.Publish.Steps;
 using BotDeScans.App.Services;
 using BotDeScans.UnitTests.Extensions;
-using BotDeScans.UnitTests.FakeObjects;
 using FakeItEasy;
 using FluentAssertions;
 using FluentResults;
@@ -21,9 +20,9 @@ public class DownloadStepTests : UnitTest
 
     public DownloadStepTests()
     {
+        fixture.Freeze<PublishState>();
         fixture.FreezeFake<FileReleaseService>();
         fixture.FreezeFake<GoogleDriveService>();
-        fixture.Inject(PublishStateBuilder.Create(fixture, StepEnum.Download));
 
         step = fixture.Create<DownloadStep>();
     }

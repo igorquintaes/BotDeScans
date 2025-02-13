@@ -2,28 +2,26 @@
 using BotDeScans.App.Features.Publish.Steps;
 using BotDeScans.App.Models;
 using Microsoft.Extensions.Configuration;
+using SixLabors.ImageSharp;
 using System.ComponentModel;
 namespace BotDeScans.App.Features.Publish;
 
-public class PublishState
+public class PublishState(IConfiguration configuration)
 {
-    public PublishState(IConfiguration configuration)
-    {
-        var stepsAsString = configuration.GetRequiredValues<StepEnum>(
-            "Settings:Publish:Steps",
-            value => Enum.Parse(typeof(StepEnum), value));
-
-        Steps = Enum
-            .GetValues<StepEnum>()
-            .Select(@enum => Array.Exists(stepsAsString, stepEnum => stepEnum == @enum)
+    public IDictionary<StepEnum, StepStatus>? _steps;
+    public IDictionary<StepEnum, StepStatus> Steps => _steps ??=
+        Enum.GetValues<StepEnum>()
+            .Select(@enum => 
+                Array.Exists(configuration.GetRequiredValues<StepEnum>(
+                    "Settings:Publish:Steps",
+                    value => Enum.Parse(typeof(StepEnum), value)), 
+                stepEnum => stepEnum == @enum)
                 ? new KeyValuePair<StepEnum, StepStatus>(@enum, StepStatus.Queued)
                 : new KeyValuePair<StepEnum, StepStatus>(@enum, StepStatus.Skip))
             .ToDictionary(x => x.Key, x => x.Value);
-    }
 
-    public IDictionary<StepEnum, StepStatus> Steps { get; set; }
     public Title Title { get; set; } = null!;
-    public Info ReleaseInfo { get; set; } = new Info();
+    public Info ReleaseInfo { get; set; } = null!;
     public Links ReleaseLinks { get; set; } = new Links();
     public ReleaseInternalData InternalData { get; set; } = new ReleaseInternalData();
 
@@ -36,14 +34,12 @@ public class PublishState
         public string PdfFilePath { get; set; } = null!;
     }
 
-    public record Info
-    {
-        public string DownloadUrl { get; set; } = null!;
-        public string? ChapterName { get; set; }
-        public string ChapterNumber { get; set; } = null!;
-        public string? ChapterVolume { get; set; }
-        public string? Message { get; set; }
-    }
+    public record Info(
+        string DownloadUrl,
+        string? ChapterName,
+        string ChapterNumber,
+        string? ChapterVolume,
+        string? Message);
 
     public record Links
     {
