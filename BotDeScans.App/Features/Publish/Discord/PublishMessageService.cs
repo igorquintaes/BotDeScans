@@ -51,7 +51,7 @@ public class PublishMessageService(
                 .WithError(trackingMessage.Value.Error.Message);
     }
 
-    public virtual async Task<Result<IMessage>> PublishErrorReleaseMessageAsync(
+    public virtual async Task<Result<IMessage>> ErrorReleaseMessageAsync(
         InteractionContext interactionContext,
         FluentResults.Result errorResult,
         CancellationToken cancellationToken)
@@ -62,7 +62,7 @@ public class PublishMessageService(
         return await feedbackService.SendEmbedAsync(channel, embed, ct: cancellationToken);
     }
 
-    public virtual async Task<Result<IMessage>> PublishSuccessReleaseMessageAsync(
+    public virtual async Task<Result<IMessage>> SuccessReleaseMessageAsync(
         InteractionContext interactionContext,
         string content,
         CancellationToken cancellationToken)

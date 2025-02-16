@@ -4,8 +4,8 @@ namespace BotDeScans.App.Infra;
 
 public class DatabaseContext : DbContext
 {
-    public virtual DbSet<Title> Titles { get; protected init; } = default!;
-    public virtual DbSet<TitleReference> TitleReferences { get; protected init; } = default!;
+    public DbSet<Title> Titles { get; protected init; } = default!;
+    public DbSet<TitleReference> TitleReferences { get; protected init; } = default!;
 
     public static string DbPath { get; } = Path.Join(AppDomain.CurrentDomain.BaseDirectory, "database.db");
 

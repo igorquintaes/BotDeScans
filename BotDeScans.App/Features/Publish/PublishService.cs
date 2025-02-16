@@ -20,6 +20,7 @@ public class PublishService(
         const string pingTypeKey = "Settings:Publish:PingType";
         var pingType = configuration.GetRequiredValue<PingType>(pingTypeKey);
 
+         // todo: usar facade
         switch (pingType)
         {
             case PingType.Everyone:
