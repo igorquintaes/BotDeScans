@@ -33,7 +33,7 @@ public class PublishHandler(
         publishState.ReleaseInfo = info;
         Log.Information(info.ToString());
 
-        var initialFeedbackResult = await publishMessageService.SendOrEditTrackingMessageAsync(interactionContext, cancellationToken);
+        var initialFeedbackResult = await publishMessageService.UpdateTrackingMessageAsync(interactionContext, cancellationToken);
         if (initialFeedbackResult.IsFailed)
             return initialFeedbackResult;
 

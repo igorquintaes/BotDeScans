@@ -1,7 +1,6 @@
 ﻿using AutoFixture;
 using BotDeScans.App.Features.Publish;
 using BotDeScans.App.Features.Publish.Discord;
-using BotDeScans.App.Infra;
 using BotDeScans.App.Models;
 using BotDeScans.UnitTests.Extensions;
 using FakeItEasy;
@@ -9,8 +8,6 @@ using FluentResults;
 using FluentResults.Extensions.FluentAssertions;
 using FluentValidation;
 using FluentValidation.Results;
-using iText.Pdfua.Checkers.Utils;
-using Microsoft.EntityFrameworkCore;
 using Remora.Discord.Commands.Contexts;
 using System.Threading.Tasks;
 using Xunit;
@@ -110,7 +107,7 @@ public class PublishHandlerTests : UnitTest
 
             A.CallTo(() => fixture
                 .FreezeFake<PublishMessageService>()
-                .SendOrEditTrackingMessageAsync(
+                .UpdateTrackingMessageAsync(
                     fixture.Freeze<InteractionContext>(),
                     cancellationToken))
                 .Returns(Result.Fail(ERROR_MESSAGE));

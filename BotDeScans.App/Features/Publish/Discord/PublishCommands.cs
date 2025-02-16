@@ -1,8 +1,6 @@
 ﻿using BotDeScans.App.Attributes;
 using BotDeScans.App.Builders;
-using BotDeScans.App.Infra;
 using BotDeScans.App.Services.Discord.Autocomplete;
-using Microsoft.EntityFrameworkCore;
 using Remora.Commands.Attributes;
 using Remora.Commands.Groups;
 using Remora.Discord.API.Abstractions.Objects;
@@ -16,7 +14,7 @@ using System.ComponentModel;
 namespace BotDeScans.App.Features.Publish.Discord;
 
 public class PublishCommands(
-    DatabaseContext databaseContext,
+    PublishQueries publishQueries,
     IOperationContext context,
     IFeedbackService feedbackService,
     IDiscordRestInteractionAPI interactionAPI) : CommandGroup
@@ -33,14 +31,9 @@ public class PublishCommands(
         if (context is not InteractionContext interactionContext)
             return Result.FromSuccess();
 
-        var titleId = await databaseContext.Titles.Where(x => x.Name == title)
-            .Select(x => x.Id)
-            .SingleOrDefaultAsync(CancellationToken);
-
-        if (titleId == default)
-            return await feedbackService.SendContextualWarningAsync(
-                "Obra não encontrada.",
-                ct: CancellationToken);
+        var titleId = await publishQueries.GetTitleId(title, CancellationToken);
+        if (titleId is null)
+            return await feedbackService.SendContextualErrorAsync("Obra não encontrada.", ct: CancellationToken);
 
         var modal = new ModalBuilder(nameof(PublishInteractions.PublishAsync), "Publicar novo lançamento")
             .AddField(fieldName: "driveUrl", label: "Link do capítulo")
@@ -48,7 +41,7 @@ public class PublishCommands(
             .AddField(fieldName: "chapterNumber", label: "Número do capítulo")
             .AddField(fieldName: "chapterVolume", label: "Número do Volume", isRequired: false)
             .AddField(fieldName: "message", label: "Mensagem de postagem", isRequired: false, TextInputStyle.Paragraph)
-            .CreateWithState(titleId.ToString());
+            .CreateWithState(titleId.Value.ToString());
 
         var response = new InteractionResponse(InteractionCallbackType.Modal, modal);
         return await interactionAPI.CreateInteractionResponseAsync

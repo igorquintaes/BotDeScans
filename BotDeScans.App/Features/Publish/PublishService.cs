@@ -124,7 +124,7 @@ public class PublishService(
 
                 if (isPublishing)
                 {
-                    var initialFeedbackResult = await publishMessageService.SendOrEditTrackingMessageAsync(interactionContext, cancellationToken);
+                    var initialFeedbackResult = await publishMessageService.UpdateTrackingMessageAsync(interactionContext, cancellationToken);
                     result.WithReasons(initialFeedbackResult.Reasons);
 
                     if (result.IsFailed)
