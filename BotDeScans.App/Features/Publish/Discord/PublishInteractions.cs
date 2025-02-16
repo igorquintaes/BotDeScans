@@ -27,7 +27,7 @@ public class PublishInteractions(
         var result = await publishHandler.HandleAsync(publishInfo, interactionContext, CancellationToken);
 
         return result.IsSuccess
-            ? await messageService.PublishReleaseMessageAsync(
+            ? await messageService.PublishSuccessReleaseMessageAsync(
                 interactionContext: interactionContext,
                 content: result.Value,
                 CancellationToken)

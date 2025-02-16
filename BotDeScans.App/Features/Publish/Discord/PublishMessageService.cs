@@ -26,29 +26,29 @@ public class PublishMessageService(
     IDiscordRestInteractionAPI discordRestInteractionAPI,
     IDiscordRestChannelAPI discordRestChannelAPI)
 {
-    private Result<IMessage>? publishTrackingMessage = null;
+    private Result<IMessage>? trackingMessage = null;
 
-    public virtual async Task<FluentResults.Result> SendOrEditTrackingMessageAsync(
+    public virtual async Task<FluentResults.Result> UpdateTrackingMessageAsync(
         InteractionContext interactionContext,
         CancellationToken cancellationToken)
     {
         var tasks = new StepsInfo(publishState.Steps.Value);
         var embed = new Embed(tasks.Header, Description: tasks.Details, Colour: tasks.ColorStatus);
 
-        publishTrackingMessage = publishTrackingMessage is null
+        trackingMessage = trackingMessage is null
             ? await feedbackService.SendContextualEmbedAsync(embed, ct: cancellationToken)
             : await discordRestInteractionAPI.EditFollowupMessageAsync(
-                publishTrackingMessage.Value.Entity.Author.ID,
+                trackingMessage.Value.Entity.Author.ID,
                 interactionContext.Interaction.Token,
-                messageID: publishTrackingMessage.Value.Entity.ID,
+                messageID: trackingMessage.Value.Entity.ID,
                 embeds: new List<Embed> { embed },
                 ct: cancellationToken);
 
-        return publishTrackingMessage.Value.IsSuccess is true
+        return trackingMessage.Value.IsSuccess is true
             ? FluentResults.Result.Ok()
             : FluentResults.Result
                 .Fail("Error to update Discord message.")
-                .WithError(publishTrackingMessage.Value.Error.Message);
+                .WithError(trackingMessage.Value.Error.Message);
     }
 
     public virtual async Task<Result<IMessage>> PublishErrorReleaseMessageAsync(
@@ -62,7 +62,7 @@ public class PublishMessageService(
         return await feedbackService.SendEmbedAsync(channel, embed, ct: cancellationToken);
     }
 
-    public virtual async Task<Result<IMessage>> PublishReleaseMessageAsync(
+    public virtual async Task<Result<IMessage>> PublishSuccessReleaseMessageAsync(
         InteractionContext interactionContext,
         string content,
         CancellationToken cancellationToken)

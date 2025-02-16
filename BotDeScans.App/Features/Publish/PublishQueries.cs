@@ -5,8 +5,14 @@ namespace BotDeScans.App.Features.Publish;
 
 public class PublishQueries(DatabaseContext databaseContext)
 {
-    public virtual Task<Title?> GetTitle(int titleId, CancellationToken cancellationToken) 
+    public virtual Task<Title?> GetTitle(int titleId, CancellationToken cancellationToken)
         => databaseContext.Titles
             .Include(x => x.References)
             .FirstOrDefaultAsync(x => x.Id == titleId, cancellationToken);
+
+    public virtual Task<int?> GetTitleId(string titleName, CancellationToken cancellationToken) => 
+        databaseContext.Titles
+            .Where(x => x.Name == titleName)
+            .Select(x => x.Id as int?)
+            .FirstOrDefaultAsync(cancellationToken);
 }
