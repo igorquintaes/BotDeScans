@@ -53,10 +53,7 @@ public partial class MangaDexService(
         string? volume,
         string filesDirectory)
     {
-        var groupId = configuration.GetValue<string>("Mangadex:GroupId");
-
-        if (string.IsNullOrWhiteSpace(groupId))
-            return Result.Fail("Mangadex group id is not defined.");
+        var groupId = configuration.GetRequiredValue<string>("Mangadex:GroupId");
 
         // todo: permitir múltiplos grupos, ou sem vínculo a grupos
         var uploadResponse = await mangaDex.Upload.Begin(mangadexTitleId, [groupId], accessToken);
@@ -65,10 +62,8 @@ public partial class MangaDexService(
 
         var uploadId = uploadResponse.Data.Id;
         var idPages = new List<string>();
-        var allowedExtensions = new[] { ".png", ".jpg", ".jpeg" };
         foreach (string file in Directory
             .GetFiles(filesDirectory)
-            .Where(fileName => allowedExtensions.Any(fileName.ToLower().EndsWith))
             .OrderBy(x => x))
         {
             // todo: podemos aumentar até 10 arquivos enviados por vez, baseado na doc
@@ -82,22 +77,18 @@ public partial class MangaDexService(
             idPages.Add(fileUploadResult.Data[0].Id);
         }
 
-        // todo: colocar uma regra mais clara no validator, apenas pra pessoa não digitar nenhuma merda no lugar do volume. Assim padronizamos na app
-        var volumeNumber = string.Join("", volume?.Select(x => char.IsDigit(x) ? x.ToString() : "") ?? [""]).TrimStart('0');
-        if (volumeNumber == string.Empty)
-            volumeNumber = null;
-
         var uploadSessionData = new UploadSessionCommit
         {
             Chapter = new()
             {
                 Chapter = chapterNumber.TrimStart('0'),
                 Title = chapterName,
-                Volume = volumeNumber,
-                TranslatedLanguage = "pt-br"
+                Volume = volume?.TrimStart('0'),
+                TranslatedLanguage = "pt-br" // todo: parametrizar após internacionalização
             },
             PageOrder = [.. idPages]
         };
+
         var uploadCommitResult = await mangaDex.Upload.Commit(uploadId, uploadSessionData, accessToken);
         if (uploadCommitResult.ErrorOccurred)
             return uploadCommitResult.AsFailResult();

@@ -33,7 +33,10 @@ public class PublishCommands(
         if (context is not InteractionContext interactionContext)
             return Result.FromSuccess();
 
-        var titleId = await databaseContext.Titles.Where(x => x.Name == title).Select(x => x.Id).SingleOrDefaultAsync();
+        var titleId = await databaseContext.Titles.Where(x => x.Name == title)
+            .Select(x => x.Id)
+            .SingleOrDefaultAsync(CancellationToken);
+
         if (titleId == default)
             return await feedbackService.SendContextualWarningAsync(
                 "Obra não encontrada.",
@@ -41,7 +44,7 @@ public class PublishCommands(
 
         var modal = new ModalBuilder(nameof(PublishInteractions.PublishAsync), "Publicar novo lançamento")
             .AddField(fieldName: "driveUrl", label: "Link do capítulo")
-            .AddField(fieldName: "chapterName", label: "Nome do capítulo")
+            .AddField(fieldName: "chapterName", label: "Nome do capítulo", isRequired: false)
             .AddField(fieldName: "chapterNumber", label: "Número do capítulo")
             .AddField(fieldName: "chapterVolume", label: "Número do Volume", isRequired: false)
             .AddField(fieldName: "message", label: "Mensagem de postagem", isRequired: false, TextInputStyle.Paragraph)
