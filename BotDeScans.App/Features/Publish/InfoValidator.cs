@@ -11,6 +11,6 @@ public class InfoValidator : AbstractValidator<Info>
             .Must(prop => int.TryParse(prop, out _))
             .When(prop => prop is not null)
             .WithMessage("Volume precisa ser um valor numérico. " +
-                         "Caso o capítlo não seja parte de um volume atualmente definido, não preencha o campo.");
+                         "Caso o capítulo não seja parte de um volume atualmente definido, não preencha o campo.");
     }
 }
