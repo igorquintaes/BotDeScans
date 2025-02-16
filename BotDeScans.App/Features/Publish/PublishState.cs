@@ -8,17 +8,16 @@ namespace BotDeScans.App.Features.Publish;
 
 public class PublishState(IConfiguration configuration)
 {
-    public IDictionary<StepEnum, StepStatus>? _steps;
-    public IDictionary<StepEnum, StepStatus> Steps => _steps ??=
+    public Lazy<IDictionary<StepEnum, StepStatus>> Steps = new(() => 
         Enum.GetValues<StepEnum>()
-            .Select(@enum => 
+            .Select(@enum =>
                 Array.Exists(configuration.GetRequiredValues<StepEnum>(
                     "Settings:Publish:Steps",
-                    value => Enum.Parse(typeof(StepEnum), value)), 
+                    value => Enum.Parse(typeof(StepEnum), value)),
                 stepEnum => stepEnum == @enum)
                 ? new KeyValuePair<StepEnum, StepStatus>(@enum, StepStatus.Queued)
                 : new KeyValuePair<StepEnum, StepStatus>(@enum, StepStatus.Skip))
-            .ToDictionary(x => x.Key, x => x.Value);
+            .ToDictionary(x => x.Key, x => x.Value));
 
     public Title Title { get; set; } = null!;
     public Info ReleaseInfo { get; set; } = null!;
@@ -39,7 +38,16 @@ public class PublishState(IConfiguration configuration)
         string? ChapterName,
         string ChapterNumber,
         string? ChapterVolume,
-        string? Message);
+        string? Message,
+        int TitleId)
+    {
+        public override string ToString() => 
+            $"DownloadUrl: {DownloadUrl}{Environment.NewLine}" +
+            $"ChapterName: {ChapterName}{Environment.NewLine}" +
+            $"ChapterNumber: {ChapterNumber}{Environment.NewLine}" +
+            $"ChapterVolume: {ChapterVolume}{Environment.NewLine}" +
+            $"Message: {Message}{Environment.NewLine}";
+    }
 
     public record Links
     {

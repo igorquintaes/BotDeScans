@@ -49,4 +49,6 @@ public enum StepStatus
     Success,
     [Emoji("warning")]
     Error,
+    [Emoji("sos")]
+    Fatal
 }
