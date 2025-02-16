@@ -1,12 +1,19 @@
 ﻿using AutoFixture;
 using BotDeScans.App.Features.Publish;
+using BotDeScans.App.Features.Publish.Discord;
+using BotDeScans.App.Infra;
+using BotDeScans.App.Models;
 using BotDeScans.UnitTests.Extensions;
 using FakeItEasy;
 using FluentResults;
 using FluentResults.Extensions.FluentAssertions;
+using FluentValidation;
+using FluentValidation.Results;
+using Remora.Discord.Commands.Contexts;
 using System;
 using System.Threading.Tasks;
 using Xunit;
+using static BotDeScans.App.Features.Publish.PublishState;
 
 namespace BotDeScans.UnitTests.Specs.Features.Publish;
 
@@ -16,7 +23,11 @@ public class PublishHandlerTests : UnitTest
 
     public PublishHandlerTests()
     {
+        fixture.FreezeFake<PublishState>();
         fixture.FreezeFake<PublishService>();
+        fixture.FreezeFake<PublishMessageService>();
+        fixture.FreezeFake<DatabaseContext>();
+        fixture.FreezeFake<IValidator<Info>>();
 
         handler = fixture.Create<PublishHandler>();
     }
@@ -27,6 +38,15 @@ public class PublishHandlerTests : UnitTest
         public HandleAsync()
         {
             pingContent = fixture.Create<string>();
+
+            fixture.Freeze<Info>();
+            fixture.Freeze<Title>();
+            fixture.Freeze<InteractionContext>();
+
+            A.CallTo(() => fixture
+                .FreezeFake<IValidator<Info>>()
+                .Validate(fixture.Freeze<Info>()))
+                .Returns(new ValidationResult());
 
             A.CallTo(() => fixture
                 .FreezeFake<PublishService>()
