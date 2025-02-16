@@ -16,6 +16,7 @@ internal static class AddDependencies
         .AddInteractionGroup<PublishInteractions>()
         .AddPublishSteps()
         .AddScoped<PublishHandler>()
+        .AddScoped<PublishQueries>()
         .AddScoped<PublishService>()
         .AddScoped<PublishState>()
         .AddScoped<PublishMessageService>();

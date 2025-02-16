@@ -13,7 +13,7 @@ public class PublishHandler(
     PublishState publishState,
     PublishService publishService,
     PublishMessageService publishMessageService,
-    DatabaseContext databaseContext,
+    PublishQueries publishQueries,
     IValidator<Info> validator)
 {
     public async Task<Result<string>> HandleAsync(
@@ -25,9 +25,9 @@ public class PublishHandler(
         if (infoValidationResult.IsValid is false)
             return infoValidationResult.ToResult();
 
-        var title = await databaseContext.Titles.Include(x => x.References).FirstOrDefaultAsync(x => x.Id == info.TitleId, cancellationToken);
+        var title = await publishQueries.GetTitle(info.TitleId, cancellationToken);
         if (title is null)
-            return Result.Fail("Obra não encontrada");
+            return Result.Fail("Obra não encontrada.");
 
         publishState.Title = title;
         publishState.ReleaseInfo = info;

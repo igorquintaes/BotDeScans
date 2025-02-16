@@ -9,8 +9,9 @@ using FluentResults;
 using FluentResults.Extensions.FluentAssertions;
 using FluentValidation;
 using FluentValidation.Results;
+using iText.Pdfua.Checkers.Utils;
+using Microsoft.EntityFrameworkCore;
 using Remora.Discord.Commands.Contexts;
-using System;
 using System.Threading.Tasks;
 using Xunit;
 using static BotDeScans.App.Features.Publish.PublishState;
@@ -26,7 +27,7 @@ public class PublishHandlerTests : UnitTest
         fixture.FreezeFake<PublishState>();
         fixture.FreezeFake<PublishService>();
         fixture.FreezeFake<PublishMessageService>();
-        fixture.FreezeFake<DatabaseContext>();
+        fixture.FreezeFake<PublishQueries>();
         fixture.FreezeFake<IValidator<Info>>();
 
         handler = fixture.Create<PublishHandler>();
@@ -39,14 +40,15 @@ public class PublishHandlerTests : UnitTest
         {
             pingContent = fixture.Create<string>();
 
-            fixture.Freeze<Info>();
-            fixture.Freeze<Title>();
-            fixture.Freeze<InteractionContext>();
-
             A.CallTo(() => fixture
                 .FreezeFake<IValidator<Info>>()
                 .Validate(fixture.Freeze<Info>()))
                 .Returns(new ValidationResult());
+
+            A.CallTo(() => fixture
+                .FreezeFake<PublishQueries>()
+                .GetTitle(fixture.Freeze<Info>().TitleId, cancellationToken))
+                .Returns(fixture.Freeze<Title>());
 
             A.CallTo(() => fixture
                 .FreezeFake<PublishService>()
@@ -57,9 +59,68 @@ public class PublishHandlerTests : UnitTest
         [Fact]
         public async Task GivenSuccessFulExecutionShouldReturnSuccessResult()
         {
-            var result = await handler.HandleAsync(() => Task.FromResult(Result.Ok()), cancellationToken);
+            var result = await handler.HandleAsync(
+                fixture.Freeze<Info>(),
+                fixture.Freeze<InteractionContext>(),
+                cancellationToken);
 
             result.Should().BeSuccess().And.HaveValue(pingContent);
+        }
+
+        [Fact]
+        public async Task GivenErrorToValidateInfoDataShouldReturnFailResult()
+        {
+            const string ERROR_MESSAGE = "some error.";
+
+            A.CallTo(() => fixture
+                .FreezeFake<IValidator<Info>>()
+                .Validate(fixture.Freeze<Info>()))
+                .Returns(new ValidationResult([new ValidationFailure { ErrorMessage = ERROR_MESSAGE }]));
+
+            var result = await handler.HandleAsync(
+                fixture.Freeze<Info>(),
+                fixture.Freeze<InteractionContext>(),
+                cancellationToken);
+
+            result.Should().BeFailure().And.HaveError(ERROR_MESSAGE);
+        }
+
+        [Fact]
+        public async Task GivenNoneTitleFoundInDatabaseShouldReturnFailResult()
+        {
+            const string ERROR_MESSAGE = "Obra não encontrada.";
+
+            A.CallTo(() => fixture
+                .FreezeFake<PublishQueries>()
+                .GetTitle(fixture.Freeze<Info>().TitleId, cancellationToken))
+                .Returns(null as Title);
+
+            var result = await handler.HandleAsync(
+                fixture.Freeze<Info>(),
+                fixture.Freeze<InteractionContext>(),
+                cancellationToken);
+
+            result.Should().BeFailure().And.HaveError(ERROR_MESSAGE);
+        }
+
+        [Fact]
+        public async Task GivenErrorToCreateTrackingMessageShouldReturnFailResult()
+        {
+            const string ERROR_MESSAGE = "some error.";
+
+            A.CallTo(() => fixture
+                .FreezeFake<PublishMessageService>()
+                .SendOrEditTrackingMessageAsync(
+                    fixture.Freeze<InteractionContext>(),
+                    cancellationToken))
+                .Returns(Result.Fail(ERROR_MESSAGE));
+
+            var result = await handler.HandleAsync(
+                fixture.Freeze<Info>(),
+                fixture.Freeze<InteractionContext>(),
+                cancellationToken);
+
+            result.Should().BeFailure().And.HaveError(ERROR_MESSAGE);
         }
 
         [Fact]
@@ -72,7 +133,10 @@ public class PublishHandlerTests : UnitTest
                 .CreatePingMessageAsync(cancellationToken))
                 .Returns(Result.Fail(ERROR_MESSAGE));
 
-            var result = await handler.HandleAsync(() => Task.FromResult(Result.Ok()), cancellationToken);
+            var result = await handler.HandleAsync(
+                fixture.Freeze<Info>(),
+                fixture.Freeze<InteractionContext>(),
+                cancellationToken);
 
             result.Should().BeFailure().And.HaveError(ERROR_MESSAGE);
         }
@@ -84,21 +148,15 @@ public class PublishHandlerTests : UnitTest
 
             A.CallTo(() => fixture
                 .FreezeFake<PublishService>()
-                .ValidateBeforeFilesManagementAsync(cancellationToken))
+                .ValidateBeforeFilesManagementAsync(
+                    fixture.Freeze<InteractionContext>(), 
+                    cancellationToken))
                 .Returns(Result.Fail(ERROR_MESSAGE));
 
-            var result = await handler.HandleAsync(() => Task.FromResult(Result.Ok()), cancellationToken);
-
-            result.Should().BeFailure().And.HaveError(ERROR_MESSAGE);
-        }
-
-        [Fact]
-        public async Task GivenErrorToRuFeedbackFuncShouldReturnFailResult()
-        {
-            const string ERROR_MESSAGE = "some error.";
-            static Task<Result> func() => Task.FromResult(Result.Fail(ERROR_MESSAGE));
-
-            var result = await handler.HandleAsync(func, cancellationToken);
+            var result = await handler.HandleAsync(
+                fixture.Freeze<Info>(),
+                fixture.Freeze<InteractionContext>(),
+                cancellationToken);
 
             result.Should().BeFailure().And.HaveError(ERROR_MESSAGE);
         }
@@ -107,14 +165,18 @@ public class PublishHandlerTests : UnitTest
         public async Task GivenErrorToRunManagementStepsAsyncShouldReturnFailResult()
         {
             const string ERROR_MESSAGE = "some error.";
-            Func<Task<Result>> func = () => Task.FromResult(Result.Ok());
 
             A.CallTo(() => fixture
                 .FreezeFake<PublishService>()
-                .RunManagementStepsAsync(func, cancellationToken))
+                .RunManagementStepsAsync(
+                    fixture.Freeze<InteractionContext>(), 
+                    cancellationToken))
                 .Returns(Result.Fail(ERROR_MESSAGE));
 
-            var result = await handler.HandleAsync(func, cancellationToken);
+            var result = await handler.HandleAsync(
+                fixture.Freeze<Info>(),
+                fixture.Freeze<InteractionContext>(),
+                cancellationToken);
 
             result.Should().BeFailure().And.HaveError(ERROR_MESSAGE);
         }
@@ -126,10 +188,15 @@ public class PublishHandlerTests : UnitTest
 
             A.CallTo(() => fixture
                 .FreezeFake<PublishService>()
-                .ValidateAfterFilesManagementAsync(cancellationToken))
+                .ValidateAfterFilesManagementAsync(
+                    fixture.Freeze<InteractionContext>(), 
+                    cancellationToken))
                 .Returns(Result.Fail(ERROR_MESSAGE));
 
-            var result = await handler.HandleAsync(() => Task.FromResult(Result.Ok()), cancellationToken);
+            var result = await handler.HandleAsync(
+                fixture.Freeze<Info>(),
+                fixture.Freeze<InteractionContext>(),
+                cancellationToken);
 
             result.Should().BeFailure().And.HaveError(ERROR_MESSAGE);
         }
@@ -138,14 +205,18 @@ public class PublishHandlerTests : UnitTest
         public async Task GivenErrorToRunPublishStepsAsyncShouldReturnFailResult()
         {
             const string ERROR_MESSAGE = "some error.";
-            Func<Task<Result>> func = () => Task.FromResult(Result.Ok());
 
             A.CallTo(() => fixture
                 .FreezeFake<PublishService>()
-                .RunPublishStepsAsync(func, cancellationToken))
+                .RunPublishStepsAsync(
+                    fixture.Freeze<InteractionContext>(), 
+                    cancellationToken))
                 .Returns(Result.Fail(ERROR_MESSAGE));
 
-            var result = await handler.HandleAsync(func, cancellationToken);
+            var result = await handler.HandleAsync(
+                fixture.Freeze<Info>(),
+                fixture.Freeze<InteractionContext>(),
+                cancellationToken);
 
             result.Should().BeFailure().And.HaveError(ERROR_MESSAGE);
         }
