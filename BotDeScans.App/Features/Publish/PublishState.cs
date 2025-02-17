@@ -33,14 +33,32 @@ public class PublishState(IConfiguration configuration)
         public string PdfFilePath { get; set; } = null!;
     }
 
-    public record Info(
-        string DownloadUrl,
-        string? ChapterName,
-        string ChapterNumber,
-        string? ChapterVolume,
-        string? Message,
-        int TitleId)
+    public record Info
     {
+        public string DownloadUrl { get; init; }
+        public string? ChapterName { get; init; }
+        public string ChapterNumber { get; init; }
+        public string? ChapterVolume { get; init; }
+        public string? Message { get; init; }
+        public int TitleId { get; init; }
+
+
+        public Info(
+            string downloadUrl,
+            string? chapterName,
+            string chapterNumber,
+            string? chapterVolume,
+            string? message,
+            int titleId)
+        {
+            DownloadUrl = downloadUrl;
+            ChapterName = chapterName.NullIfWhitespace();
+            ChapterNumber = chapterNumber;
+            ChapterVolume = chapterVolume.NullIfWhitespace();
+            Message = message.NullIfWhitespace();
+            TitleId = titleId;
+        }
+
         public override string ToString() => 
             $"DownloadUrl: {DownloadUrl}{Environment.NewLine}" +
             $"ChapterName: {ChapterName}{Environment.NewLine}" +

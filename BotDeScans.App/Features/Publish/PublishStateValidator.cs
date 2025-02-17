@@ -54,7 +54,7 @@ public partial class InfoValidator : AbstractValidator<Info>
     {
         RuleFor(model => model.ChapterName)
             .Must(prop => prop!.Length <= 255)
-            .When(prop => prop.ChapterName is not null)
+            .When(prop => string.IsNullOrWhiteSpace(prop.ChapterName) is false)
             .WithMessage("Nome de capítulo muito longo.");
 
         RuleFor(model => model.ChapterNumber)
@@ -62,8 +62,8 @@ public partial class InfoValidator : AbstractValidator<Info>
             .WithMessage("Número do capítulo inválido.");
 
         RuleFor(model => model.ChapterVolume)
-            .Must(prop => int.TryParse(prop, out var volume) && volume > 0)
-            .When(prop => prop.ChapterVolume is not null)
+            .Must(prop => int.TryParse(prop, out var volume) && volume >= 0)
+            .When(prop => string.IsNullOrWhiteSpace(prop.ChapterVolume) is false)
             .WithMessage("Volume do capítulo inválido.");
     }
 
