@@ -1,62 +1,15 @@
-﻿using BotDeScans.App.Extensions;
-using BotDeScans.App.Features.Publish.Discord;
+﻿using BotDeScans.App.Features.Publish.Discord;
 using BotDeScans.App.Features.Publish.Steps;
-using BotDeScans.App.Services.Discord;
 using FluentResults;
-using Microsoft.Extensions.Configuration;
 using Remora.Discord.Commands.Contexts;
 using Serilog;
 namespace BotDeScans.App.Features.Publish;
 
 public class PublishService(
-    IConfiguration configuration,
     PublishMessageService publishMessageService,
-    RolesService rolesService,
     PublishState publishState,
     IEnumerable<IStep> steps)
 {
-    public virtual async Task<Result<string>> CreatePingMessageAsync(CancellationToken cancellationToken)
-    {
-        const string pingTypeKey = "Settings:Publish:PingType";
-        var pingType = configuration.GetRequiredValue<PingType>(pingTypeKey);
-
-         // todo: usar facade
-        switch (pingType)
-        {
-            case PingType.Everyone:
-                return "@everyone";
-            case PingType.Global:
-                if (publishState.Title.DiscordRoleId is null)
-                    return Result.Fail("Não foi definida uma role para o Discord nesta obra. Defina, ou mude o tipo de publicação no arquivo de configuração do Bot de Scans.");
-
-                // todo: adicionar validação para chaves de role no init
-                const string globalRoleKey = "Settings:Publish:GlobalRole";
-                var globalRoleName = configuration.GetRequiredValue<string>(globalRoleKey);
-                var globalRoleAsPingResult = await rolesService.GetRoleFromGuildAsync(globalRoleName, cancellationToken);
-                if (globalRoleAsPingResult.IsFailed)
-                    return globalRoleAsPingResult.ToResult();
-
-                var titleRoleAsPingResult = await rolesService.GetRoleFromGuildAsync(publishState.Title.DiscordRoleId.ToString()!, cancellationToken);
-                if (titleRoleAsPingResult.IsFailed)
-                    return titleRoleAsPingResult.ToResult();
-
-                return $"{globalRoleAsPingResult.Value.ToDiscordString()}, {titleRoleAsPingResult.Value.ToDiscordString()}";
-            case PingType.Role:
-                if (publishState.Title.DiscordRoleId is null)
-                    return Result.Fail("Não foi definida uma role para o Discord nesta obra. Defina, ou mude o tipo de publicação no arquivo de configuração do Bot de Scans.");
-
-                var roleResult = await rolesService.GetRoleFromGuildAsync(publishState.Title.DiscordRoleId.ToString()!, cancellationToken);
-                if (roleResult.IsFailed)
-                    return roleResult.ToResult();
-
-                return roleResult.Value.ToDiscordString();
-            case PingType.None:
-                return string.Empty;
-            default:
-                return Result.Fail($"invalid value in '{pingTypeKey}'.");
-        };
-    }
-
     public virtual Task<Result> ValidateBeforeFilesManagementAsync(
         InteractionContext interactionContext, 
         CancellationToken cancellationToken)
@@ -152,8 +105,8 @@ public class PublishService(
 
 public enum PingType
 {
-    Everyone,
-    Global,
-    Role,
-    None
+    Everyone = 1,
+    Global = 2,
+    Role = 3,
+    None = 4
 }

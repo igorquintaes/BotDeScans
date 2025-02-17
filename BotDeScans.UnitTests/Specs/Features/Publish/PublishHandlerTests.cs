@@ -1,6 +1,7 @@
 ﻿using AutoFixture;
 using BotDeScans.App.Features.Publish;
 using BotDeScans.App.Features.Publish.Discord;
+using BotDeScans.App.Features.Publish.Pings;
 using BotDeScans.App.Models;
 using BotDeScans.UnitTests.Extensions;
 using FakeItEasy;
@@ -9,6 +10,7 @@ using FluentResults.Extensions.FluentAssertions;
 using FluentValidation;
 using FluentValidation.Results;
 using Remora.Discord.Commands.Contexts;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using Xunit;
 using static BotDeScans.App.Features.Publish.PublishState;
@@ -22,9 +24,10 @@ public class PublishHandlerTests : UnitTest
     public PublishHandlerTests()
     {
         fixture.FreezeFake<PublishState>();
-        fixture.FreezeFake<PublishService>();
         fixture.FreezeFake<PublishMessageService>();
         fixture.FreezeFake<PublishQueries>();
+        fixture.FreezeFake<PublishService>();
+        fixture.FreezeFake<IEnumerable<Ping>>();
         fixture.FreezeFake<IValidator<Info>>();
 
         handler = fixture.Create<PublishHandler>();
@@ -48,9 +51,27 @@ public class PublishHandlerTests : UnitTest
                 .Returns(fixture.Freeze<Title>());
 
             A.CallTo(() => fixture
-                .FreezeFake<PublishService>()
-                .CreatePingMessageAsync(cancellationToken))
-                .Returns(Result.Ok(pingContent));
+                .FreezeFake<IEnumerable<Ping>>()
+                .GetEnumerator())
+                .Returns(fixture.FreezeFake<IEnumerator<Ping>>());
+
+            A.CallTo(() => fixture
+                .FreezeFake<IEnumerator<Ping>>()
+                .MoveNext())
+                .ReturnsNextFromSequence(true, false);
+
+            A.CallTo(() => fixture
+                .FreezeFake<IEnumerator<Ping>>().Current)
+                .Returns(fixture.FreezeFake<Ping>());
+
+            A.CallTo(() => fixture
+                .FreezeFake<Ping>().IsApplicable)
+                .Returns(true);
+
+            A.CallTo(() => fixture
+                .FreezeFake<Ping>()
+                .GetPingAsTextAsync(cancellationToken))
+                .Returns(pingContent);
         }
 
         [Fact]
@@ -126,8 +147,8 @@ public class PublishHandlerTests : UnitTest
             const string ERROR_MESSAGE = "some error.";
 
             A.CallTo(() => fixture
-                .FreezeFake<PublishService>()
-                .CreatePingMessageAsync(cancellationToken))
+                .FreezeFake<Ping>()
+                .GetPingAsTextAsync(cancellationToken))
                 .Returns(Result.Fail(ERROR_MESSAGE));
 
             var result = await handler.HandleAsync(
