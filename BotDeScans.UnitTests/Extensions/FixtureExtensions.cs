@@ -10,6 +10,9 @@ namespace BotDeScans.UnitTests.Extensions;
 
 public static class FixtureExtensions
 {
+    public static string StringOfLength(this IFixture fixture, int length) 
+        => string.Join("", fixture.CreateMany<char>(length));
+
     /// <summary>
     /// Gets or create a freezed fake object
     /// </summary>

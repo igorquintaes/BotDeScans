@@ -1,4 +1,5 @@
-﻿using BotDeScans.App.Extensions;
+﻿using BotDeScans.App.Builders;
+using BotDeScans.App.Extensions;
 using BotDeScans.App.Features.Publish.Steps;
 using Microsoft.Extensions.Configuration;
 using OneOf;
@@ -6,6 +7,7 @@ using Remora.Discord.API.Abstractions.Objects;
 using Remora.Discord.API.Abstractions.Rest;
 using Remora.Discord.API.Objects;
 using Remora.Discord.Commands.Contexts;
+using Remora.Discord.Commands.Feedback.Services;
 using Remora.Rest.Core;
 using Remora.Results;
 using System.ComponentModel;
@@ -17,38 +19,50 @@ using static BotDeScans.App.Features.Publish.PublishState;
 namespace BotDeScans.App.Features.Publish.Discord;
 
 [ExcludeFromCodeCoverage]
-public class MessageService(
+public class PublishMessageService(
     PublishState publishState,
+    IFeedbackService feedbackService,
     IConfiguration configuration,
     IDiscordRestInteractionAPI discordRestInteractionAPI,
     IDiscordRestChannelAPI discordRestChannelAPI)
 {
-    public virtual async Task<FluentResults.Result> UpdatePublishTrackingMessageAsync(
-        Result<IMessage> publishMessage,
+    private Result<IMessage>? trackingMessage = null;
+
+    public virtual async Task<FluentResults.Result> UpdateTrackingMessageAsync(
         InteractionContext interactionContext,
         CancellationToken cancellationToken)
     {
-        var tasks = new StepsInfo(publishState.Steps);
-        var embed = new Embed(
-            Title: tasks.Header,
-            Description: tasks.Details,
-            Colour: tasks.ColorStatus);
+        var tasks = new StepsInfo(publishState.Steps.Value);
+        var embed = new Embed(tasks.Header, Description: tasks.Details, Colour: tasks.ColorStatus);
 
-        var updatedMessageResult = await discordRestInteractionAPI.EditFollowupMessageAsync(
-            publishMessage.Entity.Author.ID,
-            interactionContext.Interaction.Token,
-            messageID: publishMessage.Entity.ID,
-            embeds: new List<Embed> { embed },
-            ct: cancellationToken);
+        trackingMessage = trackingMessage is null
+            ? await feedbackService.SendContextualEmbedAsync(embed, ct: cancellationToken)
+            : await discordRestInteractionAPI.EditFollowupMessageAsync(
+                trackingMessage.Value.Entity.Author.ID,
+                interactionContext.Interaction.Token,
+                messageID: trackingMessage.Value.Entity.ID,
+                embeds: new List<Embed> { embed },
+                ct: cancellationToken);
 
-        return updatedMessageResult.IsSuccess is true
+        return trackingMessage.Value.IsSuccess is true
             ? FluentResults.Result.Ok()
             : FluentResults.Result
-                .Fail("Error while updating message in discord.")
-                .WithError(updatedMessageResult.Error.Message);
+                .Fail("Error to update Discord message.")
+                .WithError(trackingMessage.Value.Error.Message);
     }
 
-    public virtual async Task<Result<IMessage>> PublishReleaseAsync(
+    public virtual async Task<Result<IMessage>> ErrorReleaseMessageAsync(
+        InteractionContext interactionContext,
+        FluentResults.Result errorResult,
+        CancellationToken cancellationToken)
+    {
+        var channel = interactionContext.Interaction.Channel!.Value.ID!.Value;
+        var embed = EmbedBuilder.CreateErrorEmbed(errorResult);
+
+        return await feedbackService.SendEmbedAsync(channel, embed, ct: cancellationToken);
+    }
+
+    public virtual async Task<Result<IMessage>> SuccessReleaseMessageAsync(
         InteractionContext interactionContext,
         string content,
         CancellationToken cancellationToken)

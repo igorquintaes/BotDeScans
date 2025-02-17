@@ -81,9 +81,9 @@ public partial class MangaDexService(
         {
             Chapter = new()
             {
-                Chapter = chapterNumber.TrimStart('0'),
+                Chapter = chapterNumber,
+                Volume = volume,
                 Title = chapterName,
-                Volume = volume?.TrimStart('0'),
                 TranslatedLanguage = "pt-br" // todo: parametrizar após internacionalização
             },
             PageOrder = [.. idPages]
