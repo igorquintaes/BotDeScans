@@ -62,7 +62,7 @@ public partial class InfoValidator : AbstractValidator<Info>
             .WithMessage("Número do capítulo inválido.");
 
         RuleFor(model => model.ChapterVolume)
-            .Must(prop => int.TryParse(prop, out var volume) && volume >= 0)
+            .Must(prop => int.TryParse(prop, out var volume) && volume > 0)
             .When(prop => prop.ChapterVolume is not null)
             .WithMessage("Volume do capítulo inválido.");
     }
