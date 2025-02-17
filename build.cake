@@ -3,7 +3,7 @@
 using Spectre.Console
 
 var target = Argument("target", "Default");
-var configuration = Argument("Configuration", "Release");
+var configuration = Argument("Configuration", "Debug");
 var solution = "./BotDeScans.sln";
 var testResultsDir = Argument("testResultsDir", "./TestResults");
 
