@@ -81,9 +81,9 @@ public partial class MangaDexService(
         {
             Chapter = new()
             {
-                Chapter = chapterNumber.NullIfWhitespace(),
-                Volume = volume.NullIfWhitespace(),
-                Title = chapterName.NullIfWhitespace(),
+                Chapter = chapterNumber,
+                Volume = volume,
+                Title = chapterName,
                 TranslatedLanguage = "pt-br" // todo: parametrizar após internacionalização
             },
             PageOrder = [.. idPages]
