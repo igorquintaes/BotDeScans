@@ -14,6 +14,7 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using Xunit;
 using static Google.Apis.Drive.v3.FilesResource;
+using File = Google.Apis.Drive.v3.Data.File;
 namespace BotDeScans.UnitTests.Specs.Features.GoogleDrive.InternalServices;
 
 public class GoogleDriveResourcesServiceTests : UnitTest, IDisposable

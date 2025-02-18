@@ -11,6 +11,7 @@ using Google.Apis.Drive.v3.Data;
 using System;
 using System.Threading.Tasks;
 using Xunit;
+using File = Google.Apis.Drive.v3.Data.File;
 
 namespace BotDeScans.UnitTests.Specs.Features.Publish.Steps;
 

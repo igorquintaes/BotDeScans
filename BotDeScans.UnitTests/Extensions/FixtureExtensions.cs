@@ -1,11 +1,15 @@
-﻿using AutoFixture;
+﻿using Autofac.Core;
+using AutoFixture;
 using AutoFixture.Dsl;
 using FakeItEasy;
 using FakeItEasy.Creation;
 using Microsoft.Extensions.Configuration;
+using Remora.Commands.Groups;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
+using System.Threading;
 namespace BotDeScans.UnitTests.Extensions;
 
 public static class FixtureExtensions
@@ -92,5 +96,17 @@ public static class FixtureExtensions
 
         A.CallTo(() => baseFakeSection.GetChildren())
             .Returns(innerFakeSections);
+    }
+
+    public static T CreateCommand<T>(this IFixture fixture, CancellationToken cancellationToken)
+        where T : CommandGroup
+    {
+        var command = fixture.Create<T>();
+
+        command.GetType()
+            .GetMethod("SetCancellationToken", BindingFlags.NonPublic | BindingFlags.Instance)!
+            .Invoke(command, [cancellationToken]);
+
+        return command;
     }
 }

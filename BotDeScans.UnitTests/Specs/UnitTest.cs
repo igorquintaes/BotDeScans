@@ -1,8 +1,6 @@
 ﻿using AutoFixture;
 using AutoFixture.AutoFakeItEasy;
 using Bogus;
-using System.Threading;
-using Xunit;
 
 [assembly: CollectionBehavior(DisableTestParallelization = true)]
 namespace BotDeScans.UnitTests.Specs;
