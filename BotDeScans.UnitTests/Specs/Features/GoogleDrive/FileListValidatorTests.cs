@@ -1,9 +1,7 @@
 ﻿using BotDeScans.App.Features.GoogleDrive;
 using BotDeScans.App.Services;
 using FluentValidation.TestHelper;
-using Google.Apis.Drive.v3.Data;
-using System.Collections.Generic;
-using Xunit;
+using File = Google.Apis.Drive.v3.Data.File;
 namespace BotDeScans.UnitTests.Specs.Features.GoogleDrive;
 
 public class FileListValidatorTests : UnitTest

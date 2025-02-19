@@ -35,7 +35,7 @@ Task("Test")
 			CoverletOutputDirectory = Directory(testResultsDir),
 			CoverletOutputName = "coverage",
 			ExcludeByAttribute = ["GeneratedCodeAttribute"],
-			Exclude = ["**BotDeScans.App.Infra.Migrations**"]
+			ExcludeByFile = ["**/Migrations/**/*"]
 		};
 		
 		DotNetTest(solution, new() { NoBuild = true }, coverletSettings);

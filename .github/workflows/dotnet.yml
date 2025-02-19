@@ -32,7 +32,7 @@ jobs:
         
     - name: Execute unit tests
       id: test
-      run: dotnet test BotDeScans.sln --configuration Release --no-build --verbosity normal --collect:"XPlat Code Coverage" --results-directory ./coverage /p:exclude-by-attribute="GeneratedCodeAttribute" /p:exclude="**BotDeScans.App.Infra.Migrations**"
+      run: dotnet test BotDeScans.sln --configuration Release --no-build --verbosity normal --collect:"XPlat Code Coverage" --results-directory ./coverage /p:exclude-by-attribute="GeneratedCodeAttribute" /p:exclude-by-file="**/Migrations/**/*"
         
     - name: Code Coverage Report
       id: report
@@ -57,12 +57,12 @@ jobs:
         path: code-coverage-results.md
         
     - name: dotnet publish
-      if: github.repository_owner == 'igorquintaes'
+      if: github.repository_owner == 'igorquintaes' && github.ref == 'refs/heads/main'
       run: dotnet publish BotDeScans.App/BotDeScans.App.csproj  -c Release -r win-x64 -p:PublishSingleFile=true --self-contained true -p:PublishReadyToRunShowWarnings=true -o ${{env.DOTNET_ROOT}}/BotDeScans
 
     - name: Upload artifact for deployment job
       uses: actions/upload-artifact@v4
-      if: github.repository_owner == 'igorquintaes'
+      if: github.repository_owner == 'igorquintaes' && github.ref == 'refs/heads/main'
       with:
         name: BotDeScans
         path: ${{env.DOTNET_ROOT}}/BotDeScans

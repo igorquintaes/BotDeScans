@@ -1,0 +1,103 @@
+﻿[
+  {
+    CustomID: remora::interactivity::$!123456 modal::PublishAsync,
+    Title: Publicar novo lançamento,
+    Components: [
+      {
+        Components: [
+          {
+            CustomID: driveUrl,
+            Style: Short,
+            Label: Link do capítulo,
+            IsRequired: {
+              Value: true,
+              HasValue: true
+            },
+            Value: {
+              Value: ,
+              HasValue: true
+            },
+            Type: TextInput
+          }
+        ],
+        Type: ActionRow
+      },
+      {
+        Components: [
+          {
+            CustomID: chapterName,
+            Style: Short,
+            Label: Nome do capítulo,
+            IsRequired: {
+              Value: false,
+              HasValue: true
+            },
+            Value: {
+              Value: ,
+              HasValue: true
+            },
+            Type: TextInput
+          }
+        ],
+        Type: ActionRow
+      },
+      {
+        Components: [
+          {
+            CustomID: chapterNumber,
+            Style: Short,
+            Label: Número do capítulo,
+            IsRequired: {
+              Value: true,
+              HasValue: true
+            },
+            Value: {
+              Value: ,
+              HasValue: true
+            },
+            Type: TextInput
+          }
+        ],
+        Type: ActionRow
+      },
+      {
+        Components: [
+          {
+            CustomID: chapterVolume,
+            Style: Short,
+            Label: Número do Volume,
+            IsRequired: {
+              Value: false,
+              HasValue: true
+            },
+            Value: {
+              Value: ,
+              HasValue: true
+            },
+            Type: TextInput
+          }
+        ],
+        Type: ActionRow
+      },
+      {
+        Components: [
+          {
+            CustomID: message,
+            Style: Paragraph,
+            Label: Mensagem de postagem,
+            IsRequired: {
+              Value: false,
+              HasValue: true
+            },
+            Value: {
+              Value: ,
+              HasValue: true
+            },
+            Type: TextInput
+          }
+        ],
+        Type: ActionRow
+      }
+    ]
+  }
+]
