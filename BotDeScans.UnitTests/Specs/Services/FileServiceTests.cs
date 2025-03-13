@@ -3,13 +3,8 @@ using FluentAssertions;
 using FluentResults.Extensions.FluentAssertions;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.PixelFormats;
-using System;
-using System.IO;
 using System.IO.Compression;
-using System.Linq;
 using System.Reflection;
-using System.Threading.Tasks;
-using Xunit;
 namespace BotDeScans.UnitTests.Specs.Services;
 
 public class FileServiceTests : UnitTest

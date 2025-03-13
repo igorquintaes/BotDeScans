@@ -29,8 +29,9 @@ public class PublishState(IConfiguration configuration)
         public string OriginContentFolder { get; set; } = null!;
         public string GoogleDriveFolderId { get; set; } = null!;
         public string CoverFilePath { get; set; } = null!;
-        public string ZipFilePath { get; set; } = null!;
-        public string PdfFilePath { get; set; } = null!;
+        public string? ZipFilePath { get; set; }
+        public string? PdfFilePath { get; set; }
+        public string? CoverImageAsBase64 { get; set; }
     }
 
     public record Info

@@ -10,9 +10,6 @@ using FluentResults.Extensions.FluentAssertions;
 using FluentValidation;
 using FluentValidation.Results;
 using Remora.Discord.Commands.Contexts;
-using System.Collections.Generic;
-using System.Threading.Tasks;
-using Xunit;
 using static BotDeScans.App.Features.Publish.PublishState;
 
 namespace BotDeScans.UnitTests.Specs.Features.Publish;
