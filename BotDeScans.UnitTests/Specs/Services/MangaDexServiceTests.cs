@@ -1,16 +1,8 @@
-﻿using AutoFixture;
-using BotDeScans.App.Services;
+﻿using BotDeScans.App.Services;
 using BotDeScans.UnitTests.Extensions;
-using FakeItEasy;
-using FluentAssertions;
-using FluentResults.Extensions.FluentAssertions;
-using Google.Apis.Auth.OAuth2;
 using MangaDexSharp;
 using Microsoft.Extensions.Configuration;
 using System.Reflection;
-using System.Threading.Tasks;
-using Xunit;
-using Xunit.Internal;
 
 namespace BotDeScans.UnitTests.Specs.Services;
 

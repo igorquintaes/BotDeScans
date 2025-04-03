@@ -10,7 +10,7 @@ public class PublishReplacerService(PublishState publishState)
             { "CHAPTER_NUMBER",        state => state.ReleaseInfo.ChapterNumber },
             { "VOLUME_NUMBER",         state => state.ReleaseInfo.ChapterVolume },
             { "MESSAGE",               state => state.ReleaseInfo.Message },
-            { "COVER_IMAGE",           state => state.InternalData.CoverImageAsBase64 },
+            { "BLOGGER_COVER_IMAGE",   state => state.InternalData.BloggerImageAsBase64 },
             { "MEGA_ZIP_LINK",         state => state.ReleaseLinks.MegaZip },
             { "MEGA_PDF_LINK",         state => state.ReleaseLinks.MegaPdf },
             { "BOX_ZIP_LINK",          state => state.ReleaseLinks.BoxZip },

@@ -1,19 +1,19 @@
-﻿using Autofac.Core;
-using AutoFixture;
-using AutoFixture.Dsl;
-using FakeItEasy;
+﻿using AutoFixture.Dsl;
 using FakeItEasy.Creation;
 using Microsoft.Extensions.Configuration;
 using Remora.Commands.Groups;
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Reflection;
-using System.Threading;
 namespace BotDeScans.UnitTests.Extensions;
 
 public static class FixtureExtensions
 {
+    /// <summary>
+    /// Creates a string with expected length
+    /// </summary>
+    /// <typeparam name="T">type</typeparam>
+    /// <param name="fixture">AutoFixture instance</param>
+    /// <param name="length">expected length</param>
+    /// <returns>string with expected length</returns>
     public static string StringOfLength(this IFixture fixture, int length) 
         => string.Join("", fixture.CreateMany<char>(length));
 

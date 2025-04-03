@@ -22,7 +22,7 @@ public class UploadZipBoxStep(
 
         var titleFolder = await boxService.GetOrCreateFolderAsync(state.Title.Name);
         var file = await boxService.CreateFileAsync(
-            filePath: state.InternalData.ZipFilePath,
+            filePath: state.InternalData.ZipFilePath!,
             parentFolderId: titleFolder.Id);
 
         state.ReleaseLinks.BoxZip = file.SharedLink.DownloadUrl;

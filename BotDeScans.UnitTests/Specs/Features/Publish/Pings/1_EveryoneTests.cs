@@ -1,13 +1,6 @@
-﻿using AutoFixture;
-using BotDeScans.App.Features.Publish;
+﻿using BotDeScans.App.Features.Publish;
 using BotDeScans.App.Features.Publish.Pings;
-using BotDeScans.UnitTests.Extensions;
-using FluentAssertions;
-using FluentResults.Extensions.FluentAssertions;
 using Microsoft.Extensions.Configuration;
-using System.Threading.Tasks;
-using Xunit;
-
 namespace BotDeScans.UnitTests.Specs.Features.Publish.Pings;
 
 public class EveryoneTests : UnitTest

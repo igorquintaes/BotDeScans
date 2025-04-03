@@ -1,18 +1,9 @@
-﻿using AutoFixture;
-using BotDeScans.App.Services.Discord;
-using BotDeScans.UnitTests.Extensions;
-using FakeItEasy;
-using FluentAssertions;
-using FluentResults.Extensions.FluentAssertions;
-using Microsoft.Extensions.Configuration;
+﻿using BotDeScans.App.Services.Discord;
 using Remora.Discord.API.Abstractions.Objects;
 using Remora.Discord.API.Abstractions.Rest;
 using Remora.Discord.API.Objects;
 using Remora.Rest.Core;
 using Remora.Results;
-using System.Collections.Generic;
-using System.Threading.Tasks;
-using Xunit;
 namespace BotDeScans.UnitTests.Specs.DiscordServices;
 
 public class RolesServiceTests : UnitTest

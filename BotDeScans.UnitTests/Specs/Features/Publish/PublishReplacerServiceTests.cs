@@ -1,7 +1,6 @@
 ﻿using AutoFixture;
 using AutoFixture.AutoFakeItEasy;
 using BotDeScans.App.Features.Publish;
-using BotDeScans.App.Models;
 using FluentAssertions;
 
 namespace BotDeScans.UnitTests.Specs.Features.Publish;
@@ -107,7 +106,7 @@ public class PublishReplacerServiceTests : UnitTest
         {
             publishState.Title = publishState.Title with { Name = value! };
             publishState.ReleaseInfo = new(default!, value, value!, value, value, default);
-            publishState.InternalData.CoverImageAsBase64 = value;
+            publishState.InternalData.BloggerImageAsBase64 = value;
             publishState.ReleaseLinks.MegaZip = value;
             publishState.ReleaseLinks.MegaPdf = value;
             publishState.ReleaseLinks.BoxZip = value;

@@ -1,16 +1,9 @@
-﻿using AutoFixture;
-using BotDeScans.App.Services;
-using BotDeScans.UnitTests.Extensions;
-using FluentAssertions;
+﻿using BotDeScans.App.Services;
 using Microsoft.Extensions.Configuration;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.PixelFormats;
 using SixLabors.ImageSharp.Processing;
-using System;
-using System.IO;
 using System.Reflection;
-using System.Threading.Tasks;
-using Xunit;
 
 namespace BotDeScans.UnitTests.Specs.Services;
 

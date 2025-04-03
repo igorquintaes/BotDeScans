@@ -1,6 +1,4 @@
 ﻿using BotDeScans.App.Services;
-using FluentAssertions;
-using FluentResults.Extensions.FluentAssertions;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.PixelFormats;
 using System.IO.Compression;

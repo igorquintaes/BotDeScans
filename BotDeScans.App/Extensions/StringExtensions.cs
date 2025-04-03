@@ -1,4 +1,7 @@
-﻿namespace BotDeScans.App.Extensions;
+﻿using System.Globalization;
+using System.Text;
+
+namespace BotDeScans.App.Extensions;
 
 public static class StringExtensions
 {
@@ -6,4 +9,20 @@ public static class StringExtensions
         string.IsNullOrWhiteSpace(text) 
         ? null 
         : text;
+
+    public static string? ToSnakeCase(this string? text)
+    {
+        if (text is null) return text;
+
+        return new string(text
+            .ToLower()
+            .Normalize(NormalizationForm.FormD)
+            .Where(c => 
+                CharUnicodeInfo.GetUnicodeCategory(c) != UnicodeCategory.NonSpacingMark &&
+                !char.IsPunctuation(c) &&
+                !char.IsSymbol(c))
+            .ToArray())
+            .ToString()
+            .Normalize(NormalizationForm.FormC);
+    }
 }

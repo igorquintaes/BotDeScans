@@ -1,11 +1,8 @@
-﻿using AutoFixture;
-using BotDeScans.UnitTests.Extensions;
-using FakeItEasy;
-using Remora.Discord.API.Abstractions.Objects;
+﻿using Remora.Discord.API.Abstractions.Objects;
 using Remora.Discord.API.Objects;
 using Remora.Discord.Commands.Contexts;
 using Remora.Rest.Core;
-namespace BotDeScans.UnitTests.Builders;
+namespace BotDeScans.UnitTests.FakeObjects;
 
 public record FakeInteractionContext : InteractionContext
 {

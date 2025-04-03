@@ -1,21 +1,10 @@
-﻿using AutoFixture;
-using BotDeScans.App.Features.Publish;
+﻿using BotDeScans.App.Features.Publish;
 using BotDeScans.App.Features.Publish.Steps;
 using BotDeScans.App.Services;
-using BotDeScans.UnitTests.Extensions;
-using FakeItEasy;
-using FluentAssertions;
-using FluentResults.Extensions.FluentAssertions;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.PixelFormats;
 using SixLabors.ImageSharp.Processing;
-using System;
-using System.IO;
 using System.Reflection;
-using System.Threading;
-using System.Threading.Tasks;
-using Xunit;
-
 namespace BotDeScans.UnitTests.Specs.Features.Publish.Steps;
 
 public class CompressFilesStepTests : UnitTest

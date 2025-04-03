@@ -3,13 +3,6 @@ using BotDeScans.App.Services.Wrappers;
 using Box.V2;
 using Box.V2.Managers;
 using Box.V2.Models;
-using FakeItEasy;
-using FluentAssertions;
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Threading.Tasks;
-using Xunit;
 using BoxClient = BotDeScans.App.Services.ExternalClients.BoxClient;
 namespace BotDeScans.UnitTests.Specs.Services;
 

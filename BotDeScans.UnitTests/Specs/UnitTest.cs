@@ -1,5 +1,4 @@
-﻿using AutoFixture;
-using AutoFixture.AutoFakeItEasy;
+﻿using AutoFixture.AutoFakeItEasy;
 using Bogus;
 
 [assembly: CollectionBehavior(DisableTestParallelization = true)]

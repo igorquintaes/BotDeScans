@@ -1,11 +1,7 @@
-﻿using AutoFixture;
-using BotDeScans.App.Attributes;
+﻿using BotDeScans.App.Attributes;
 using BotDeScans.App.Services.Discord;
 using BotDeScans.App.Services.Discord.Conditions;
 using BotDeScans.UnitTests.Builders;
-using BotDeScans.UnitTests.Extensions;
-using FakeItEasy;
-using FluentAssertions;
 using FluentAssertions.Execution;
 using Remora.Discord.API.Abstractions.Objects;
 using Remora.Discord.API.Abstractions.Rest;
@@ -13,8 +9,6 @@ using Remora.Discord.API.Objects;
 using Remora.Discord.Commands.Contexts;
 using Remora.Rest.Core;
 using Remora.Results;
-using System.Threading.Tasks;
-using Xunit;
 namespace BotDeScans.UnitTests.Specs.Conditions;
 
 public class RoleAuthorizeConditionTests : UnitTest

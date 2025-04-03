@@ -1,7 +1,4 @@
-﻿using AutoFixture;
-using BotDeScans.App.Attributes;
-using FluentAssertions;
-using Xunit;
+﻿using BotDeScans.App.Attributes;
 namespace BotDeScans.UnitTests.Specs.Attributes;
 
 public class EmojiAttributeTests : UnitTest
