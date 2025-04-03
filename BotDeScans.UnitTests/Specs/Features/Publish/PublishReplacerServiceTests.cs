@@ -1,7 +1,5 @@
-﻿using AutoFixture;
-using AutoFixture.AutoFakeItEasy;
+﻿using AutoFixture.AutoFakeItEasy;
 using BotDeScans.App.Features.Publish;
-using FluentAssertions;
 
 namespace BotDeScans.UnitTests.Specs.Features.Publish;
 
