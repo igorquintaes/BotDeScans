@@ -1,7 +1,7 @@
 ﻿using BotDeScans.App.Attributes;
 using BotDeScans.App.Services.Discord;
 using BotDeScans.App.Services.Discord.Conditions;
-using BotDeScans.UnitTests.Builders;
+using BotDeScans.UnitTests.FakeObjects;
 using FluentAssertions.Execution;
 using Remora.Discord.API.Abstractions.Objects;
 using Remora.Discord.API.Abstractions.Rest;

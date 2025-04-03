@@ -82,7 +82,7 @@ public class UploadPdfMegaStepTests : UnitTest
             A.CallTo(() => fixture
                 .FreezeFake<MegaService>()
                 .CreateFileAsync(
-                    fixture.Freeze<PublishState>().InternalData.PdfFilePath,
+                    fixture.Freeze<PublishState>().InternalData.PdfFilePath!,
                     titleFolderNode,
                     cancellationToken))
                 .Returns(Result.Ok(new Uri(FILE_LINK)));

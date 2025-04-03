@@ -82,7 +82,7 @@ public class UploadZipMegaStepTests : UnitTest
             A.CallTo(() => fixture
                 .FreezeFake<MegaService>()
                 .CreateFileAsync(
-                    fixture.Freeze<PublishState>().InternalData.ZipFilePath,
+                    fixture.Freeze<PublishState>().InternalData.ZipFilePath!,
                     titleFolderNode,
                     cancellationToken))
                 .Returns(Result.Ok(new Uri(FILE_LINK)));

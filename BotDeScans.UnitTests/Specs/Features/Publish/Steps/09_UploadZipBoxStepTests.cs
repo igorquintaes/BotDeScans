@@ -73,7 +73,7 @@ public class UploadZipBoxStepTests : UnitTest
             A.CallTo(() => fixture
                 .FreezeFake<BoxService>()
                 .CreateFileAsync(
-                    fixture.Freeze<PublishState>().InternalData.ZipFilePath,
+                    fixture.Freeze<PublishState>().InternalData.ZipFilePath!,
                     titleFolder.Id))
                 .Returns(titleFile);
         }

@@ -76,7 +76,7 @@ public class UploadPdfBoxStepTests : UnitTest
             A.CallTo(() => fixture
                 .FreezeFake<BoxService>()
                 .CreateFileAsync(
-                    fixture.Freeze<PublishState>().InternalData.PdfFilePath,
+                    fixture.Freeze<PublishState>().InternalData.PdfFilePath!,
                     fixture.FreezeFake<BoxFolder>().Id))
                 .Returns(fixture.FreezeFake<BoxFile>());
         }

@@ -10,7 +10,7 @@ public static class StringExtensions
         ? null 
         : text;
 
-    public static string? ToSnakeCase(this string? text)
+    public static string? Slugfy(this string? text)
     {
         if (text is null) return text;
 

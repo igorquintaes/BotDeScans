@@ -75,7 +75,7 @@ public class UploadZipGoogleDriveStepTests : UnitTest
             A.CallTo(() => fixture
                 .FreezeFake<GoogleDriveService>()
                 .CreateFileAsync(
-                    fixture.Freeze<PublishState>().InternalData.ZipFilePath,
+                    fixture.Freeze<PublishState>().InternalData.ZipFilePath!,
                     titleFolder.Id,
                     true,
                     cancellationToken))

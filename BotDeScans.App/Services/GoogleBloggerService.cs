@@ -32,7 +32,7 @@ public partial class GoogleBloggerService(
             Content = htmlContent,
             Title = title,
             Labels = [label],
-            Url = $"{uri.Host}{title.ToSnakeCase()}-{chapterNumber.ToSnakeCase()}"
+            Url = $"{uri.Host}{title.Slugfy()}-{chapterNumber.Slugfy()}"
         };
 
         var insertRequest = bloggerService.Posts.Insert(post, bloggerId);

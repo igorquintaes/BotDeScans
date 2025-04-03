@@ -26,7 +26,7 @@ public class UploadPdfGoogleDriveStep(
             return titleFolderResult.ToResult();
 
         var fileResult = await googleDriveService.CreateFileAsync(
-            filePath: state.InternalData.PdfFilePath,
+            filePath: state.InternalData.PdfFilePath!,
             parentId: titleFolderResult.Value.Id,
             publicAccess: true,
             cancellationToken);
