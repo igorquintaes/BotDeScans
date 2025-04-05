@@ -51,8 +51,8 @@ public partial class GoogleBloggerService(
 
     public virtual async Task<string> GetPostCoverAsync(CancellationToken cancellationToken)
     {
-        var width = configuration.GetValue<int?>("Blogger:Cover:Width") ?? 200;
-        var height = configuration.GetValue<int?>("Blogger:Cover:Height") ?? 300;
+        var width = configuration.GetRequiredValue<int>("Blogger:Cover:Width");
+        var height = configuration.GetRequiredValue<int>("Blogger:Cover:Height");
 
         var isGrayScale = imageService.IsGrayscale(state.InternalData.CoverFilePath);
         var cover = await imageService.CreateBase64StringAsync(state.InternalData.CoverFilePath, width, height, isGrayScale, cancellationToken);

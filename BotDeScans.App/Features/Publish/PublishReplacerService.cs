@@ -39,6 +39,12 @@ public class PublishReplacerService(PublishState publishState)
                 var endIndex = text.IndexOf(endRemoveIfEmptyKey) + endRemoveIfEmptyKey.Length - startIndex;
                 text = text.Remove(startIndex, endIndex);
             }
+            else
+            {
+                text = text.Replace(startRemoveIfEmptyKey, string.Empty)
+                           .Replace(endRemoveIfEmptyKey, string.Empty);
+            }
+
         }
 
         return text;
