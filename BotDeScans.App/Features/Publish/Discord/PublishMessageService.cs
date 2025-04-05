@@ -21,6 +21,7 @@ namespace BotDeScans.App.Features.Publish.Discord;
 [ExcludeFromCodeCoverage]
 public class PublishMessageService(
     PublishState publishState,
+    PublishReplacerService publishReplacerService,
     IFeedbackService feedbackService,
     IConfiguration configuration,
     IDiscordRestInteractionAPI discordRestInteractionAPI,
@@ -82,15 +83,22 @@ public class PublishMessageService(
 
     private Embed PublishEmbed(
         InteractionContext interactionContext,
-        string coverFileName) => new(
+        string coverFileName)
+    {
+        var message = string.IsNullOrWhiteSpace(publishState.ReleaseInfo.Message)
+            ? string.Empty
+            : publishReplacerService.Replace(publishState.ReleaseInfo.Message);
+
+        return new(
             Title: $"#{publishState.ReleaseInfo.ChapterNumber} {publishState.Title.Name}",
             Image: new EmbedImage($"attachment://{coverFileName}"),
-            Description: publishState.ReleaseInfo.Message ?? string.Empty,
+            Description: message,
             Colour: Color.Green,
             Fields: CreatePublishLinkFields(),
             Author: new EmbedAuthor(
                 Name: interactionContext.GetUserName(),
                 IconUrl: interactionContext.GetUserAvatarUrl()));
+    }
 
     private List<EmbedField> CreatePublishLinkFields()
         => typeof(Links)

@@ -8,7 +8,6 @@ namespace BotDeScans.App.Services;
 
 public partial class GoogleBloggerService(
     PublishState state,
-    PublishReplacerService publishReplacerService,
     ImageService imageService,
     BloggerClient bloggerClient,
     IConfiguration configuration)
@@ -39,7 +38,7 @@ public partial class GoogleBloggerService(
         return await insertRequest.ExecuteAsync(cancellationToken);
     }
 
-    public virtual async Task<string> GetPostContentAsync(CancellationToken cancellationToken)
+    public virtual async Task<string> GetPostTemplateAsync(CancellationToken cancellationToken)
     {
         var templatePath = Path.Combine(
             AppDomain.CurrentDomain.BaseDirectory,
@@ -47,8 +46,7 @@ public partial class GoogleBloggerService(
             BLOGGER_RELEASE_TEMPLATE_FILE_NAME);
 
         using var streamReader = new StreamReader(templatePath);
-        var template = await streamReader.ReadToEndAsync(cancellationToken);
-        return publishReplacerService.Replace(template);
+        return await streamReader.ReadToEndAsync(cancellationToken);
     }
 
     public virtual async Task<string> GetPostCoverAsync(CancellationToken cancellationToken)

@@ -39,14 +39,16 @@ public class PublishBloggerStep(
     public async Task<Result> ExecuteAsync(CancellationToken cancellationToken)
     {
         var googleBloggerService = serviceProvider.GetRequiredService<GoogleBloggerService>();
+        var publishReplacerService = serviceProvider.GetRequiredService<PublishReplacerService>();
 
         state.InternalData.BloggerImageAsBase64 = await googleBloggerService.GetPostCoverAsync(cancellationToken);
-        var content = await googleBloggerService.GetPostContentAsync(cancellationToken);
+        var template = await googleBloggerService.GetPostTemplateAsync(cancellationToken);
+        var htmlContent =  publishReplacerService.Replace(template);
 
         // todo: parametrizar valores abaixo no futuro
         var post = await googleBloggerService.PostAsync(
             title: $"[{state.Title.Name}] Capítulo {state.ReleaseInfo.ChapterNumber}",
-            htmlContent: content,
+            htmlContent: htmlContent,
             label: state.Title.Name,
             chapterNumber: state.ReleaseInfo.ChapterNumber,
             cancellationToken);
