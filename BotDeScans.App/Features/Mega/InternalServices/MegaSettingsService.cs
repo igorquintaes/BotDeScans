@@ -1,13 +1,11 @@
 ﻿using BotDeScans.App.Models;
-using BotDeScans.App.Services.ExternalClients;
 using CG.Web.MegaApiClient;
 using FluentResults;
 
 namespace BotDeScans.App.Features.Mega.InternalServices;
 
-public class MegaSettingsService(MegaClient megaClient)
+public class MegaSettingsService(IMegaApiClient megaApiClient)
 {
-    private readonly IMegaApiClient megaApiClient = megaClient.Client;
     private static INode? Root;
 
     public virtual async Task<INode> GetRootFolderAsync()

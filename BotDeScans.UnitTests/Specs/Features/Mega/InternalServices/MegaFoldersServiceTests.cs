@@ -1,5 +1,4 @@
 ﻿using BotDeScans.App.Features.Mega.InternalServices;
-using BotDeScans.App.Services.ExternalClients;
 using CG.Web.MegaApiClient;
 namespace BotDeScans.UnitTests.Specs.Features.Mega.InternalServices;
 
@@ -9,12 +8,8 @@ public class MegaFoldersServiceTests : UnitTest
 
     public MegaFoldersServiceTests()
     {
-        fixture.FreezeFake<MegaClient>();
+        fixture.FreezeFake<IMegaApiClient>();
         fixture.FreezeFake<MegaResourcesService>();
-
-        A.CallTo(() => fixture
-            .FreezeFake<MegaClient>().Client)
-            .Returns(fixture.FreezeFake<IMegaApiClient>());
 
         service = fixture.Create<MegaFoldersService>();
     }

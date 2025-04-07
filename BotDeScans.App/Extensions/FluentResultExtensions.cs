@@ -11,19 +11,19 @@ namespace BotDeScans.App.Extensions;
 
 public static class FluentResultExtensions
 {
-    public static Result WithConditionalError(this Result result, Func<bool> conditionToAddError, string error)
-        => conditionToAddError.Invoke()
+    public static Result WithConditionalError(this Result result, Func<bool> conditionToAddError, string error) => 
+        conditionToAddError.Invoke()
             ? result.WithError(error)
             : result;
 
-    public static Result AsFailResult<T>(this MangaDexRoot<T> mangaDexResponse) where T : new()
-        => Result.Fail(GetErrors(mangaDexResponse.Errors));
+    public static Result AsFailResult<T>(this MangaDexRoot<T> mangaDexResponse) where T : new() => 
+        Result.Fail(GetErrors(mangaDexResponse.Errors));
 
-    public static Result AsFailResult(this MangaDexRoot mangaDexResponse)
-        => Result.Fail(GetErrors(mangaDexResponse.Errors));
+    public static Result AsFailResult(this MangaDexRoot mangaDexResponse) => 
+        Result.Fail(GetErrors(mangaDexResponse.Errors));
 
-    public static Result ToResult(this ValidationResult validationResult)
-        => validationResult.IsValid
+    public static Result ToResult(this ValidationResult validationResult) => 
+        validationResult.IsValid
             ? Result.Ok()
             : Result.Fail(validationResult.Errors.Select(validationError =>
                      new Error(validationError.ErrorMessage)));

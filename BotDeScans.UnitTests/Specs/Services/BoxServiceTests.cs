@@ -3,7 +3,6 @@ using BotDeScans.App.Services.Wrappers;
 using Box.V2;
 using Box.V2.Managers;
 using Box.V2.Models;
-using BoxClient = BotDeScans.App.Services.ExternalClients.BoxClient;
 namespace BotDeScans.UnitTests.Specs.Services;
 
 public class BoxServiceTests : UnitTest
@@ -18,10 +17,7 @@ public class BoxServiceTests : UnitTest
         boxClient = A.Fake<IBoxClient>();
         streamWrapper = A.Fake<StreamWrapper>();
 
-        var appClient = A.Fake<BoxClient>();
-        A.CallTo(() => appClient.Client).Returns(boxClient);
-
-        service = new(appClient, streamWrapper);
+        service = new(streamWrapper, boxClient);
 
     }
 

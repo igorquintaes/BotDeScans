@@ -26,6 +26,7 @@ public class PublishInteractions(
         var publishInfo = new Info(driveUrl, chapterName, chapterNumber, chapterVolume, message, int.Parse(state));
         var result = await publishHandler.HandleAsync(publishInfo, interactionContext, CancellationToken);
 
+        // todo: publicar no discord deve ser um novo step, eliminando lógica daqui.
         return result.IsSuccess
             ? await messageService.SuccessReleaseMessageAsync(
                 interactionContext: interactionContext,

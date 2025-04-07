@@ -1,8 +1,6 @@
 ﻿using BotDeScans.App.Services;
-using BotDeScans.UnitTests.Extensions;
 using MangaDexSharp;
 using Microsoft.Extensions.Configuration;
-using System.Reflection;
 
 namespace BotDeScans.UnitTests.Specs.Services;
 
@@ -14,121 +12,15 @@ public class MangaDexServiceTests : UnitTest
     {
         fixture.FreezeFake<IMangaDex>();
         fixture.FreezeFake<IConfiguration>();
+        fixture.FreezeFake<MangaDexAccessToken>();
 
         service = fixture.Create<MangaDexService>();
-    }
-
-    public class LoginAsync : MangaDexServiceTests
-    {
-        private readonly TokenResult tokenResult;
-
-        public LoginAsync()
-        {
-            var username = fixture.Create<string>();
-            var password = fixture.Create<string>();
-            var clientId = fixture.Create<string>();
-            var clientSecret = fixture.Create<string>();
-
-            fixture.FreezeFakeConfiguration("Mangadex:Username", username);
-            fixture.FreezeFakeConfiguration("Mangadex:Password", password);
-            fixture.FreezeFakeConfiguration("Mangadex:ClientId", clientId);
-            fixture.FreezeFakeConfiguration("Mangadex:ClientSecret", clientSecret);
-
-            tokenResult = fixture
-                .Build<TokenResult>()
-                .With(x => x.ExpiresIn, 3600)
-                .Create();
-
-            A.CallTo(() => fixture
-                .FreezeFake<IMangaDex>().Auth)
-                .Returns(fixture.FreezeFake<IMangaDexAuthService>());
-
-            A.CallTo(() => fixture
-                .FreezeFake<IMangaDexAuthService>()
-                .Personal(clientId, clientSecret, username, password))
-                .Returns(tokenResult);
-        }
-
-        [Fact]
-        public async Task GivenSuccessfulLoginShouldReturnSuccessResult()
-        {
-            var result = await service.LoginAsync();
-
-            result.Should().BeSuccess();
-        }
-
-        [Fact]
-        public async Task GivenSuccessfulLoginShouldSaveAccessTokenInsideClass()
-        {
-            await service.LoginAsync();
-
-            var accessToken = service.GetType()
-                .GetField("accessToken", BindingFlags.NonPublic | BindingFlags.Instance)!
-                .GetValue(service);
-
-            accessToken.Should().Be(tokenResult.AccessToken);
-        }
-
-        [Fact]
-        public async Task GivenNullReturnFromMangaDexShouldReturnFailResult()
-        {
-            A.CallTo(() => fixture
-                .FreezeFake<IMangaDexAuthService>()
-                .Personal(A<string>.Ignored, A<string>.Ignored, A<string>.Ignored, A<string>.Ignored))
-                .Returns(Task.FromResult<TokenResult>(null!));
-
-            var result = await service.LoginAsync();
-
-            result.Should().BeFailure().And.HaveError("Unable to login in mangadex.");
-        }
-
-        [Fact]
-        public async Task GivenNoneExpiriesInFromMangaDexShouldReturnFailResult()
-        {
-            tokenResult.ExpiresIn = null;
-
-            var result = await service.LoginAsync();
-
-            result.Should().BeFailure().And.HaveError("Unable to login in mangadex.");
-        }
-
-        [Theory]
-        [InlineData(0d)]
-        [InlineData(-1d)]
-        [InlineData(null)]
-        public async Task GivenNotPositiveExpiresInFromMangaDexShouldReturnFailResult(double? expiresIn)
-        {
-            tokenResult.ExpiresIn = expiresIn;
-
-            var result = await service.LoginAsync();
-
-            result.Should().BeFailure().And.HaveError("Unable to login in mangadex.");
-        }
-
-        [Theory]
-        [InlineData("")]
-        [InlineData(" ")]
-        [InlineData(null)]
-        public async Task GivenNotFilledAccessTokenFromMangaDexShouldReturnFailResult(string? accessToken)
-        {
-            tokenResult.AccessToken = accessToken!;
-
-            var result = await service.LoginAsync();
-
-            result.Should().BeFailure().And.HaveError("Unable to login in mangadex.");
-        }
     }
 
     public class ClearPendingUploadsAsync : MangaDexServiceTests
     {
         public ClearPendingUploadsAsync()
         {
-            var accessToken = fixture.Create<string>();
-
-            service.GetType()
-                .GetField("accessToken", BindingFlags.NonPublic | BindingFlags.Instance)!
-                .SetValue(service, accessToken);
-
             var getResponse = fixture
                 .Build<MangaDexRoot<UploadSession>>()
                 .With(x => x.Errors, [])
@@ -145,12 +37,12 @@ public class MangaDexServiceTests : UnitTest
 
             A.CallTo(() => fixture
                 .FreezeFake<IMangaDexUploadService>()
-                .Get(accessToken))
+                .Get(fixture.FreezeFake<MangaDexAccessToken>().Value))
                 .Returns(getResponse);
 
             A.CallTo(() => fixture
                 .FreezeFake<IMangaDexUploadService>()
-                .Abandon(getResponse.Data.Id, accessToken))
+                .Abandon(getResponse.Data.Id, fixture.FreezeFake<MangaDexAccessToken>().Value))
                 .Returns(abandonResponse);
         }
 

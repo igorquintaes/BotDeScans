@@ -1,13 +1,19 @@
-﻿using BotDeScans.App.Services.Wrappers;
+﻿using BotDeScans.App.Extensions;
+using BotDeScans.App.Features.Publish.Steps;
+using BotDeScans.App.Services.Wrappers;
 using Box.V2;
+using Box.V2.Config;
+using Box.V2.JWTAuth;
 using Box.V2.Models;
-using BoxClient = BotDeScans.App.Services.ExternalClients.BoxClient;
+using FluentResults;
+using Microsoft.Extensions.Configuration;
 namespace BotDeScans.App.Services;
 
-public class BoxService(BoxClient BoxClient, StreamWrapper streamWrapper)
+public class BoxService(
+    StreamWrapper streamWrapper,
+    IBoxClient boxClient)
 {
     private const string rootFolderId = "0";
-    private readonly IBoxClient boxClient = BoxClient.Client;
 
     public virtual async Task<BoxFolder> GetOrCreateFolderAsync(string folderName, string parentFolderId = rootFolderId)
     {
@@ -50,5 +56,34 @@ public class BoxService(BoxClient BoxClient, StreamWrapper streamWrapper)
             });
 
         return boxResult;
+    }
+}
+
+// todo: mover para um arquivo próprio depois de refatorarmos todo o uso do box
+public class BoxClientFactory(IConfiguration configuration) : ClientFactory<IBoxClient>
+{
+    public const string CREDENTIALS_FILE_NAME = "box.json";
+
+    public override bool ExpectedInPublishFeature => configuration
+        .GetRequiredValues<StepEnum>("Settings:Publish:Steps", value => Enum.Parse(typeof(StepEnum), value))
+        .Any(x => x == StepEnum.UploadPdfBox || x == StepEnum.UploadZipBox);
+
+    public override async Task<Result<IBoxClient>> CreateAsync(
+        CancellationToken cancellationToken = default)
+    {
+        await using var credentialStream = GetConfigFileAsStream(CREDENTIALS_FILE_NAME).Value;
+        var config = BoxConfig.CreateFromJsonFile(credentialStream);
+        var boxJwt = new BoxJWTAuth(config);
+        var adminToken = await boxJwt.AdminTokenAsync();
+        return boxJwt.AdminClient(adminToken);
+    }
+
+    public override Result ValidateConfiguration() =>
+        ConfigFileExists(CREDENTIALS_FILE_NAME);
+
+    public override async Task<Result> HealthCheckAsync(IBoxClient client, CancellationToken cancellationToken)
+    {
+        var accInfo = await client.FoldersManager.GetFolderItemsAsync("0", 1);
+        return Result.OkIf(accInfo is not null, "Unknown error while trying to retrieve information from account.");
     }
 }

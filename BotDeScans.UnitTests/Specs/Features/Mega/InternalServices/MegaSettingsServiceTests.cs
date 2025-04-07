@@ -1,6 +1,5 @@
 ﻿using BotDeScans.App.Features.Mega.InternalServices;
 using BotDeScans.App.Models;
-using BotDeScans.App.Services.ExternalClients;
 using CG.Web.MegaApiClient;
 using FluentAssertions.Execution;
 using System.Reflection;
@@ -12,14 +11,11 @@ public class MegaSettingsServiceTests : UnitTest
 
     public MegaSettingsServiceTests()
     {
-        fixture.FreezeFake<MegaClient>();
-
-        A.CallTo(() => fixture
-            .FreezeFake<MegaClient>().Client)
-            .Returns(fixture.FreezeFake<IMegaApiClient>());
+        fixture.FreezeFake<IMegaApiClient>();
 
         service = fixture.Create<MegaSettingsService>();
     }
+
     public class GetRootNodeAsync : MegaSettingsServiceTests, IDisposable
     {
         [Fact]

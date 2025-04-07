@@ -11,7 +11,7 @@ public class UploadPdfBoxStepTests : UnitTest
     public UploadPdfBoxStepTests()
     {
         fixture.Freeze<PublishState>();
-        fixture.FreezeFake<IServiceProvider>();
+        fixture.FreezeFake<BoxService>();
         step = fixture.Create<UploadPdfBoxStep>();
     }
 
@@ -62,11 +62,6 @@ public class UploadPdfBoxStepTests : UnitTest
 
             A.CallTo(() => fixture.FreezeFake<BoxFile>().SharedLink.DownloadUrl)
                 .Returns(FILE_LINK);
-
-            A.CallTo(() => fixture
-                .FreezeFake<IServiceProvider>()
-                .GetService(typeof(BoxService)))
-                .Returns(fixture.FreezeFake<BoxService>());
 
             A.CallTo(() => fixture
                 .FreezeFake<BoxService>()

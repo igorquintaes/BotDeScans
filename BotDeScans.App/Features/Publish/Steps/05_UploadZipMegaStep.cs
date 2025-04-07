@@ -1,11 +1,11 @@
 ﻿using BotDeScans.App.Features.Mega;
 using BotDeScans.App.Features.Mega.InternalServices;
 using FluentResults;
-using Microsoft.Extensions.DependencyInjection;
 namespace BotDeScans.App.Features.Publish.Steps;
 
 public class UploadZipMegaStep(
-    IServiceProvider serviceProvider,
+    MegaService megaService,
+    MegaSettingsService megaSettingsService,
     PublishState state) : IStep
 {
     public StepEnum StepName => StepEnum.UploadZipMega;
@@ -19,10 +19,7 @@ public class UploadZipMegaStep(
 
     public async Task<Result> ExecuteAsync(CancellationToken cancellationToken)
     {
-        var megaService = serviceProvider.GetRequiredService<MegaService>();
-        var megaSettings = serviceProvider.GetRequiredService<MegaSettingsService>();
-
-        var root = await megaSettings.GetRootFolderAsync();
+        var root = await megaSettingsService.GetRootFolderAsync();
         var titleFolder = await megaService.GetOrCreateFolderAsync(state.Title.Name, root);
         if (titleFolder.IsFailed)
             return titleFolder.ToResult();

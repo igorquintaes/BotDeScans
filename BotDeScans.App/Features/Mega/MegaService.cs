@@ -11,7 +11,6 @@ public class MegaService(
     IConfiguration configuration)
 {
     public const string REWRITE_KEY = "Mega:RewriteExistingFile";
-
     public virtual async Task<Result<INode>> GetOrCreateFolderAsync(
         string folderName,
         INode parentNode)

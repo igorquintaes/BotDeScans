@@ -1,7 +1,6 @@
-﻿using BotDeScans.App.Features.GoogleDrive;
-using BotDeScans.App.Features.GoogleDrive.InternalServices;
+﻿using BotDeScans.App.Features.GoogleDrive.InternalServices;
 using BotDeScans.App.Models;
-using BotDeScans.App.Services.ExternalClients;
+using BotDeScans.App.Services.Wrappers;
 using FluentAssertions.Execution;
 using FluentResults;
 using Google.Apis.Drive.v3;
@@ -18,8 +17,8 @@ public class GoogleDriveSettingsServiceTests : UnitTest
 
     public GoogleDriveSettingsServiceTests()
     {
-        fixture.FreezeFake<GoogleDriveClient>();
-        fixture.FreezeFake<GoogleDriveWrapper>();
+        fixture.FreezeFake<DriveService>();
+        fixture.FreezeFake<GoogleWrapper>();
         fixture.FreezeFake<GoogleDriveFoldersService>();
 
         service = fixture.Create<GoogleDriveSettingsService>();
@@ -146,10 +145,6 @@ public class GoogleDriveSettingsServiceTests : UnitTest
         public GetConsumptionDataAsync()
         {
             A.CallTo(() => fixture
-                .FreezeFake<GoogleDriveClient>().Client)
-                .Returns(fixture.FreezeFake<DriveService>());
-
-            A.CallTo(() => fixture
                 .FreezeFake<DriveService>().About)
                 .Returns(fixture.FreezeFake<AboutResource>());
 
@@ -171,7 +166,7 @@ public class GoogleDriveSettingsServiceTests : UnitTest
                 .Create();
 
             A.CallTo(() => fixture
-                .FreezeFake<GoogleDriveWrapper>()
+                .FreezeFake<GoogleWrapper>()
                 .ExecuteAsync(fixture.FreezeFake<GetRequest>(), cancellationToken))
                 .Returns(about);
 
@@ -186,7 +181,7 @@ public class GoogleDriveSettingsServiceTests : UnitTest
             const string ERROR_MESSAGE = "some error";
 
             A.CallTo(() => fixture
-                .FreezeFake<GoogleDriveWrapper>()
+                .FreezeFake<GoogleWrapper>()
                 .ExecuteAsync(fixture.FreezeFake<GetRequest>(), cancellationToken))
                 .Returns(Result.Fail(ERROR_MESSAGE));
 

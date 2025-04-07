@@ -1,12 +1,12 @@
-﻿using BotDeScans.App.Features.GoogleDrive.InternalServices;
-using BotDeScans.App.Services.ExternalClients;
+﻿using BotDeScans.App.Services.Wrappers;
 using FluentResults;
+using Google.Apis.Drive.v3;
 using File = Google.Apis.Drive.v3.Data.File;
-namespace BotDeScans.App.Features.GoogleDrive;
+namespace BotDeScans.App.Features.GoogleDrive.InternalServices;
 
 public class GoogleDriveFoldersService(
-    GoogleDriveClient googleDriveClient,
-    GoogleDriveWrapper googleDriveWrapper,
+    GoogleWrapper googleWrapper,
+    DriveService driveService,
     GoogleDriveResourcesService googleDriveResourcesService)
 {
     public const string FOLDER_MIMETYPE = "application/vnd.google-apps.folder";
@@ -37,8 +37,8 @@ public class GoogleDriveFoldersService(
         CancellationToken cancellationToken)
     {
         var resource = googleDriveResourcesService.CreateResourceObject(FOLDER_MIMETYPE, folderName, parentId);
-        var createRequest = googleDriveClient.Client.Files.Create(resource);
+        var createRequest = driveService.Files.Create(resource);
         createRequest.Fields = "webViewLink, id";
-        return googleDriveWrapper.ExecuteAsync(createRequest, cancellationToken);
+        return googleWrapper.ExecuteAsync(createRequest, cancellationToken);
     }
 }

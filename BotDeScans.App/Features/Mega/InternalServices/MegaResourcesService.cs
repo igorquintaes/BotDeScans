@@ -1,12 +1,9 @@
-﻿using BotDeScans.App.Services.ExternalClients;
-using CG.Web.MegaApiClient;
+﻿using CG.Web.MegaApiClient;
 namespace BotDeScans.App.Features.Mega.InternalServices;
 
 public class MegaResourcesService(
-    MegaClient megaClient)
+    IMegaApiClient megaApiClient)
 {
-    private readonly IMegaApiClient megaApiClient = megaClient.Client;
-
     public virtual async Task<IEnumerable<INode>> GetResourcesAsync(
         string? name = null,
         string? parentId = null,

@@ -12,8 +12,8 @@ public class PublishMangDexStepTests : UnitTest
 
     public PublishMangDexStepTests()
     {
-        fixture.FreezeFake<IServiceProvider>();
         fixture.FreezeFake<IConfiguration>();
+        fixture.FreezeFake<MangaDexService>();
         fixture.Freeze<PublishState>();
 
         step = fixture.Create<PublishMangaDexStep>();
@@ -99,31 +99,6 @@ public class PublishMangDexStepTests : UnitTest
 
             result.Should().BeFailure().And.HaveError("Não foi definido uma referência para a publicação da obra na MangaDex.");
         }
-
-        [Theory]
-        [InlineData("Mangadex:GroupId", null)]
-        [InlineData("Mangadex:Username", null)]
-        [InlineData("Mangadex:Password", null)]
-        [InlineData("Mangadex:ClientId", null)]
-        [InlineData("Mangadex:ClientSecret", null)]
-        [InlineData("Mangadex:GroupId", "")]
-        [InlineData("Mangadex:Username", "")]
-        [InlineData("Mangadex:Password", "")]
-        [InlineData("Mangadex:ClientId", "")]
-        [InlineData("Mangadex:ClientSecret", "")]
-        [InlineData("Mangadex:GroupId", " ")]
-        [InlineData("Mangadex:Username", " ")]
-        [InlineData("Mangadex:Password", " ")]
-        [InlineData("Mangadex:ClientId", " ")]
-        [InlineData("Mangadex:ClientSecret", " ")]
-        public async Task GivenNotDefinedValueForConfigurationVariablesShouldReturnFailResult(string key, string? value)
-        {
-            fixture.FreezeFakeConfiguration(key, value);
-
-            var result = await step.ValidateBeforeFilesManagementAsync(cancellationToken);
-
-            result.Should().BeFailure().And.HaveError("As configurações da MangaDex não estão preenchidas (parcialmente ou totalmente).");
-        }
     }
 
     public class ValidateAfterFilesManagementAsync : PublishMangDexStepTests
@@ -153,16 +128,6 @@ public class PublishMangDexStepTests : UnitTest
                 .Create();
 
             A.CallTo(() => fixture
-                .FreezeFake<IServiceProvider>()
-                .GetService(typeof(MangaDexService)))
-                .Returns(fixture.FreezeFake<MangaDexService>());
-
-            A.CallTo(() => fixture
-                .FreezeFake<MangaDexService>()
-                .LoginAsync())
-                .Returns(Result.Ok());
-
-            A.CallTo(() => fixture
                 .FreezeFake<MangaDexService>()
                 .ClearPendingUploadsAsync())
                 .Returns(Result.Ok());
@@ -174,7 +139,8 @@ public class PublishMangDexStepTests : UnitTest
                     fixture.Freeze<PublishState>().ReleaseInfo.ChapterName,
                     fixture.Freeze<PublishState>().ReleaseInfo.ChapterNumber,
                     fixture.Freeze<PublishState>().ReleaseInfo.ChapterVolume,
-                    fixture.Freeze<PublishState>().InternalData.OriginContentFolder))
+                    fixture.Freeze<PublishState>().InternalData.OriginContentFolder, 
+                    cancellationToken))
                 .Returns(Result.Ok(CHAPTER_ID));
         }
 
@@ -195,21 +161,6 @@ public class PublishMangDexStepTests : UnitTest
             await step.ExecuteAsync(cancellationToken);
 
             fixture.Freeze<PublishState>().ReleaseLinks.MangaDexLink.Should().Be(expectedLink);
-        }
-
-        [Fact]
-        public async Task GivenErrorToLoginShouldReturnFailResult()
-        {
-            const string ERROR_MESSAGE = "some error.";
-
-            A.CallTo(() => fixture
-                .FreezeFake<MangaDexService>()
-                .LoginAsync())
-                .Returns(Result.Fail(ERROR_MESSAGE));
-
-            var result = await step.ExecuteAsync(cancellationToken);
-
-            result.Should().BeFailure().And.HaveError(ERROR_MESSAGE);
         }
 
         [Fact]
@@ -239,7 +190,8 @@ public class PublishMangDexStepTests : UnitTest
                     A<string>.Ignored,
                     A<string>.Ignored,
                     A<string>.Ignored,
-                    A<string>.Ignored))
+                    A<string>.Ignored,
+                    A<CancellationToken>.Ignored))
                 .Returns(Result.Fail(ERROR_MESSAGE));
 
             var result = await step.ExecuteAsync(cancellationToken);

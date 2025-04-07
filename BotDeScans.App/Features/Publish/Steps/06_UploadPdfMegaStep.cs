@@ -1,43 +1,38 @@
 ﻿using BotDeScans.App.Features.Mega;
 using BotDeScans.App.Features.Mega.InternalServices;
 using FluentResults;
-using Microsoft.Extensions.DependencyInjection;
+namespace BotDeScans.App.Features.Publish.Steps;
 
-namespace BotDeScans.App.Features.Publish.Steps
+public class UploadPdfMegaStep(
+MegaService megaService,
+MegaSettingsService megaSettingsService,
+    PublishState state) : IStep
 {
-    public class UploadPdfMegaStep(
-        IServiceProvider serviceProvider,
-        PublishState state) : IStep
+    public StepEnum StepName => StepEnum.UploadPdfMega;
+    public StepType StepType => StepType.Publish;
+
+    public Task<Result> ValidateBeforeFilesManagementAsync(CancellationToken _)
+        => Task.FromResult(Result.Ok());
+
+    public Task<Result> ValidateAfterFilesManagementAsync(CancellationToken _)
+        => Task.FromResult(Result.Ok());
+
+    public async Task<Result> ExecuteAsync(CancellationToken cancellationToken)
     {
-        public StepEnum StepName => StepEnum.UploadPdfMega;
-        public StepType StepType => StepType.Publish;
+        var root = await megaSettingsService.GetRootFolderAsync();
+        var titleFolder = await megaService.GetOrCreateFolderAsync(state.Title.Name, root);
+        if (titleFolder.IsFailed)
+            return titleFolder.ToResult();
 
-        public Task<Result> ValidateBeforeFilesManagementAsync(CancellationToken _)
-            => Task.FromResult(Result.Ok());
+        var fileResult = await megaService.CreateFileAsync(
+            filePath: state.InternalData.PdfFilePath!,
+            parentNode: titleFolder.Value,
+            cancellationToken);
 
-        public Task<Result> ValidateAfterFilesManagementAsync(CancellationToken _)
-            => Task.FromResult(Result.Ok());
+        if (fileResult.IsFailed)
+            return fileResult.ToResult();
 
-        public async Task<Result> ExecuteAsync(CancellationToken cancellationToken)
-        {
-            var megaService = serviceProvider.GetRequiredService<MegaService>();
-            var megaSettings = serviceProvider.GetRequiredService<MegaSettingsService>();
-
-            var root = await megaSettings.GetRootFolderAsync();
-            var titleFolder = await megaService.GetOrCreateFolderAsync(state.Title.Name, root);
-            if (titleFolder.IsFailed)
-                return titleFolder.ToResult();
-
-            var fileResult = await megaService.CreateFileAsync(
-                filePath: state.InternalData.PdfFilePath,
-                parentNode: titleFolder.Value,
-                cancellationToken);
-
-            if (fileResult.IsFailed)
-                return fileResult.ToResult();
-
-            state.ReleaseLinks.MegaPdf = fileResult.Value.AbsoluteUri;
-            return Result.Ok();
-        }
+        state.ReleaseLinks.MegaPdf = fileResult.Value.AbsoluteUri;
+        return Result.Ok();
     }
 }

@@ -1,6 +1,5 @@
-﻿using BotDeScans.App.Features.GoogleDrive;
-using BotDeScans.App.Features.GoogleDrive.InternalServices;
-using BotDeScans.App.Services.ExternalClients;
+﻿using BotDeScans.App.Features.GoogleDrive.InternalServices;
+using BotDeScans.App.Services.Wrappers;
 using FluentAssertions.Execution;
 using FluentResults;
 using Google.Apis.Drive.v3;
@@ -14,13 +13,9 @@ public class GoogleDriveFoldersServiceTests : UnitTest
 
     public GoogleDriveFoldersServiceTests()
     {
-        fixture.FreezeFake<GoogleDriveClient>();
-        fixture.FreezeFake<GoogleDriveWrapper>();
+        fixture.FreezeFake<DriveService>();
+        fixture.FreezeFake<GoogleWrapper>();
         fixture.FreezeFake<GoogleDriveResourcesService>();
-
-        A.CallTo(() => fixture
-            .FreezeFake<GoogleDriveClient>().Client)
-            .Returns(fixture.FreezeFake<DriveService>());
 
         A.CallTo(() => fixture
             .FreezeFake<DriveService>().Files)
@@ -133,7 +128,7 @@ public class GoogleDriveFoldersServiceTests : UnitTest
                 .Returns(fixture.FreezeFake<CreateRequest>());
 
             A.CallTo(() => fixture
-                .FreezeFake<GoogleDriveWrapper>()
+                .FreezeFake<GoogleWrapper>()
                 .ExecuteAsync(fixture.FreezeFake<CreateRequest>(), cancellationToken))
                 .Returns(fixture.FreezeFake<File>());
         }
@@ -151,7 +146,7 @@ public class GoogleDriveFoldersServiceTests : UnitTest
         {
             const string ERROR_MESSAGE = "some error";
             A.CallTo(() => fixture
-                .FreezeFake<GoogleDriveWrapper>()
+                .FreezeFake<GoogleWrapper>()
                 .ExecuteAsync(fixture.FreezeFake<CreateRequest>(), cancellationToken))
                 .Returns(Result.Fail(ERROR_MESSAGE));
 
@@ -166,7 +161,7 @@ public class GoogleDriveFoldersServiceTests : UnitTest
             await service.CreateAsync(folderName, parentId, cancellationToken);
 
             A.CallTo(() => fixture
-                .FreezeFake<GoogleDriveWrapper>()
+                .FreezeFake<GoogleWrapper>()
                 .ExecuteAsync(
                     A<CreateRequest>.That.Matches(x => x.Fields == "webViewLink, id"),
                     cancellationToken))

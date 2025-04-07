@@ -13,7 +13,8 @@ public class UploadZipMegaStepTests : UnitTest
     public UploadZipMegaStepTests()
     {
         fixture.Freeze<PublishState>();
-        fixture.FreezeFake<IServiceProvider>();
+        fixture.FreezeFake<MegaService>();
+        fixture.FreezeFake<MegaSettingsService>();
         step = fixture.Create<UploadZipMegaStep>();
     }
 
@@ -58,17 +59,7 @@ public class UploadZipMegaStepTests : UnitTest
         {
             var rootNode = A.Fake<INode>();
             var titleFolderNode = A.Fake<INode>();
-
-            A.CallTo(() => fixture
-                .FreezeFake<IServiceProvider>()
-                .GetService(typeof(MegaService)))
-                .Returns(fixture.FreezeFake<MegaService>());
-
-            A.CallTo(() => fixture
-                .FreezeFake<IServiceProvider>()
-                .GetService(typeof(MegaSettingsService)))
-                .Returns(fixture.FreezeFake<MegaSettingsService>());
-
+            
             A.CallTo(() => fixture
                 .FreezeFake<MegaSettingsService>()
                 .GetRootFolderAsync())
