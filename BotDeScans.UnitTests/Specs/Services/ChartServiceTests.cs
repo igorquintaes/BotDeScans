@@ -1,14 +1,10 @@
 ﻿using BotDeScans.App.Models;
 using BotDeScans.App.Services;
-using FluentAssertions;
 using System.Diagnostics.CodeAnalysis;
 using System.Drawing;
 using System.Globalization;
-using System.IO;
 using System.Reflection;
 using System.Runtime.InteropServices;
-using System.Threading;
-using Xunit;
 namespace BotDeScans.UnitTests.Specs.Services;
 
 public class ChartServiceTests : UnitTest

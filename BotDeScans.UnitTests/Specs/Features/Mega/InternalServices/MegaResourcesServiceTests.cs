@@ -1,15 +1,7 @@
-﻿using AutoFixture;
-using BotDeScans.App.Features.Mega.InternalServices;
+﻿using BotDeScans.App.Features.Mega.InternalServices;
 using BotDeScans.App.Services.ExternalClients;
-using BotDeScans.UnitTests.Extensions;
 using CG.Web.MegaApiClient;
-using FakeItEasy;
-using FluentAssertions;
 using FluentAssertions.Execution;
-using System.Linq;
-using System.Threading.Tasks;
-using Xunit;
-
 namespace BotDeScans.UnitTests.Specs.Features.Mega.InternalServices;
 
 public class MegaResourcesServiceTests : UnitTest

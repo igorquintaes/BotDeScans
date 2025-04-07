@@ -1,9 +1,6 @@
 ﻿using BotDeScans.App.Attributes;
 using BotDeScans.App.Extensions;
-using FluentAssertions;
-using System;
 using System.ComponentModel;
-using Xunit;
 namespace BotDeScans.UnitTests.Specs.Extensions;
 
 public class EnumExtensionsTests

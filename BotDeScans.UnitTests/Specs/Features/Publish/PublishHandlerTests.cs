@@ -1,18 +1,11 @@
-﻿using AutoFixture;
-using BotDeScans.App.Features.Publish;
+﻿using BotDeScans.App.Features.Publish;
 using BotDeScans.App.Features.Publish.Discord;
 using BotDeScans.App.Features.Publish.Pings;
 using BotDeScans.App.Models;
-using BotDeScans.UnitTests.Extensions;
-using FakeItEasy;
 using FluentResults;
-using FluentResults.Extensions.FluentAssertions;
 using FluentValidation;
 using FluentValidation.Results;
 using Remora.Discord.Commands.Contexts;
-using System.Collections.Generic;
-using System.Threading.Tasks;
-using Xunit;
 using static BotDeScans.App.Features.Publish.PublishState;
 
 namespace BotDeScans.UnitTests.Specs.Features.Publish;

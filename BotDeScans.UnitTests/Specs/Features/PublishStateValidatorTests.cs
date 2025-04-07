@@ -1,10 +1,7 @@
-﻿using AutoFixture;
-using BotDeScans.App.Features.Publish;
+﻿using BotDeScans.App.Features.Publish;
 using BotDeScans.App.Features.Publish.Pings;
 using BotDeScans.App.Models;
-using BotDeScans.UnitTests.Extensions;
 using FluentValidation.TestHelper;
-using Xunit;
 using static BotDeScans.App.Features.Publish.PublishState;
 
 namespace BotDeScans.UnitTests.Specs.Features;

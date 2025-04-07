@@ -60,4 +60,12 @@
     </None>
   </ItemGroup>
 
+  <ItemGroup>
+	  <Using Include="AutoFixture" />
+	  <Using Include="BotDeScans.UnitTests.Extensions" />
+	  <Using Include="FakeItEasy" />
+	  <Using Include="FluentAssertions" />
+	  <Using Include="FluentResults.Extensions.FluentAssertions" />
+  </ItemGroup>
+
 </Project>

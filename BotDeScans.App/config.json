@@ -42,7 +42,11 @@
   },
   "Blogger": {
     "Id": "",
-    "Url": ""
+    "Url": "",
+    "Cover": {
+      "Width": "200",
+      "Height": "300"
+    }
   },
   "Mangadex": {
     "GroupId": "",

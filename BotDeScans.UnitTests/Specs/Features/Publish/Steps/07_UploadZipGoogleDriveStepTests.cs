@@ -1,18 +1,8 @@
-﻿using AutoFixture;
-using BotDeScans.App.Features.GoogleDrive;
+﻿using BotDeScans.App.Features.GoogleDrive;
 using BotDeScans.App.Features.Publish;
 using BotDeScans.App.Features.Publish.Steps;
-using BotDeScans.UnitTests.Extensions;
-using FakeItEasy;
-using FluentAssertions;
 using FluentResults;
-using FluentResults.Extensions.FluentAssertions;
-using Google.Apis.Drive.v3.Data;
-using System;
-using System.Threading.Tasks;
-using Xunit;
 using File = Google.Apis.Drive.v3.Data.File;
-
 namespace BotDeScans.UnitTests.Specs.Features.Publish.Steps;
 
 public class UploadZipGoogleDriveStepTests : UnitTest
@@ -85,7 +75,7 @@ public class UploadZipGoogleDriveStepTests : UnitTest
             A.CallTo(() => fixture
                 .FreezeFake<GoogleDriveService>()
                 .CreateFileAsync(
-                    fixture.Freeze<PublishState>().InternalData.ZipFilePath,
+                    fixture.Freeze<PublishState>().InternalData.ZipFilePath!,
                     titleFolder.Id,
                     true,
                     cancellationToken))

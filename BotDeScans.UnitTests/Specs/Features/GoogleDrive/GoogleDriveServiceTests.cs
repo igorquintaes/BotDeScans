@@ -1,20 +1,11 @@
-﻿using AutoFixture;
-using BotDeScans.App.Features.GoogleDrive;
+﻿using BotDeScans.App.Features.GoogleDrive;
 using BotDeScans.App.Features.GoogleDrive.InternalServices;
-using BotDeScans.UnitTests.Extensions;
-using FakeItEasy;
-using FluentAssertions;
 using FluentAssertions.Execution;
 using FluentResults;
-using FluentResults.Extensions.FluentAssertions;
 using FluentValidation;
 using FluentValidation.Results;
 using Google.Apis.Drive.v3.Data;
 using Microsoft.Extensions.Configuration;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Xunit;
 using File = Google.Apis.Drive.v3.Data.File;
 namespace BotDeScans.UnitTests.Specs.Features.GoogleDrive;
 

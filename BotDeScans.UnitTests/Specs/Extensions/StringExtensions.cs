@@ -1,7 +1,4 @@
 ﻿using BotDeScans.App.Extensions;
-using FluentAssertions;
-using Xunit;
-
 namespace BotDeScans.UnitTests.Specs.Extensions;
 
 public class StringExtensions : UnitTest

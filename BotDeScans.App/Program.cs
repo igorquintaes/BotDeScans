@@ -14,7 +14,6 @@ using Remora.Discord.Interactivity.Extensions;
 using Serilog;
 using System.Diagnostics.CodeAnalysis;
 using System.Text.Json;
-
 namespace BotDeScans.App;
 
 [ExcludeFromCodeCoverage]

@@ -1,11 +1,6 @@
 ﻿using BotDeScans.App.Services;
-using FluentAssertions;
 using FluentAssertions.Execution;
-using System;
-using System.IO;
-using System.Linq;
 using System.Reflection;
-using Xunit;
 
 namespace BotDeScans.UnitTests.Specs.Services;
 

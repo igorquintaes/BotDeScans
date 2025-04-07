@@ -19,6 +19,7 @@ internal static class AddDependencies
         .AddPings()
         .AddScoped<PublishHandler>()
         .AddScoped<PublishQueries>()
+        .AddScoped<PublishReplacerService>()
         .AddScoped<PublishService>()
         .AddScoped<PublishState>()
         .AddScoped<PublishMessageService>();

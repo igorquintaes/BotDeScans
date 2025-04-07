@@ -28,7 +28,7 @@ public class UploadZipMegaStep(
             return titleFolder.ToResult();
 
         var fileResult = await megaService.CreateFileAsync(
-            filePath: state.InternalData.ZipFilePath,
+            filePath: state.InternalData.ZipFilePath!,
             parentNode: titleFolder.Value,
             cancellationToken);
 

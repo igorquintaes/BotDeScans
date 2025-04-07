@@ -1,6 +1,4 @@
 ﻿using System.Runtime.CompilerServices;
-using VerifyTests;
-using VerifyXunit;
 
 namespace BotDeScans.UnitTests;
 
