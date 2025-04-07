@@ -1,11 +1,12 @@
-﻿using BotDeScans.App.Services.ExternalClients;
+﻿using BotDeScans.App.Services.Wrappers;
 using FluentResults;
+using Google.Apis.Drive.v3;
 using Google.Apis.Drive.v3.Data;
 namespace BotDeScans.App.Features.GoogleDrive.InternalServices;
 
 public class GoogleDrivePermissionsService(
-    GoogleDriveClient googleDriveClient,
-    GoogleDriveWrapper googleDriveWrapper)
+    DriveService driveService,
+    GoogleWrapper googleWrapper)
 {
     public const string PUBLIC_PERMISSION_TYPE = "anyone";
     public const string USER_PERMISSION_TYPE = "user";
@@ -16,10 +17,10 @@ public class GoogleDrivePermissionsService(
         string resourceId,
         CancellationToken cancellationToken)
     {
-        var permissionsRequest = googleDriveClient.Client.Permissions.List(resourceId);
+        var permissionsRequest = driveService.Permissions.List(resourceId);
         permissionsRequest.Fields = "*";
 
-        var permissionsResult = await googleDriveWrapper.ExecuteAsync(permissionsRequest, cancellationToken);
+        var permissionsResult = await googleWrapper.ExecuteAsync(permissionsRequest, cancellationToken);
         if (permissionsResult.IsFailed)
             return permissionsResult.ToResult();
 
@@ -33,8 +34,8 @@ public class GoogleDrivePermissionsService(
         CancellationToken cancellationToken)
     {
         var permission = new Permission { Type = PUBLIC_PERMISSION_TYPE, Role = READER_ROLE };
-        var createRequest = googleDriveClient.Client.Permissions.Create(permission, resourceId);
-        return googleDriveWrapper.ExecuteAsync(createRequest, cancellationToken);
+        var createRequest = driveService.Permissions.Create(permission, resourceId);
+        return googleWrapper.ExecuteAsync(createRequest, cancellationToken);
     }
 
     public virtual Task<Result<Permission>> CreateUserReaderPermissionAsync(
@@ -43,8 +44,8 @@ public class GoogleDrivePermissionsService(
         CancellationToken cancellationToken)
     {
         var permission = new Permission { Type = USER_PERMISSION_TYPE, Role = READER_ROLE, EmailAddress = email.ToLower() };
-        var createRequest = googleDriveClient.Client.Permissions.Create(permission, resourceId);
-        return googleDriveWrapper.ExecuteAsync(createRequest, cancellationToken);
+        var createRequest = driveService.Permissions.Create(permission, resourceId);
+        return googleWrapper.ExecuteAsync(createRequest, cancellationToken);
     }
 
     public virtual async Task<Result> DeleteUserReaderPermissionsAsync(
@@ -53,8 +54,8 @@ public class GoogleDrivePermissionsService(
         CancellationToken cancellationToken)
     {
         var requests = permissions
-            .Select(permission => googleDriveClient.Client.Permissions.Delete(resourceId, permission.Id))
-            .Select(async request => await googleDriveWrapper.ExecuteAsync(request, cancellationToken));
+            .Select(permission => driveService.Permissions.Delete(resourceId, permission.Id))
+            .Select(async request => await googleWrapper.ExecuteAsync(request, cancellationToken));
 
         var results = await Task.WhenAll(requests);
         return Result.Merge(results).ToResult();

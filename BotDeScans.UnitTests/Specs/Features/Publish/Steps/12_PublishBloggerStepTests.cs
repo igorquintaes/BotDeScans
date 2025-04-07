@@ -1,5 +1,7 @@
 ﻿using BotDeScans.App.Features.Publish;
 using BotDeScans.App.Features.Publish.Steps;
+using BotDeScans.App.Services;
+using Google.Apis.Blogger.v3.Data;
 namespace BotDeScans.UnitTests.Specs.Features.Publish.Steps;
 
 public class PublishBloggerStepTests : UnitTest
@@ -9,9 +11,8 @@ public class PublishBloggerStepTests : UnitTest
     public PublishBloggerStepTests()
     {
         fixture.Freeze<PublishState>();
-        fixture.FreezeFake<IServiceProvider>();
-        fixture.FreezeFakeConfiguration("Blogger:Url", "www.escoladescans.com");
-        fixture.FreezeFakeConfiguration("Blogger:Id", fixture.Create<string>());
+        fixture.FreezeFake<GoogleBloggerService>();
+        fixture.FreezeFake<PublishReplacerService>();
 
         step = fixture.Create<PublishBloggerStep>();
     }
@@ -29,7 +30,7 @@ public class PublishBloggerStepTests : UnitTest
 
     public class ValidateBeforeFilesManagementAsync : PublishBloggerStepTests
     {
-        [Fact(Skip = "Pending improve initialization, will change current method logic")]
+        [Fact]
         public async Task ShouldReturnSuccess()
         {
             var result = await step.ValidateBeforeFilesManagementAsync(cancellationToken);
@@ -51,6 +52,80 @@ public class PublishBloggerStepTests : UnitTest
 
     public class ExecuteAsync : PublishBloggerStepTests
     {
-        // todo: pending refactor
+        public ExecuteAsync()
+        {
+            var state = fixture.Freeze<PublishState>();
+            var template = fixture.Create<string>();
+            var replacedTemplate = fixture.Create<string>();
+
+
+            A.CallTo(() => fixture
+                .FreezeFake<GoogleBloggerService>()
+                .CreatePostCoverAsync(cancellationToken))
+                .Returns(fixture.Create<string>());
+
+            A.CallTo(() => fixture
+                .FreezeFake<GoogleBloggerService>()
+                .GetPostTemplateAsync(cancellationToken))
+                .Returns(template);
+
+            A.CallTo(() => fixture
+                .FreezeFake<PublishReplacerService>()
+                .Replace(template))
+                .Returns(replacedTemplate);
+
+            A.CallTo(() => fixture
+                .FreezeFake<GoogleBloggerService>()
+                .PostAsync(
+                    $"[{state.Title.Name}] Capítulo {state.ReleaseInfo.ChapterNumber}",
+                    replacedTemplate,
+                    state.Title.Name,
+                    state.ReleaseInfo.ChapterNumber,
+                    cancellationToken))
+                .Returns(new Post());
+        }
+
+        [Fact]
+        public async Task GivenSuccessfulExecutionShouldReturnSuccessResult()
+        {
+            var result = await step.ExecuteAsync(cancellationToken);
+
+            result.Should().BeSuccess();
+        }
+
+        [Fact]
+        public async Task GivenSuccessfulExecutionShouldSaveBloggerCoverInState()
+        {
+            var cover = fixture.Create<string>();
+
+            A.CallTo(() => fixture
+                .FreezeFake<GoogleBloggerService>()
+                .CreatePostCoverAsync(cancellationToken))
+                .Returns(cover);
+
+            await step.ExecuteAsync(cancellationToken);
+
+            fixture.Freeze<PublishState>().InternalData.BloggerImageAsBase64.Should().Be(cover);
+        }
+
+        [Fact]
+        public async Task GivenSuccessfulExecutionShouldSavePostUrlInState()
+        {
+            var url = fixture.Create<string>();
+
+            A.CallTo(() => fixture
+                .FreezeFake<GoogleBloggerService>()
+                .PostAsync(
+                    A<string>.Ignored,
+                    A<string>.Ignored,
+                    A<string>.Ignored,
+                    A<string>.Ignored,
+                    cancellationToken))
+                .Returns(new Post() { Url = url });
+
+            await step.ExecuteAsync(cancellationToken);
+
+            fixture.Freeze<PublishState>().ReleaseLinks.BloggerLink.Should().Be(url);
+        }
     }
 }

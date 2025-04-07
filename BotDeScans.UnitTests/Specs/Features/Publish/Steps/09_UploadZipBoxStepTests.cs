@@ -11,7 +11,7 @@ public class UploadZipBoxStepTests : UnitTest
     public UploadZipBoxStepTests()
     {
         fixture.Freeze<PublishState>();
-        fixture.FreezeFake<IServiceProvider>();
+        fixture.FreezeFake<BoxService>();
         step = fixture.Create<UploadZipBoxStep>();
     }
 
@@ -59,11 +59,6 @@ public class UploadZipBoxStepTests : UnitTest
 
             A.CallTo(() => titleFolder.Id).Returns(nameof(titleFolder));
             A.CallTo(() => titleFile.SharedLink.DownloadUrl).Returns(FILE_LINK);
-
-            A.CallTo(() => fixture
-                .FreezeFake<IServiceProvider>()
-                .GetService(typeof(BoxService)))
-                .Returns(fixture.FreezeFake<BoxService>());
 
             A.CallTo(() => fixture
                 .FreezeFake<BoxService>()

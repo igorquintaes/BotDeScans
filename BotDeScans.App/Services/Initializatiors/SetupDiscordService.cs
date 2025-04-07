@@ -11,6 +11,8 @@ public class SetupDiscordService(
 {
     public async Task<Result> SetupAsync(CancellationToken stoppingToken)
     {
+        // todo: podemos pensar em habilitar comando somente do que está configurado e validado
+        // ex: mega está no publish? habilitamos! Não está? não habilitamos!
         Console.WriteLine("Updating Discord Slash Commands...");
 
         // mandatory keys

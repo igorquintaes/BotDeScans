@@ -1,18 +1,18 @@
 ﻿using BotDeScans.App.Services;
-using BotDeScans.App.Services.ExternalClients;
 using BotDeScans.App.Services.Wrappers;
 using FluentResults;
 using Google.Apis.Download;
+using Google.Apis.Drive.v3;
 using File = Google.Apis.Drive.v3.Data.File;
 namespace BotDeScans.App.Features.GoogleDrive.InternalServices;
 
 public class GoogleDriveFilesService(
-    GoogleDriveClient googleDriveClient,
+    DriveService driveService,
     GoogleDriveResourcesService googleDriveResourcesService,
     GoogleDrivePermissionsService googleDrivePermissionsService,
     FileService fileService,
     StreamWrapper streamWrapper,
-    GoogleDriveWrapper googleDriveWrapper)
+    GoogleWrapper googleWrapper)
 {
     public virtual async Task<Result<File?>> GetAsync(
         string fileName,
@@ -59,9 +59,9 @@ public class GoogleDriveFilesService(
         var fileName = Path.GetFileName(filePath);
         var file = googleDriveResourcesService.CreateResourceObject(mimeType, fileName, parentId);
         await using var stream = streamWrapper.CreateFileStream(filePath, FileMode.Open);
-        var uploadRequest = googleDriveClient.Client.Files.Create(file, stream, mimeType);
+        var uploadRequest = driveService.Files.Create(file, stream, mimeType);
         uploadRequest.Fields = "webViewLink, id";
-        var uploadResult = await googleDriveWrapper.UploadAsync(uploadRequest, cancellationToken);
+        var uploadResult = await googleWrapper.UploadAsync(uploadRequest, cancellationToken);
         if (uploadResult.IsFailed)
             return uploadResult;
 
@@ -82,9 +82,9 @@ public class GoogleDriveFilesService(
     {
         var mimeType = fileService.GetMimeType(filePath);
         await using var stream = streamWrapper.CreateFileStream(filePath, FileMode.Open);
-        var uploadRequest = googleDriveClient.Client.Files.Update(new(), oldFileId, stream, mimeType);
+        var uploadRequest = driveService.Files.Update(new(), oldFileId, stream, mimeType);
         uploadRequest.Fields = "webViewLink, id";
-        return await googleDriveWrapper.UploadAsync(uploadRequest, cancellationToken);
+        return await googleWrapper.UploadAsync(uploadRequest, cancellationToken);
     }
 
     public virtual async Task<Result> DownloadAsync(
@@ -93,7 +93,7 @@ public class GoogleDriveFilesService(
         CancellationToken cancellationToken = default)
     {
         var filePath = Path.Combine(targetDirectory, file.Name);
-        var getRequest = googleDriveClient.Client.Files.Get(file.Id);
+        var getRequest = driveService.Files.Get(file.Id);
         await using var stream = streamWrapper.CreateFileStream(filePath, FileMode.Create);
         var downloadProgress = await getRequest.DownloadAsync(stream, cancellationToken);
 

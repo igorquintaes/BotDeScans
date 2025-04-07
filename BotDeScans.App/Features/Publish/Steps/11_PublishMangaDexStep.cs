@@ -1,12 +1,9 @@
 ﻿using BotDeScans.App.Services;
 using FluentResults;
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.DependencyInjection;
 namespace BotDeScans.App.Features.Publish.Steps;
 
 public class PublishMangaDexStep(
-    IServiceProvider serviceProvider,
-    IConfiguration configuration,
+    MangaDexService mangaDexService,
     PublishState state) : IStep
 {
     public StepEnum StepName => StepEnum.UploadMangadex;
@@ -16,19 +13,6 @@ public class PublishMangaDexStep(
     {
         if (state.Title.References.All(x => x.Key != Models.ExternalReference.MangaDex))
             return Task.FromResult(Result.Fail("Não foi definido uma referência para a publicação da obra na MangaDex."));
-
-        var username = configuration.GetValue("Mangadex:Username", string.Empty);
-        var password = configuration.GetValue("Mangadex:Password", string.Empty);
-        var clientId = configuration.GetValue("Mangadex:ClientId", string.Empty);
-        var clientSecret = configuration.GetValue("Mangadex:ClientSecret", string.Empty);
-        var groupId = configuration.GetValue("Mangadex:GroupId", string.Empty);
-
-        if (string.IsNullOrWhiteSpace(username) ||
-            string.IsNullOrWhiteSpace(password) ||
-            string.IsNullOrWhiteSpace(clientId) ||
-            string.IsNullOrWhiteSpace(clientSecret) ||
-            string.IsNullOrWhiteSpace(groupId))
-            return Task.FromResult(Result.Fail("As configurações da MangaDex não estão preenchidas (parcialmente ou totalmente)."));
 
         return Task.FromResult(Result.Ok());
     }
@@ -45,13 +29,7 @@ public class PublishMangaDexStep(
         => Task.FromResult(Result.Ok());
 
     public async Task<Result> ExecuteAsync(CancellationToken cancellationToken)
-    {
-        var mangaDexService = serviceProvider.GetRequiredService<MangaDexService>();
-
-        var loginResult = await mangaDexService.LoginAsync();
-        if (loginResult.IsFailed)
-            return loginResult;
-
+    {        
         var clearResult = await mangaDexService.ClearPendingUploadsAsync();
         if (clearResult.IsFailed)
             return clearResult;
@@ -62,7 +40,8 @@ public class PublishMangaDexStep(
             state.ReleaseInfo.ChapterName,
             state.ReleaseInfo.ChapterNumber,
             state.ReleaseInfo.ChapterVolume,
-            state.InternalData.OriginContentFolder);
+            state.InternalData.OriginContentFolder,
+            cancellationToken);
 
         if (uploadResult.IsFailed)
             return uploadResult.ToResult();

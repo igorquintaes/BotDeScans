@@ -2,14 +2,14 @@
 using Google.Apis.Requests;
 using Google.Apis.Upload;
 using System.Diagnostics.CodeAnalysis;
-namespace BotDeScans.App.Features.GoogleDrive.InternalServices;
+namespace BotDeScans.App.Services.Wrappers;
 
 [ExcludeFromCodeCoverage(Justification = @"
-Needs a lot of inner wrappers to mock real GoogleDrive calls. 
+Needs a lot of inner wrappers to mock real Google calls. 
 This class itself works a wrapper for mostly method calls.
-Maybe we should consider integration testing with real GoogleDrive API.
--> It is due Google SDK not providing an emulator to Drive, like PubSub or Bigtable.")]
-public class GoogleDriveWrapper
+Maybe we should consider integration testing with real Google API.
+-> It is due Google SDK not providing an emulator to Drive, Blogger, BQ etc.")]
+public class GoogleWrapper
 {
     public virtual Task<Result<TResponse>> ExecuteAsync<TResponse>(
         IClientServiceRequest<TResponse> listRequest,

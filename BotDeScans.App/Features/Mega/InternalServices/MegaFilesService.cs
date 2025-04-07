@@ -1,5 +1,4 @@
-﻿using BotDeScans.App.Services.ExternalClients;
-using BotDeScans.App.Services.Wrappers;
+﻿using BotDeScans.App.Services.Wrappers;
 using CG.Web.MegaApiClient;
 using FluentResults;
 namespace BotDeScans.App.Features.Mega.InternalServices;
@@ -7,10 +6,8 @@ namespace BotDeScans.App.Features.Mega.InternalServices;
 public class MegaFilesService(
     MegaResourcesService megaResourcesService,
     StreamWrapper streamWrapper,
-    MegaClient megaClient)
+    IMegaApiClient megaApiClient)
 {
-    private readonly IMegaApiClient megaApiClient = megaClient.Client;
-
     public virtual async Task<Result<INode?>> GetAsync(string fileName, INode parentNode)
     {
         var resourcesResult = await megaResourcesService.GetResourcesAsync(

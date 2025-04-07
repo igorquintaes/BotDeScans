@@ -12,7 +12,7 @@ public class UploadZipGoogleDriveStepTests : UnitTest
     public UploadZipGoogleDriveStepTests()
     {
         fixture.Freeze<PublishState>();
-        fixture.FreezeFake<IServiceProvider>();
+        fixture.FreezeFake<GoogleDriveService>();
         step = fixture.Create<UploadZipGoogleDriveStep>();
     }
 
@@ -58,11 +58,6 @@ public class UploadZipGoogleDriveStepTests : UnitTest
             var titleFolder = fixture.Create<File>();
             var titleFile = fixture.Create<File>();
             titleFile.WebViewLink = FILE_LINK;
-
-            A.CallTo(() => fixture
-                .FreezeFake<IServiceProvider>()
-                .GetService(typeof(GoogleDriveService)))
-                .Returns(fixture.FreezeFake<GoogleDriveService>());
 
             A.CallTo(() => fixture
                 .FreezeFake<GoogleDriveService>()

@@ -14,6 +14,7 @@ public static class InteractionContextExtensions
             ? $"https://cdn.discordapp.com/avatars/{userId}/{avatar}.png"
             : new Optional<string>();
     }
-    public static string GetUserName(this InteractionContext interactionContext)
-        => interactionContext.Interaction.Member.Value?.User.Value?.Username ?? "Desconhecido";
+
+    public static string GetUserName(this InteractionContext interactionContext) =>
+        interactionContext.Interaction.Member.Value?.User.Value?.Username ?? "Desconhecido";
 }

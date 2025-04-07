@@ -1,6 +1,5 @@
 ﻿using BotDeScans.App.Features.GoogleDrive.InternalServices;
 using BotDeScans.App.Services;
-using BotDeScans.App.Services.ExternalClients;
 using BotDeScans.App.Services.Wrappers;
 using FluentAssertions.Execution;
 using FluentResults;
@@ -16,16 +15,12 @@ public class GoogleDriveFilesServiceTests : UnitTest
 
     public GoogleDriveFilesServiceTests()
     {
-        fixture.FreezeFake<GoogleDriveClient>();
+        fixture.FreezeFake<DriveService>();
         fixture.FreezeFake<GoogleDriveResourcesService>();
         fixture.FreezeFake<GoogleDrivePermissionsService>();
         fixture.FreezeFake<FileService>();
         fixture.FreezeFake<StreamWrapper>();
-        fixture.FreezeFake<GoogleDriveWrapper>();
-
-        A.CallTo(() => fixture
-            .FreezeFake<GoogleDriveClient>().Client)
-            .Returns(fixture.FreezeFake<DriveService>());
+        fixture.FreezeFake<GoogleWrapper>();
 
         A.CallTo(() => fixture
             .FreezeFake<DriveService>().Files)
@@ -195,7 +190,7 @@ public class GoogleDriveFilesServiceTests : UnitTest
                 .Returns(fixture.FreezeFake<CreateMediaUpload>());
 
             A.CallTo(() => fixture
-                .FreezeFake<GoogleDriveWrapper>()
+                .FreezeFake<GoogleWrapper>()
                 .UploadAsync(fixture.FreezeFake<CreateMediaUpload>(), cancellationToken))
                 .Returns(fixture.FreezeFake<File>());
         }
@@ -206,7 +201,7 @@ public class GoogleDriveFilesServiceTests : UnitTest
             await service.UploadAsync(filePath, parentId, withPublicUrl: true, cancellationToken);
 
             A.CallTo(() => fixture
-                .FreezeFake<GoogleDriveWrapper>()
+                .FreezeFake<GoogleWrapper>()
                 .UploadAsync(
                     A<CreateMediaUpload>.That.Matches(x => x.Fields == "webViewLink, id"),
                     cancellationToken))
@@ -243,7 +238,7 @@ public class GoogleDriveFilesServiceTests : UnitTest
         public async Task GivenErrorToUploadFileShouldReturnFailResult()
         {
             A.CallTo(() => fixture
-                .FreezeFake<GoogleDriveWrapper>()
+                .FreezeFake<GoogleWrapper>()
                 .UploadAsync(fixture.FreezeFake<CreateMediaUpload>(), cancellationToken))
                 .Returns(Result.Fail("some error"));
 
@@ -293,7 +288,7 @@ public class GoogleDriveFilesServiceTests : UnitTest
                 .Returns(fixture.FreezeFake<UpdateMediaUpload>());
 
             A.CallTo(() => fixture
-                .FreezeFake<GoogleDriveWrapper>()
+                .FreezeFake<GoogleWrapper>()
                 .UploadAsync(fixture.FreezeFake<UpdateMediaUpload>(), cancellationToken))
                 .Returns(fixture.FreezeFake<File>());
         }
@@ -310,7 +305,7 @@ public class GoogleDriveFilesServiceTests : UnitTest
         public async Task GivenErrorToUpdateShouldReturnFailResult()
         {
             A.CallTo(() => fixture
-                .FreezeFake<GoogleDriveWrapper>()
+                .FreezeFake<GoogleWrapper>()
                 .UploadAsync(fixture.FreezeFake<UpdateMediaUpload>(), cancellationToken))
                 .Returns(Result.Fail("some error"));
 
@@ -325,7 +320,7 @@ public class GoogleDriveFilesServiceTests : UnitTest
             var result = await service.UpdateAsync(filePath, oldFileId, cancellationToken);
 
             A.CallTo(() => fixture
-                .FreezeFake<GoogleDriveWrapper>()
+                .FreezeFake<GoogleWrapper>()
                 .UploadAsync(
                     A<UpdateMediaUpload>.That.Matches(x => x.Fields == "webViewLink, id"),
                     cancellationToken))

@@ -1,10 +1,9 @@
 ﻿using BotDeScans.App.Features.GoogleDrive;
 using FluentResults;
-using Microsoft.Extensions.DependencyInjection;
 namespace BotDeScans.App.Features.Publish.Steps;
 
 public class UploadPdfGoogleDriveStep(
-    IServiceProvider serviceProvider,
+    GoogleDriveService googleDriveService,
     PublishState state) : IStep
 {
     public StepEnum StepName => StepEnum.UploadPdfGoogleDrive;
@@ -19,8 +18,6 @@ public class UploadPdfGoogleDriveStep(
 
     public async Task<Result> ExecuteAsync(CancellationToken cancellationToken)
     {
-        var googleDriveService = serviceProvider.GetRequiredService<GoogleDriveService>();
-
         var titleFolderResult = await googleDriveService.GetOrCreateFolderAsync(state.Title.Name, null, cancellationToken);
         if (titleFolderResult.IsFailed)
             return titleFolderResult.ToResult();

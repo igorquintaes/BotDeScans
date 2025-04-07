@@ -1,5 +1,4 @@
 ﻿using System.Runtime.CompilerServices;
-
 namespace BotDeScans.UnitTests;
 
 static class Initializer
@@ -7,7 +6,7 @@ static class Initializer
     [ModuleInitializer]
     internal static void Initialize()
     {
-        Verifier.UseProjectRelativeDirectory("Snapshots");
+        UseProjectRelativeDirectory("Snapshots");
         VerifyFakeItEasy.Initialize();
     }
 }

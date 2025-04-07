@@ -1,14 +1,11 @@
-﻿using BotDeScans.App.Services.ExternalClients;
-using CG.Web.MegaApiClient;
+﻿using CG.Web.MegaApiClient;
 using FluentResults;
 namespace BotDeScans.App.Features.Mega.InternalServices;
 
 public class MegaFoldersService(
     MegaResourcesService megaResourcesService,
-    MegaClient megaClient)
+    IMegaApiClient megaApiClient)
 {
-    private readonly IMegaApiClient megaApiClient = megaClient.Client;
-
     public virtual async Task<Result<INode?>> GetAsync(string folderName, INode parentNode)
     {
         var resourcesResult = await megaResourcesService.GetResourcesAsync(

@@ -1,11 +1,12 @@
 ﻿using BotDeScans.App.Models;
-using BotDeScans.App.Services.ExternalClients;
+using BotDeScans.App.Services.Wrappers;
 using FluentResults;
+using Google.Apis.Drive.v3;
 namespace BotDeScans.App.Features.GoogleDrive.InternalServices;
 
 public class GoogleDriveSettingsService(
-    GoogleDriveClient googleDriveClient,
-    GoogleDriveWrapper googleDriveWrapper,
+    DriveService driveService,
+    GoogleWrapper googleWrapper,
     GoogleDriveFoldersService googleDriveFoldersService)
 {
     public const string ROOT_FOLDER_NAME = "root";
@@ -18,7 +19,7 @@ public class GoogleDriveSettingsService(
         set => _baseFolderId = value;
     }
 
-    public async Task<Result> SetUpBaseFolderAsync(CancellationToken cancellationToken)
+    public virtual async Task<Result> SetUpBaseFolderAsync(CancellationToken cancellationToken)
     {
         var folderResult = await googleDriveFoldersService.GetAsync(
             BASE_FOLDER_NAME,
@@ -48,10 +49,10 @@ public class GoogleDriveSettingsService(
 
     public virtual async Task<Result<ConsumptionData>> GetConsumptionDataAsync(CancellationToken cancellationToken)
     {
-        var aboutRequest = googleDriveClient.Client.About.Get();
+        var aboutRequest = driveService.About.Get();
         aboutRequest.Fields = "storageQuota";
 
-        var aboutResult = await googleDriveWrapper.ExecuteAsync(aboutRequest, cancellationToken);
+        var aboutResult = await googleWrapper.ExecuteAsync(aboutRequest, cancellationToken);
         if (aboutResult.IsFailed)
             return aboutResult.ToResult();
 

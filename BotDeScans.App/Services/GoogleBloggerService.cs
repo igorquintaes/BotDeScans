@@ -1,21 +1,19 @@
 ﻿using BotDeScans.App.Extensions;
 using BotDeScans.App.Features.Publish;
-using BotDeScans.App.Services.ExternalClients;
 using Google.Apis.Blogger.v3;
 using Google.Apis.Blogger.v3.Data;
 using Microsoft.Extensions.Configuration;
 namespace BotDeScans.App.Services;
 
-public partial class GoogleBloggerService(
+public class GoogleBloggerService(
     PublishState state,
     ImageService imageService,
-    BloggerClient bloggerClient,
+    BloggerService bloggerService,
     IConfiguration configuration)
 {
-    public const string BLOGGER_RELEASE_TEMPLATE_FILE_NAME = "blogger-template.html";
-    private readonly BloggerService bloggerService = bloggerClient.Client;
+    public const string TEMPLATE_FILE_NAME = "blogger-template.html";
 
-    public async Task<Post> PostAsync(
+    public virtual async Task<Post> PostAsync(
         string title,
         string htmlContent,
         string label,
@@ -43,13 +41,13 @@ public partial class GoogleBloggerService(
         var templatePath = Path.Combine(
             AppDomain.CurrentDomain.BaseDirectory,
             "config",
-            BLOGGER_RELEASE_TEMPLATE_FILE_NAME);
+            TEMPLATE_FILE_NAME);
 
         using var streamReader = new StreamReader(templatePath);
         return await streamReader.ReadToEndAsync(cancellationToken);
     }
 
-    public virtual async Task<string> GetPostCoverAsync(CancellationToken cancellationToken)
+    public virtual async Task<string> CreatePostCoverAsync(CancellationToken cancellationToken)
     {
         var width = configuration.GetRequiredValue<int>("Blogger:Cover:Width");
         var height = configuration.GetRequiredValue<int>("Blogger:Cover:Height");

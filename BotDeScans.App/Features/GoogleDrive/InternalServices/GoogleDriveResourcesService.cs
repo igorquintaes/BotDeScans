@@ -1,11 +1,12 @@
-﻿using BotDeScans.App.Services.ExternalClients;
+﻿using BotDeScans.App.Services.Wrappers;
 using FluentResults;
+using Google.Apis.Drive.v3;
 using File = Google.Apis.Drive.v3.Data.File;
 namespace BotDeScans.App.Features.GoogleDrive.InternalServices;
 
 public class GoogleDriveResourcesService(
-    GoogleDriveClient googleDriveClient,
-    GoogleDriveWrapper googleDriveWrapper)
+    DriveService driveService,
+    GoogleWrapper googleWrapper)
 {
     /// <summary>
     /// Get resource (file or folder) based on its name, mimetype and, optionally, parentId folder.
@@ -32,9 +33,9 @@ public class GoogleDriveResourcesService(
         var parentCondition = $" and '{parentId ?? GoogleDriveSettingsService.BaseFolderId}' in parents";
         var query = @$"trashed = false{mimeTypeCondition}{forbiddenMimeTypeCondition}{nameCondition}{parentCondition}";
 
-        var listRequest = googleDriveClient.Client.Files.List();
+        var listRequest = driveService.Files.List();
         listRequest.Q = query;
-        var requestResult = await googleDriveWrapper.ExecuteAsync(listRequest, cancellationToken);
+        var requestResult = await googleWrapper.ExecuteAsync(listRequest, cancellationToken);
 
         if (requestResult.IsFailed)
             return requestResult.ToResult();
@@ -64,7 +65,7 @@ public class GoogleDriveResourcesService(
         string resourceId,
         CancellationToken cancellationToken = default)
     {
-        var deleteRequest = googleDriveClient.Client.Files.Delete(resourceId);
-        return googleDriveWrapper.ExecuteAsync(deleteRequest, cancellationToken);
+        var deleteRequest = driveService.Files.Delete(resourceId);
+        return googleWrapper.ExecuteAsync(deleteRequest, cancellationToken);
     }
 }

@@ -1,10 +1,9 @@
 ﻿using BotDeScans.App.Services;
 using FluentResults;
-using Microsoft.Extensions.DependencyInjection;
 namespace BotDeScans.App.Features.Publish.Steps;
 
 public class UploadZipBoxStep(
-    IServiceProvider serviceProvider,
+    BoxService boxService,
     PublishState state) : IStep
 {
     public StepEnum StepName => StepEnum.UploadZipBox;
@@ -18,8 +17,6 @@ public class UploadZipBoxStep(
 
     public async Task<Result> ExecuteAsync(CancellationToken cancellationToken)
     {
-        var boxService = serviceProvider.GetRequiredService<BoxService>();
-
         var titleFolder = await boxService.GetOrCreateFolderAsync(state.Title.Name);
         var file = await boxService.CreateFileAsync(
             filePath: state.InternalData.ZipFilePath!,

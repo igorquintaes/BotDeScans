@@ -147,7 +147,7 @@ public class DownloadStepTests : UnitTest
             fixture.Freeze<PublishState>().InternalData.OriginContentFolder = null!;
             fixture.Freeze<PublishState>().InternalData.CoverFilePath = null!;
 
-            var result = await step.ExecuteAsync(cancellationToken);
+            await step.ExecuteAsync(cancellationToken);
 
             fixture.Freeze<PublishState>().InternalData.OriginContentFolder.Should().NotBeNullOrEmpty();
             fixture.Freeze<PublishState>().InternalData.CoverFilePath.Should().NotBeNullOrEmpty();
