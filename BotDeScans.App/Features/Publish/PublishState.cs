@@ -1,12 +1,11 @@
 ﻿using BotDeScans.App.Extensions;
 using BotDeScans.App.Features.Publish.Steps;
 using BotDeScans.App.Models;
-using Microsoft.Extensions.Configuration;
 using SixLabors.ImageSharp;
 using System.ComponentModel;
 namespace BotDeScans.App.Features.Publish;
 
-public class PublishState(IConfiguration configuration)
+public class PublishState(StepsService stepsService)
 {
     public Lazy<IDictionary<StepEnum, StepStatus>> Steps = new(() => 
         Enum.GetValues<StepEnum>()

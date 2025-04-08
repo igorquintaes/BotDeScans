@@ -9,7 +9,7 @@ public class UploadZipMegaStep(
     PublishState state) : IStep
 {
     public StepEnum StepName => StepEnum.UploadZipMega;
-    public StepType StepType => StepType.Publish;
+    public StepType StepType => StepType.Upload;
 
     public Task<Result> ValidateBeforeFilesManagementAsync(CancellationToken _)
         => Task.FromResult(Result.Ok());

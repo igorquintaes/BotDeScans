@@ -43,5 +43,6 @@ public enum StepEnum
 public enum StepType
 {
     Management,
+    Upload,
     Publish
 }
