@@ -24,7 +24,7 @@ public class UploadZipGoogleDriveStepTests : UnitTest
 
         [Fact]
         public void ShouldHaveExpectedType() =>
-            step.StepType.Should().Be(StepType.Publish);
+            step.StepType.Should().Be(StepType.Upload);
     }
 
     public class ValidateBeforeFilesManagementAsync : UploadZipGoogleDriveStepTests

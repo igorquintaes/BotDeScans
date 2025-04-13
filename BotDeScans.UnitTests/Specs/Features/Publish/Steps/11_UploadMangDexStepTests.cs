@@ -6,20 +6,20 @@ using FluentResults;
 using Microsoft.Extensions.Configuration;
 namespace BotDeScans.UnitTests.Specs.Features.Publish.Steps;
 
-public class PublishMangDexStepTests : UnitTest
+public class UploadMangDexStepTests : UnitTest
 {
     private readonly IStep step;
 
-    public PublishMangDexStepTests()
+    public UploadMangDexStepTests()
     {
+        fixture.Freeze<PublishState>();
         fixture.FreezeFake<IConfiguration>();
         fixture.FreezeFake<MangaDexService>();
-        fixture.Freeze<PublishState>();
 
-        step = fixture.Create<PublishMangaDexStep>();
+        step = fixture.Create<UploadMangaDexStep>();
     }
 
-    public class Properties : PublishMangDexStepTests
+    public class Properties : UploadMangDexStepTests
     {
         [Fact]
         public void ShouldHaveExpectedName() =>
@@ -27,10 +27,10 @@ public class PublishMangDexStepTests : UnitTest
 
         [Fact]
         public void ShouldHaveExpectedType() =>
-            step.StepType.Should().Be(StepType.Publish);
+            step.StepType.Should().Be(StepType.Upload);
     }
 
-    public class ValidateBeforeFilesManagementAsync : PublishMangDexStepTests
+    public class ValidateBeforeFilesManagementAsync : UploadMangDexStepTests
     {
         public ValidateBeforeFilesManagementAsync()
         {
@@ -101,7 +101,7 @@ public class PublishMangDexStepTests : UnitTest
         }
     }
 
-    public class ValidateAfterFilesManagementAsync : PublishMangDexStepTests
+    public class ValidateAfterFilesManagementAsync : UploadMangDexStepTests
     {
         [Fact]
         public async Task ShouldReturnSuccess()
@@ -112,7 +112,7 @@ public class PublishMangDexStepTests : UnitTest
         }
     }
 
-    public class ExecuteAsync : PublishMangDexStepTests
+    public class ExecuteAsync : UploadMangDexStepTests
     {
         private const string CHAPTER_ID = "random-value";
 

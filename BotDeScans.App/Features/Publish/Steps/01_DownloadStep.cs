@@ -9,7 +9,6 @@ public class DownloadStep(
     PublishState state) : IStep
 {
     public StepEnum StepName => StepEnum.Download;
-    public StepType StepType => StepType.Management;
 
     public async Task<Result> ValidateBeforeFilesManagementAsync(CancellationToken cancellationToken)
     {

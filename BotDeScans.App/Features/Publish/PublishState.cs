@@ -1,27 +1,22 @@
 ﻿using BotDeScans.App.Extensions;
 using BotDeScans.App.Features.Publish.Steps;
 using BotDeScans.App.Models;
-using SixLabors.ImageSharp;
 using System.ComponentModel;
 namespace BotDeScans.App.Features.Publish;
 
 public class PublishState(StepsService stepsService)
 {
-    public Lazy<IDictionary<StepEnum, StepStatus>> Steps = new(() => 
-        Enum.GetValues<StepEnum>()
-            .Select(@enum =>
-                Array.Exists(configuration.GetRequiredValues<StepEnum>(
-                    "Settings:Publish:Steps",
-                    value => Enum.Parse(typeof(StepEnum), value)),
-                stepEnum => stepEnum == @enum)
-                ? new KeyValuePair<StepEnum, StepStatus>(@enum, StepStatus.Queued)
-                : new KeyValuePair<StepEnum, StepStatus>(@enum, StepStatus.Skip))
-            .ToDictionary(x => x.Key, x => x.Value));
-
+    public StepsInfo? Steps { get; private set; }
     public Title Title { get; set; } = null!;
     public Info ReleaseInfo { get; set; } = null!;
     public Links ReleaseLinks { get; set; } = new Links();
     public ReleaseInternalData InternalData { get; set; } = new ReleaseInternalData();
+
+    public virtual void LoadSteps() => 
+        Steps = stepsService
+            .GetPublishSteps()
+            .Select(x => (x, StepStatus.Queued))
+            .ToArray();
 
     public record ReleaseInternalData
     {

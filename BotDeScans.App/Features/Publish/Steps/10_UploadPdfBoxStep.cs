@@ -7,7 +7,6 @@ public class UploadPdfBoxStep(
     PublishState state) : IStep
 {
     public StepEnum StepName => StepEnum.UploadPdfBox;
-    public StepType StepType => StepType.Upload;
 
     public Task<Result> ValidateBeforeFilesManagementAsync(CancellationToken _)
         => Task.FromResult(Result.Ok());

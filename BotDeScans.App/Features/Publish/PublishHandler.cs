@@ -21,6 +21,7 @@ public class PublishHandler(
         InteractionContext interactionContext,
         CancellationToken cancellationToken)
     {
+        publishState.LoadSteps();
         var infoValidationResult = validator.Validate(info);
         if (infoValidationResult.IsValid is false)
             return infoValidationResult.ToResult();
@@ -46,7 +47,7 @@ public class PublishHandler(
         if (preValidationResult.IsFailed)
             return preValidationResult;
 
-        var managementResult = await publishService.RunManagementStepsAsync(interactionContext, cancellationToken);
+        var managementResult = await publishService.ExecuteStepsAsync(interactionContext, Steps.StepType.Management, cancellationToken);
         if (managementResult.IsFailed)
             return managementResult;
 
@@ -54,7 +55,11 @@ public class PublishHandler(
         if (validationResult.IsFailed)
             return validationResult;
 
-        var publishResult = await publishService.RunPublishStepsAsync(interactionContext, cancellationToken);
+        var uploadResult = await publishService.ExecuteStepsAsync(interactionContext, Steps.StepType.Upload, cancellationToken);
+        if (uploadResult.IsFailed)
+            return uploadResult;
+
+        var publishResult = await publishService.ExecuteStepsAsync(interactionContext, Steps.StepType.Publish, cancellationToken);
         if (publishResult.IsFailed)
             return publishResult;
 

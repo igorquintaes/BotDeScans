@@ -10,96 +10,107 @@ public class PublishService(
     PublishState publishState,
     IEnumerable<IStep> steps)
 {
-    public virtual Task<Result> ValidateBeforeFilesManagementAsync(
-        InteractionContext interactionContext, 
-        CancellationToken cancellationToken)
-        => RunStepsAsync(
-            interactionContext,
-            stepFunc: async (step, ct) => await step.ValidateBeforeFilesManagementAsync(ct),
-            stepTypes: Enum.GetValues<StepType>(),
-            isPublishing: false,
-            cancellationToken: cancellationToken);
-
-    public virtual Task<Result> ValidateAfterFilesManagementAsync(
-        InteractionContext interactionContext, 
-        CancellationToken cancellationToken)
-        => RunStepsAsync(
-            interactionContext,
-            stepFunc: async (step, ct) => await step.ValidateAfterFilesManagementAsync(ct),
-            stepTypes: Enum.GetValues<StepType>(),
-            isPublishing: false,
-            cancellationToken: cancellationToken);
-
-    public virtual Task<Result> RunManagementStepsAsync(
+    public virtual async Task<Result> ValidateBeforeFilesManagementAsync(
         InteractionContext interactionContext,
-        CancellationToken cancellationToken)
-        => RunStepsAsync(
-            interactionContext,
-            stepFunc: async (step, ct) => await step.ExecuteAsync(ct),
-            stepTypes: [StepType.Management],
-            isPublishing: true,
-            cancellationToken: cancellationToken);
-
-    public virtual Task<Result> RunPublishStepsAsync(
-        InteractionContext interactionContext,
-        CancellationToken cancellationToken)
-        => RunStepsAsync(
-            interactionContext,
-            stepFunc: async (step, ct) => await step.ExecuteAsync(ct),
-            stepTypes: [StepType.Publish],
-            isPublishing: true,
-            cancellationToken: cancellationToken);
-
-    private async Task<Result> RunStepsAsync(
-        InteractionContext interactionContext,
-        Func<IStep, CancellationToken, Task<Result>> stepFunc,
-        StepType[] stepTypes,
-        bool isPublishing,
         CancellationToken cancellationToken)
     {
-        var result = new Result();
-        foreach (var step in steps
-            .Where(x => publishState.Steps.Value[x.StepName] != StepStatus.Skip)
-            .Where(x => stepTypes.Contains(x.StepType))
-            .OrderBy(x => x.StepName))
+        foreach (var step in steps.OrderBy(x => x.StepName))
         {
-            if (isPublishing)
-                publishState.Steps.Value[step.StepName] = StepStatus.Executing;
+            var result = await RunAsync(
+                stepFunc: async (step, ct) => await step.ValidateBeforeFilesManagementAsync(ct),
+                step: step,
+                cancellationToken: cancellationToken);
 
-            try
+            if (result.IsFailed)
             {
-                var executionResult = await stepFunc(step, cancellationToken);
-                result.WithReasons(executionResult.Reasons);
+                var initialFeedbackResult = await publishMessageService.UpdateTrackingMessageAsync(interactionContext, cancellationToken);
+                if (initialFeedbackResult.IsFailed)
+                    return initialFeedbackResult;
 
-                if (executionResult.IsFailed)
-                    publishState.Steps.Value[step.StepName] = StepStatus.Error;
-                else if (isPublishing)
-                    publishState.Steps.Value[step.StepName] = StepStatus.Success;
-
-                if (isPublishing)
-                {
-                    var initialFeedbackResult = await publishMessageService.UpdateTrackingMessageAsync(interactionContext, cancellationToken);
-                    result.WithReasons(initialFeedbackResult.Reasons);
-
-                    if (result.IsFailed)
-                        return result;
-                }
-            }
-            catch (Exception ex)
-            {
-                var message = $"Unexpected error in {step.StepName}. " +
-                              $"Exception message: {ex.Message}. " +
-                               "More info inside logs file.";
-
-                Log.Error(ex, message);
-                result.WithError(new Error(message).CausedBy(ex));
-
-                publishState.Steps.Value[step.StepName] = StepStatus.Fatal;
-                return result;
+                return result.ToResult();
             }
         }
 
-        return result;
+        return Result.Ok();
+    }
+
+    public virtual async Task<Result> ValidateAfterFilesManagementAsync(
+        InteractionContext interactionContext,
+        CancellationToken cancellationToken)
+    {
+        foreach (var step in steps.OrderBy(x => x.StepName))
+        {
+            var result = await RunAsync(
+                stepFunc: async (step, ct) => await step.ValidateAfterFilesManagementAsync(ct),
+                step: step,
+                cancellationToken: cancellationToken);
+
+            if (result.IsFailed)
+            {
+                var initialFeedbackResult = await publishMessageService.UpdateTrackingMessageAsync(interactionContext, cancellationToken);
+                if (initialFeedbackResult.IsFailed)
+                    return initialFeedbackResult;
+
+                return result.ToResult();
+            }
+        }
+
+        return Result.Ok();
+    }
+
+    public virtual async Task<Result> ExecuteStepsAsync(
+        InteractionContext interactionContext,
+        StepType stepType,
+        CancellationToken cancellationToken)
+    {
+        var validSteps = steps
+            .Where(x => x.StepType == stepType)
+            .OrderBy(x => x.StepName);
+
+        foreach (var step in validSteps)
+        {
+            publishState.Steps![step.StepName] = StepStatus.Executing;
+
+            var result = await RunAsync(
+                stepFunc: async (step, ct) => await step.ValidateAfterFilesManagementAsync(ct),
+                step: step,
+                cancellationToken: cancellationToken);
+
+            publishState.Steps![step.StepName] = result.ValueOrDefault;
+
+            var initialFeedbackResult = await publishMessageService.UpdateTrackingMessageAsync(interactionContext, cancellationToken);
+            if (initialFeedbackResult.IsFailed)
+                return initialFeedbackResult;
+
+            if (result.IsFailed)
+                return result.ToResult();
+        }
+
+        return Result.Ok();
+    }
+
+    private static async Task<Result<StepStatus>> RunAsync(
+        Func<IStep, CancellationToken, Task<Result>> stepFunc,
+        IStep step,
+        CancellationToken cancellationToken)
+    {
+        try
+        {
+            var executionResult = await stepFunc(step, cancellationToken);
+            return executionResult.IsFailed
+                ? Result.Fail<StepStatus>(executionResult.Errors).WithValue(StepStatus.Error)
+                : Result.Ok(StepStatus.Success);
+
+        }
+        catch (Exception ex)
+        {
+            var message = $"Unexpected error in {step.StepName}. " +
+                          $"Exception message: {ex.Message}. " +
+                           "More info inside logs file.";
+
+            Log.Error(ex, message);
+            return Result.Fail<StepStatus>(message).WithValue(StepStatus.Fatal);
+        }
     }
 }
 

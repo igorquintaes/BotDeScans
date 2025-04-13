@@ -2,12 +2,11 @@
 using FluentResults;
 namespace BotDeScans.App.Features.Publish.Steps;
 
-public class PublishMangaDexStep(
+public class UploadMangaDexStep(
     MangaDexService mangaDexService,
     PublishState state) : IStep
 {
     public StepEnum StepName => StepEnum.UploadMangadex;
-    public StepType StepType => StepType.Publish;
 
     public Task<Result> ValidateBeforeFilesManagementAsync(CancellationToken _)
     {
