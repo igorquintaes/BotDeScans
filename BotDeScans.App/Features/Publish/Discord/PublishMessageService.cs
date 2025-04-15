@@ -1,6 +1,5 @@
 ﻿using BotDeScans.App.Builders;
 using BotDeScans.App.Extensions;
-using BotDeScans.App.Features.Publish.Steps;
 using Microsoft.Extensions.Configuration;
 using OneOf;
 using Remora.Discord.API.Abstractions.Objects;
@@ -33,8 +32,8 @@ public class PublishMessageService(
         InteractionContext interactionContext,
         CancellationToken cancellationToken)
     {
-        var tasks = new StepsInfo(publishState.Steps.Value);
-        var embed = new Embed(tasks.Header, Description: tasks.Details, Colour: tasks.ColorStatus);
+        var steps = publishState.Steps!;
+        var embed = new Embed(steps.Header, Description: steps.Details, Colour: steps.ColorStatus);
 
         trackingMessage = trackingMessage is null
             ? await feedbackService.SendContextualEmbedAsync(embed, ct: cancellationToken)

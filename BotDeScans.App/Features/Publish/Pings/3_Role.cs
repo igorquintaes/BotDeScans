@@ -1,4 +1,5 @@
 ﻿using BotDeScans.App.Extensions;
+using BotDeScans.App.Features.Publish.Discord;
 using BotDeScans.App.Services.Discord;
 using FluentResults;
 using Microsoft.Extensions.Configuration;

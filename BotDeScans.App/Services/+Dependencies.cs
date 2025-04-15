@@ -30,7 +30,7 @@ internal static class AddDependencies
         .AddSingleton<ChartService>()
         .AddSingleton<FileService>()
         .AddSingleton<ImageService>()
-        .AddSingleton<StepsService>()
+        .AddScoped<StepsService>()
         .AddScoped<BoxService>()
         .AddScoped<FileReleaseService>()
         .AddScoped<GoogleBloggerService>()

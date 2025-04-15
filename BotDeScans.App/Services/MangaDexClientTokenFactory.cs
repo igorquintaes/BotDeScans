@@ -1,5 +1,5 @@
 ﻿using BotDeScans.App.Extensions;
-using BotDeScans.App.Features.Publish.Steps;
+using BotDeScans.App.Features.Publish.Steps.Enums;
 using FluentResults;
 using MangaDexSharp;
 using Microsoft.Extensions.Configuration;
@@ -12,8 +12,8 @@ public class MangaDexClientTokenFactory(
     : ClientFactory<MangaDexAccessToken>
 {
     public override bool ExpectedInPublishFeature => configuration
-        .GetRequiredValues<StepEnum>("Settings:Publish:Steps", value => Enum.Parse(typeof(StepEnum), value))
-        .Any(x => x == StepEnum.UploadMangadex);
+        .GetRequiredValues<StepName>("Settings:Publish:Steps", value => Enum.Parse(typeof(StepName), value))
+        .Any(x => x == StepName.UploadMangadex);
 
     public override Result ValidateConfiguration()
     {

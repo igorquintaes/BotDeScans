@@ -1,5 +1,5 @@
 ﻿using BotDeScans.App.Extensions;
-using BotDeScans.App.Features.Publish.Steps;
+using BotDeScans.App.Features.Publish.Steps.Enums;
 using BotDeScans.App.Services;
 using CG.Web.MegaApiClient;
 using FluentResults;
@@ -9,8 +9,8 @@ namespace BotDeScans.App.Features.Mega;
 public class MegaClientFactory(IConfiguration configuration) : ClientFactory<IMegaApiClient>
 {
     public override bool ExpectedInPublishFeature => configuration
-        .GetRequiredValues<StepEnum>("Settings:Publish:Steps", value => Enum.Parse(typeof(StepEnum), value))
-        .Any(x => x == StepEnum.UploadPdfMega || x == StepEnum.UploadZipMega);
+        .GetRequiredValues<StepName>("Settings:Publish:Steps", value => Enum.Parse(typeof(StepName), value))
+        .Any(x => x == StepName.UploadPdfMega || x == StepName.UploadZipMega);
 
     public override async Task<Result<IMegaApiClient>> CreateAsync(CancellationToken cancellationToken)
     {

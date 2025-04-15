@@ -1,5 +1,6 @@
 ﻿using BotDeScans.App.Features.Publish;
 using BotDeScans.App.Features.Publish.Steps;
+using BotDeScans.App.Features.Publish.Steps.Enums;
 using BotDeScans.App.Services;
 using FluentResults;
 namespace BotDeScans.UnitTests.Specs.Features.Publish.Steps;
@@ -20,7 +21,7 @@ public class PdfFilesStepTests : UnitTest
     {
         [Fact]
         public void ShouldHaveExpectedName() =>
-            step.StepName.Should().Be(StepEnum.PdfFiles);
+            step.StepName.Should().Be(StepName.PdfFiles);
 
         [Fact]
         public void ShouldHaveExpectedType() =>

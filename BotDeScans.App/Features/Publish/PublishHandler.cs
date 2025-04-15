@@ -1,6 +1,7 @@
 ﻿using BotDeScans.App.Extensions;
 using BotDeScans.App.Features.Publish.Discord;
 using BotDeScans.App.Features.Publish.Pings;
+using BotDeScans.App.Features.Publish.Steps.Enums;
 using FluentResults;
 using FluentValidation;
 using Remora.Discord.Commands.Contexts;
@@ -21,6 +22,7 @@ public class PublishHandler(
         InteractionContext interactionContext,
         CancellationToken cancellationToken)
     {
+        publishState.LoadSteps();
         var infoValidationResult = validator.Validate(info);
         if (infoValidationResult.IsValid is false)
             return infoValidationResult.ToResult();
@@ -46,7 +48,7 @@ public class PublishHandler(
         if (preValidationResult.IsFailed)
             return preValidationResult;
 
-        var managementResult = await publishService.RunManagementStepsAsync(interactionContext, cancellationToken);
+        var managementResult = await publishService.ExecuteStepsAsync(interactionContext, StepType.Management, cancellationToken);
         if (managementResult.IsFailed)
             return managementResult;
 
@@ -54,7 +56,11 @@ public class PublishHandler(
         if (validationResult.IsFailed)
             return validationResult;
 
-        var publishResult = await publishService.RunPublishStepsAsync(interactionContext, cancellationToken);
+        var uploadResult = await publishService.ExecuteStepsAsync(interactionContext, StepType.Upload, cancellationToken);
+        if (uploadResult.IsFailed)
+            return uploadResult;
+
+        var publishResult = await publishService.ExecuteStepsAsync(interactionContext, StepType.Publish, cancellationToken);
         if (publishResult.IsFailed)
             return publishResult;
 

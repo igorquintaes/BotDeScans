@@ -1,5 +1,5 @@
 ﻿using BotDeScans.App.Extensions;
-using BotDeScans.App.Features.Publish.Steps;
+using BotDeScans.App.Features.Publish.Steps.Enums;
 using BotDeScans.App.Services.Wrappers;
 using FluentResults;
 using Google.Apis.Auth.OAuth2;
@@ -17,8 +17,8 @@ public class GoogleBloggerClientFactory(
     public const string CREDENTIALS_FILE_NAME = "blogger.json";
 
     public override bool ExpectedInPublishFeature => configuration
-        .GetRequiredValues<StepEnum>("Settings:Publish:Steps", value => Enum.Parse(typeof(StepEnum), value))
-        .Any(x => x == StepEnum.PublishBlogspot);
+        .GetRequiredValues<StepName>("Settings:Publish:Steps", value => Enum.Parse(typeof(StepName), value))
+        .Any(x => x == StepName.PublishBlogspot);
 
     public override Result ValidateConfiguration()
     {

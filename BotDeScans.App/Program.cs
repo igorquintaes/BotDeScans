@@ -62,13 +62,13 @@ public class Program
             var discordUpdateResult = await setupDiscordService.SetupAsync(cts.Token);
             warmupResult.WithReasons(discordUpdateResult.Reasons);
 
-            var setupPublishStepsService = scope.ServiceProvider.GetRequiredService<SetupClientsService>();
-            var setupPublishStepsResult = await setupPublishStepsService.SetupAsync(cts.Token);
-            warmupResult.WithReasons(setupPublishStepsResult.Reasons);
-
             var setupClientsService = scope.ServiceProvider.GetRequiredService<SetupStepsService>();
             var setupClientsResult = setupClientsService.Setup();
             warmupResult.WithReasons(setupClientsResult.Reasons);
+
+            var setupPublishStepsService = scope.ServiceProvider.GetRequiredService<SetupClientsService>();
+            var setupPublishStepsResult = await setupPublishStepsService.SetupAsync(cts.Token);
+            warmupResult.WithReasons(setupPublishStepsResult.Reasons);
         }
 
         if (warmupResult.IsFailed)
