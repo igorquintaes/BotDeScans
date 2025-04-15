@@ -1,12 +1,11 @@
-﻿using BotDeScans.App.Attributes;
-using BotDeScans.App.Extensions;
-using System.ComponentModel;
+﻿using BotDeScans.App.Extensions;
+using BotDeScans.App.Features.Publish.Steps.Enums;
 using System.Drawing;
 namespace BotDeScans.App.Features.Publish.Steps;
 
-public class StepsInfo(IDictionary<StepEnum, StepStatus> steps) : Dictionary<StepEnum, StepStatus>(steps)
+public class StepsInfo(IDictionary<StepName, StepStatus> steps) : Dictionary<StepName, StepStatus>(steps)
 {
-    public static implicit operator StepsInfo((StepEnum, StepStatus)[] steps) => 
+    public static implicit operator StepsInfo((StepName, StepStatus)[] steps) => 
         new(steps.ToDictionary(x => x.Item1, x => x.Item2));
 
     public StepStatus Status =>
@@ -36,69 +35,20 @@ public class StepsInfo(IDictionary<StepEnum, StepStatus> steps) : Dictionary<Ste
         Environment.NewLine,
         this.Select(task => $"{task.Value.GetEmoji()} - {task.Key.GetDescription()}"));
 
-    public static readonly IReadOnlyDictionary<StepEnum, StepType> StepEnumType = 
-        new Dictionary<StepEnum, StepType>
+    public static readonly IReadOnlyDictionary<StepName, StepType> StepNameType = 
+        new Dictionary<StepName, StepType>
         {
-            { StepEnum.Download, StepType.Management },
-            { StepEnum.Compress, StepType.Management },
-            { StepEnum.ZipFiles, StepType.Management },
-            { StepEnum.PdfFiles, StepType.Management },
-            { StepEnum.UploadZipBox, StepType.Upload },
-            { StepEnum.UploadPdfBox, StepType.Upload },
-            { StepEnum.UploadZipGoogleDrive, StepType.Upload },
-            { StepEnum.UploadPdfGoogleDrive, StepType.Upload },
-            { StepEnum.UploadZipMega, StepType.Upload },
-            { StepEnum.UploadPdfMega, StepType.Upload },
-            { StepEnum.UploadMangadex, StepType.Upload },
-            { StepEnum.PublishBlogspot, StepType.Publish }
+            { StepName.Download, StepType.Management },
+            { StepName.Compress, StepType.Management },
+            { StepName.ZipFiles, StepType.Management },
+            { StepName.PdfFiles, StepType.Management },
+            { StepName.UploadZipBox, StepType.Upload },
+            { StepName.UploadPdfBox, StepType.Upload },
+            { StepName.UploadZipGoogleDrive, StepType.Upload },
+            { StepName.UploadPdfGoogleDrive, StepType.Upload },
+            { StepName.UploadZipMega, StepType.Upload },
+            { StepName.UploadPdfMega, StepType.Upload },
+            { StepName.UploadMangadex, StepType.Upload },
+            { StepName.PublishBlogspot, StepType.Publish }
         };
-}
-
-public enum StepStatus
-{
-    [Emoji("clock10")]
-    Queued,
-    [Emoji("fire")]
-    Executing,
-    [Emoji("white_check_mark")]
-    Success,
-    [Emoji("warning")]
-    Error,
-    [Emoji("sos")]
-    Fatal
-}
-
-public enum StepEnum
-{
-    [Description("Baixar")]
-    Download,
-    [Description("Compressão")]
-    Compress,
-    [Description("Transformar em zip")]
-    ZipFiles,
-    [Description("Transformar em pdf")]
-    PdfFiles,
-    [Description("Hospedar zip - Mega")]
-    UploadZipMega,
-    [Description("Hospedar pdf - Mega")]
-    UploadPdfMega,
-    [Description("Hospedar zip - Box")]
-    UploadZipBox,
-    [Description("Hospedar pdf - Box")]
-    UploadPdfBox,
-    [Description("Hospedar zip - Google Drive")]
-    UploadZipGoogleDrive,
-    [Description("Hospedar pdf - Google Drive")]
-    UploadPdfGoogleDrive,
-    [Description("Publicar na Mangadex")]
-    UploadMangadex,
-    [Description("Publicar no Blogspot")]
-    PublishBlogspot
-}
-
-public enum StepType
-{
-    Management,
-    Upload,
-    Publish
 }

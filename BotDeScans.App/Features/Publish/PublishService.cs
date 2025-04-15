@@ -1,5 +1,6 @@
 ﻿using BotDeScans.App.Features.Publish.Discord;
 using BotDeScans.App.Features.Publish.Steps;
+using BotDeScans.App.Features.Publish.Steps.Enums;
 using FluentResults;
 using Remora.Discord.Commands.Contexts;
 using Serilog;
@@ -99,12 +100,4 @@ public class PublishService(
 
         return runResult;
     }
-}
-
-public enum PingType
-{
-    Everyone = 1,
-    Global = 2,
-    Role = 3,
-    None = 4
 }

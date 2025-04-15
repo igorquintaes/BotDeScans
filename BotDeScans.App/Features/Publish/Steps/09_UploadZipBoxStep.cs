@@ -1,4 +1,5 @@
-﻿using BotDeScans.App.Services;
+﻿using BotDeScans.App.Features.Publish.Steps.Enums;
+using BotDeScans.App.Services;
 using FluentResults;
 namespace BotDeScans.App.Features.Publish.Steps;
 
@@ -6,7 +7,7 @@ public class UploadZipBoxStep(
     BoxService boxService,
     PublishState state) : IStep
 {
-    public StepEnum StepName => StepEnum.UploadZipBox;
+    public StepName StepName => StepName.UploadZipBox;
 
     public Task<Result> ValidateBeforeFilesManagementAsync(CancellationToken _)
         => Task.FromResult(Result.Ok());

@@ -2,6 +2,7 @@
 using BotDeScans.App.Features.Mega.InternalServices;
 using BotDeScans.App.Features.Publish;
 using BotDeScans.App.Features.Publish.Steps;
+using BotDeScans.App.Features.Publish.Steps.Enums;
 using CG.Web.MegaApiClient;
 using FluentResults;
 namespace BotDeScans.UnitTests.Specs.Features.Publish.Steps;
@@ -22,7 +23,7 @@ public class UploadZipMegaStepTests : UnitTest
     {
         [Fact]
         public void ShouldHaveExpectedName() =>
-            step.StepName.Should().Be(StepEnum.UploadZipMega);
+            step.StepName.Should().Be(StepName.UploadZipMega);
 
         [Fact]
         public void ShouldHaveExpectedType() =>

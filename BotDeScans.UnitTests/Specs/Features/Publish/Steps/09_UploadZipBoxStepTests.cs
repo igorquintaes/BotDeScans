@@ -1,5 +1,6 @@
 ﻿using BotDeScans.App.Features.Publish;
 using BotDeScans.App.Features.Publish.Steps;
+using BotDeScans.App.Features.Publish.Steps.Enums;
 using BotDeScans.App.Services;
 using Box.V2.Models;
 namespace BotDeScans.UnitTests.Specs.Features.Publish.Steps;
@@ -19,7 +20,7 @@ public class UploadZipBoxStepTests : UnitTest
     {
         [Fact]
         public void ShouldHaveExpectedName() =>
-            step.StepName.Should().Be(StepEnum.UploadZipBox);
+            step.StepName.Should().Be(StepName.UploadZipBox);
 
         [Fact]
         public void ShouldHaveExpectedType() =>

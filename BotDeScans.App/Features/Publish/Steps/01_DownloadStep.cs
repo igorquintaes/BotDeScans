@@ -1,4 +1,5 @@
 ﻿using BotDeScans.App.Features.GoogleDrive;
+using BotDeScans.App.Features.Publish.Steps.Enums;
 using BotDeScans.App.Services;
 using FluentResults;
 namespace BotDeScans.App.Features.Publish.Steps;
@@ -8,7 +9,7 @@ public class DownloadStep(
     GoogleDriveService googleDriveService,
     PublishState state) : IStep
 {
-    public StepEnum StepName => StepEnum.Download;
+    public StepName StepName => StepName.Download;
 
     public async Task<Result> ValidateBeforeFilesManagementAsync(CancellationToken cancellationToken)
     {

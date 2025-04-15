@@ -1,5 +1,6 @@
 ﻿using BotDeScans.App.Features.Mega;
 using BotDeScans.App.Features.Mega.InternalServices;
+using BotDeScans.App.Features.Publish.Steps.Enums;
 using FluentResults;
 namespace BotDeScans.App.Features.Publish.Steps;
 
@@ -8,7 +9,7 @@ MegaService megaService,
 MegaSettingsService megaSettingsService,
     PublishState state) : IStep
 {
-    public StepEnum StepName => StepEnum.UploadPdfMega;
+    public StepName StepName => StepName.UploadPdfMega;
 
     public Task<Result> ValidateBeforeFilesManagementAsync(CancellationToken _)
         => Task.FromResult(Result.Ok());

@@ -1,4 +1,5 @@
-﻿using BotDeScans.App.Features.Publish.Pings;
+﻿using BotDeScans.App.Features.Publish.Discord;
+using BotDeScans.App.Features.Publish.Pings;
 using BotDeScans.App.Models;
 using FluentValidation;
 using Microsoft.Extensions.Configuration;

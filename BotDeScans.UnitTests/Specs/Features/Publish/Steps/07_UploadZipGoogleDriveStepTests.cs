@@ -1,6 +1,7 @@
 ﻿using BotDeScans.App.Features.GoogleDrive;
 using BotDeScans.App.Features.Publish;
 using BotDeScans.App.Features.Publish.Steps;
+using BotDeScans.App.Features.Publish.Steps.Enums;
 using FluentResults;
 using File = Google.Apis.Drive.v3.Data.File;
 namespace BotDeScans.UnitTests.Specs.Features.Publish.Steps;
@@ -20,7 +21,7 @@ public class UploadZipGoogleDriveStepTests : UnitTest
     {
         [Fact]
         public void ShouldHaveExpectedName() =>
-            step.StepName.Should().Be(StepEnum.UploadZipGoogleDrive);
+            step.StepName.Should().Be(StepName.UploadZipGoogleDrive);
 
         [Fact]
         public void ShouldHaveExpectedType() =>

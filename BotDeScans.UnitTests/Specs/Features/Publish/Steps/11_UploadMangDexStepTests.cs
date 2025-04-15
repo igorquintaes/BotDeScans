@@ -1,5 +1,6 @@
 ﻿using BotDeScans.App.Features.Publish;
 using BotDeScans.App.Features.Publish.Steps;
+using BotDeScans.App.Features.Publish.Steps.Enums;
 using BotDeScans.App.Models;
 using BotDeScans.App.Services;
 using FluentResults;
@@ -23,7 +24,7 @@ public class UploadMangDexStepTests : UnitTest
     {
         [Fact]
         public void ShouldHaveExpectedName() =>
-            step.StepName.Should().Be(StepEnum.UploadMangadex);
+            step.StepName.Should().Be(StepName.UploadMangadex);
 
         [Fact]
         public void ShouldHaveExpectedType() =>

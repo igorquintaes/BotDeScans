@@ -1,5 +1,6 @@
 ﻿using BotDeScans.App.Features.Publish;
 using BotDeScans.App.Features.Publish.Steps;
+using BotDeScans.App.Features.Publish.Steps.Enums;
 using BotDeScans.App.Services;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.PixelFormats;
@@ -22,7 +23,7 @@ public class CompressFilesStepTests : UnitTest
     {
         [Fact]
         public void ShouldHaveExpectedName() =>
-            step.StepName.Should().Be(StepEnum.Compress);
+            step.StepName.Should().Be(StepName.Compress);
 
         [Fact]
         public void ShouldHaveExpectedType() =>

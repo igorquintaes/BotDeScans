@@ -1,5 +1,6 @@
 ﻿using BotDeScans.App.Extensions;
 using BotDeScans.App.Features.Publish.Steps;
+using BotDeScans.App.Features.Publish.Steps.Enums;
 using BotDeScans.App.Models;
 using System.ComponentModel;
 namespace BotDeScans.App.Features.Publish;

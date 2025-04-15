@@ -1,4 +1,5 @@
 ﻿using BotDeScans.App.Features.GoogleDrive;
+using BotDeScans.App.Features.Publish.Steps.Enums;
 using FluentResults;
 namespace BotDeScans.App.Features.Publish.Steps;
 
@@ -6,7 +7,7 @@ public class UploadZipGoogleDriveStep(
     GoogleDriveService googleDriveService,
     PublishState state) : IStep
 {
-    public StepEnum StepName => StepEnum.UploadZipGoogleDrive;
+    public StepName StepName => StepName.UploadZipGoogleDrive;
 
     public Task<Result> ValidateBeforeFilesManagementAsync(CancellationToken _)
         => Task.FromResult(Result.Ok());
