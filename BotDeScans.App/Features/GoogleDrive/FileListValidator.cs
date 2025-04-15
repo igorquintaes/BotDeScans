@@ -71,7 +71,7 @@ public class FileListValidator : AbstractValidator<IList<File>>
              .Where(x => !FileReleaseService.ValidCoverFiles.Contains(x, StringComparer.InvariantCultureIgnoreCase))
              .Where(x => !FileReleaseService.ValidCreditsFiles.Contains(x, StringComparer.InvariantCultureIgnoreCase))
              .Select(x => Path.GetFileNameWithoutExtension(x))
-             .SelectMany(x => SplitDoublePages(x))
+             .SelectMany(SplitDoublePages)
              .All(x => int.TryParse(x, out var _));
 
     private static bool ShouldStartInPageOne(IList<File> files) =>
@@ -80,7 +80,7 @@ public class FileListValidator : AbstractValidator<IList<File>>
              .Where(x => !FileReleaseService.ValidCoverFiles.Contains(x, StringComparer.InvariantCultureIgnoreCase))
              .Where(x => !FileReleaseService.ValidCreditsFiles.Contains(x, StringComparer.InvariantCultureIgnoreCase))
              .Select(x => Path.GetFileNameWithoutExtension(x))
-             .SelectMany(x => SplitDoublePages(x))
+             .SelectMany(SplitDoublePages)
              .Select(x => int.TryParse(x, out var intResult) ? intResult : int.MaxValue)
              .OrderBy(x => x)
              .First() == 1;
@@ -112,7 +112,7 @@ public class FileListValidator : AbstractValidator<IList<File>>
              .Where(x => !FileReleaseService.ValidCoverFiles.Contains(x, StringComparer.InvariantCultureIgnoreCase))
              .Where(x => !FileReleaseService.ValidCreditsFiles.Contains(x, StringComparer.InvariantCultureIgnoreCase))
              .Select(x => Path.GetFileNameWithoutExtension(x))
-             .SelectMany(x => SplitDoublePages(x))
+             .SelectMany(SplitDoublePages)
              .GroupBy(x => x.Length)
              .Count() == 1;
 
@@ -122,7 +122,7 @@ public class FileListValidator : AbstractValidator<IList<File>>
              .Where(x => !FileReleaseService.ValidCoverFiles.Contains(x, StringComparer.InvariantCultureIgnoreCase))
              .Where(x => !FileReleaseService.ValidCreditsFiles.Contains(x, StringComparer.InvariantCultureIgnoreCase))
              .Select(x => Path.GetFileNameWithoutExtension(x))
-             .SelectMany(x => SplitDoublePages(x))
+             .SelectMany(SplitDoublePages)
              .Select(x => int.TryParse(x, NumberStyles.Integer, CultureInfo.InvariantCulture, out var intResult)
                  ? intResult
                  : int.MaxValue)
