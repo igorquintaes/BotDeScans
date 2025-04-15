@@ -33,8 +33,9 @@ public class PublishService(
         StepType stepType,
         CancellationToken cancellationToken)
     {
-        var validSteps = steps.Where(x => x.StepType == stepType);
-        foreach (var step in validSteps)
+        foreach (var step in steps
+            .Where(x => x.StepType == stepType)
+            .OrderBy(x => x))
         {
             publishState.Steps![step.StepName] = StepStatus.Executing;
 
@@ -44,7 +45,7 @@ public class PublishService(
                 steps: [step],
                 cancellationToken: cancellationToken);
 
-            publishState.Steps![step.StepName] = result.IsFailed 
+            publishState.Steps![step.StepName] = result.IsSuccess 
                 ? StepStatus.Success 
                 : StepStatus.Error;
 
@@ -66,21 +67,17 @@ public class PublishService(
             try
             {
                 var executionResult = await stepFunc(step, cancellationToken);
-                var updateResult = await UpdateTrackingMessageOnErrorAsync(interactionContext, executionResult, cancellationToken);
+                if (executionResult.IsSuccess)
+                    continue;
 
-                if (updateResult.IsFailed)
-                    return updateResult;
+                return await UpdateTrackingMessageOnErrorAsync(interactionContext, executionResult, cancellationToken);
             }
             catch (Exception ex)
             {
+                var message = $"Unexpected error while executing {nameof(RunAsync)} for {step.StepName}";
+                Log.Error(ex, message);
 
-                Log.Error(ex, $"Error while executing {nameof(RunAsync)} for {step.StepName}");
-
-                var errorMessage = $"Unexpected error in {step.StepName}. " +
-                                   $"Exception message: {ex.Message}. " +
-                                    "More info inside logs file.";
-
-                var exceptionResult = Result.Fail(new Error(errorMessage).CausedBy(ex));
+                var exceptionResult = Result.Fail(new Error(message).CausedBy(ex));
                 return await UpdateTrackingMessageOnErrorAsync(interactionContext, exceptionResult, cancellationToken);
             }
         }
@@ -93,12 +90,6 @@ public class PublishService(
         Result runResult,
         CancellationToken cancellationToken)
     {
-        var infoMessages = runResult.Successes.Select(x => x.Message);
-        Log.Information(string.Join(Environment.NewLine, infoMessages));
-
-        if (runResult.IsSuccess)
-            return Result.Ok();
-
         var errorMessages = runResult.Errors.Select(x => x.Message);
         Log.Error(string.Join(Environment.NewLine, errorMessages));
 
