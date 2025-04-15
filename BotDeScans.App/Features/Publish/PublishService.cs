@@ -12,105 +12,101 @@ public class PublishService(
 {
     public virtual async Task<Result> ValidateBeforeFilesManagementAsync(
         InteractionContext interactionContext,
-        CancellationToken cancellationToken)
-    {
-        foreach (var step in steps.OrderBy(x => x.StepName))
-        {
-            var result = await RunAsync(
-                stepFunc: async (step, ct) => await step.ValidateBeforeFilesManagementAsync(ct),
-                step: step,
-                cancellationToken: cancellationToken);
-
-            if (result.IsFailed)
-            {
-                var initialFeedbackResult = await publishMessageService.UpdateTrackingMessageAsync(interactionContext, cancellationToken);
-                if (initialFeedbackResult.IsFailed)
-                    return initialFeedbackResult;
-
-                return result.ToResult();
-            }
-        }
-
-        return Result.Ok();
-    }
+        CancellationToken cancellationToken) =>
+        await RunAsync(
+            interactionContext,
+            stepFunc: async (step, ct) => await step.ValidateAfterFilesManagementAsync(ct),
+            steps: steps,
+            cancellationToken: cancellationToken);
 
     public virtual async Task<Result> ValidateAfterFilesManagementAsync(
         InteractionContext interactionContext,
-        CancellationToken cancellationToken)
-    {
-        foreach (var step in steps.OrderBy(x => x.StepName))
-        {
-            var result = await RunAsync(
-                stepFunc: async (step, ct) => await step.ValidateAfterFilesManagementAsync(ct),
-                step: step,
-                cancellationToken: cancellationToken);
-
-            if (result.IsFailed)
-            {
-                var initialFeedbackResult = await publishMessageService.UpdateTrackingMessageAsync(interactionContext, cancellationToken);
-                if (initialFeedbackResult.IsFailed)
-                    return initialFeedbackResult;
-
-                return result.ToResult();
-            }
-        }
-
-        return Result.Ok();
-    }
+        CancellationToken cancellationToken) => 
+        await RunAsync(
+            interactionContext,
+            stepFunc: async (step, ct) => await step.ValidateAfterFilesManagementAsync(ct),
+            steps: steps,
+            cancellationToken: cancellationToken);
 
     public virtual async Task<Result> ExecuteStepsAsync(
         InteractionContext interactionContext,
         StepType stepType,
         CancellationToken cancellationToken)
     {
-        var validSteps = steps
-            .Where(x => x.StepType == stepType)
-            .OrderBy(x => x.StepName);
-
+        var validSteps = steps.Where(x => x.StepType == stepType);
         foreach (var step in validSteps)
         {
             publishState.Steps![step.StepName] = StepStatus.Executing;
 
             var result = await RunAsync(
+                interactionContext,
                 stepFunc: async (step, ct) => await step.ValidateAfterFilesManagementAsync(ct),
-                step: step,
+                steps: [step],
                 cancellationToken: cancellationToken);
 
-            publishState.Steps![step.StepName] = result.ValueOrDefault;
-
-            var initialFeedbackResult = await publishMessageService.UpdateTrackingMessageAsync(interactionContext, cancellationToken);
-            if (initialFeedbackResult.IsFailed)
-                return initialFeedbackResult;
+            publishState.Steps![step.StepName] = result.IsFailed 
+                ? StepStatus.Success 
+                : StepStatus.Error;
 
             if (result.IsFailed)
-                return result.ToResult();
+                return result;
         }
 
         return Result.Ok();
     }
 
-    private static async Task<Result<StepStatus>> RunAsync(
+    private async Task<Result> RunAsync(
+        InteractionContext interactionContext,
         Func<IStep, CancellationToken, Task<Result>> stepFunc,
-        IStep step,
+        IEnumerable<IStep> steps,
         CancellationToken cancellationToken)
     {
-        try
+        foreach (var step in steps.OrderBy(x => x))
         {
-            var executionResult = await stepFunc(step, cancellationToken);
-            return executionResult.IsFailed
-                ? Result.Fail<StepStatus>(executionResult.Errors).WithValue(StepStatus.Error)
-                : Result.Ok(StepStatus.Success);
+            try
+            {
+                var executionResult = await stepFunc(step, cancellationToken);
+                var updateResult = await UpdateTrackingMessageOnErrorAsync(interactionContext, executionResult, cancellationToken);
 
-        }
-        catch (Exception ex)
-        {
-            var message = $"Unexpected error in {step.StepName}. " +
-                          $"Exception message: {ex.Message}. " +
-                           "More info inside logs file.";
+                if (updateResult.IsFailed)
+                    return updateResult;
+            }
+            catch (Exception ex)
+            {
 
-            Log.Error(ex, message);
-            return Result.Fail<StepStatus>(message).WithValue(StepStatus.Fatal);
+                Log.Error(ex, $"Error while executing {nameof(RunAsync)} for {step.StepName}");
+
+                var errorMessage = $"Unexpected error in {step.StepName}. " +
+                                   $"Exception message: {ex.Message}. " +
+                                    "More info inside logs file.";
+
+                var exceptionResult = Result.Fail(new Error(errorMessage).CausedBy(ex));
+                return await UpdateTrackingMessageOnErrorAsync(interactionContext, exceptionResult, cancellationToken);
+            }
         }
+
+        return Result.Ok();
+    }
+
+    private async Task<Result> UpdateTrackingMessageOnErrorAsync(
+        InteractionContext interactionContext, 
+        Result runResult,
+        CancellationToken cancellationToken)
+    {
+        var infoMessages = runResult.Successes.Select(x => x.Message);
+        Log.Information(string.Join(Environment.NewLine, infoMessages));
+
+        if (runResult.IsSuccess)
+            return Result.Ok();
+
+        var errorMessages = runResult.Errors.Select(x => x.Message);
+        Log.Error(string.Join(Environment.NewLine, errorMessages));
+
+        var initialFeedbackResult = await publishMessageService.UpdateTrackingMessageAsync(interactionContext, cancellationToken);
+        if (initialFeedbackResult.IsFailed)
+            return Result.Merge(runResult, initialFeedbackResult);
+
+        return runResult;
     }
 }
 
