@@ -10,7 +10,7 @@ public class MegaClientFactory(IConfiguration configuration) : ClientFactory<IMe
 {
     public override bool ExpectedInPublishFeature => configuration
         .GetRequiredValues<StepName>("Settings:Publish:Steps", value => Enum.Parse(typeof(StepName), value))
-        .Any(x => x == StepName.UploadPdfMega || x == StepName.UploadZipMega);
+        .Any(x => x is StepName.UploadPdfMega or StepName.UploadZipMega);
 
     public override async Task<Result<IMegaApiClient>> CreateAsync(CancellationToken cancellationToken)
     {

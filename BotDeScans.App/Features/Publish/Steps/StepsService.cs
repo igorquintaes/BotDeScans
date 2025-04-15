@@ -49,15 +49,17 @@ public class StepsService(IConfiguration configuration)
 
             publishSteps.Add(configurationStep);
 
-            if (configurationStep == StepName.UploadPdfBox |
-                configurationStep == StepName.UploadPdfMega ||
-                configurationStep == StepName.UploadPdfGoogleDrive)
+            if (configurationStep is
+                StepName.UploadPdfBox or
+                StepName.UploadPdfMega or
+                StepName.UploadPdfGoogleDrive)
                 publishSteps.Add(StepName.PdfFiles);
 
-            if (configurationStep == StepName.UploadZipBox ||
-                configurationStep == StepName.UploadZipMega ||
-                configurationStep == StepName.UploadZipGoogleDrive ||
-                configurationStep == StepName.UploadMangadex)
+            else if (configurationStep is
+                StepName.UploadZipBox or
+                StepName.UploadZipMega or
+                StepName.UploadZipGoogleDrive or
+                StepName.UploadMangadex)
                 publishSteps.Add(StepName.ZipFiles);
         }
 

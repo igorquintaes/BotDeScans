@@ -66,7 +66,7 @@ public class BoxClientFactory(IConfiguration configuration) : ClientFactory<IBox
 
     public override bool ExpectedInPublishFeature => configuration
         .GetRequiredValues<StepName>("Settings:Publish:Steps", value => Enum.Parse(typeof(StepName), value))
-        .Any(x => x == StepName.UploadPdfBox || x == StepName.UploadZipBox);
+        .Any(x => x is StepName.UploadPdfBox or StepName.UploadZipBox);
 
     public override async Task<Result<IBoxClient>> CreateAsync(
         CancellationToken cancellationToken = default)

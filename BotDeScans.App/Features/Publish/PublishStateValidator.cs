@@ -43,7 +43,7 @@ public class TitleValidator : AbstractValidator<Title>
 
         RuleFor(model => model.DiscordRoleId)
             .Must(prop => prop.HasValue && prop.Value != default)
-            .When(prop => pingType == PingType.Global || pingType == PingType.Role)
+            .When(prop => pingType is PingType.Global or PingType.Role)
             .WithMessage($"Não foi definida uma role para o Discord nesta obra, obrigatória para o ping de tipo {pingType}. " +
                          $"Defina, ou mude o tipo de ping para publicação no arquivo de configuração do Bot de Scans.");
     }
