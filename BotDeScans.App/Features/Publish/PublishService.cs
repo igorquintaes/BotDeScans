@@ -10,19 +10,19 @@ public class PublishService(
     PublishState publishState,
     IEnumerable<IStep> steps)
 {
-    public virtual async Task<Result> ValidateBeforeFilesManagementAsync(
+    public virtual Task<Result> ValidateBeforeFilesManagementAsync(
         InteractionContext interactionContext,
         CancellationToken cancellationToken) =>
-        await RunAsync(
+        RunAsync(
             interactionContext,
             stepFunc: async (step, ct) => await step.ValidateAfterFilesManagementAsync(ct),
             steps: steps,
             cancellationToken: cancellationToken);
 
-    public virtual async Task<Result> ValidateAfterFilesManagementAsync(
+    public virtual Task<Result> ValidateAfterFilesManagementAsync(
         InteractionContext interactionContext,
         CancellationToken cancellationToken) => 
-        await RunAsync(
+        RunAsync(
             interactionContext,
             stepFunc: async (step, ct) => await step.ValidateAfterFilesManagementAsync(ct),
             steps: steps,
