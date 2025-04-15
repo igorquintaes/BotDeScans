@@ -22,7 +22,6 @@ public class PublishHandler(
         InteractionContext interactionContext,
         CancellationToken cancellationToken)
     {
-        publishState.LoadSteps();
         var infoValidationResult = validator.Validate(info);
         if (infoValidationResult.IsValid is false)
             return infoValidationResult.ToResult();

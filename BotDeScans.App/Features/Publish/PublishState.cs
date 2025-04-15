@@ -1,23 +1,16 @@
 ﻿using BotDeScans.App.Extensions;
 using BotDeScans.App.Features.Publish.Steps;
-using BotDeScans.App.Features.Publish.Steps.Enums;
 using BotDeScans.App.Models;
 using System.ComponentModel;
 namespace BotDeScans.App.Features.Publish;
 
-public class PublishState(StepsService stepsService)
+public class PublishState()
 {
-    public StepsInfo? Steps { get; private set; }
+    public StepsInfo? Steps { get; init; }
     public Title Title { get; set; } = null!;
     public Info ReleaseInfo { get; set; } = null!;
     public Links ReleaseLinks { get; set; } = new Links();
     public ReleaseInternalData InternalData { get; set; } = new ReleaseInternalData();
-
-    public virtual void LoadSteps() => 
-        Steps = stepsService
-            .GetPublishSteps()
-            .Select(x => (x, StepStatus.Queued))
-            .ToArray();
 
     public record ReleaseInternalData
     {
