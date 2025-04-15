@@ -32,10 +32,10 @@ public class GoogleBloggerClientFactory(
         if (string.IsNullOrWhiteSpace(bloggerUrl))
             aggregatedResult = aggregatedResult.WithError($"'Blogger:Url': value not found in config.json.");
 
-        if (string.IsNullOrWhiteSpace(bloggerUrl) is false 
+        if (string.IsNullOrWhiteSpace(bloggerUrl) is false
             && Uri.TryCreate(bloggerUrl, UriKind.Absolute, out var _) is false)
             aggregatedResult = aggregatedResult.WithError("Não foi possível identificar o link do Blogger como válido.");
-        
+
         var baseDirectory = AppDomain.CurrentDomain.BaseDirectory;
         var templateFileName = GoogleBloggerService.TEMPLATE_FILE_NAME;
         var templateFilePath = Path.Combine(baseDirectory, "config", templateFileName);

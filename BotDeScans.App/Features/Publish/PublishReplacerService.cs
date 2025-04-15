@@ -2,7 +2,7 @@
 
 public class PublishReplacerService(PublishState publishState)
 {
-    public static readonly IReadOnlyDictionary<string, Func<PublishState, string?>> 
+    public static readonly IReadOnlyDictionary<string, Func<PublishState, string?>>
         ReplaceRules = new Dictionary<string, Func<PublishState, string?>>()
         {
             { "TITLE",                 state => state.Title.Name },
@@ -31,7 +31,7 @@ public class PublishReplacerService(PublishState publishState)
 
             var startRemoveIfEmptyKey = $"!##START_REMOVE_IF_EMPTY_{rule.Key}##!";
             var endRemoveIfEmptyKey = $"!##END_REMOVE_IF_EMPTY_{rule.Key}##!";
-            if (text.Contains(startRemoveIfEmptyKey) && 
+            if (text.Contains(startRemoveIfEmptyKey) &&
                 text.Contains(endRemoveIfEmptyKey) &&
                 string.IsNullOrWhiteSpace(replaceValue))
             {

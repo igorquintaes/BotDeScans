@@ -48,7 +48,7 @@ public class PublishState()
             TitleId = titleId;
         }
 
-        public override string ToString() => 
+        public override string ToString() =>
             $"DownloadUrl: {DownloadUrl}{Environment.NewLine}" +
             $"ChapterName: {ChapterName}{Environment.NewLine}" +
             $"ChapterNumber: {ChapterNumber}{Environment.NewLine}" +

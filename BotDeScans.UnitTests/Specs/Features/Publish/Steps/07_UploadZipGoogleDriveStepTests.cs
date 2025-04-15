@@ -63,8 +63,8 @@ public class UploadZipGoogleDriveStepTests : UnitTest
             A.CallTo(() => fixture
                 .FreezeFake<GoogleDriveService>()
                 .GetOrCreateFolderAsync(
-                    fixture.Freeze<PublishState>().Title.Name, 
-                    default, 
+                    fixture.Freeze<PublishState>().Title.Name,
+                    default,
                     cancellationToken))
                 .Returns(Result.Ok(titleFolder));
 

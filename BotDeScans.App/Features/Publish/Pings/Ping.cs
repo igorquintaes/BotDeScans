@@ -10,7 +10,7 @@ public abstract class Ping(IConfiguration configuration)
 
     public const string PING_TYPE_KEY = "Settings:Publish:PingType";
 
-    public virtual bool IsApplicable => 
+    public virtual bool IsApplicable =>
         configuration.GetValue(PING_TYPE_KEY, PingType.Everyone) == Type;
 
     public abstract Task<Result<string>> GetPingAsTextAsync(CancellationToken cancellationToken);

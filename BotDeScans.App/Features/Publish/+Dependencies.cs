@@ -12,7 +12,7 @@ namespace BotDeScans.App.Features.Publish;
 internal static class AddDependencies
 {
     internal static IServiceCollection AddPublishServices(
-        this IServiceCollection services) => 
+        this IServiceCollection services) =>
         services
             .AddCommandTree()
                 .WithCommandGroup<PublishCommands>()

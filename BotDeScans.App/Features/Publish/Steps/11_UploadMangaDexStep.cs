@@ -29,7 +29,7 @@ public class UploadMangaDexStep(
         => Task.FromResult(Result.Ok());
 
     public async Task<Result> ExecuteAsync(CancellationToken cancellationToken)
-    {        
+    {
         var clearResult = await mangaDexService.ClearPendingUploadsAsync();
         if (clearResult.IsFailed)
             return clearResult;

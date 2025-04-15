@@ -49,11 +49,11 @@ public class ImageService(IConfiguration configuration)
         using var fileStream = File.OpenRead(filePath);
         using var image = Image.Load<Rgba32>(fileStream);
         foreach (var row in image.GetPixelMemoryGroup())
-        foreach (var pixel in row.Span)
-        {
-            if (GetRgbDelta(pixel.R, pixel.G, pixel.B) > threshold)
-                return false;
-        }
+            foreach (var pixel in row.Span)
+            {
+                if (GetRgbDelta(pixel.R, pixel.G, pixel.B) > threshold)
+                    return false;
+            }
 
         return true;
 

@@ -1,7 +1,6 @@
 ﻿using BotDeScans.App.Features.Publish;
 using BotDeScans.App.Features.Publish.Discord;
 using BotDeScans.App.Features.Publish.Pings;
-using BotDeScans.App.Features.Publish.Steps;
 using BotDeScans.App.Features.Publish.Steps.Enums;
 using BotDeScans.App.Models;
 using FluentResults;
@@ -162,7 +161,7 @@ public class PublishHandlerTests : UnitTest
             A.CallTo(() => fixture
                 .FreezeFake<PublishService>()
                 .ValidateBeforeFilesManagementAsync(
-                    fixture.Freeze<InteractionContext>(), 
+                    fixture.Freeze<InteractionContext>(),
                     cancellationToken))
                 .Returns(Result.Fail(ERROR_MESSAGE));
 
@@ -203,7 +202,7 @@ public class PublishHandlerTests : UnitTest
             A.CallTo(() => fixture
                 .FreezeFake<PublishService>()
                 .ValidateAfterFilesManagementAsync(
-                    fixture.Freeze<InteractionContext>(), 
+                    fixture.Freeze<InteractionContext>(),
                     cancellationToken))
                 .Returns(Result.Fail(ERROR_MESSAGE));
 

@@ -71,7 +71,7 @@ public class PublishCommandsTests : UnitTest
         {
             fixture.Inject(A.Fake<IOperationContext>());
             var commands = fixture.CreateCommand<PublishCommands>(cancellationToken);
-            
+
             var result = await commands.Publish(title);
 
             result.IsSuccess.Should().BeTrue();

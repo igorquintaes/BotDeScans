@@ -97,15 +97,15 @@ public class CompressFilesStepTests : UnitTest
             A.CallTo(() => fixture
                 .FreezeFake<ImageService>()
                 .CompressImageAsync(
-                    firstFilePath, 
-                    true, 
+                    firstFilePath,
+                    true,
                     A<CancellationToken>.That.Matches(ct => ct != CancellationToken.None)))
                 .MustHaveHappenedOnceExactly();
 
             A.CallTo(() => fixture
                 .FreezeFake<ImageService>()
                 .CompressImageAsync(
-                    secondFilePath, 
+                    secondFilePath,
                     false,
                     A<CancellationToken>.That.Matches(ct => ct != CancellationToken.None)))
                 .MustHaveHappenedOnceExactly();
@@ -113,8 +113,8 @@ public class CompressFilesStepTests : UnitTest
             A.CallTo(() => fixture
                 .FreezeFake<ImageService>()
                 .CompressImageAsync(
-                    A<string>.Ignored, 
-                    A<bool>.Ignored, 
+                    A<string>.Ignored,
+                    A<bool>.Ignored,
                     A<CancellationToken>.That.Matches(ct => ct != CancellationToken.None)))
                 .MustHaveHappenedTwiceExactly();
         }

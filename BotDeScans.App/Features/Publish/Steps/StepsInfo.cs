@@ -5,7 +5,7 @@ namespace BotDeScans.App.Features.Publish.Steps;
 
 public class StepsInfo(IDictionary<StepName, StepStatus> steps) : Dictionary<StepName, StepStatus>(steps)
 {
-    public static implicit operator StepsInfo((StepName, StepStatus)[] steps) => 
+    public static implicit operator StepsInfo((StepName, StepStatus)[] steps) =>
         new(steps.ToDictionary(x => x.Item1, x => x.Item2));
 
     public StepStatus Status =>
@@ -35,7 +35,7 @@ public class StepsInfo(IDictionary<StepName, StepStatus> steps) : Dictionary<Ste
         Environment.NewLine,
         this.Select(task => $"{task.Value.GetEmoji()} - {task.Key.GetDescription()}"));
 
-    public static readonly IReadOnlyDictionary<StepName, StepType> StepNameType = 
+    public static readonly IReadOnlyDictionary<StepName, StepType> StepNameType =
         new Dictionary<StepName, StepType>
         {
             { StepName.Download, StepType.Management },

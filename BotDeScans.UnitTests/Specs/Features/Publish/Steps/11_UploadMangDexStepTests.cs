@@ -140,7 +140,7 @@ public class UploadMangDexStepTests : UnitTest
                     fixture.Freeze<PublishState>().ReleaseInfo.ChapterName,
                     fixture.Freeze<PublishState>().ReleaseInfo.ChapterNumber,
                     fixture.Freeze<PublishState>().ReleaseInfo.ChapterVolume,
-                    fixture.Freeze<PublishState>().InternalData.OriginContentFolder, 
+                    fixture.Freeze<PublishState>().InternalData.OriginContentFolder,
                     cancellationToken))
                 .Returns(Result.Ok(CHAPTER_ID));
         }

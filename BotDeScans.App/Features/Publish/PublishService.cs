@@ -22,7 +22,7 @@ public class PublishService(
 
     public virtual Task<Result> ValidateAfterFilesManagementAsync(
         InteractionContext interactionContext,
-        CancellationToken cancellationToken) => 
+        CancellationToken cancellationToken) =>
         RunAsync(
             interactionContext,
             stepFunc: async (step, ct) => await step.ValidateAfterFilesManagementAsync(ct),
@@ -46,8 +46,8 @@ public class PublishService(
                 steps: [step],
                 cancellationToken: cancellationToken);
 
-            publishState.Steps![step.StepName] = result.IsSuccess 
-                ? StepStatus.Success 
+            publishState.Steps![step.StepName] = result.IsSuccess
+                ? StepStatus.Success
                 : StepStatus.Error;
 
             if (result.IsFailed)
@@ -87,7 +87,7 @@ public class PublishService(
     }
 
     private async Task<Result> UpdateTrackingMessageOnErrorAsync(
-        InteractionContext interactionContext, 
+        InteractionContext interactionContext,
         Result runResult,
         CancellationToken cancellationToken)
     {

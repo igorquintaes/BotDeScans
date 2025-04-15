@@ -11,7 +11,7 @@ namespace BotDeScans.App.Features.Publish;
 public class PublishStateValidator : AbstractValidator<PublishState>
 {
     public PublishStateValidator(
-        IValidator<Title> titleValidator, 
+        IValidator<Title> titleValidator,
         IValidator<Info> infoValidator)
     {
         RuleFor(model => model.Title).SetValidator(titleValidator);

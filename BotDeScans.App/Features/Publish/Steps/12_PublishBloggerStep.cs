@@ -10,17 +10,17 @@ public class PublishBloggerStep(
 {
     public StepName StepName => StepName.PublishBlogspot;
 
-    public Task<Result> ValidateBeforeFilesManagementAsync(CancellationToken _) => 
+    public Task<Result> ValidateBeforeFilesManagementAsync(CancellationToken _) =>
         Task.FromResult(Result.Ok());
 
-    public Task<Result> ValidateAfterFilesManagementAsync(CancellationToken _) => 
+    public Task<Result> ValidateAfterFilesManagementAsync(CancellationToken _) =>
         Task.FromResult(Result.Ok());
 
     public async Task<Result> ExecuteAsync(CancellationToken cancellationToken)
     {
         state.InternalData.BloggerImageAsBase64 = await googleBloggerService.CreatePostCoverAsync(cancellationToken);
         var template = await googleBloggerService.GetPostTemplateAsync(cancellationToken);
-        var htmlContent =  publishReplacerService.Replace(template);
+        var htmlContent = publishReplacerService.Replace(template);
 
         // todo: parametrizar valores de title abaixo no futuro
         var post = await googleBloggerService.PostAsync(

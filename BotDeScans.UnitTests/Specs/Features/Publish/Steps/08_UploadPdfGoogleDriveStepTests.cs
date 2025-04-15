@@ -59,12 +59,12 @@ public class UploadPdfGoogleDriveStepTests : UnitTest
             var titleFolder = fixture.Create<File>();
             var titleFile = fixture.Create<File>();
             titleFile.WebViewLink = FILE_LINK;
-            
+
             A.CallTo(() => fixture
                 .FreezeFake<GoogleDriveService>()
                 .GetOrCreateFolderAsync(
-                    fixture.Freeze<PublishState>().Title.Name, 
-                    default, 
+                    fixture.Freeze<PublishState>().Title.Name,
+                    default,
                     cancellationToken))
                 .Returns(Result.Ok(titleFolder));
 

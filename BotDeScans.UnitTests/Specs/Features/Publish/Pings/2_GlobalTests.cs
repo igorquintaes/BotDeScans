@@ -70,7 +70,7 @@ public class GlobalTests : UnitTest
             A.CallTo(() => fixture
                 .FreezeFake<RolesService>()
                 .GetRoleFromGuildAsync(
-                    fixture.Freeze<PublishState>().Title.DiscordRoleId!.Value.ToString(), 
+                    fixture.Freeze<PublishState>().Title.DiscordRoleId!.Value.ToString(),
                     cancellationToken))
                 .Returns(Result.Ok(titleRole));
         }

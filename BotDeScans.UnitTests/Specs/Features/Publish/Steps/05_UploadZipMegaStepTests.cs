@@ -60,7 +60,7 @@ public class UploadZipMegaStepTests : UnitTest
         {
             var rootNode = A.Fake<INode>();
             var titleFolderNode = A.Fake<INode>();
-            
+
             A.CallTo(() => fixture
                 .FreezeFake<MegaSettingsService>()
                 .GetRootFolderAsync())

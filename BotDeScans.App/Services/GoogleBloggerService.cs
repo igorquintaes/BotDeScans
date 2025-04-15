@@ -21,7 +21,7 @@ public class GoogleBloggerService(
         CancellationToken cancellationToken)
     {
         var bloggerUrl = configuration.GetRequiredValue<string>("Blogger:Url");
-        var bloggerId = configuration.GetRequiredValue<string>("Blogger:Id"); 
+        var bloggerId = configuration.GetRequiredValue<string>("Blogger:Id");
 
         var uri = new Uri(bloggerUrl, UriKind.Absolute);
         var post = new Post()

@@ -16,7 +16,7 @@ public class RolesServiceTests : UnitTest
         fixture.Inject<IRole>(fixture.Create<Role>());
 
         fixture.FreezeFakeConfiguration(
-            RolesService.DISCORD_SERVERID_KEY, 
+            RolesService.DISCORD_SERVERID_KEY,
             fixture.Create<ulong>().ToString());
 
         A.CallTo(() => fixture
