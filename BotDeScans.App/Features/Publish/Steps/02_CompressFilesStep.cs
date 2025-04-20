@@ -17,7 +17,7 @@ public class CompressFilesStep(
 
     public async Task<Result> ExecuteAsync(CancellationToken cancellationToken)
     {
-        var maxDegreeOfParallelism = Convert.ToInt32(Math.Ceiling((Environment.ProcessorCount * 0.75) * 2.0));
+        var maxDegreeOfParallelism = Convert.ToInt32(Math.Ceiling(Environment.ProcessorCount * 0.75 * 2.0));
         var parallelOptions = new ParallelOptions
         {
             CancellationToken = cancellationToken,

@@ -6,7 +6,7 @@ namespace BotDeScans.App.Features.Publish;
 
 public class PublishState()
 {
-    public StepsInfo? Steps { get; init; }
+    public StepsInfo Steps { get; set; } = null!;
     public Title Title { get; set; } = null!;
     public Info ReleaseInfo { get; set; } = null!;
     public Links ReleaseLinks { get; set; } = new Links();

@@ -2,6 +2,7 @@
 using BotDeScans.App.Features.Publish.Steps;
 using BotDeScans.App.Features.Publish.Steps.Enums;
 using FluentResults;
+using Microsoft.EntityFrameworkCore.Storage;
 using Remora.Discord.Commands.Contexts;
 using Serilog;
 namespace BotDeScans.App.Features.Publish;
@@ -16,7 +17,7 @@ public class PublishService(
         CancellationToken cancellationToken) =>
         RunAsync(
             interactionContext,
-            stepFunc: async (step, ct) => await step.ValidateAfterFilesManagementAsync(ct),
+            stepFunc: async (step, ct) => await step.ValidateBeforeFilesManagementAsync(ct),
             steps: steps,
             cancellationToken: cancellationToken);
 
@@ -36,22 +37,28 @@ public class PublishService(
     {
         foreach (var step in steps
             .Where(x => x.StepType == stepType)
-            .OrderBy(x => x))
+            .Where(x => publishState.Steps.Any(y => y.Key == x.StepName))
+            .OrderBy(x => x.StepName))
         {
             publishState.Steps![step.StepName] = StepStatus.Executing;
 
-            var result = await RunAsync(
+            var runResult = await RunAsync(
                 interactionContext,
-                stepFunc: async (step, ct) => await step.ValidateAfterFilesManagementAsync(ct),
+                stepFunc: async (step, ct) => await step.ExecuteAsync(ct),
                 steps: [step],
                 cancellationToken: cancellationToken);
 
-            publishState.Steps![step.StepName] = result.IsSuccess
+            publishState.Steps![step.StepName] = runResult.IsSuccess
                 ? StepStatus.Success
-                : StepStatus.Error;
+            : StepStatus.Error;
 
-            if (result.IsFailed)
-                return result;
+            var uppateTrackingMessageResult = await UpdateTrackingMessageOnErrorAsync(
+                interactionContext,
+                runResult, 
+                cancellationToken);
+
+            if (uppateTrackingMessageResult.IsFailed)
+                return runResult;
         }
 
         return Result.Ok();
@@ -63,9 +70,11 @@ public class PublishService(
         IEnumerable<IStep> steps,
         CancellationToken cancellationToken)
     {
-        foreach (var step in steps.OrderBy(x => x))
+        try
         {
-            try
+            foreach (var step in steps
+                .Where(x => publishState.Steps.Any(y => y.Key == x.StepName))
+                .OrderBy(x => x.StepName))
             {
                 var executionResult = await stepFunc(step, cancellationToken);
                 if (executionResult.IsSuccess)
@@ -73,17 +82,17 @@ public class PublishService(
 
                 return await UpdateTrackingMessageOnErrorAsync(interactionContext, executionResult, cancellationToken);
             }
-            catch (Exception ex)
-            {
-                var message = $"Unexpected error while executing {nameof(RunAsync)} for {step.StepName}";
-                Log.Error(ex, message);
 
-                var exceptionResult = Result.Fail(new Error(message).CausedBy(ex));
-                return await UpdateTrackingMessageOnErrorAsync(interactionContext, exceptionResult, cancellationToken);
-            }
+            return Result.Ok();
         }
+        catch (Exception ex)
+        {
+            var message = $"Unexpected error while executing {nameof(RunAsync)}. Info inside logs.";
+            Log.Error(ex, message);
 
-        return Result.Ok();
+            var exceptionResult = Result.Fail(new Error(message).CausedBy(ex));
+            return await UpdateTrackingMessageOnErrorAsync(interactionContext, exceptionResult, cancellationToken);
+        }
     }
 
     private async Task<Result> UpdateTrackingMessageOnErrorAsync(
