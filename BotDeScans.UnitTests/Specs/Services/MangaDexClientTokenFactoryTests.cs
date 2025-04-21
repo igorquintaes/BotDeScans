@@ -1,7 +1,5 @@
-﻿using BotDeScans.App.Features.Publish.Steps;
+﻿using BotDeScans.App.Features.Publish.Steps.Enums;
 using BotDeScans.App.Services;
-using BotDeScans.UnitTests.Extensions;
-using Google.Apis.Auth.OAuth2;
 using MangaDexSharp;
 using Microsoft.Extensions.Configuration;
 
@@ -27,7 +25,7 @@ public class MangaDexClientTokenFactoryTests : UnitTest
             fixture.FreezeFakeConfiguration(
                 key: "Settings:Publish:Steps",
                 values: Enum
-                    .GetValues<StepEnum>()
+                    .GetValues<StepName>()
                     .Select(x => x.ToString()));
 
             factory.ExpectedInPublishFeature.Should().BeTrue();
@@ -39,8 +37,8 @@ public class MangaDexClientTokenFactoryTests : UnitTest
             fixture.FreezeFakeConfiguration(
                 key: "Settings:Publish:Steps",
                 values: Enum
-                    .GetValues<StepEnum>()
-                    .Except([StepEnum.UploadMangadex])
+                    .GetValues<StepName>()
+                    .Except([StepName.UploadMangadex])
                     .Select(x => x.ToString()));
 
             factory.ExpectedInPublishFeature.Should().BeFalse();

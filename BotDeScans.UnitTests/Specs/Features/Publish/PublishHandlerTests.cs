@@ -1,6 +1,7 @@
 ﻿using BotDeScans.App.Features.Publish;
 using BotDeScans.App.Features.Publish.Discord;
 using BotDeScans.App.Features.Publish.Pings;
+using BotDeScans.App.Features.Publish.Steps.Enums;
 using BotDeScans.App.Models;
 using FluentResults;
 using FluentValidation;
@@ -160,7 +161,7 @@ public class PublishHandlerTests : UnitTest
             A.CallTo(() => fixture
                 .FreezeFake<PublishService>()
                 .ValidateBeforeFilesManagementAsync(
-                    fixture.Freeze<InteractionContext>(), 
+                    fixture.Freeze<InteractionContext>(),
                     cancellationToken))
                 .Returns(Result.Fail(ERROR_MESSAGE));
 
@@ -179,8 +180,9 @@ public class PublishHandlerTests : UnitTest
 
             A.CallTo(() => fixture
                 .FreezeFake<PublishService>()
-                .RunManagementStepsAsync(
-                    fixture.Freeze<InteractionContext>(), 
+                .ExecuteStepsAsync(
+                    fixture.Freeze<InteractionContext>(),
+                    StepType.Management,
                     cancellationToken))
                 .Returns(Result.Fail(ERROR_MESSAGE));
 
@@ -200,7 +202,28 @@ public class PublishHandlerTests : UnitTest
             A.CallTo(() => fixture
                 .FreezeFake<PublishService>()
                 .ValidateAfterFilesManagementAsync(
-                    fixture.Freeze<InteractionContext>(), 
+                    fixture.Freeze<InteractionContext>(),
+                    cancellationToken))
+                .Returns(Result.Fail(ERROR_MESSAGE));
+
+            var result = await handler.HandleAsync(
+                fixture.Freeze<Info>(),
+                fixture.Freeze<InteractionContext>(),
+                cancellationToken);
+
+            result.Should().BeFailure().And.HaveError(ERROR_MESSAGE);
+        }
+
+        [Fact]
+        public async Task GivenErrorToRunUploadStepsAsyncShouldReturnFailResult()
+        {
+            const string ERROR_MESSAGE = "some error.";
+
+            A.CallTo(() => fixture
+                .FreezeFake<PublishService>()
+                .ExecuteStepsAsync(
+                    fixture.Freeze<InteractionContext>(),
+                    StepType.Upload,
                     cancellationToken))
                 .Returns(Result.Fail(ERROR_MESSAGE));
 
@@ -219,8 +242,9 @@ public class PublishHandlerTests : UnitTest
 
             A.CallTo(() => fixture
                 .FreezeFake<PublishService>()
-                .RunPublishStepsAsync(
-                    fixture.Freeze<InteractionContext>(), 
+                .ExecuteStepsAsync(
+                    fixture.Freeze<InteractionContext>(),
+                    StepType.Publish,
                     cancellationToken))
                 .Returns(Result.Fail(ERROR_MESSAGE));
 

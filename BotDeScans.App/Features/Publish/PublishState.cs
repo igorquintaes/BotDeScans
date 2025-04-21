@@ -1,24 +1,12 @@
 ﻿using BotDeScans.App.Extensions;
 using BotDeScans.App.Features.Publish.Steps;
 using BotDeScans.App.Models;
-using Microsoft.Extensions.Configuration;
-using SixLabors.ImageSharp;
 using System.ComponentModel;
 namespace BotDeScans.App.Features.Publish;
 
-public class PublishState(IConfiguration configuration)
+public class PublishState()
 {
-    public Lazy<IDictionary<StepEnum, StepStatus>> Steps = new(() => 
-        Enum.GetValues<StepEnum>()
-            .Select(@enum =>
-                Array.Exists(configuration.GetRequiredValues<StepEnum>(
-                    "Settings:Publish:Steps",
-                    value => Enum.Parse(typeof(StepEnum), value)),
-                stepEnum => stepEnum == @enum)
-                ? new KeyValuePair<StepEnum, StepStatus>(@enum, StepStatus.Queued)
-                : new KeyValuePair<StepEnum, StepStatus>(@enum, StepStatus.Skip))
-            .ToDictionary(x => x.Key, x => x.Value));
-
+    public StepsInfo Steps { get; set; } = null!;
     public Title Title { get; set; } = null!;
     public Info ReleaseInfo { get; set; } = null!;
     public Links ReleaseLinks { get; set; } = new Links();
@@ -60,7 +48,7 @@ public class PublishState(IConfiguration configuration)
             TitleId = titleId;
         }
 
-        public override string ToString() => 
+        public override string ToString() =>
             $"DownloadUrl: {DownloadUrl}{Environment.NewLine}" +
             $"ChapterName: {ChapterName}{Environment.NewLine}" +
             $"ChapterNumber: {ChapterNumber}{Environment.NewLine}" +

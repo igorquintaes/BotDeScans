@@ -1,4 +1,5 @@
 ﻿using BotDeScans.App.Features.Publish;
+using BotDeScans.App.Features.Publish.Discord;
 using BotDeScans.App.Features.Publish.Pings;
 using BotDeScans.App.Services.Discord;
 using FluentResults;
@@ -69,7 +70,7 @@ public class GlobalTests : UnitTest
             A.CallTo(() => fixture
                 .FreezeFake<RolesService>()
                 .GetRoleFromGuildAsync(
-                    fixture.Freeze<PublishState>().Title.DiscordRoleId!.Value.ToString(), 
+                    fixture.Freeze<PublishState>().Title.DiscordRoleId!.Value.ToString(),
                     cancellationToken))
                 .Returns(Result.Ok(titleRole));
         }

@@ -23,8 +23,8 @@ public class BoxServiceTests : UnitTest
 
     public class GetOrCreateFolderAsync : BoxServiceTests
     {
-        const string folderType = "folder";
-        const int maxItemsQuery = 1000;
+        private const string folderType = "folder";
+        private const int maxItemsQuery = 1000;
         private readonly IBoxFoldersManager boxFoldersManager;
         private readonly BoxCollection<BoxItem> boxCollection;
 

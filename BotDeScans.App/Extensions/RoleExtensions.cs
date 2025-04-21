@@ -4,6 +4,6 @@ namespace BotDeScans.App.Extensions;
 
 public static class RoleExtensions
 {
-    public static string ToDiscordString(this IRole role) => 
+    public static string ToDiscordString(this IRole role) =>
         $"<@&{role.ID.Value}>";
 }

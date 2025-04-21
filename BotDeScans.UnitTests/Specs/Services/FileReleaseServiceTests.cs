@@ -70,7 +70,7 @@ public class FileReleaseServiceTests : UnitTest
         [Fact]
         public void GivenDisposeShouldDeleteTemporaryDirectories()
         {
-            var directoryResult = service.CreateScopedDirectory();            
+            var directoryResult = service.CreateScopedDirectory();
             service.Dispose();
 
             // scoped folder
@@ -81,7 +81,7 @@ public class FileReleaseServiceTests : UnitTest
         }
 
         [Fact]
-        public void GivenNoneTemporatyDirectoriesShouldCallDisposeWithoutErrors() 
+        public void GivenNoneTemporatyDirectoriesShouldCallDisposeWithoutErrors()
             => service.Dispose();
     }
 }

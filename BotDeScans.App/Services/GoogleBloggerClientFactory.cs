@@ -1,5 +1,5 @@
 ﻿using BotDeScans.App.Extensions;
-using BotDeScans.App.Features.Publish.Steps;
+using BotDeScans.App.Features.Publish.Steps.Enums;
 using BotDeScans.App.Services.Wrappers;
 using FluentResults;
 using Google.Apis.Auth.OAuth2;
@@ -17,8 +17,8 @@ public class GoogleBloggerClientFactory(
     public const string CREDENTIALS_FILE_NAME = "blogger.json";
 
     public override bool ExpectedInPublishFeature => configuration
-        .GetRequiredValues<StepEnum>("Settings:Publish:Steps", value => Enum.Parse(typeof(StepEnum), value))
-        .Any(x => x == StepEnum.PublishBlogspot);
+        .GetRequiredValues<StepName>("Settings:Publish:Steps", value => Enum.Parse(typeof(StepName), value))
+        .Any(x => x == StepName.PublishBlogspot);
 
     public override Result ValidateConfiguration()
     {
@@ -32,10 +32,10 @@ public class GoogleBloggerClientFactory(
         if (string.IsNullOrWhiteSpace(bloggerUrl))
             aggregatedResult = aggregatedResult.WithError($"'Blogger:Url': value not found in config.json.");
 
-        if (string.IsNullOrWhiteSpace(bloggerUrl) is false 
+        if (string.IsNullOrWhiteSpace(bloggerUrl) is false
             && Uri.TryCreate(bloggerUrl, UriKind.Absolute, out var _) is false)
             aggregatedResult = aggregatedResult.WithError("Não foi possível identificar o link do Blogger como válido.");
-        
+
         var baseDirectory = AppDomain.CurrentDomain.BaseDirectory;
         var templateFileName = GoogleBloggerService.TEMPLATE_FILE_NAME;
         var templateFilePath = Path.Combine(baseDirectory, "config", templateFileName);

@@ -1,4 +1,5 @@
-﻿using BotDeScans.App.Services;
+﻿using BotDeScans.App.Features.Publish.Steps.Enums;
+using BotDeScans.App.Services;
 using FluentResults;
 namespace BotDeScans.App.Features.Publish.Steps;
 
@@ -7,8 +8,7 @@ public class PdfFilesStep(
     FileReleaseService fileReleaseService,
     PublishState state) : IStep
 {
-    public StepEnum StepName => StepEnum.PdfFiles;
-    public StepType StepType => StepType.Management;
+    public StepName StepName => StepName.PdfFiles;
 
     public Task<Result> ValidateBeforeFilesManagementAsync(CancellationToken _)
         => Task.FromResult(Result.Ok());

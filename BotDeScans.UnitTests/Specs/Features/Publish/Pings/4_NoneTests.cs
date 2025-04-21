@@ -1,4 +1,4 @@
-﻿using BotDeScans.App.Features.Publish;
+﻿using BotDeScans.App.Features.Publish.Discord;
 using BotDeScans.App.Features.Publish.Pings;
 using Microsoft.Extensions.Configuration;
 namespace BotDeScans.UnitTests.Specs.Features.Publish.Pings;

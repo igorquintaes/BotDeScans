@@ -9,7 +9,7 @@ public class StringExtensions : UnitTest
         [InlineData("")]
         [InlineData(" ")]
         [InlineData(null)]
-        public void NullIfWhitespace(string? value) => 
+        public void NullIfWhitespace(string? value) =>
             value.NullIfWhitespace().Should().BeNull();
 
         [Fact]

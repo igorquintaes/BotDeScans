@@ -15,4 +15,4 @@ public static class ConfigurationExtensions
             .Select(x => (T)parser(x))
             .Distinct()
             .ToArray();
-    }
+}

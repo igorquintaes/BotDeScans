@@ -1,59 +1,68 @@
 ﻿using BotDeScans.App.Extensions;
+using BotDeScans.App.Features.Publish.Steps.Enums;
 using FluentResults;
 using Microsoft.Extensions.Configuration;
 namespace BotDeScans.App.Features.Publish.Steps;
 
 public class StepsService(IConfiguration configuration)
 {
-    private readonly StepEnum[] steps = configuration.GetRequiredValues<StepEnum>("Settings:Publish:Steps", value => Enum.Parse(typeof(StepEnum), value));
-
-    public Result ValidateStepsDependencies()
+    public virtual Result ValidateStepsDependencies()
     {
-        var result = Result.Ok();
+        const string STEPS_KEY = "Settings:Publish:Steps";
+        var configurationStepsAsString = configuration.GetRequiredValues<string>(STEPS_KEY, value => value);
+        if (configurationStepsAsString.Length == 0)
+            return Result.Fail($"Não foi encontrado nenhum passo de publicação em '{STEPS_KEY}'.");
 
-        if (!steps.Contains(StepEnum.Download))
-            result.WithError($"Erro: o passo {nameof(StepEnum.Download)} é obrigatório.");
-
-        foreach (var step in steps)
+        var configurationSteps = new List<StepName>();
+        foreach (var configurationStepAsString in configurationStepsAsString)
         {
-            result.WithReason(step switch
-            {
-                StepEnum.UploadPdfBox or
-                StepEnum.UploadPdfMega or
-                StepEnum.UploadPdfGoogleDrive when steps.NotContains(StepEnum.PdfFiles)
-                    => ErrorFromDependency(step, requiredSteps: StepEnum.PdfFiles),
-                StepEnum.UploadZipBox or
-                StepEnum.UploadZipMega or
-                StepEnum.UploadZipGoogleDrive or
-                StepEnum.UploadMangadex or
-                StepEnum.PublishBlogspot when steps.NotContainsAll(requiredBloggerSteps)
-                    => ErrorFromDependency(step, requiredSteps: requiredBloggerSteps),
-                _ => new Success("ok")
-            });
+            if (!Enum.TryParse(typeof(StepName), configurationStepAsString, out var configurationStep))
+                return Result.Fail($"Não foi possível converter o tipo '{configurationStepAsString}' em um passo de publicação válido.");
+
+            configurationSteps.Add((StepName)configurationStep);
         }
 
-        return result;
+        return StepsInfo.StepNameType
+              .Where(x => configurationSteps.Contains(x.Key))
+              .Any(x => x.Value == StepType.Upload) is false
+                ? Result.Fail($"Não foi encontrado nenhum passo de publicação para disponibilização de lançamentos em '{STEPS_KEY}'.")
+                : Result.Ok();
     }
 
-    static Error ErrorFromDependency(StepEnum step, params StepEnum[] requiredSteps)
+    public virtual IReadOnlyList<StepName> GetPublishSteps()
     {
-        var requiredStepAsString = string.Join(", ", requiredSteps.Select(x => x.ToString()));
-        var errorMessageTitle = $"Erro no passo {step}";
-        var errorMessageDescription = requiredSteps.Length == 1
-            ? $"É obrigatório adicionar o passo {requiredStepAsString}."
-            : $"É obrigatório adicionar um dos seguintes passos: {requiredStepAsString}.";
+        var configurationSteps = configuration
+            .GetRequiredValues<StepName>("Settings:Publish:Steps", value => Enum
+            .Parse(typeof(StepName), value));
 
-        return new Error($"{errorMessageTitle} - {errorMessageDescription}");
+        var publishSteps = new List<StepName>()
+        {
+            StepName.Download,
+            StepName.Compress,
+        };
+
+        foreach (var configurationStep in configurationSteps)
+        {
+            var step = StepsInfo.StepNameType[configurationStep];
+            if (step == StepType.Management)
+                continue;
+
+            publishSteps.Add(configurationStep);
+
+            if (configurationStep is
+                StepName.UploadPdfBox or
+                StepName.UploadPdfMega or
+                StepName.UploadPdfGoogleDrive)
+                publishSteps.Add(StepName.PdfFiles);
+
+            else if (configurationStep is
+                StepName.UploadZipBox or
+                StepName.UploadZipMega or
+                StepName.UploadZipGoogleDrive or
+                StepName.UploadMangadex)
+                publishSteps.Add(StepName.ZipFiles);
+        }
+
+        return [.. publishSteps.Distinct().OrderBy(x => x)];
     }
-
-    private static readonly StepEnum[] requiredBloggerSteps =
-    [
-        StepEnum.UploadPdfBox,
-        StepEnum.UploadZipBox,
-        StepEnum.UploadPdfMega,
-        StepEnum.UploadZipMega,
-        StepEnum.UploadPdfGoogleDrive,
-        StepEnum.UploadZipGoogleDrive,
-        StepEnum.UploadMangadex
-    ];
 }

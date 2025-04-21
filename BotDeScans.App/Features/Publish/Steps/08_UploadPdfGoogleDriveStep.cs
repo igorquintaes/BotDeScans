@@ -1,4 +1,5 @@
 ﻿using BotDeScans.App.Features.GoogleDrive;
+using BotDeScans.App.Features.Publish.Steps.Enums;
 using FluentResults;
 namespace BotDeScans.App.Features.Publish.Steps;
 
@@ -6,8 +7,7 @@ public class UploadPdfGoogleDriveStep(
     GoogleDriveService googleDriveService,
     PublishState state) : IStep
 {
-    public StepEnum StepName => StepEnum.UploadPdfGoogleDrive;
-    public StepType StepType => StepType.Publish;
+    public StepName StepName => StepName.UploadPdfGoogleDrive;
 
     public Task<Result> ValidateBeforeFilesManagementAsync(CancellationToken _)
         => Task.FromResult(Result.Ok());

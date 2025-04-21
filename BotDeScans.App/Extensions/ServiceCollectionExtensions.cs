@@ -7,7 +7,7 @@ public static class ServiceCollectionExtensions
     public static IServiceCollection AddExternalClientAsSingleton<TClient, TFactory>(
         this IServiceCollection services)
         where TClient : class
-        where TFactory : ClientFactory<TClient> => 
+        where TFactory : ClientFactory<TClient> =>
         services
             .AddScoped<TFactory>()
             .AddSingleton(GetExternalClientFromProvider<TClient, TFactory>);
@@ -15,7 +15,7 @@ public static class ServiceCollectionExtensions
     public static IServiceCollection AddExternalClientAsScoped<TClient, TFactory>(
         this IServiceCollection services)
         where TClient : class
-        where TFactory : ClientFactory<TClient> => 
+        where TFactory : ClientFactory<TClient> =>
         services
             .AddScoped<TFactory>()
             .AddScoped(GetExternalClientFromProvider<TClient, TFactory>);
@@ -27,7 +27,7 @@ public static class ServiceCollectionExtensions
     {
         var factory = serviceProvider.GetRequiredService<TFactory>();
 
-        return factory.ExpectedInPublishFeature 
+        return factory.ExpectedInPublishFeature
              ? factory.SafeCreateAsync(CancellationToken.None)
                       .GetAwaiter()
                       .GetResult()

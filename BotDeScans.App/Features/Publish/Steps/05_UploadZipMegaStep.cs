@@ -1,5 +1,6 @@
 ﻿using BotDeScans.App.Features.Mega;
 using BotDeScans.App.Features.Mega.InternalServices;
+using BotDeScans.App.Features.Publish.Steps.Enums;
 using FluentResults;
 namespace BotDeScans.App.Features.Publish.Steps;
 
@@ -8,8 +9,7 @@ public class UploadZipMegaStep(
     MegaSettingsService megaSettingsService,
     PublishState state) : IStep
 {
-    public StepEnum StepName => StepEnum.UploadZipMega;
-    public StepType StepType => StepType.Publish;
+    public StepName StepName => StepName.UploadZipMega;
 
     public Task<Result> ValidateBeforeFilesManagementAsync(CancellationToken _)
         => Task.FromResult(Result.Ok());

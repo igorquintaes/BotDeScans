@@ -1,6 +1,7 @@
 ﻿using BotDeScans.App.Features.GoogleDrive;
 using BotDeScans.App.Features.Publish;
 using BotDeScans.App.Features.Publish.Steps;
+using BotDeScans.App.Features.Publish.Steps.Enums;
 using FluentResults;
 using File = Google.Apis.Drive.v3.Data.File;
 namespace BotDeScans.UnitTests.Specs.Features.Publish.Steps;
@@ -20,11 +21,11 @@ public class UploadZipGoogleDriveStepTests : UnitTest
     {
         [Fact]
         public void ShouldHaveExpectedName() =>
-            step.StepName.Should().Be(StepEnum.UploadZipGoogleDrive);
+            step.StepName.Should().Be(StepName.UploadZipGoogleDrive);
 
         [Fact]
         public void ShouldHaveExpectedType() =>
-            step.StepType.Should().Be(StepType.Publish);
+            step.StepType.Should().Be(StepType.Upload);
     }
 
     public class ValidateBeforeFilesManagementAsync : UploadZipGoogleDriveStepTests
@@ -62,8 +63,8 @@ public class UploadZipGoogleDriveStepTests : UnitTest
             A.CallTo(() => fixture
                 .FreezeFake<GoogleDriveService>()
                 .GetOrCreateFolderAsync(
-                    fixture.Freeze<PublishState>().Title.Name, 
-                    default, 
+                    fixture.Freeze<PublishState>().Title.Name,
+                    default,
                     cancellationToken))
                 .Returns(Result.Ok(titleFolder));
 

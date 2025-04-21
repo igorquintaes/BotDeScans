@@ -1,4 +1,5 @@
-﻿using BotDeScans.App.Features.Publish.Pings;
+﻿using BotDeScans.App.Features.Publish.Discord;
+using BotDeScans.App.Features.Publish.Pings;
 using BotDeScans.App.Models;
 using FluentValidation;
 using Microsoft.Extensions.Configuration;
@@ -10,7 +11,7 @@ namespace BotDeScans.App.Features.Publish;
 public class PublishStateValidator : AbstractValidator<PublishState>
 {
     public PublishStateValidator(
-        IValidator<Title> titleValidator, 
+        IValidator<Title> titleValidator,
         IValidator<Info> infoValidator)
     {
         RuleFor(model => model.Title).SetValidator(titleValidator);
@@ -42,7 +43,7 @@ public class TitleValidator : AbstractValidator<Title>
 
         RuleFor(model => model.DiscordRoleId)
             .Must(prop => prop.HasValue && prop.Value != default)
-            .When(prop => pingType == PingType.Global || pingType == PingType.Role)
+            .When(prop => pingType is PingType.Global or PingType.Role)
             .WithMessage($"Não foi definida uma role para o Discord nesta obra, obrigatória para o ping de tipo {pingType}. " +
                          $"Defina, ou mude o tipo de ping para publicação no arquivo de configuração do Bot de Scans.");
     }

@@ -1,13 +1,13 @@
-﻿using BotDeScans.App.Services;
+﻿using BotDeScans.App.Features.Publish.Steps.Enums;
+using BotDeScans.App.Services;
 using FluentResults;
 namespace BotDeScans.App.Features.Publish.Steps;
 
-public class PublishMangaDexStep(
+public class UploadMangaDexStep(
     MangaDexService mangaDexService,
     PublishState state) : IStep
 {
-    public StepEnum StepName => StepEnum.UploadMangadex;
-    public StepType StepType => StepType.Publish;
+    public StepName StepName => StepName.UploadMangadex;
 
     public Task<Result> ValidateBeforeFilesManagementAsync(CancellationToken _)
     {
@@ -29,7 +29,7 @@ public class PublishMangaDexStep(
         => Task.FromResult(Result.Ok());
 
     public async Task<Result> ExecuteAsync(CancellationToken cancellationToken)
-    {        
+    {
         var clearResult = await mangaDexService.ClearPendingUploadsAsync();
         if (clearResult.IsFailed)
             return clearResult;

@@ -1,4 +1,5 @@
-﻿using BotDeScans.App.Services;
+﻿using BotDeScans.App.Features.Publish.Steps.Enums;
+using BotDeScans.App.Services;
 using FluentResults;
 namespace BotDeScans.App.Features.Publish.Steps;
 
@@ -6,8 +7,7 @@ public class CompressFilesStep(
     ImageService imageService,
     PublishState state) : IStep
 {
-    public StepEnum StepName => StepEnum.Compress;
-    public StepType StepType => StepType.Management;
+    public StepName StepName => StepName.Compress;
 
     public Task<Result> ValidateBeforeFilesManagementAsync(CancellationToken _)
         => Task.FromResult(Result.Ok());
@@ -17,7 +17,7 @@ public class CompressFilesStep(
 
     public async Task<Result> ExecuteAsync(CancellationToken cancellationToken)
     {
-        var maxDegreeOfParallelism = Convert.ToInt32(Math.Ceiling((Environment.ProcessorCount * 0.75) * 2.0));
+        var maxDegreeOfParallelism = Convert.ToInt32(Math.Ceiling(Environment.ProcessorCount * 0.75 * 2.0));
         var parallelOptions = new ParallelOptions
         {
             CancellationToken = cancellationToken,

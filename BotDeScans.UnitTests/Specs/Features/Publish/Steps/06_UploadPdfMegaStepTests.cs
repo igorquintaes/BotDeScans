@@ -2,6 +2,7 @@
 using BotDeScans.App.Features.Mega.InternalServices;
 using BotDeScans.App.Features.Publish;
 using BotDeScans.App.Features.Publish.Steps;
+using BotDeScans.App.Features.Publish.Steps.Enums;
 using CG.Web.MegaApiClient;
 using FluentResults;
 namespace BotDeScans.UnitTests.Specs.Features.Publish.Steps;
@@ -22,11 +23,11 @@ public class UploadPdfMegaStepTests : UnitTest
     {
         [Fact]
         public void ShouldHaveExpectedName() =>
-            step.StepName.Should().Be(StepEnum.UploadPdfMega);
+            step.StepName.Should().Be(StepName.UploadPdfMega);
 
         [Fact]
         public void ShouldHaveExpectedType() =>
-            step.StepType.Should().Be(StepType.Publish);
+            step.StepType.Should().Be(StepType.Upload);
     }
 
     public class ValidateBeforeFilesManagementAsync : UploadPdfMegaStepTests

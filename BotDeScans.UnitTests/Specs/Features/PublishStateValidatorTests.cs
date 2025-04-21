@@ -1,4 +1,5 @@
 ﻿using BotDeScans.App.Features.Publish;
+using BotDeScans.App.Features.Publish.Discord;
 using BotDeScans.App.Features.Publish.Pings;
 using BotDeScans.App.Models;
 using FluentValidation.TestHelper;
@@ -10,11 +11,11 @@ public class PublishStateValidatorTests : UnitTest
 {
     public class TitleValidatorTests : PublishStateValidatorTests
     {
-        public TitleValidatorTests() => 
+        public TitleValidatorTests() =>
             fixture.FreezeFakeConfiguration(Ping.PING_TYPE_KEY, PingType.Everyone.ToString());
 
         [Fact]
-        public void GivenValidDataShouldReturnSuccess() => 
+        public void GivenValidDataShouldReturnSuccess() =>
             fixture.Create<TitleValidator>()
                    .TestValidate(fixture.Create<Title>())
                    .ShouldNotHaveAnyValidationErrors();
@@ -82,7 +83,7 @@ public class PublishStateValidatorTests : UnitTest
     {
         private readonly Info info;
 
-        public InfoValidatorTests() => 
+        public InfoValidatorTests() =>
             info = fixture.Build<Info>()
                 .With(x => x.ChapterName, fixture.StringOfLength(255))
                 .With(x => x.ChapterNumber, "10")
@@ -96,7 +97,7 @@ public class PublishStateValidatorTests : UnitTest
                    .ShouldNotHaveAnyValidationErrors();
 
         [Fact]
-        public void GivenLongChapterNameValueShouldReturnError() => 
+        public void GivenLongChapterNameValueShouldReturnError() =>
             fixture.Create<InfoValidator>()
                    .TestValidate(info with { ChapterName = fixture.StringOfLength(256) })
                    .ShouldHaveValidationErrorFor(x => x.ChapterName)
@@ -106,7 +107,7 @@ public class PublishStateValidatorTests : UnitTest
         [InlineData("invalid")]
         [InlineData("10invalid")]
         [InlineData("invalid10")]
-        public void GivenChapterNumberNotMatchingPatternShouldReturnError(string chapterNumber) => 
+        public void GivenChapterNumberNotMatchingPatternShouldReturnError(string chapterNumber) =>
             fixture.Create<InfoValidator>()
                    .TestValidate(info with { ChapterNumber = chapterNumber })
                    .ShouldHaveValidationErrorFor(x => x.ChapterNumber)
@@ -115,7 +116,7 @@ public class PublishStateValidatorTests : UnitTest
         [Theory]
         [InlineData("invalid")]
         [InlineData("-1")]
-        public void GivenChapterVolumeNotMatchingNaturalNumberShouldReturnError(string chapterVolume) => 
+        public void GivenChapterVolumeNotMatchingNaturalNumberShouldReturnError(string chapterVolume) =>
             fixture.Create<InfoValidator>()
                    .TestValidate(info with { ChapterVolume = chapterVolume })
                    .ShouldHaveValidationErrorFor(x => x.ChapterVolume)

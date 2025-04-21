@@ -1,5 +1,5 @@
 ﻿using BotDeScans.App.Extensions;
-using BotDeScans.App.Features.Publish.Steps;
+using BotDeScans.App.Features.Publish.Steps.Enums;
 using BotDeScans.App.Services.Wrappers;
 using Box.V2;
 using Box.V2.Config;
@@ -65,8 +65,8 @@ public class BoxClientFactory(IConfiguration configuration) : ClientFactory<IBox
     public const string CREDENTIALS_FILE_NAME = "box.json";
 
     public override bool ExpectedInPublishFeature => configuration
-        .GetRequiredValues<StepEnum>("Settings:Publish:Steps", value => Enum.Parse(typeof(StepEnum), value))
-        .Any(x => x == StepEnum.UploadPdfBox || x == StepEnum.UploadZipBox);
+        .GetRequiredValues<StepName>("Settings:Publish:Steps", value => Enum.Parse(typeof(StepName), value))
+        .Any(x => x is StepName.UploadPdfBox or StepName.UploadZipBox);
 
     public override async Task<Result<IBoxClient>> CreateAsync(
         CancellationToken cancellationToken = default)

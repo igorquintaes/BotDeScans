@@ -1,4 +1,5 @@
-﻿using BotDeScans.App.Services;
+﻿using BotDeScans.App.Features.Publish.Steps.Enums;
+using BotDeScans.App.Services;
 using FluentResults;
 namespace BotDeScans.App.Features.Publish.Steps;
 
@@ -7,8 +8,7 @@ public class ZipFilesStep(
     FileReleaseService fileReleaseService,
     PublishState state) : IStep
 {
-    public StepEnum StepName => StepEnum.ZipFiles;
-    public StepType StepType => StepType.Management;
+    public StepName StepName => StepName.ZipFiles;
 
     private readonly PublishState state = state;
 

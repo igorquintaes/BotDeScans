@@ -2,6 +2,7 @@
 using BotDeScans.App.Features.Mega.InternalServices;
 using BotDeScans.App.Features.Publish;
 using BotDeScans.App.Features.Publish.Steps;
+using BotDeScans.App.Features.Publish.Steps.Enums;
 using CG.Web.MegaApiClient;
 using FluentResults;
 namespace BotDeScans.UnitTests.Specs.Features.Publish.Steps;
@@ -22,11 +23,11 @@ public class UploadZipMegaStepTests : UnitTest
     {
         [Fact]
         public void ShouldHaveExpectedName() =>
-            step.StepName.Should().Be(StepEnum.UploadZipMega);
+            step.StepName.Should().Be(StepName.UploadZipMega);
 
         [Fact]
         public void ShouldHaveExpectedType() =>
-            step.StepType.Should().Be(StepType.Publish);
+            step.StepType.Should().Be(StepType.Upload);
     }
 
     public class ValidateBeforeFilesManagementAsync : UploadZipMegaStepTests
@@ -59,7 +60,7 @@ public class UploadZipMegaStepTests : UnitTest
         {
             var rootNode = A.Fake<INode>();
             var titleFolderNode = A.Fake<INode>();
-            
+
             A.CallTo(() => fixture
                 .FreezeFake<MegaSettingsService>()
                 .GetRootFolderAsync())

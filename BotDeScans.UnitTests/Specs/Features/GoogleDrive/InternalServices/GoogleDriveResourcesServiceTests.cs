@@ -227,8 +227,8 @@ public class GoogleDriveResourcesServiceTests : UnitTest, IDisposable
 
             var mimeType = fixture.Create<string>();
             var expectedQuery = string.Format(
-                EXPECTED_QUERY_FORMAT, 
-                mimeType, 
+                EXPECTED_QUERY_FORMAT,
+                mimeType,
                 GoogleDriveSettingsService.BaseFolderId);
 
             await service.GetResourcesAsync(
@@ -250,8 +250,8 @@ public class GoogleDriveResourcesServiceTests : UnitTest, IDisposable
 
             var forbiddenMimeType = fixture.Create<string>();
             var expectedQuery = string.Format(
-                EXPECTED_QUERY_FORMAT, 
-                forbiddenMimeType, 
+                EXPECTED_QUERY_FORMAT,
+                forbiddenMimeType,
                 GoogleDriveSettingsService.BaseFolderId);
 
             await service.GetResourcesAsync(
@@ -276,7 +276,7 @@ public class GoogleDriveResourcesServiceTests : UnitTest, IDisposable
             var name = fixture.Create<string>();
             var parentId = fixture.Create<string>();
             var expectedQuery = string.Format(
-                EXPECTED_QUERY_FORMAT, 
+                EXPECTED_QUERY_FORMAT,
                 mimeType,
                 forbiddenMimeType,
                 name,

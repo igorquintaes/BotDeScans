@@ -14,7 +14,7 @@ public static class FixtureExtensions
     /// <param name="fixture">AutoFixture instance</param>
     /// <param name="length">expected length</param>
     /// <returns>string with expected length</returns>
-    public static string StringOfLength(this IFixture fixture, int length) 
+    public static string StringOfLength(this IFixture fixture, int length)
         => string.Join("", fixture.CreateMany<char>(length));
 
     /// <summary>

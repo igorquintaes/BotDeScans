@@ -1,6 +1,7 @@
 ﻿using BotDeScans.App.Features.GoogleDrive;
 using BotDeScans.App.Features.Publish;
 using BotDeScans.App.Features.Publish.Steps;
+using BotDeScans.App.Features.Publish.Steps.Enums;
 using BotDeScans.App.Services;
 using FluentResults;
 namespace BotDeScans.UnitTests.Specs.Features.Publish.Steps;
@@ -22,7 +23,7 @@ public class DownloadStepTests : UnitTest
     {
         [Fact]
         public void ShouldHaveExpectedName() =>
-            step.StepName.Should().Be(StepEnum.Download);
+            step.StepName.Should().Be(StepName.Download);
 
         [Fact]
         public void ShouldHaveExpectedType() =>
