@@ -24,7 +24,7 @@ public class UploadMangDexStepTests : UnitTest
     {
         [Fact]
         public void ShouldHaveExpectedName() =>
-            step.StepName.Should().Be(StepName.UploadMangadex);
+            step.Name.Should().Be(StepName.UploadMangadex);
 
         [Fact]
         public void ShouldHaveExpectedType() =>
@@ -107,7 +107,7 @@ public class UploadMangDexStepTests : UnitTest
         [Fact]
         public async Task ShouldReturnSuccess()
         {
-            var result = await step.ValidateAfterFilesManagementAsync(cancellationToken);
+            var result = await step.ValidateAsync(cancellationToken);
 
             result.Should().BeSuccess();
         }

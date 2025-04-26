@@ -20,7 +20,7 @@ public class UploadZipBoxStepTests : UnitTest
     {
         [Fact]
         public void ShouldHaveExpectedName() =>
-            step.StepName.Should().Be(StepName.UploadZipBox);
+            step.Name.Should().Be(StepName.UploadZipBox);
 
         [Fact]
         public void ShouldHaveExpectedType() =>
@@ -43,7 +43,7 @@ public class UploadZipBoxStepTests : UnitTest
         [Fact]
         public async Task ShouldReturnSuccess()
         {
-            var result = await step.ValidateAfterFilesManagementAsync(cancellationToken);
+            var result = await step.ValidateAsync(cancellationToken);
 
             result.Should().BeSuccess();
         }

@@ -5,19 +5,17 @@ using FluentResults;
 namespace BotDeScans.App.Features.Publish.Steps;
 
 public class UploadPdfMegaStep(
-MegaService megaService,
-MegaSettingsService megaSettingsService,
-    PublishState state) : IStep
+    MegaService megaService,
+    MegaSettingsService megaSettingsService,
+    PublishState state) : PublishStep
 {
-    public StepName StepName => StepName.UploadPdfMega;
+    public override StepType Type => StepType.Upload;
+    public override StepName Name => StepName.UploadPdfMega;
 
-    public Task<Result> ValidateBeforeFilesManagementAsync(CancellationToken _)
+    public override Task<Result> ValidateAsync(CancellationToken _)
         => Task.FromResult(Result.Ok());
 
-    public Task<Result> ValidateAfterFilesManagementAsync(CancellationToken _)
-        => Task.FromResult(Result.Ok());
-
-    public async Task<Result> ExecuteAsync(CancellationToken cancellationToken)
+    public override async Task<Result> ExecuteAsync(CancellationToken cancellationToken)
     {
         var root = await megaSettingsService.GetRootFolderAsync();
         var titleFolder = await megaService.GetOrCreateFolderAsync(state.Title.Name, root);

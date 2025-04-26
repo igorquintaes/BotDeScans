@@ -1,4 +1,5 @@
-﻿using BotDeScans.App.Features.Publish.Discord;
+﻿using BotDeScans.App.Features.GoogleDrive.Models;
+using BotDeScans.App.Features.Publish.Discord;
 using BotDeScans.App.Features.Publish.Pings;
 using BotDeScans.App.Models;
 using FluentValidation;
@@ -14,8 +15,14 @@ public class PublishStateValidator : AbstractValidator<PublishState>
         IValidator<Title> titleValidator,
         IValidator<Info> infoValidator)
     {
-        RuleFor(model => model.Title).SetValidator(titleValidator);
-        RuleFor(model => model.ReleaseInfo).SetValidator(infoValidator);
+        RuleFor(model => model.ReleaseInfo)
+            .SetValidator(infoValidator);
+
+        RuleFor(model => model.Title)
+            .Must(prop => prop.References.Any(reference => reference.Key == ExternalReference.MangaDex))
+            .When(prop => prop.Steps.Any(step => step.Key.Name == Steps.Enums.StepName.UploadMangadex))
+            .WithMessage("Não foi; definida uma referência para a publicação da obra na MangaDex.")
+            .SetValidator(titleValidator);
     }
 }
 
@@ -51,7 +58,7 @@ public class TitleValidator : AbstractValidator<Title>
 
 public partial class InfoValidator : AbstractValidator<Info>
 {
-    public InfoValidator()
+    public InfoValidator(IValidator<GoogleDriveUrl> googleDriveUrlValidator)
     {
         RuleFor(model => model.ChapterName)
             .Must(prop => prop!.Length <= 255)
@@ -66,6 +73,9 @@ public partial class InfoValidator : AbstractValidator<Info>
             .Must(prop => int.TryParse(prop, out var volume) && volume >= 0)
             .When(prop => string.IsNullOrWhiteSpace(prop.ChapterVolume) is false)
             .WithMessage("Volume do capítulo inválido.");
+
+        RuleFor(model => model.GoogleDriveUrl)
+            .SetValidator(googleDriveUrlValidator);
     }
 
     [GeneratedRegex("^(0|[1-9]\\d*)((.\\d+){1,2})?[a-z]?$")]

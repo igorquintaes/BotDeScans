@@ -35,10 +35,10 @@ public class CreateInteractions(
         }
 
         var title = new Title(name, roleId);
-        var validatioResult = await validator.ValidateAsync(title);
-        if (validatioResult.IsValid is false)
+        var validationResult = await validator.ValidateAsync(title);
+        if (validationResult.IsValid is false)
             return await feedbackService.SendContextualEmbedAsync(
-                embed: EmbedBuilder.CreateErrorEmbed(validatioResult.ToResult()),
+                embed: EmbedBuilder.CreateErrorEmbed(validationResult.ToResult()),
                 ct: CancellationToken);
 
         await databaseContext.AddAsync(title, CancellationToken);

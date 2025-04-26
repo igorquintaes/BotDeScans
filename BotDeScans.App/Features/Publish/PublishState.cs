@@ -1,12 +1,12 @@
 ﻿using BotDeScans.App.Extensions;
-using BotDeScans.App.Features.Publish.Steps;
+using BotDeScans.App.Features.GoogleDrive.Models;
 using BotDeScans.App.Models;
 using System.ComponentModel;
 namespace BotDeScans.App.Features.Publish;
 
 public class PublishState()
 {
-    public StepsInfo Steps { get; set; } = null!;
+    public Steps.Models.Steps Steps { get; set; } = null!;
     public Title Title { get; set; } = null!;
     public Info ReleaseInfo { get; set; } = null!;
     public Links ReleaseLinks { get; set; } = new Links();
@@ -15,7 +15,6 @@ public class PublishState()
     public record ReleaseInternalData
     {
         public string OriginContentFolder { get; set; } = null!;
-        public string GoogleDriveFolderId { get; set; } = null!;
         public string CoverFilePath { get; set; } = null!;
         public string? ZipFilePath { get; set; }
         public string? PdfFilePath { get; set; }
@@ -24,7 +23,7 @@ public class PublishState()
 
     public record Info
     {
-        public string DownloadUrl { get; init; }
+        public GoogleDriveUrl GoogleDriveUrl { get; init; }
         public string? ChapterName { get; init; }
         public string ChapterNumber { get; init; }
         public string? ChapterVolume { get; init; }
@@ -40,7 +39,7 @@ public class PublishState()
             string? message,
             int titleId)
         {
-            DownloadUrl = downloadUrl;
+            GoogleDriveUrl = new GoogleDriveUrl(downloadUrl);
             ChapterName = chapterName.NullIfWhitespace();
             ChapterNumber = chapterNumber;
             ChapterVolume = chapterVolume.NullIfWhitespace();
@@ -49,7 +48,7 @@ public class PublishState()
         }
 
         public override string ToString() =>
-            $"DownloadUrl: {DownloadUrl}{Environment.NewLine}" +
+            $"DownloadUrl: {GoogleDriveUrl.Url}{Environment.NewLine}" +
             $"ChapterName: {ChapterName}{Environment.NewLine}" +
             $"ChapterNumber: {ChapterNumber}{Environment.NewLine}" +
             $"ChapterVolume: {ChapterVolume}{Environment.NewLine}" +

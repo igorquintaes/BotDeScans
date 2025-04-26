@@ -5,17 +5,15 @@ namespace BotDeScans.App.Features.Publish.Steps;
 
 public class UploadZipBoxStep(
     BoxService boxService,
-    PublishState state) : IStep
+    PublishState state) : PublishStep
 {
-    public StepName StepName => StepName.UploadZipBox;
+    public override StepType Type => StepType.Upload;
+    public override StepName Name => StepName.UploadZipBox;
 
-    public Task<Result> ValidateBeforeFilesManagementAsync(CancellationToken _)
+    public override Task<Result> ValidateAsync(CancellationToken _)
         => Task.FromResult(Result.Ok());
 
-    public Task<Result> ValidateAfterFilesManagementAsync(CancellationToken _)
-        => Task.FromResult(Result.Ok());
-
-    public async Task<Result> ExecuteAsync(CancellationToken cancellationToken)
+    public override async Task<Result> ExecuteAsync(CancellationToken cancellationToken)
     {
         var titleFolder = await boxService.GetOrCreateFolderAsync(state.Title.Name);
         var file = await boxService.CreateFileAsync(

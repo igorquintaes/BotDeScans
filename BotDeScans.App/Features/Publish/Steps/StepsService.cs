@@ -1,68 +1,60 @@
-﻿using BotDeScans.App.Extensions;
-using BotDeScans.App.Features.Publish.Steps.Enums;
+﻿using BotDeScans.App.Features.Publish.Discord;
+using BotDeScans.App.Features.Publish.Steps.Models;
 using FluentResults;
-using Microsoft.Extensions.Configuration;
+using Serilog;
 namespace BotDeScans.App.Features.Publish.Steps;
 
-public class StepsService(IConfiguration configuration)
+public class StepsService(
+    PublishMessageService publishMessageService,
+    PublishState publishState)
 {
-    public virtual Result ValidateStepsDependencies()
+    public virtual async Task<Result> ExecuteAsync(CancellationToken cancellationToken)
     {
-        const string STEPS_KEY = "Settings:Publish:Steps";
-        var configurationStepsAsString = configuration.GetRequiredValues<string>(STEPS_KEY, value => value);
-        if (configurationStepsAsString.Length == 0)
-            return Result.Fail($"Não foi encontrado nenhum passo de publicação em '{STEPS_KEY}'.");
+        var chain = publishState.Steps.ManagementSteps.Select(step => (Func<Task<Result>>)(() => ExecuteAsync(step, cancellationToken)))
+             .Union(publishState.Steps.PublishSteps.Select(step => (Func<Task<Result>>)(() => ValidateAsync(step, cancellationToken))))
+             .Union(publishState.Steps.PublishSteps.Select(step => (Func<Task<Result>>)(() => ExecuteAsync(step, cancellationToken))));
 
-        var configurationSteps = new List<StepName>();
-        foreach (var configurationStepAsString in configurationStepsAsString)
+        var result = await publishMessageService.UpdateTrackingMessageAsync(cancellationToken);
+
+        foreach (var execStep in chain)
         {
-            if (!Enum.TryParse(typeof(StepName), configurationStepAsString, out var configurationStep))
-                return Result.Fail($"Não foi possível converter o tipo '{configurationStepAsString}' em um passo de publicação válido.");
-
-            configurationSteps.Add((StepName)configurationStep);
+            if (result.IsFailed) break;
+            result = Result.Merge(result, await execStep());
         }
 
-        return StepsInfo.StepNameType
-              .Where(x => configurationSteps.Contains(x.Key))
-              .Any(x => x.Value == StepType.Upload) is false
-                ? Result.Fail($"Não foi encontrado nenhum passo de publicação para disponibilização de lançamentos em '{STEPS_KEY}'.")
-                : Result.Ok();
+        return result;
+
+    }
+    private async Task<Result> ValidateAsync((PublishStep Step, StepInfo Info) data, CancellationToken cancellationToken)
+    {
+        var result = await SafeCall(() => data.Step.ValidateAsync(cancellationToken));
+        data.Info.UpdateStatus(result);
+
+        if (result.IsSuccess)
+            return result;
+
+        var feedbackResult = await publishMessageService.UpdateTrackingMessageAsync(cancellationToken);
+        return Result.Merge(result, feedbackResult);
     }
 
-    public virtual IReadOnlyList<StepName> GetPublishSteps()
+    private async Task<Result> ExecuteAsync((IStep Step, StepInfo Info) data, CancellationToken cancellationToken)
     {
-        var configurationSteps = configuration
-            .GetRequiredValues<StepName>("Settings:Publish:Steps", value => Enum
-            .Parse(typeof(StepName), value));
+        var result = await SafeCall(() => data.Step.ExecuteAsync(cancellationToken));
+        data.Info.UpdateStatus(result);
 
-        var publishSteps = new List<StepName>()
+        var feedbackResult = await publishMessageService.UpdateTrackingMessageAsync(cancellationToken);
+        return Result.Merge(result, feedbackResult);
+    }
+
+    private static async Task<Result> SafeCall(Func<Task<Result>> func)
+    {
+        try { return await func(); }
+        catch (Exception ex)
         {
-            StepName.Download,
-            StepName.Compress,
-        };
+            const string ERROR_MESSAGE = "Fatal error ocurred. More information inside log file.";
+            Log.Error(ex, ERROR_MESSAGE);
 
-        foreach (var configurationStep in configurationSteps)
-        {
-            var step = StepsInfo.StepNameType[configurationStep];
-            if (step == StepType.Management)
-                continue;
-
-            publishSteps.Add(configurationStep);
-
-            if (configurationStep is
-                StepName.UploadPdfBox or
-                StepName.UploadPdfMega or
-                StepName.UploadPdfGoogleDrive)
-                publishSteps.Add(StepName.PdfFiles);
-
-            else if (configurationStep is
-                StepName.UploadZipBox or
-                StepName.UploadZipMega or
-                StepName.UploadZipGoogleDrive or
-                StepName.UploadMangadex)
-                publishSteps.Add(StepName.ZipFiles);
+            return Result.Fail(new Error(ERROR_MESSAGE).CausedBy(ex));
         }
-
-        return [.. publishSteps.Distinct().OrderBy(x => x)];
     }
 }

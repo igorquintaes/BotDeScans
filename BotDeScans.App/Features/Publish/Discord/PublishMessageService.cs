@@ -19,6 +19,7 @@ namespace BotDeScans.App.Features.Publish.Discord;
 
 [ExcludeFromCodeCoverage]
 public class PublishMessageService(
+    IOperationContext context,
     PublishState publishState,
     PublishReplacerService publishReplacerService,
     IFeedbackService feedbackService,
@@ -29,9 +30,9 @@ public class PublishMessageService(
     private Result<IMessage>? trackingMessage = null;
 
     public virtual async Task<FluentResults.Result> UpdateTrackingMessageAsync(
-        InteractionContext interactionContext,
         CancellationToken cancellationToken)
     {
+        var interactionContext = context as InteractionContext;
         var steps = publishState.Steps!;
         var embed = new Embed(steps.Header, Description: steps.Details, Colour: steps.ColorStatus);
 
@@ -39,7 +40,7 @@ public class PublishMessageService(
             ? await feedbackService.SendContextualEmbedAsync(embed, ct: cancellationToken)
             : await discordRestInteractionAPI.EditFollowupMessageAsync(
                 trackingMessage.Value.Entity.Author.ID,
-                interactionContext.Interaction.Token,
+                interactionContext!.Interaction.Token,
                 messageID: trackingMessage.Value.Entity.ID,
                 embeds: new List<Embed> { embed },
                 ct: cancellationToken);
@@ -52,18 +53,17 @@ public class PublishMessageService(
     }
 
     public virtual async Task<Result<IMessage>> ErrorReleaseMessageAsync(
-        InteractionContext interactionContext,
         FluentResults.Result errorResult,
         CancellationToken cancellationToken)
     {
-        var channel = interactionContext.Interaction.Channel!.Value.ID!.Value;
+        var interactionContext = context as InteractionContext;
+        var channel = interactionContext!.Interaction.Channel!.Value.ID!.Value;
         var embed = EmbedBuilder.CreateErrorEmbed(errorResult);
 
         return await feedbackService.SendEmbedAsync(channel, embed, ct: cancellationToken);
     }
 
     public virtual async Task<Result<IMessage>> SuccessReleaseMessageAsync(
-        InteractionContext interactionContext,
         string content,
         CancellationToken cancellationToken)
     {
@@ -74,16 +74,15 @@ public class PublishMessageService(
         return await discordRestChannelAPI.CreateMessageAsync(
             channelID: releaseChannel,
             content: content,
-            embeds: new[] { PublishEmbed(interactionContext, coverFileName) },
+            embeds: new[] { PublishEmbed(coverFileName) },
             attachments: new[] { OneOf<FileData, IPartialAttachment>.FromT0(new FileData(coverFileName, cover)) },
             components: new[] { new ActionRowComponent([PromotedButton]) },
             ct: cancellationToken);
     }
 
-    private Embed PublishEmbed(
-        InteractionContext interactionContext,
-        string coverFileName)
+    private Embed PublishEmbed(string coverFileName)
     {
+        var interactionContext = context as InteractionContext;
         var message = string.IsNullOrWhiteSpace(publishState.ReleaseInfo.Message)
             ? string.Empty
             : publishReplacerService.Replace(publishState.ReleaseInfo.Message);
@@ -95,8 +94,8 @@ public class PublishMessageService(
             Colour: Color.Green,
             Fields: CreatePublishLinkFields(),
             Author: new EmbedAuthor(
-                Name: interactionContext.GetUserName(),
-                IconUrl: interactionContext.GetUserAvatarUrl()));
+                Name: interactionContext!.GetUserName(),
+                IconUrl: interactionContext!.GetUserAvatarUrl()));
     }
 
     private List<EmbedField> CreatePublishLinkFields()

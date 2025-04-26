@@ -28,9 +28,7 @@ internal static class AddDependencies
             .AddScoped(serviceProvider => new PublishState
             {
                 Steps = serviceProvider
-                    .GetRequiredService<StepsService>()
+                    .GetRequiredService<PublishService>()
                     .GetPublishSteps()
-                    .Select(x => (x, StepStatus.Queued))
-                    .ToArray()
             });
 }

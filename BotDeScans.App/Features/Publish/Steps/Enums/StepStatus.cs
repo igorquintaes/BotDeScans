@@ -3,10 +3,10 @@ namespace BotDeScans.App.Features.Publish.Steps.Enums;
 
 public enum StepStatus
 {
+    [Emoji("clock9")]
+    QueuedForValidation,
     [Emoji("clock10")]
-    Queued,
-    [Emoji("fire")]
-    Executing,
+    QueuedForExecution,
     [Emoji("white_check_mark")]
     Success,
     [Emoji("warning")]

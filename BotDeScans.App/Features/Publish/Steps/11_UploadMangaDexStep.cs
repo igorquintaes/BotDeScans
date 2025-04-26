@@ -1,21 +1,15 @@
 ﻿using BotDeScans.App.Features.Publish.Steps.Enums;
+using BotDeScans.App.Models;
 using BotDeScans.App.Services;
 using FluentResults;
 namespace BotDeScans.App.Features.Publish.Steps;
 
 public class UploadMangaDexStep(
     MangaDexService mangaDexService,
-    PublishState state) : IStep
+    PublishState state) : PublishStep
 {
-    public StepName StepName => StepName.UploadMangadex;
-
-    public Task<Result> ValidateBeforeFilesManagementAsync(CancellationToken _)
-    {
-        if (state.Title.References.All(x => x.Key != Models.ExternalReference.MangaDex))
-            return Task.FromResult(Result.Fail("Não foi definido uma referência para a publicação da obra na MangaDex."));
-
-        return Task.FromResult(Result.Ok());
-    }
+    public override StepType Type => StepType.Upload;
+    public override StepName Name => StepName.UploadMangadex;
 
     // API validations
     // (OK) 1 active upload session per account -> You need to either commit or abandon your current upload session before starting a new one 
@@ -25,16 +19,16 @@ public class UploadMangaDexStep(
     // (NOK) Max 500 files per upload session
     // (NOK) Max 150MB per upload session
     // (NOK) File resolution must be below 10'000 pixels in both width and height 
-    public Task<Result> ValidateAfterFilesManagementAsync(CancellationToken _)
+    public override Task<Result> ValidateAsync(CancellationToken _)
         => Task.FromResult(Result.Ok());
 
-    public async Task<Result> ExecuteAsync(CancellationToken cancellationToken)
+    public override async Task<Result> ExecuteAsync(CancellationToken cancellationToken)
     {
         var clearResult = await mangaDexService.ClearPendingUploadsAsync();
         if (clearResult.IsFailed)
             return clearResult;
 
-        var mangaDexReference = state.Title.References.Single(x => x.Key == Models.ExternalReference.MangaDex);
+        var mangaDexReference = state.Title.References.Single(x => x.Key == ExternalReference.MangaDex);
         var uploadResult = await mangaDexService.UploadChapterAsync(
             mangaDexReference.Value,
             state.ReleaseInfo.ChapterName,

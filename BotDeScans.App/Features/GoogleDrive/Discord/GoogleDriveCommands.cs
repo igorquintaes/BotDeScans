@@ -2,8 +2,10 @@
 using BotDeScans.App.Builders;
 using BotDeScans.App.Extensions;
 using BotDeScans.App.Features.GoogleDrive.InternalServices;
+using BotDeScans.App.Features.GoogleDrive.Models;
 using BotDeScans.App.Services;
 using BotDeScans.App.Services.Discord;
+using FluentValidation;
 using Remora.Commands.Attributes;
 using Remora.Commands.Groups;
 using Remora.Discord.API.Objects;
@@ -17,23 +19,20 @@ public class GoogleDriveCommands(
     GoogleDriveService googleDriveService,
     GoogleDriveSettingsService googleDriveSettingsService,
     ExtendedFeedbackService feedbackService,
-    ChartService chartService) : CommandGroup
+    ChartService chartService,
+    IValidator<GoogleDriveUrl> googleDriveUrlValidator) : CommandGroup
 {
     [Command("verify-url")]
     [RoleAuthorize("Staff")]
     [Description("Verifica se a url contém ou não erros para publicação")]
     public async Task<IResult> VerifyUrl(string url)
     {
-        var folderIdResult = googleDriveService.GetFolderIdFromUrl(url);
-        if (folderIdResult.IsFailed)
-            return await folderIdResult.PostErrorOnDiscord(feedbackService, CancellationToken);
+        var validationResult = googleDriveUrlValidator.Validate(new GoogleDriveUrl(url));
+        var responseEmbed = validationResult.IsValid
+            ? EmbedBuilder.CreateSuccessEmbed("Arquivos válidos para publicação!")
+            : EmbedBuilder.CreateErrorEmbed(validationResult.ToResult());
 
-        var validationResult = await googleDriveService.ValidateFilesAsync(folderIdResult.Value, CancellationToken);
-        if (validationResult.IsFailed)
-            return await validationResult.PostErrorOnDiscord(feedbackService, CancellationToken);
-
-        var successEmbed = EmbedBuilder.CreateSuccessEmbed("Os arquivos do link estão de acordo com as regras de publicação!");
-        return await feedbackService.SendContextualEmbedAsync(successEmbed, ct: CancellationToken);
+        return await feedbackService.SendContextualEmbedAsync(responseEmbed, ct: CancellationToken);
     }
 
     [Command("delete-file")]
@@ -115,11 +114,8 @@ public class GoogleDriveCommands(
         [Description("Baixa imagens do Google Drive")]
         public async Task<IResult> DownloadFiles(string url)
         {
-            var folderIdResult = googleDriveService.GetFolderIdFromUrl(url);
-            if (folderIdResult.IsFailed)
-                return await folderIdResult.PostErrorOnDiscord(feedbackService, CancellationToken);
-
-            var downloadResult = await googleDriveService.SaveFilesAsync(folderIdResult.Value, Directory.GetCurrentDirectory(), CancellationToken);
+            var googleDriveUrl = new GoogleDriveUrl(url);
+            var downloadResult = await googleDriveService.SaveFilesAsync(googleDriveUrl.Id, Directory.GetCurrentDirectory(), CancellationToken);
             if (downloadResult.IsFailed)
                 return await downloadResult.PostErrorOnDiscord(feedbackService, CancellationToken);
 

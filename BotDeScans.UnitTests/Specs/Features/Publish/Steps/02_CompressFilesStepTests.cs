@@ -23,7 +23,7 @@ public class CompressFilesStepTests : UnitTest
     {
         [Fact]
         public void ShouldHaveExpectedName() =>
-            step.StepName.Should().Be(StepName.Compress);
+            step.Name.Should().Be(StepName.Compress);
 
         [Fact]
         public void ShouldHaveExpectedType() =>
@@ -46,7 +46,7 @@ public class CompressFilesStepTests : UnitTest
         [Fact]
         public async Task ShouldReturnSuccess()
         {
-            var result = await step.ValidateAfterFilesManagementAsync(cancellationToken);
+            var result = await step.ValidateAsync(cancellationToken);
 
             result.Should().BeSuccess();
         }

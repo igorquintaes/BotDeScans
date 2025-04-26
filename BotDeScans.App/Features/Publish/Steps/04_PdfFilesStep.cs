@@ -6,17 +6,11 @@ namespace BotDeScans.App.Features.Publish.Steps;
 public class PdfFilesStep(
     FileService fileService,
     FileReleaseService fileReleaseService,
-    PublishState state) : IStep
+    PublishState state) : ManagementStep
 {
-    public StepName StepName => StepName.PdfFiles;
+    public override StepName Name => StepName.PdfFiles;
 
-    public Task<Result> ValidateBeforeFilesManagementAsync(CancellationToken _)
-        => Task.FromResult(Result.Ok());
-
-    public Task<Result> ValidateAfterFilesManagementAsync(CancellationToken _)
-        => Task.FromResult(Result.Ok());
-
-    public async Task<Result> ExecuteAsync(CancellationToken cancellationToken)
+    public override async Task<Result> ExecuteAsync(CancellationToken cancellationToken)
     {
         var pdfFileResult = await fileService.CreatePdfFileAsync(
             fileName: state.ReleaseInfo.ChapterNumber,
