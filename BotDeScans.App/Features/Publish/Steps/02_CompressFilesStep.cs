@@ -5,11 +5,12 @@ namespace BotDeScans.App.Features.Publish.Steps;
 
 public class CompressFilesStep(
     ImageService imageService,
-    PublishState state) : ManagementStep
+    PublishState state) : IManagementStep
 {
-    public override StepName Name => StepName.Compress;
+    public StepType Type => StepType.Management;
+    public StepName Name => StepName.Compress;
 
-    public override async Task<Result> ExecuteAsync(CancellationToken cancellationToken)
+    public async Task<Result> ExecuteAsync(CancellationToken cancellationToken)
     {
         var maxDegreeOfParallelism = Convert.ToInt32(Math.Ceiling(Environment.ProcessorCount * 0.75 * 2.0));
         var parallelOptions = new ParallelOptions

@@ -7,15 +7,15 @@ namespace BotDeScans.App.Features.Publish.Steps;
 public class UploadZipMegaStep(
     MegaService megaService,
     MegaSettingsService megaSettingsService,
-    PublishState state) : PublishStep
+    PublishState state) : IPublishStep
 {
-    public override StepType Type => StepType.Upload;
-    public override StepName Name => StepName.UploadZipMega;
+    public StepType Type => StepType.Upload;
+    public StepName Name => StepName.UploadZipMega;
 
-    public override Task<Result> ValidateAsync(CancellationToken _)
+    public Task<Result> ValidateAsync(CancellationToken _)
         => Task.FromResult(Result.Ok());
 
-    public override async Task<Result> ExecuteAsync(CancellationToken cancellationToken)
+    public async Task<Result> ExecuteAsync(CancellationToken cancellationToken)
     {
         var root = await megaSettingsService.GetRootFolderAsync();
         var titleFolder = await megaService.GetOrCreateFolderAsync(state.Title.Name, root);

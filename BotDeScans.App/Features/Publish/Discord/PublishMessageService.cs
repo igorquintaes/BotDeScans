@@ -19,7 +19,6 @@ namespace BotDeScans.App.Features.Publish.Discord;
 
 [ExcludeFromCodeCoverage]
 public class PublishMessageService(
-    IOperationContext context,
     PublishState publishState,
     PublishReplacerService publishReplacerService,
     IFeedbackService feedbackService,
@@ -30,6 +29,7 @@ public class PublishMessageService(
     private Result<IMessage>? trackingMessage = null;
 
     public virtual async Task<FluentResults.Result> UpdateTrackingMessageAsync(
+        IOperationContext context,
         CancellationToken cancellationToken)
     {
         var interactionContext = context as InteractionContext;
@@ -53,6 +53,7 @@ public class PublishMessageService(
     }
 
     public virtual async Task<Result<IMessage>> ErrorReleaseMessageAsync(
+        IOperationContext context,
         FluentResults.Result errorResult,
         CancellationToken cancellationToken)
     {
@@ -64,6 +65,7 @@ public class PublishMessageService(
     }
 
     public virtual async Task<Result<IMessage>> SuccessReleaseMessageAsync(
+        IOperationContext context,
         string content,
         CancellationToken cancellationToken)
     {
@@ -74,13 +76,15 @@ public class PublishMessageService(
         return await discordRestChannelAPI.CreateMessageAsync(
             channelID: releaseChannel,
             content: content,
-            embeds: new[] { PublishEmbed(coverFileName) },
+            embeds: new[] { PublishEmbed(context, coverFileName) },
             attachments: new[] { OneOf<FileData, IPartialAttachment>.FromT0(new FileData(coverFileName, cover)) },
             components: new[] { new ActionRowComponent([PromotedButton]) },
             ct: cancellationToken);
     }
 
-    private Embed PublishEmbed(string coverFileName)
+    private Embed PublishEmbed(
+        IOperationContext context,
+        string coverFileName)
     {
         var interactionContext = context as InteractionContext;
         var message = string.IsNullOrWhiteSpace(publishState.ReleaseInfo.Message)

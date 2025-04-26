@@ -7,11 +7,12 @@ namespace BotDeScans.App.Features.Publish.Steps;
 public class DownloadStep(
     FileReleaseService fileReleaseService,
     GoogleDriveService googleDriveService,
-    PublishState state) : ManagementStep
+    PublishState state) : IManagementStep
 {
-    public override StepName Name => StepName.Download;
+    public StepType Type => StepType.Management;
+    public StepName Name => StepName.Download;
 
-    public override async Task<Result> ExecuteAsync(CancellationToken cancellationToken)
+    public async Task<Result> ExecuteAsync(CancellationToken cancellationToken)
     {
         var downloadDirectory = fileReleaseService.CreateScopedDirectory();
         var coverDirectory = fileReleaseService.CreateScopedDirectory();

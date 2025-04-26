@@ -6,16 +6,13 @@ namespace BotDeScans.App.Features.Publish.Steps.Models;
 
 public class Steps(Dictionary<IStep, StepInfo> steps) : ReadOnlyDictionary<IStep, StepInfo>(steps)
 {
-    public static implicit operator Steps(IStep[] steps) =>
-        new(steps.ToDictionary(step => step, step => new StepInfo(step)));
+    public IEnumerable<(IManagementStep Step, StepInfo Info)> ManagementSteps =>
+        this.Where(step => step.Key is IManagementStep)
+            .Select(step => ((IManagementStep)step.Key, step.Value));
 
-    public IEnumerable<(ManagementStep Step, StepInfo Info)> ManagementSteps =>
-        this.Where(step => step.Key is ManagementStep)
-            .Select(step => ((ManagementStep)step.Key, step.Value));
-
-    public IEnumerable<(PublishStep Step, StepInfo Info)> PublishSteps =>
-        this.Where(step => step.Key is PublishStep)
-            .Select(step => ((PublishStep)step.Key, step.Value));
+    public IEnumerable<(IPublishStep Step, StepInfo Info)> PublishSteps =>
+        this.Where(step => step.Key is IPublishStep)
+            .Select(step => ((IPublishStep)step.Key, step.Value));
 
     public StepStatus Status =>
         this.All(x => x.Value.StepStatus == StepStatus.Success)
@@ -51,13 +48,13 @@ public class Steps(Dictionary<IStep, StepInfo> steps) : ReadOnlyDictionary<IStep
             { StepName.Compress, StepType.Management },
             { StepName.ZipFiles, StepType.Management },
             { StepName.PdfFiles, StepType.Management },
-            { StepName.UploadZipBox, StepType.Publish },
-            { StepName.UploadPdfBox, StepType.Publish },
-            { StepName.UploadZipGoogleDrive, StepType.Publish },
-            { StepName.UploadPdfGoogleDrive, StepType.Publish },
-            { StepName.UploadZipMega, StepType.Publish },
-            { StepName.UploadPdfMega, StepType.Publish },
-            { StepName.UploadMangadex, StepType.Publish },
+            { StepName.UploadZipBox, StepType.Upload },
+            { StepName.UploadPdfBox, StepType.Upload },
+            { StepName.UploadZipGoogleDrive, StepType.Upload },
+            { StepName.UploadPdfGoogleDrive, StepType.Upload },
+            { StepName.UploadZipMega, StepType.Upload },
+            { StepName.UploadPdfMega, StepType.Upload },
+            { StepName.UploadMangadex, StepType.Upload },
             { StepName.PublishBlogspot, StepType.Publish }
         };
 }

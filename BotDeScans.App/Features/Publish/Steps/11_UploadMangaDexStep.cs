@@ -6,10 +6,10 @@ namespace BotDeScans.App.Features.Publish.Steps;
 
 public class UploadMangaDexStep(
     MangaDexService mangaDexService,
-    PublishState state) : PublishStep
+    PublishState state) : IPublishStep
 {
-    public override StepType Type => StepType.Upload;
-    public override StepName Name => StepName.UploadMangadex;
+    public StepType Type => StepType.Upload;
+    public StepName Name => StepName.UploadMangadex;
 
     // API validations
     // (OK) 1 active upload session per account -> You need to either commit or abandon your current upload session before starting a new one 
@@ -19,10 +19,10 @@ public class UploadMangaDexStep(
     // (NOK) Max 500 files per upload session
     // (NOK) Max 150MB per upload session
     // (NOK) File resolution must be below 10'000 pixels in both width and height 
-    public override Task<Result> ValidateAsync(CancellationToken _)
+    public Task<Result> ValidateAsync(CancellationToken _)
         => Task.FromResult(Result.Ok());
 
-    public override async Task<Result> ExecuteAsync(CancellationToken cancellationToken)
+    public async Task<Result> ExecuteAsync(CancellationToken cancellationToken)
     {
         var clearResult = await mangaDexService.ClearPendingUploadsAsync();
         if (clearResult.IsFailed)

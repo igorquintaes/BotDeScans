@@ -6,11 +6,12 @@ namespace BotDeScans.App.Features.Publish.Steps;
 public class ZipFilesStep(
     FileService fileService,
     FileReleaseService fileReleaseService,
-    PublishState state) : ManagementStep
+    PublishState state) : IManagementStep
 {
-    public override StepName Name => StepName.ZipFiles;
+    public StepType Type => StepType.Management;
+    public StepName Name => StepName.ZipFiles;
 
-    public override Task<Result> ExecuteAsync(CancellationToken cancellationToken)
+    public Task<Result> ExecuteAsync(CancellationToken cancellationToken)
     {
         var zipFileResult = fileService.CreateZipFile(
             fileName: state.ReleaseInfo.ChapterNumber,

@@ -4,22 +4,15 @@ namespace BotDeScans.App.Features.Publish.Steps;
 
 public interface IStep
 {
-    public StepType Type { get; }
-    public StepName Name { get; }
     public Task<Result> ExecuteAsync(CancellationToken cancellationToken);
+    public StepName Name { get; }
+    public StepType Type { get; }
 }
 
-public abstract class ManagementStep : IStep
-{
-    public StepType Type => StepType.Management;
-    public abstract StepName Name { get; }
-    public abstract Task<Result> ExecuteAsync(CancellationToken cancellationToken);
-}
+public interface IManagementStep : IStep
+{ }
 
-public abstract class PublishStep : IStep
+public interface IPublishStep : IStep
 {
-    public abstract StepType Type { get; }
-    public abstract StepName Name { get; }
     public abstract Task<Result> ValidateAsync(CancellationToken cancellationToken);
-    public abstract Task<Result> ExecuteAsync(CancellationToken cancellationToken);
 }

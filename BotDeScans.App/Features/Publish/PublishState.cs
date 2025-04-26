@@ -4,7 +4,7 @@ using BotDeScans.App.Models;
 using System.ComponentModel;
 namespace BotDeScans.App.Features.Publish;
 
-public class PublishState()
+public class PublishState
 {
     public Steps.Models.Steps Steps { get; set; } = null!;
     public Title Title { get; set; } = null!;

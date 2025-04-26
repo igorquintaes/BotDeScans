@@ -5,11 +5,9 @@ using BotDeScans.App.Features.Publish.Steps.Models;
 using Microsoft.Extensions.Configuration;
 namespace BotDeScans.App.Features.Publish;
 
-public class PublishService(
-    IEnumerable<IStep> steps,
-    IConfiguration configuration)
+public class PublishService(IConfiguration configuration, IEnumerable<IStep> steps)
 {
-    public virtual Steps.Models.Steps GetPublishSteps()
+    public virtual Steps.Models.Steps GetPublishStepsNames()
     {
         var configurationSteps = configuration
             .GetRequiredValues<StepName>("Settings:Publish:Steps", value => Enum
@@ -38,8 +36,6 @@ public class PublishService(
                 StepName.UploadMangadex)
                 publishStepsNames.Add(StepName.ZipFiles);
         }
-
-        publishStepsNames = publishStepsNames.Distinct().ToList();
 
         return new Steps.Models.Steps(steps
             .Where(step => publishStepsNames.Contains(step.Name))

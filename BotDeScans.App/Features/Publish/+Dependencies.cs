@@ -1,7 +1,6 @@
 ﻿using BotDeScans.App.Features.Publish.Discord;
 using BotDeScans.App.Features.Publish.Pings;
 using BotDeScans.App.Features.Publish.Steps;
-using BotDeScans.App.Features.Publish.Steps.Enums;
 using Microsoft.Extensions.DependencyInjection;
 using Remora.Commands.Extensions;
 using Remora.Discord.Interactivity.Extensions;
@@ -25,10 +24,5 @@ internal static class AddDependencies
             .AddScoped<PublishReplacerService>()
             .AddScoped<PublishService>()
             .AddScoped<PublishMessageService>()
-            .AddScoped(serviceProvider => new PublishState
-            {
-                Steps = serviceProvider
-                    .GetRequiredService<PublishService>()
-                    .GetPublishSteps()
-            });
+            .AddScoped<PublishState>();
 }

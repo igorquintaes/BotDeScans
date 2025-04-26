@@ -3,14 +3,17 @@ using BotDeScans.App.Features.Publish.Pings;
 using BotDeScans.App.Features.Publish.Steps;
 using FluentResults;
 using FluentValidation;
+using Remora.Discord.Commands.Contexts;
 using Serilog;
 using static BotDeScans.App.Features.Publish.PublishState;
 namespace BotDeScans.App.Features.Publish;
 
 public class PublishHandler(
+    IOperationContext operationContext,
     StepsService stepsService,
     PublishState publishState,
     PublishQueries publishQueries,
+    PublishService publishService,
     IEnumerable<Ping> pings,
     IValidator<PublishState> publishValidator)
 {
@@ -29,12 +32,13 @@ public class PublishHandler(
 
         publishState.Title = title;
         publishState.ReleaseInfo = info;
+        publishState.Steps = publishService.GetPublishStepsNames();
 
-        var infoValidationResult = publishValidator.Validate(publishState);
+        var infoValidationResult = await publishValidator.ValidateAsync(publishState, cancellationToken);
         if (infoValidationResult.IsValid is false)
             return infoValidationResult.ToResult();
 
-        var stepsResult = await stepsService.ExecuteAsync(cancellationToken);
+        var stepsResult = await stepsService.ExecuteAsync(operationContext, cancellationToken);
         if (stepsResult.IsFailed)
             return stepsResult;
 

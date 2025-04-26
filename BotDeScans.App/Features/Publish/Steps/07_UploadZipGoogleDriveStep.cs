@@ -5,16 +5,16 @@ namespace BotDeScans.App.Features.Publish.Steps;
 
 public class UploadZipGoogleDriveStep(
     GoogleDriveService googleDriveService,
-    PublishState state) : PublishStep
+    PublishState state) : IPublishStep
 {
-    public override StepType Type => StepType.Upload;
-    public override StepName Name => StepName.UploadZipGoogleDrive;
+    public StepType Type => StepType.Upload;
+    public StepName Name => StepName.UploadZipGoogleDrive;
 
-    public override Task<Result> ValidateAsync(CancellationToken _)
+    public Task<Result> ValidateAsync(CancellationToken _)
         => Task.FromResult(Result.Ok());
     // todo: pegar o tamanho do arquivo e ver se tem espaço disponível no Google Drive
 
-    public override async Task<Result> ExecuteAsync(CancellationToken cancellationToken)
+    public async Task<Result> ExecuteAsync(CancellationToken cancellationToken)
     {
         var titleFolderResult = await googleDriveService.GetOrCreateFolderAsync(state.Title.Name, default, cancellationToken);
         if (titleFolderResult.IsFailed)

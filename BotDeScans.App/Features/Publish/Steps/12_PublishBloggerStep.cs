@@ -6,15 +6,15 @@ namespace BotDeScans.App.Features.Publish.Steps;
 public class PublishBloggerStep(
     GoogleBloggerService googleBloggerService,
     PublishReplacerService publishReplacerService,
-    PublishState state) : PublishStep
+    PublishState state) : IPublishStep
 {
-    public override StepType Type => StepType.Publish;
-    public override StepName Name => StepName.PublishBlogspot;
+    public StepType Type => StepType.Publish;
+    public StepName Name => StepName.PublishBlogspot;
 
-    public override Task<Result> ValidateAsync(CancellationToken _) =>
+    public Task<Result> ValidateAsync(CancellationToken _) =>
         Task.FromResult(Result.Ok());
 
-    public override async Task<Result> ExecuteAsync(CancellationToken cancellationToken)
+    public async Task<Result> ExecuteAsync(CancellationToken cancellationToken)
     {
         state.InternalData.BloggerImageAsBase64 = await googleBloggerService.CreatePostCoverAsync(cancellationToken);
         var template = await googleBloggerService.GetPostTemplateAsync(cancellationToken);

@@ -32,12 +32,15 @@ public partial class InfoValidator : AbstractValidator<Info>
 
         Result<IList<File>> filesResult = Result.Ok();
         RuleFor(model => model.GoogleDriveUrl)
-            .MustAsync(async (prop, cancellationToken) =>
+            .MustAsync(async (_, prop, context, cancellationToken) =>
             {
                 filesResult = await googleDriveFilesService.GetManyAsync(prop.Id, cancellationToken);
-                return filesResult.IsSuccess;
-            })
-            .WithMessage(string.Join("; ", filesResult.Errors.Select(error => error.Message)));
+                if (filesResult.IsSuccess)
+                    return true;
+
+                context.AddFailure(string.Join("; ", filesResult.Errors.Select(error => error.Message)));
+                return false;
+            });
 
         RuleFor(_ => filesResult.Value)
             .SetValidator(driveFilesValidator);

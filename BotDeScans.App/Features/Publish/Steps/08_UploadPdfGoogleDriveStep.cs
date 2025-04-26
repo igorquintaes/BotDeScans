@@ -5,16 +5,16 @@ namespace BotDeScans.App.Features.Publish.Steps;
 
 public class UploadPdfGoogleDriveStep(
     GoogleDriveService googleDriveService,
-    PublishState state) : PublishStep
+    PublishState state) : IPublishStep
 {
-    public override StepType Type => StepType.Upload;
-    public override StepName Name => StepName.UploadPdfGoogleDrive;
+    public StepType Type => StepType.Upload;
+    public StepName Name => StepName.UploadPdfGoogleDrive;
 
     // todo seria bom que essas verificações garantissem que armazenamento > tamanho do arquivo
-    public override Task<Result> ValidateAsync(CancellationToken _)
+    public Task<Result> ValidateAsync(CancellationToken _)
         => Task.FromResult(Result.Ok());
 
-    public override async Task<Result> ExecuteAsync(CancellationToken cancellationToken)
+    public async Task<Result> ExecuteAsync(CancellationToken cancellationToken)
     {
         var titleFolderResult = await googleDriveService.GetOrCreateFolderAsync(state.Title.Name, null, cancellationToken);
         if (titleFolderResult.IsFailed)
