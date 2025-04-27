@@ -6,7 +6,6 @@ using static BotDeScans.App.Features.Publish.PublishState;
 namespace BotDeScans.App.Features.Publish.Discord;
 
 public class PublishInteractions(
-    IOperationContext context,
     PublishHandler publishHandler,
     PublishMessageService messageService) : InteractionGroup
 {
@@ -26,11 +25,9 @@ public class PublishInteractions(
         // todo: publicar no discord deve ser um novo step, eliminando lógica daqui.
         return result.IsSuccess
             ? await messageService.SuccessReleaseMessageAsync(
-                context,
                 content: result.Value,
                 CancellationToken)
             : await messageService.ErrorReleaseMessageAsync(
-                context,
                 errorResult: result.ToResult(),
                 CancellationToken);
     }

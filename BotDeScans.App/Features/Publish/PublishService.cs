@@ -7,7 +7,7 @@ namespace BotDeScans.App.Features.Publish;
 
 public class PublishService(IConfiguration configuration, IEnumerable<IStep> steps)
 {
-    public virtual Steps.Models.Steps GetPublishStepsNames()
+    public virtual Steps.Models.Steps GetPublishSteps()
     {
         var configurationSteps = configuration
             .GetRequiredValues<StepName>("Settings:Publish:Steps", value => Enum

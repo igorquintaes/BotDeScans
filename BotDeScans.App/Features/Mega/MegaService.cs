@@ -19,8 +19,8 @@ public class MegaService(
         if (folderResult.IsFailed)
             return folderResult.ToResult();
 
-        if (folderResult.ValueOrDefault is not null)
-            return folderResult.ToResult(_ => folderResult.Value!);
+        if (folderResult.Value is not null)
+            return folderResult.ToResult(_ => folderResult.Value);
 
         var newFolderNode = await megaFolderService.CreateAsync(folderName, parentNode);
         return Result.Ok(newFolderNode);
@@ -36,13 +36,15 @@ public class MegaService(
         if (fileResult.IsFailed)
             return fileResult.ToResult();
 
-        if (fileResult.ValueOrDefault is not null)
+        if (fileResult.Value is not null)
         {
             var rewriteFile = configuration.GetValue<bool?>(REWRITE_KEY) ?? false;
             if (rewriteFile is false)
-                return Result.Fail($"Já existe um arquivo com o nome especificado. Se desejar sobrescrever o arquivo existente, altere a configuração {REWRITE_KEY} para permitir.");
+                return Result.Fail($"Já existe um arquivo com o nome especificado. " +
+                                   $"Se desejar sobrescrever o arquivo existente, " +
+                                   $"altere o valor da configuração '{REWRITE_KEY}' para 'true'.");
 
-            await megaFilesService.DeleteAsync(fileResult.Value!);
+            await megaFilesService.DeleteAsync(fileResult.Value);
         }
 
         var uploadUri = await megaFilesService.UploadAsync(filePath, parentNode, cancellationToken);

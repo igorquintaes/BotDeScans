@@ -1,7 +1,6 @@
 ﻿using BotDeScans.App.Extensions;
 using BotDeScans.App.Features.GoogleDrive.InternalServices;
 using FluentResults;
-using FluentValidation;
 using Microsoft.Extensions.Configuration;
 using System.Collections.Concurrent;
 using File = Google.Apis.Drive.v3.Data.File;
@@ -12,7 +11,6 @@ public class GoogleDriveService(
     GoogleDriveFoldersService googleDriveFoldersService,
     GoogleDriveResourcesService googleDriveResourcesService,
     GoogleDrivePermissionsService googleDrivePermissionsService,
-    IValidator<IList<File>> validator,
     IConfiguration configuration)
 {
     public const string REWRITE_KEY = "GoogleDrive:RewriteExistingFile";

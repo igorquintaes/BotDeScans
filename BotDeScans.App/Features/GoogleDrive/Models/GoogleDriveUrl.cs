@@ -24,14 +24,12 @@ public partial class InfoValidator : AbstractValidator<Info>
     {
         RuleLevelCascadeMode = CascadeMode.Stop;
 
+        Result<IList<File>> filesResult = Result.Ok();
         RuleFor(model => model.GoogleDriveUrl)
             .Must(prop => Uri.TryCreate(prop.Url, UriKind.Absolute, out var uri) && uri.Authority == "drive.google.com")
             .WithMessage("O link informado é inválido.")
             .Must(prop => prop.Id.Length == 33)
-            .WithMessage("O link informado é inválido.");
-
-        Result<IList<File>> filesResult = Result.Ok();
-        RuleFor(model => model.GoogleDriveUrl)
+            .WithMessage("O link informado é inválido.")
             .MustAsync(async (_, prop, context, cancellationToken) =>
             {
                 filesResult = await googleDriveFilesService.GetManyAsync(prop.Id, cancellationToken);

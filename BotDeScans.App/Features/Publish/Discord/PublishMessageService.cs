@@ -19,6 +19,7 @@ namespace BotDeScans.App.Features.Publish.Discord;
 
 [ExcludeFromCodeCoverage]
 public class PublishMessageService(
+    IOperationContext context,
     PublishState publishState,
     PublishReplacerService publishReplacerService,
     IFeedbackService feedbackService,
@@ -29,7 +30,6 @@ public class PublishMessageService(
     private Result<IMessage>? trackingMessage = null;
 
     public virtual async Task<FluentResults.Result> UpdateTrackingMessageAsync(
-        IOperationContext context,
         CancellationToken cancellationToken)
     {
         var interactionContext = context as InteractionContext;
@@ -53,7 +53,6 @@ public class PublishMessageService(
     }
 
     public virtual async Task<Result<IMessage>> ErrorReleaseMessageAsync(
-        IOperationContext context,
         FluentResults.Result errorResult,
         CancellationToken cancellationToken)
     {
@@ -65,10 +64,10 @@ public class PublishMessageService(
     }
 
     public virtual async Task<Result<IMessage>> SuccessReleaseMessageAsync(
-        IOperationContext context,
         string content,
         CancellationToken cancellationToken)
     {
+        var interactionContext = context as InteractionContext;
         var releaseChannel = new Snowflake(configuration.GetRequiredValue<ulong>("Discord:ReleaseChannel"));
         var coverFileName = Path.GetFileName(publishState.InternalData.CoverFilePath);
         using var cover = new FileStream(publishState.InternalData.CoverFilePath, FileMode.Open);
@@ -76,17 +75,16 @@ public class PublishMessageService(
         return await discordRestChannelAPI.CreateMessageAsync(
             channelID: releaseChannel,
             content: content,
-            embeds: new[] { PublishEmbed(context, coverFileName) },
+            embeds: new[] { PublishEmbed(interactionContext!, coverFileName) },
             attachments: new[] { OneOf<FileData, IPartialAttachment>.FromT0(new FileData(coverFileName, cover)) },
             components: new[] { new ActionRowComponent([PromotedButton]) },
             ct: cancellationToken);
     }
 
     private Embed PublishEmbed(
-        IOperationContext context,
+        InteractionContext interactionContext,
         string coverFileName)
     {
-        var interactionContext = context as InteractionContext;
         var message = string.IsNullOrWhiteSpace(publishState.ReleaseInfo.Message)
             ? string.Empty
             : publishReplacerService.Replace(publishState.ReleaseInfo.Message);
