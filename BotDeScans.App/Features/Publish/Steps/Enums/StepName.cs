@@ -1,9 +1,10 @@
 ﻿using System.ComponentModel;
-
 namespace BotDeScans.App.Features.Publish.Steps.Enums;
 
 public enum StepName
 {
+    [Description("Inicializar")]
+    Setup,
     [Description("Baixar")]
     Download,
     [Description("Compressão")]

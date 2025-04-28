@@ -1,13 +1,16 @@
-﻿using Remora.Discord.Commands.Contexts;
+﻿using BotDeScans.App.Features.Publish.State;
+using BotDeScans.App.Features.Publish.Steps;
 using Remora.Discord.Interactivity;
 using Remora.Results;
+using Serilog;
 using System.ComponentModel;
-using static BotDeScans.App.Features.Publish.PublishState;
 namespace BotDeScans.App.Features.Publish.Discord;
 
 public class PublishInteractions(
-    PublishHandler publishHandler,
-    PublishMessageService messageService) : InteractionGroup
+    PublishMessageService messageService,
+    PublishService publishService,
+    PublishState publishState,
+    StepsService stepsService) : InteractionGroup
 {
     [Modal(nameof(PublishAsync))]
     [Description("Publica novo lançamento")]
@@ -19,16 +22,15 @@ public class PublishInteractions(
         string? message,
         string state)
     {
-        var publishInfo = new Info(driveUrl, chapterName, chapterNumber, chapterVolume, message, int.Parse(state));
-        var result = await publishHandler.HandleAsync(publishInfo, CancellationToken);
+        publishState.ReleaseInfo = new(driveUrl, chapterName, chapterNumber, chapterVolume, message, int.Parse(state));
+        publishState.Steps = publishService.GetEnabledSteps();
 
-        // todo: publicar no discord deve ser um novo step, eliminando lógica daqui.
+        Log.Information(publishState.ReleaseInfo.ToString());
+
+        var result = await stepsService.ExecuteAsync(CancellationToken);
+
         return result.IsSuccess
-            ? await messageService.SuccessReleaseMessageAsync(
-                content: result.Value,
-                CancellationToken)
-            : await messageService.ErrorReleaseMessageAsync(
-                errorResult: result.ToResult(),
-                CancellationToken);
+            ? await messageService.SuccessReleaseMessageAsync(CancellationToken)
+            : await messageService.ErrorReleaseMessageAsync(result, CancellationToken);
     }
 }

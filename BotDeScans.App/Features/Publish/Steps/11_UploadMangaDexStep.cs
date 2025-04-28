@@ -1,4 +1,5 @@
-﻿using BotDeScans.App.Features.Publish.Steps.Enums;
+﻿using BotDeScans.App.Features.Publish.State;
+using BotDeScans.App.Features.Publish.Steps.Enums;
 using BotDeScans.App.Models;
 using BotDeScans.App.Services;
 using FluentResults;

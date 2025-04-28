@@ -3,10 +3,11 @@ using BotDeScans.App.Features.Publish.Steps;
 using BotDeScans.App.Features.Publish.Steps.Enums;
 using FluentResults;
 using Microsoft.Extensions.Configuration;
-using System.Reflection;
 namespace BotDeScans.App.Services.Initializatiors;
 
-public class SetupStepsService(IConfiguration configuration, IEnumerable<IStep> steps)
+public class SetupStepsService(
+    IConfiguration configuration, 
+    IEnumerable<IStep> steps)
 {
     public Result Setup()
     {
@@ -25,13 +26,6 @@ public class SetupStepsService(IConfiguration configuration, IEnumerable<IStep> 
 
             expectedStepsNames.Add((StepName)configurationStep);
         }
-
-        var stepTypes = Assembly
-            .GetEntryAssembly()!
-            .GetTypes()
-            .Where(type => type.IsAbstract is false
-                        && type.BaseType is not null
-                        && type.BaseType.GetInterface(nameof(IStep)) == typeof(IStep));
 
         return steps.Where(step => expectedStepsNames.Contains(step.Name))
                     .All(step => step.Type != StepType.Upload)

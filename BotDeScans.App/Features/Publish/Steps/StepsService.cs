@@ -1,6 +1,7 @@
 ﻿using BotDeScans.App.Extensions;
 using BotDeScans.App.Features.Publish.Discord;
-using BotDeScans.App.Features.Publish.Steps.Models;
+using BotDeScans.App.Features.Publish.State;
+using BotDeScans.App.Features.Publish.State.Models;
 using FluentResults;
 namespace BotDeScans.App.Features.Publish.Steps;
 

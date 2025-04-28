@@ -1,5 +1,7 @@
 ﻿using BotDeScans.App.Builders;
 using BotDeScans.App.Extensions;
+using BotDeScans.App.Features.Publish.State;
+using BotDeScans.App.Features.Publish.State.Models;
 using Microsoft.Extensions.Configuration;
 using OneOf;
 using Remora.Discord.API.Abstractions.Objects;
@@ -13,8 +15,6 @@ using System.ComponentModel;
 using System.Diagnostics.CodeAnalysis;
 using System.Drawing;
 using System.Reflection;
-using static BotDeScans.App.Features.Publish.PublishState;
-
 namespace BotDeScans.App.Features.Publish.Discord;
 
 [ExcludeFromCodeCoverage]
@@ -34,7 +34,7 @@ public class PublishMessageService(
     {
         var interactionContext = context as InteractionContext;
         var steps = publishState.Steps!;
-        var embed = new Embed(steps.Header, Description: steps.Details, Colour: steps.ColorStatus);
+        var embed = new Embed(steps.StatusMessage, Description: steps.Details, Colour: steps.ColorStatus);
 
         trackingMessage = trackingMessage is null
             ? await feedbackService.SendContextualEmbedAsync(embed, ct: cancellationToken)
@@ -64,7 +64,6 @@ public class PublishMessageService(
     }
 
     public virtual async Task<Result<IMessage>> SuccessReleaseMessageAsync(
-        string content,
         CancellationToken cancellationToken)
     {
         var interactionContext = context as InteractionContext;
@@ -74,7 +73,7 @@ public class PublishMessageService(
 
         return await discordRestChannelAPI.CreateMessageAsync(
             channelID: releaseChannel,
-            content: content,
+            content: publishState.InternalData.Pings!,
             embeds: new[] { PublishEmbed(interactionContext!, coverFileName) },
             attachments: new[] { OneOf<FileData, IPartialAttachment>.FromT0(new FileData(coverFileName, cover)) },
             components: new[] { new ActionRowComponent([PromotedButton]) },
@@ -100,21 +99,19 @@ public class PublishMessageService(
                 IconUrl: interactionContext!.GetUserAvatarUrl()));
     }
 
-    private List<EmbedField> CreatePublishLinkFields()
-        => typeof(Links)
-            .GetProperties()
-            .Where(property => Attribute.IsDefined(property, typeof(DescriptionAttribute)))
-            .Select(property => new
-            {
-                Label = property.GetCustomAttribute<DescriptionAttribute>()!.Description,
-                Link = property.GetValue(publishState.ReleaseLinks, null)?.ToString()
-            })
-            .Where(x => !string.IsNullOrWhiteSpace(x.Link))
-            .Select(x => new EmbedField(x.Label, $":white_check_mark:  [Acesse]({x.Link})", true))
-            .ToList();
+    private List<EmbedField> CreatePublishLinkFields()=> typeof(Links)
+        .GetProperties()
+        .Select(property => new
+        {
+            Label = property.GetCustomAttribute<DescriptionAttribute>()!.Description,
+            Link = property.GetValue(publishState.ReleaseLinks, null)?.ToString()
+        })
+        .Where(x => !string.IsNullOrWhiteSpace(x.Link))
+        .Select(x => new EmbedField(x.Label, $":white_check_mark:  [Acesse]({x.Link})", true))
+        .ToList();
 
     private static readonly ButtonComponent PromotedButton = new(
-            ButtonComponentStyle.Link,
-            Label: "Escola de Scans",
-            URL: "https://www.youtube.com/c/EscoladeScans");
+        ButtonComponentStyle.Link,
+        Label: "Escola de Scans",
+        URL: "https://www.youtube.com/c/EscoladeScans");
 }

@@ -1,9 +1,7 @@
 ﻿using BotDeScans.App.Features.GoogleDrive.InternalServices;
 using FluentResults;
 using FluentValidation;
-using static BotDeScans.App.Features.Publish.PublishState;
 using File = Google.Apis.Drive.v3.Data.File;
-
 namespace BotDeScans.App.Features.GoogleDrive.Models;
 
 public record GoogleDriveUrl(string Url)
@@ -16,16 +14,15 @@ public record GoogleDriveUrl(string Url)
         .Last();
 }
 
-public partial class InfoValidator : AbstractValidator<Info>
+public class GoogleDriveUrlValidator : AbstractValidator<GoogleDriveUrl>
 {
-    public InfoValidator(
+    public GoogleDriveUrlValidator(
         GoogleDriveFilesService googleDriveFilesService,
         IValidator<IList<File>> driveFilesValidator)
     {
-        RuleLevelCascadeMode = CascadeMode.Stop;
-
         Result<IList<File>> filesResult = Result.Ok();
-        RuleFor(model => model.GoogleDriveUrl)
+        RuleFor(model => model)
+            .Cascade(CascadeMode.Stop)
             .Must(prop => Uri.TryCreate(prop.Url, UriKind.Absolute, out var uri) && uri.Authority == "drive.google.com")
             .WithMessage("O link informado é inválido.")
             .Must(prop => prop.Id.Length == 33)
@@ -41,6 +38,7 @@ public partial class InfoValidator : AbstractValidator<Info>
             });
 
         RuleFor(_ => filesResult.Value)
-            .SetValidator(driveFilesValidator);
+            .SetValidator(driveFilesValidator)
+            .When(x => filesResult.IsSuccess);
     }
 }

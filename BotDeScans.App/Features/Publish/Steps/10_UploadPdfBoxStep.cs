@@ -1,4 +1,5 @@
-﻿using BotDeScans.App.Features.Publish.Steps.Enums;
+﻿using BotDeScans.App.Features.Publish.State;
+using BotDeScans.App.Features.Publish.Steps.Enums;
 using BotDeScans.App.Services;
 using FluentResults;
 namespace BotDeScans.App.Features.Publish.Steps;
@@ -21,7 +22,7 @@ public class UploadPdfBoxStep(
             parentFolderId: titleFolder.Id);
 
         state.ReleaseLinks.BoxPdf = file.SharedLink.DownloadUrl;
-        state.ReleaseLinks.BoxPdfReaderKey = file.SharedLink.DownloadUrl
+        state.InternalData.BoxPdfReaderKey = file.SharedLink.DownloadUrl
             .Split("/")
             .Last()
             .Replace(".pdf", "", StringComparison.InvariantCultureIgnoreCase);

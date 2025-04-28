@@ -8,15 +8,13 @@ using Remora.Discord.API.Abstractions.Rest;
 using Remora.Discord.API.Objects;
 using Remora.Discord.Commands.Attributes;
 using Remora.Discord.Commands.Contexts;
-using Remora.Discord.Commands.Feedback.Services;
 using Remora.Results;
 using System.ComponentModel;
 namespace BotDeScans.App.Features.Publish.Discord;
 
 public class PublishCommands(
-    PublishQueries publishQueries,
     IOperationContext context,
-    IFeedbackService feedbackService,
+    PublishQueries publishQueries,
     IDiscordRestInteractionAPI interactionAPI) : CommandGroup
 {
     [Command("publish")]
@@ -32,16 +30,13 @@ public class PublishCommands(
             return Result.FromSuccess();
 
         var titleId = await publishQueries.GetTitleId(title, CancellationToken);
-        if (titleId is null)
-            return await feedbackService.SendContextualErrorAsync("Obra não encontrada.", ct: CancellationToken);
-
         var modal = new ModalBuilder(nameof(PublishInteractions.PublishAsync), "Publicar novo lançamento")
             .AddField(fieldName: "driveUrl", label: "Link do capítulo")
             .AddField(fieldName: "chapterName", label: "Nome do capítulo", isRequired: false)
             .AddField(fieldName: "chapterNumber", label: "Número do capítulo")
             .AddField(fieldName: "chapterVolume", label: "Número do Volume", isRequired: false)
             .AddField(fieldName: "message", label: "Mensagem de postagem", isRequired: false, TextInputStyle.Paragraph)
-            .CreateWithState(titleId.Value.ToString());
+            .CreateWithState(titleId.ToString());
 
         var response = new InteractionResponse(InteractionCallbackType.Modal, modal);
         return await interactionAPI.CreateInteractionResponseAsync

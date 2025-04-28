@@ -1,5 +1,6 @@
 ﻿using BotDeScans.App.Features.Publish.Discord;
 using BotDeScans.App.Features.Publish.Pings;
+using BotDeScans.App.Features.Publish.State;
 using BotDeScans.App.Features.Publish.Steps;
 using Microsoft.Extensions.DependencyInjection;
 using Remora.Commands.Extensions;
@@ -19,10 +20,9 @@ internal static class AddDependencies
             .AddInteractionGroup<PublishInteractions>()
             .AddPublishSteps()
             .AddPings()
-            .AddScoped<PublishHandler>()
+            .AddScoped<PublishService>()
             .AddScoped<PublishQueries>()
             .AddScoped<PublishReplacerService>()
-            .AddScoped<PublishService>()
             .AddScoped<PublishMessageService>()
             .AddScoped<PublishState>();
 }

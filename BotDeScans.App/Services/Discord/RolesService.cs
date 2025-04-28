@@ -15,6 +15,8 @@ public class RolesService(IConfiguration configuration, IDiscordRestGuildAPI dis
         CancellationToken cancellationToken = default)
     {
         var serverId = new Snowflake(configuration.GetRequiredValue<ulong>(DISCORD_SERVERID_KEY));
+
+        // todo: podemos adicionar um cache aqui, de alguns minutos, para diminuir as requests ao discord em um publish.
         var guildRolesResult = await discordRestGuildAPI.GetGuildRolesAsync(serverId, cancellationToken);
         if (!guildRolesResult.IsDefined(out var guildRoles))
             return Result.Fail(guildRolesResult.Error!.Message);
