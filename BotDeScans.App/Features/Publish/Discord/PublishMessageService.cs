@@ -99,7 +99,7 @@ public class PublishMessageService(
                 IconUrl: interactionContext!.GetUserAvatarUrl()));
     }
 
-    private List<EmbedField> CreatePublishLinkFields()=> typeof(Links)
+    private List<EmbedField> CreatePublishLinkFields() => typeof(Links)
         .GetProperties()
         .Select(property => new
         {

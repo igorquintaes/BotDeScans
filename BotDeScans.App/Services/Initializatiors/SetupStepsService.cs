@@ -6,7 +6,7 @@ using Microsoft.Extensions.Configuration;
 namespace BotDeScans.App.Services.Initializatiors;
 
 public class SetupStepsService(
-    IConfiguration configuration, 
+    IConfiguration configuration,
     IEnumerable<IStep> steps)
 {
     public Result Setup()

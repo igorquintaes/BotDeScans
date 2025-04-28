@@ -27,7 +27,7 @@ public class StepsService(
 
     }
     private async Task<Result> ValidateAsync(
-        (IPublishStep Step, StepInfo Info) data, 
+        (IPublishStep Step, StepInfo Info) data,
         CancellationToken cancellationToken)
     {
         var result = await data.Step.SafeCallAsync(x => x.ValidateAsync(cancellationToken));
@@ -35,7 +35,7 @@ public class StepsService(
     }
 
     private async Task<Result> ExecuteAsync(
-        (IStep Step, StepInfo Info) data, 
+        (IStep Step, StepInfo Info) data,
         CancellationToken cancellationToken)
     {
         var result = await data.Step.SafeCallAsync(x => x.ExecuteAsync(cancellationToken));
