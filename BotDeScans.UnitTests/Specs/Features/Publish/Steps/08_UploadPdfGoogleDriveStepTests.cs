@@ -1,5 +1,5 @@
 ﻿using BotDeScans.App.Features.GoogleDrive;
-using BotDeScans.App.Features.Publish;
+using BotDeScans.App.Features.Publish.State;
 using BotDeScans.App.Features.Publish.Steps;
 using BotDeScans.App.Features.Publish.Steps.Enums;
 using FluentResults;
@@ -8,7 +8,7 @@ namespace BotDeScans.UnitTests.Specs.Features.Publish.Steps;
 
 public class UploadPdfGoogleDriveStepTests : UnitTest
 {
-    private readonly IStep step;
+    private readonly UploadPdfGoogleDriveStep step;
 
     public UploadPdfGoogleDriveStepTests()
     {
@@ -25,21 +25,10 @@ public class UploadPdfGoogleDriveStepTests : UnitTest
 
         [Fact]
         public void ShouldHaveExpectedType() =>
-            step.StepType.Should().Be(StepType.Upload);
+            step.Type.Should().Be(StepType.Upload);
     }
 
-    public class ValidateBeforeFilesManagementAsync : UploadPdfGoogleDriveStepTests
-    {
-        [Fact]
-        public async Task ShouldReturnSuccess()
-        {
-            var result = await step.ValidateBeforeFilesManagementAsync(cancellationToken);
-
-            result.Should().BeSuccess();
-        }
-    }
-
-    public class ValidateAfterFilesManagementAsync : UploadPdfGoogleDriveStepTests
+    public class ValidateAsync : UploadPdfGoogleDriveStepTests
     {
         [Fact]
         public async Task ShouldReturnSuccess()

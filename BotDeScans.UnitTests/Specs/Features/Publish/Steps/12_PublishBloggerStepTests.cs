@@ -1,4 +1,5 @@
 ﻿using BotDeScans.App.Features.Publish;
+using BotDeScans.App.Features.Publish.State;
 using BotDeScans.App.Features.Publish.Steps;
 using BotDeScans.App.Features.Publish.Steps.Enums;
 using BotDeScans.App.Services;
@@ -7,7 +8,7 @@ namespace BotDeScans.UnitTests.Specs.Features.Publish.Steps;
 
 public class PublishBloggerStepTests : UnitTest
 {
-    private readonly IStep step;
+    private readonly PublishBloggerStep step;
 
     public PublishBloggerStepTests()
     {
@@ -26,21 +27,10 @@ public class PublishBloggerStepTests : UnitTest
 
         [Fact]
         public void ShouldHaveExpectedType() =>
-            step.StepType.Should().Be(StepType.Publish);
+            step.Type.Should().Be(StepType.Publish);
     }
 
-    public class ValidateBeforeFilesManagementAsync : PublishBloggerStepTests
-    {
-        [Fact]
-        public async Task ShouldReturnSuccess()
-        {
-            var result = await step.ValidateBeforeFilesManagementAsync(cancellationToken);
-
-            result.Should().BeSuccess();
-        }
-    }
-
-    public class ValidateAfterFilesManagementAsync : PublishBloggerStepTests
+    public class ValidateAsync : PublishBloggerStepTests
     {
         [Fact]
         public async Task ShouldReturnSuccess()

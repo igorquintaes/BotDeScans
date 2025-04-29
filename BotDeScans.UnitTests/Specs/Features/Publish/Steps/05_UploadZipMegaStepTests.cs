@@ -1,6 +1,6 @@
 ﻿using BotDeScans.App.Features.Mega;
 using BotDeScans.App.Features.Mega.InternalServices;
-using BotDeScans.App.Features.Publish;
+using BotDeScans.App.Features.Publish.State;
 using BotDeScans.App.Features.Publish.Steps;
 using BotDeScans.App.Features.Publish.Steps.Enums;
 using CG.Web.MegaApiClient;
@@ -9,7 +9,7 @@ namespace BotDeScans.UnitTests.Specs.Features.Publish.Steps;
 
 public class UploadZipMegaStepTests : UnitTest
 {
-    private readonly IStep step;
+    private readonly UploadZipMegaStep step;
 
     public UploadZipMegaStepTests()
     {
@@ -27,21 +27,10 @@ public class UploadZipMegaStepTests : UnitTest
 
         [Fact]
         public void ShouldHaveExpectedType() =>
-            step.StepType.Should().Be(StepType.Upload);
+            step.Type.Should().Be(StepType.Upload);
     }
 
-    public class ValidateBeforeFilesManagementAsync : UploadZipMegaStepTests
-    {
-        [Fact]
-        public async Task ShouldReturnSuccess()
-        {
-            var result = await step.ValidateBeforeFilesManagementAsync(cancellationToken);
-
-            result.Should().BeSuccess();
-        }
-    }
-
-    public class ValidateAfterFilesManagementAsync : UploadZipMegaStepTests
+    public class ValidateAsync : UploadZipMegaStepTests
     {
         [Fact]
         public async Task ShouldReturnSuccess()

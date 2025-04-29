@@ -374,30 +374,6 @@ public class GoogleDriveServiceTests : UnitTest
         }
     }
 
-    public class GetFolderIdFromUrl : GoogleDriveServiceTests
-    {
-        [Theory]
-        [InlineData("https://drive.google.com/drive/folders/1LXGFGlcqbdUbdnU8C4aSvmnb5x8AldCn?usp=sharing")]
-        [InlineData("https://drive.google.com/drive/folders/1LXGFGlcqbdUbdnU8C4aSvmnb5x8AldCn")]
-        [InlineData("https://drive.google.com/folderview?id=1LXGFGlcqbdUbdnU8C4aSvmnb5x8AldCn")]
-        [InlineData("https://drive.google.com/open?id=1LXGFGlcqbdUbdnU8C4aSvmnb5x8AldCn")]
-        public void IsValid(string url) =>
-            service.GetFolderIdFromUrl(url).Should().BeSuccess().And.HaveValue("1LXGFGlcqbdUbdnU8C4aSvmnb5x8AldCn");
-
-        [Theory]
-        [InlineData(null)]
-        [InlineData("not a valid url")]
-        [InlineData("https://random.drive.google.com/1LXGFGlcqbdUbdnU8C4aSvmnb5x8AldCn")]
-        [InlineData("https://drive.google.com.random/1LXGFGlcqbdUbdnU8C4aSvmnb5x8AldCn")]
-        [InlineData("https://drive.google.com/drive/folders/")]
-        [InlineData("https://drive.google.com/drive/folders/randomValue")]
-        [InlineData("https://drive.google.com/folderview")]
-        [InlineData("https://drive.google.com/folderview?id=")]
-        [InlineData("https://drive.google.com/folderview?id=randomValue")]
-        public void IsInvalid(string? url) =>
-            service.GetFolderIdFromUrl(url).Should().BeFailure().And.HaveError("O link informado é inválido.");
-    }
-
     public class SaveFilesAsync : GoogleDriveServiceTests
     {
         private readonly string folderId;
@@ -469,68 +445,6 @@ public class GoogleDriveServiceTests : UnitTest
             result.Errors.Should().HaveCount(errorsCount);
             if (result.Errors.Count > 1)
                 result.Should().HaveError(SECOND_ERROR_MESSAGE);
-        }
-    }
-
-    public class ValidateFilesAsync : GoogleDriveServiceTests
-    {
-        private readonly string folderId;
-
-        public ValidateFilesAsync()
-        {
-            folderId = fixture.Create<string>();
-
-            A.CallTo(() => fixture
-                .FreezeFake<GoogleDriveFilesService>()
-                .GetManyAsync(folderId, cancellationToken))
-                .Returns(Result.Ok(fixture.FreezeFake<IList<File>>()));
-
-            A.CallTo(() => fixture
-                .FreezeFake<IValidator<IList<File>>>()
-                .ValidateAsync(fixture.FreezeFake<IList<File>>(), cancellationToken))
-                .Returns(new ValidationResult());
-        }
-
-        [Fact]
-        public async Task GivenSuccessfulExecutionShouldReturnSuccessResult()
-        {
-            var result = await service.ValidateFilesAsync(folderId, cancellationToken);
-
-            result.Should().BeSuccess();
-        }
-
-        [Fact]
-        public async Task GivenErrorWhenObtainingFilesShouldReturnFailResult()
-        {
-            const string ERROR_MESSAGE = "some error";
-
-            A.CallTo(() => fixture
-                .FreezeFake<GoogleDriveFilesService>()
-                .GetManyAsync(folderId, cancellationToken))
-                .Returns(Result.Fail(ERROR_MESSAGE));
-
-            var result = await service.ValidateFilesAsync(folderId, cancellationToken);
-            result.Should().BeFailure().And.HaveError(ERROR_MESSAGE);
-        }
-
-        [Fact]
-        public async Task GivenAnyValidationErrorsShouldReturnFailResultWithErrorsMessages()
-        {
-            const string FIRST_ERROR_MESSAGE = "some error";
-            const string SECOND_ERROR_MESSAGE = "other error";
-
-            A.CallTo(() => fixture
-                .FreezeFake<IValidator<IList<File>>>()
-                .ValidateAsync(fixture.FreezeFake<IList<File>>(), cancellationToken))
-                .Returns(new ValidationResult([
-                    new ValidationFailure("1", FIRST_ERROR_MESSAGE),
-                    new ValidationFailure("2", SECOND_ERROR_MESSAGE)
-                ]));
-
-            var result = await service.ValidateFilesAsync(folderId, cancellationToken);
-            result.Should().BeFailure().And
-                .HaveError(FIRST_ERROR_MESSAGE).And
-                .HaveError(SECOND_ERROR_MESSAGE);
         }
     }
 

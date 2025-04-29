@@ -1,4 +1,4 @@
-﻿using BotDeScans.App.Features.Publish;
+﻿using BotDeScans.App.Features.Publish.State;
 using BotDeScans.App.Features.Publish.Steps;
 using BotDeScans.App.Features.Publish.Steps.Enums;
 using BotDeScans.App.Models;
@@ -9,7 +9,7 @@ namespace BotDeScans.UnitTests.Specs.Features.Publish.Steps;
 
 public class UploadMangDexStepTests : UnitTest
 {
-    private readonly IStep step;
+    private readonly UploadMangaDexStep step;
 
     public UploadMangDexStepTests()
     {
@@ -28,81 +28,10 @@ public class UploadMangDexStepTests : UnitTest
 
         [Fact]
         public void ShouldHaveExpectedType() =>
-            step.StepType.Should().Be(StepType.Upload);
+            step.Type.Should().Be(StepType.Upload);
     }
 
-    public class ValidateBeforeFilesManagementAsync : UploadMangDexStepTests
-    {
-        public ValidateBeforeFilesManagementAsync()
-        {
-            fixture.Freeze<PublishState>().Title = fixture
-                .Build<Title>()
-                .With(x => x.References, fixture
-                    .Build<TitleReference>()
-                    .With(x => x.Key, ExternalReference.MangaDex)
-                    .CreateMany(1)
-                    .ToList())
-                .Create();
-
-            fixture.FreezeFakeConfiguration("Mangadex:Username", fixture.Create<string>());
-            fixture.FreezeFakeConfiguration("Mangadex:Password", fixture.Create<string>());
-            fixture.FreezeFakeConfiguration("Mangadex:ClientId", fixture.Create<string>());
-            fixture.FreezeFakeConfiguration("Mangadex:ClientSecret", fixture.Create<string>());
-            fixture.FreezeFakeConfiguration("Mangadex:GroupId", fixture.Create<string>());
-        }
-
-        [Fact]
-        public async Task ShouldReturnSuccess()
-        {
-            var result = await step.ValidateBeforeFilesManagementAsync(cancellationToken);
-
-            result.Should().BeSuccess();
-        }
-
-        [Fact]
-        public async Task GivenMultipleTitleReferencesButIncluedMangaDexShouldReturnSuccess()
-        {
-            fixture.Freeze<PublishState>().Title = fixture
-                .Build<Title>()
-                .With(x => x.References,
-                [
-                    fixture.Build<TitleReference>()
-                           .With(x => x.Key, (ExternalReference)999)
-                           .Create(),
-                    fixture.Build<TitleReference>()
-                           .With(x => x.Key, ExternalReference.MangaDex)
-                           .Create(),
-                    fixture.Build<TitleReference>()
-                           .With(x => x.Key, (ExternalReference)888)
-                           .Create()
-                ])
-                .Create();
-
-            var result = await step.ValidateBeforeFilesManagementAsync(cancellationToken);
-
-            result.Should().BeSuccess();
-        }
-
-        [Fact]
-        public async Task GivenNoneMangaDexTitleReferenceShoultReturnFailResult()
-        {
-            fixture.Freeze<PublishState>().Title = fixture
-                .Build<Title>()
-                .With(x => x.References,
-                [
-                    fixture.Build<TitleReference>()
-                           .With(x => x.Key, (ExternalReference)999)
-                           .Create()
-                ])
-                .Create();
-
-            var result = await step.ValidateBeforeFilesManagementAsync(cancellationToken);
-
-            result.Should().BeFailure().And.HaveError("Não foi definido uma referência para a publicação da obra na MangaDex.");
-        }
-    }
-
-    public class ValidateAfterFilesManagementAsync : UploadMangDexStepTests
+    public class ValidateAsync : UploadMangDexStepTests
     {
         [Fact]
         public async Task ShouldReturnSuccess()

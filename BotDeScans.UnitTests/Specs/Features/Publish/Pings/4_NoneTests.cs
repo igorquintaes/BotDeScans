@@ -43,7 +43,7 @@ public class NoneTests : UnitTest
         public async Task ShouldReturnExpectedText()
         {
             var result = await ping.GetPingAsTextAsync(cancellationToken);
-            result.Should().BeSuccess().And.HaveValue(string.Empty);
+            result.Should().Be(string.Empty);
         }
     }
 }

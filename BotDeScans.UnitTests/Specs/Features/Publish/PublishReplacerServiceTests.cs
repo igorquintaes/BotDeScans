@@ -1,6 +1,6 @@
 ﻿using AutoFixture.AutoFakeItEasy;
 using BotDeScans.App.Features.Publish;
-
+using BotDeScans.App.Features.Publish.State;
 namespace BotDeScans.UnitTests.Specs.Features.Publish;
 
 public class PublishReplacerServiceTests : UnitTest
@@ -157,6 +157,7 @@ public class PublishReplacerServiceTests : UnitTest
             publishState.Title = publishState.Title with { Name = value! };
             publishState.ReleaseInfo = new(default!, value, value!, value, value, default);
             publishState.InternalData.BloggerImageAsBase64 = value;
+            publishState.InternalData.BoxPdfReaderKey = value;
             publishState.ReleaseLinks.MegaZip = value;
             publishState.ReleaseLinks.MegaPdf = value;
             publishState.ReleaseLinks.BoxZip = value;
@@ -164,7 +165,6 @@ public class PublishReplacerServiceTests : UnitTest
             publishState.ReleaseLinks.DriveZip = value;
             publishState.ReleaseLinks.DrivePdf = value;
             publishState.ReleaseLinks.MangaDexLink = value;
-            publishState.ReleaseLinks.BoxPdfReaderKey = value;
         }
     }
 }

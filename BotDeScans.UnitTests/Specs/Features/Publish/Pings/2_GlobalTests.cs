@@ -1,6 +1,6 @@
-﻿using BotDeScans.App.Features.Publish;
-using BotDeScans.App.Features.Publish.Discord;
+﻿using BotDeScans.App.Features.Publish.Discord;
 using BotDeScans.App.Features.Publish.Pings;
+using BotDeScans.App.Features.Publish.State;
 using BotDeScans.App.Services.Discord;
 using FluentResults;
 using Microsoft.Extensions.Configuration;
@@ -81,40 +81,7 @@ public class GlobalTests : UnitTest
             var expectedText = $"<@&{globalRoleId.Value}>, <@&{titleRoleId.Value}>";
 
             var result = await ping.GetPingAsTextAsync(cancellationToken);
-            result.Should().BeSuccess().And.HaveValue(expectedText);
-        }
-
-        [Fact]
-        public async Task GivenErrorToGetGlobalRoleShouldReturnFailResult()
-        {
-            const string ERROR_MESSAGE = "some message.";
-            var titleRoleId = fixture.Freeze<PublishState>().Title.DiscordRoleId!.Value.ToString();
-
-            A.CallTo(() => fixture
-                .FreezeFake<RolesService>()
-                .GetRoleFromGuildAsync(
-                    A<string>.That.Matches(x => x != titleRoleId),
-                    cancellationToken))
-                .Returns(Result.Fail(ERROR_MESSAGE));
-
-            var result = await ping.GetPingAsTextAsync(cancellationToken);
-            result.Should().BeFailure().And.HaveError(ERROR_MESSAGE);
-        }
-
-        [Fact]
-        public async Task GivenErrorToGetTitleRoleShouldReturnFailResult()
-        {
-            const string ERROR_MESSAGE = "some message.";
-
-            A.CallTo(() => fixture
-                .FreezeFake<RolesService>()
-                .GetRoleFromGuildAsync(
-                    fixture.Freeze<PublishState>().Title.DiscordRoleId!.Value.ToString(),
-                    cancellationToken))
-                .Returns(Result.Fail(ERROR_MESSAGE));
-
-            var result = await ping.GetPingAsTextAsync(cancellationToken);
-            result.Should().BeFailure().And.HaveError(ERROR_MESSAGE);
+            result.Should().Be(expectedText);
         }
     }
 }
