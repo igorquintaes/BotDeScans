@@ -9,7 +9,7 @@ public class StepInfo(IStep step)
          ? StepStatus.QueuedForExecution
          : StepStatus.QueuedForValidation;
 
-    public void UpdateStatus(Result result) =>
+    public virtual void UpdateStatus(Result result) =>
         StepStatus = result.IsFailed
             ? StepStatus.Error
             : StepStatus == StepStatus.QueuedForValidation

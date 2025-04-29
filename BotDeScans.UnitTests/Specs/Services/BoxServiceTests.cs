@@ -42,9 +42,9 @@ public class BoxServiceTests : UnitTest
             )
             };
 
-            A.CallTo(() => boxCollection.Entries[0].Name).Returns(dataGenerator.Random.Word());
+            A.CallTo(() => boxCollection.Entries[0].Name).Returns(fixture.Create<string>());
             A.CallTo(() => boxCollection.Entries[0].Type).Returns(folderType);
-            A.CallTo(() => boxCollection.Entries[1].Name).Returns(dataGenerator.Random.Word());
+            A.CallTo(() => boxCollection.Entries[1].Name).Returns(fixture.Create<string>());
             A.CallTo(() => boxCollection.Entries[1].Type).Returns(folderType);
 
             A.CallTo(() => boxClient
@@ -66,7 +66,7 @@ public class BoxServiceTests : UnitTest
         [Fact]
         public async Task ShouldGetFolderWhenItExists_WithParentFolder()
         {
-            var folderId = dataGenerator.Random.Word();
+            var folderId = fixture.Create<string>();
 
             A.CallTo(() => boxFoldersManager
                 .GetFolderItemsAsync(rootFolderId, maxItemsQuery, default, default, default, default, default, default, default))
@@ -83,7 +83,7 @@ public class BoxServiceTests : UnitTest
         [Fact]
         public async Task ShouldCreateFolderWhenItDoesNotExists()
         {
-            var name = dataGenerator.Random.Word();
+            var name = fixture.Create<string>();
             var newBoxItem = A.Fake<BoxFolder>();
             A.CallTo(() => newBoxItem.Name).Returns(name);
             A.CallTo(() => boxFoldersManager
@@ -99,9 +99,9 @@ public class BoxServiceTests : UnitTest
         [Fact]
         public async Task ShouldCreateFolderWhenItDoesNotExists_WithParentFolder()
         {
-            var folderId = dataGenerator.Random.Word();
+            var folderId = fixture.Create<string>();
             var newBoxItem = A.Fake<BoxFolder>();
-            A.CallTo(() => newBoxItem.Name).Returns(dataGenerator.Random.Word());
+            A.CallTo(() => newBoxItem.Name).Returns(fixture.Create<string>());
             A.CallTo(() => boxFoldersManager
                 .CreateAsync(
                     A<BoxFolderRequest>.That.Matches(x =>
@@ -125,7 +125,7 @@ public class BoxServiceTests : UnitTest
 
         public CreateFileAsync()
         {
-            downloadUrl = dataGenerator.Random.Word();
+            downloadUrl = fixture.Create<string>();
             filePath = Path.Combine("C:", "some-path", "some-file.jpg");
             stream = A.Fake<Stream>();
             boxFilesManager = A.Fake<IBoxFilesManager>();
@@ -139,7 +139,7 @@ public class BoxServiceTests : UnitTest
 
             A.CallTo(() => boxFile
                 .Id)
-                .Returns(dataGenerator.Random.Word());
+                .Returns(fixture.Create<string>());
 
             A.CallTo(() => streamWrapper
                 .CreateFileStream(filePath, FileMode.Open))

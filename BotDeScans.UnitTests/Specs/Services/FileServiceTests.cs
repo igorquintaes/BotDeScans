@@ -21,7 +21,7 @@ public class FileServiceTests : UnitTest
         [ClassData(typeof(MimeTypeTestData))]
         public void ShouldGetExpectedMimeType(string key, string value)
         {
-            var filePath = dataGenerator.System.FilePath() + key;
+            var filePath = fixture.Create<string>() + key;
             var result = service.GetMimeType(filePath);
             result.Should().Be(value);
         }

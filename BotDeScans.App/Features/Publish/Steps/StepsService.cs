@@ -11,9 +11,12 @@ public class StepsService(
 {
     public virtual async Task<Result> ExecuteAsync(CancellationToken cancellationToken)
     {
-        var chain = publishState.Steps.ManagementSteps.Select(step => (Func<Task<Result>>)(() => ExecuteAsync(step, cancellationToken)))
-             .Union(publishState.Steps.PublishSteps.Select(step => (Func<Task<Result>>)(() => ValidateAsync(step, cancellationToken))))
-             .Union(publishState.Steps.PublishSteps.Select(step => (Func<Task<Result>>)(() => ExecuteAsync(step, cancellationToken))));
+        var managementSteps = publishState.Steps.ManagementSteps;
+        var publishSteps = publishState.Steps.PublishSteps;
+
+        var chain = managementSteps.Select(x => (Func<Task<Result>>)(() => ExecuteAsync(x, cancellationToken)))
+             .Union(publishSteps.Select(x => (Func<Task<Result>>)(() => ValidateAsync(x, cancellationToken))))
+             .Union(publishSteps.Select(x => (Func<Task<Result>>)(() => ExecuteAsync(x, cancellationToken))));
 
         var result = await publishMessageService.UpdateTrackingMessageAsync(cancellationToken);
 
