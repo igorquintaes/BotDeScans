@@ -158,7 +158,7 @@ public class MegaServiceTests : UnitTest
 
             var result = await service.CreateFileAsync(filePath, parent, cancellationToken);
 
-            result.Should().BeFailure().And.HaveError($"Já existe um arquivo com o nome especificado. Se desejar sobrescrever o arquivo existente, altere a configuração {MegaService.REWRITE_KEY} para permitir.");
+            result.Should().BeFailure().And.HaveError($"Já existe um arquivo com o nome especificado. Se desejar sobrescrever o arquivo existente, altere o valor da configuração '{MegaService.REWRITE_KEY}' para 'true'.");
         }
 
         [Fact]
@@ -173,7 +173,7 @@ public class MegaServiceTests : UnitTest
 
             var result = await service.CreateFileAsync(filePath, parent, cancellationToken);
 
-            result.Should().BeFailure().And.HaveError($"Já existe um arquivo com o nome especificado. Se desejar sobrescrever o arquivo existente, altere a configuração {MegaService.REWRITE_KEY} para permitir.");
+            result.Should().BeFailure().And.HaveError($"Já existe um arquivo com o nome especificado. Se desejar sobrescrever o arquivo existente, altere o valor da configuração '{MegaService.REWRITE_KEY}' para 'true'.");
         }
 
         [Fact]

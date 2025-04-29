@@ -4,9 +4,7 @@ using BotDeScans.App.Features.Publish.Pings;
 using BotDeScans.App.Services.Discord;
 using FluentValidation;
 using Microsoft.Extensions.Configuration;
-using Polly;
 using SixLabors.ImageSharp;
-using System.Threading;
 namespace BotDeScans.App.Models;
 
 public record Title(string Name, ulong? DiscordRoleId)

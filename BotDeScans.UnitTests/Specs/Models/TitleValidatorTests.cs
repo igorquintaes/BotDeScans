@@ -9,7 +9,7 @@ namespace BotDeScans.UnitTests.Specs.Models;
 
 public class TitleValidatorTests : UnitTest
 {
-    public TitleValidatorTests() => 
+    public TitleValidatorTests() =>
         fixture.FreezeFake<RolesService>();
 
     [Theory]

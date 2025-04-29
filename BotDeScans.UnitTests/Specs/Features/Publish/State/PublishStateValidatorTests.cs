@@ -15,6 +15,6 @@ public class PublishStateValidatorTests : UnitTest
         fixture.FreezeFake<IValidator<Title>>();
     }
 
-    [Fact]
-    public async Task ToDo() => throw new NotImplementedException();
+    [Fact(Skip = "To Do")]
+    public void ToDo() { }
 }

@@ -51,5 +51,5 @@ public class InfoValidatorTests : UnitTest
                 .TestValidate(data with { ChapterVolume = chapterVolume })
                 .ShouldHaveValidationErrorFor(x => x.ChapterVolume)
                 .WithErrorMessage("Volume do capítulo inválido.");
-    
+
 }
