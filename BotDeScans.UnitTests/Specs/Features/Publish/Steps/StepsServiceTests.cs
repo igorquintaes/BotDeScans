@@ -229,24 +229,4 @@ public class StepsServiceTests : UnitTest
                 .MustHaveHappenedOnceExactly();
         }
     }
-
-    private abstract class FakePublisStep : IManagementStep
-    {
-        public virtual StepType Type => throw new NotImplementedException();
-        public virtual StepName Name => throw new NotImplementedException();
-        public virtual bool IsMandatory => throw new NotImplementedException();
-
-        public virtual Task<Result> ExecuteAsync(CancellationToken cancellationToken) => throw new NotImplementedException();
-    }
-
-    private abstract class FakePublishStep : IPublishStep
-    {
-        public virtual StepType Type => throw new NotImplementedException();
-        public virtual StepName Name => throw new NotImplementedException();
-        public virtual StepName? Dependency => throw new NotImplementedException();
-
-        public virtual Task<Result> ExecuteAsync(CancellationToken cancellationToken) => throw new NotImplementedException();
-
-        public virtual Task<Result> ValidateAsync(CancellationToken cancellationToken) => throw new NotImplementedException();
-    }
 }

@@ -30,12 +30,14 @@ public record Info
         TitleId = titleId;
     }
 
-    public override string ToString() =>
-        $"DownloadUrl: {GoogleDriveUrl.Url}{Environment.NewLine}" +
-        $"ChapterName: {ChapterName}{Environment.NewLine}" +
-        $"ChapterNumber: {ChapterNumber}{Environment.NewLine}" +
-        $"ChapterVolume: {ChapterVolume}{Environment.NewLine}" +
-        $"Message: {Message}{Environment.NewLine}";
+    public override string ToString() => @$"
+=======================================================
+DownloadUrl: {GoogleDriveUrl.Url}
+ChapterName: {ChapterName}
+ChapterNumber: {ChapterNumber}
+ChapterVolume: {ChapterVolume}
+Message: {Message}
+=======================================================";
 }
 
 public partial class InfoValidator : AbstractValidator<Info>

@@ -34,7 +34,7 @@ public class PublishMessageService(
     {
         var interactionContext = context as InteractionContext;
         var steps = publishState.Steps!;
-        var embed = new Embed(steps.StatusMessage, Description: steps.Details, Colour: steps.ColorStatus);
+        var embed = new Embed(steps.MessageStatus, Description: steps.Details, Colour: steps.ColorStatus);
 
         trackingMessage = trackingMessage is null
             ? await feedbackService.SendContextualEmbedAsync(embed, ct: cancellationToken)
