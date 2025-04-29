@@ -7,6 +7,8 @@ namespace BotDeScans.App.Features.Publish;
 
 public class PublishService(IConfiguration configuration, IEnumerable<IStep> allSteps)
 {
+    public const string STEPS_KEY = "Settings:Publish:Steps";
+
     public virtual EnabledSteps GetEnabledSteps()
     {
         var configurationSteps = GetConfigurationSteps(configuration, allSteps);
@@ -31,7 +33,7 @@ public class PublishService(IConfiguration configuration, IEnumerable<IStep> all
     private static List<IStep> GetConfigurationSteps(IConfiguration configuration, IEnumerable<IStep> allSteps)
     {
         var stepNames = configuration.GetRequiredValues<StepName>(
-            "Settings:Publish:Steps", 
+            key: STEPS_KEY, 
             value => Enum.Parse(typeof(StepName), value));
 
         return allSteps
