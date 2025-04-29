@@ -23,12 +23,16 @@ public class UploadMangDexStepTests : UnitTest
     public class Properties : UploadMangDexStepTests
     {
         [Fact]
+        public void ShouldHaveExpectedType() =>
+            step.Type.Should().Be(StepType.Upload);
+
+        [Fact]
         public void ShouldHaveExpectedName() =>
             step.Name.Should().Be(StepName.UploadMangadex);
 
         [Fact]
-        public void ShouldHaveExpectedType() =>
-            step.Type.Should().Be(StepType.Upload);
+        public void ShouldHaveExpectedDependency() =>
+            step.Dependency.Should().Be(StepName.ZipFiles);
     }
 
     public class ValidateAsync : UploadMangDexStepTests

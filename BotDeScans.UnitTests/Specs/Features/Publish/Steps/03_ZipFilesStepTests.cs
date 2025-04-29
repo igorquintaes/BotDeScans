@@ -20,12 +20,16 @@ public class ZipFilesStepTests : UnitTest
     public class Properties : ZipFilesStepTests
     {
         [Fact]
+        public void ShouldHaveExpectedType() =>
+            step.Type.Should().Be(StepType.Management);
+
+        [Fact]
         public void ShouldHaveExpectedName() =>
             step.Name.Should().Be(StepName.ZipFiles);
 
         [Fact]
-        public void ShouldHaveExpectedType() =>
-            step.Type.Should().Be(StepType.Management);
+        public void ShouldHaveExpectedIsMandatory() =>
+            step.IsMandatory.Should().Be(false);
     }
 
     public class ExecuteAsync : ZipFilesStepTests

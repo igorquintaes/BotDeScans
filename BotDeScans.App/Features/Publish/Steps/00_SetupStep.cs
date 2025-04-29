@@ -14,6 +14,7 @@ public class SetupStep(
 {
     public StepType Type => StepType.Management;
     public StepName Name => StepName.Setup;
+    public bool IsMandatory => true;
 
     public async Task<Result> ExecuteAsync(CancellationToken cancellationToken)
     {

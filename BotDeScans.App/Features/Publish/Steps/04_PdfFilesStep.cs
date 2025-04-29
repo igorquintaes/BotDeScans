@@ -11,6 +11,7 @@ public class PdfFilesStep(
 {
     public StepType Type => StepType.Management;
     public StepName Name => StepName.PdfFiles;
+    public bool IsMandatory => false;
 
     public async Task<Result> ExecuteAsync(CancellationToken cancellationToken)
     {

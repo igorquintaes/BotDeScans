@@ -22,12 +22,16 @@ public class UploadPdfMegaStepTests : UnitTest
     public class Properties : UploadPdfMegaStepTests
     {
         [Fact]
+        public void ShouldHaveExpectedType() =>
+            step.Type.Should().Be(StepType.Upload);
+
+        [Fact]
         public void ShouldHaveExpectedName() =>
             step.Name.Should().Be(StepName.UploadPdfMega);
 
         [Fact]
-        public void ShouldHaveExpectedType() =>
-            step.Type.Should().Be(StepType.Upload);
+        public void ShouldHaveExpectedDependency() =>
+            step.Dependency.Should().Be(StepName.PdfFiles);
     }
 
     public class ValidateAsync : UploadPdfMegaStepTests

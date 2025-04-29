@@ -12,6 +12,7 @@ public class DownloadStep(
 {
     public StepType Type => StepType.Management;
     public StepName Name => StepName.Download;
+    public bool IsMandatory => true;
 
     public async Task<Result> ExecuteAsync(CancellationToken cancellationToken)
     {

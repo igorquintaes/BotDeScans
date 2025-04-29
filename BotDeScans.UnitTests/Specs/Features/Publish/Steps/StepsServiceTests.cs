@@ -232,18 +232,18 @@ public class StepsServiceTests : UnitTest
 
     private abstract class FakePublisStep : IManagementStep
     {
-        public virtual StepName Name => throw new NotImplementedException();
-
         public virtual StepType Type => throw new NotImplementedException();
+        public virtual StepName Name => throw new NotImplementedException();
+        public virtual bool IsMandatory => throw new NotImplementedException();
 
         public virtual Task<Result> ExecuteAsync(CancellationToken cancellationToken) => throw new NotImplementedException();
     }
 
     private abstract class FakePublishStep : IPublishStep
     {
-        public virtual StepName Name => throw new NotImplementedException();
-
         public virtual StepType Type => throw new NotImplementedException();
+        public virtual StepName Name => throw new NotImplementedException();
+        public virtual StepName? Dependency => throw new NotImplementedException();
 
         public virtual Task<Result> ExecuteAsync(CancellationToken cancellationToken) => throw new NotImplementedException();
 

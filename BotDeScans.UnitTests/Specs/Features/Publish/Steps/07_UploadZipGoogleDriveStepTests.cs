@@ -20,12 +20,16 @@ public class UploadZipGoogleDriveStepTests : UnitTest
     public class Properties : UploadZipGoogleDriveStepTests
     {
         [Fact]
+        public void ShouldHaveExpectedType() =>
+            step.Type.Should().Be(StepType.Upload);
+
+        [Fact]
         public void ShouldHaveExpectedName() =>
             step.Name.Should().Be(StepName.UploadZipGoogleDrive);
 
         [Fact]
-        public void ShouldHaveExpectedType() =>
-            step.Type.Should().Be(StepType.Upload);
+        public void ShouldHaveExpectedDependency() =>
+            step.Dependency.Should().Be(StepName.ZipFiles);
     }
 
     public class ValidateAsync : UploadZipGoogleDriveStepTests

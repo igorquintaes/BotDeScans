@@ -12,6 +12,7 @@ public class UploadPdfMegaStep(
 {
     public StepType Type => StepType.Upload;
     public StepName Name => StepName.UploadPdfMega;
+    public StepName? Dependency => StepName.PdfFiles;
 
     public Task<Result> ValidateAsync(CancellationToken _)
         => Task.FromResult(Result.Ok());

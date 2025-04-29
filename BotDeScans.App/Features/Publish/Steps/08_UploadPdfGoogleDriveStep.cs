@@ -10,6 +10,7 @@ public class UploadPdfGoogleDriveStep(
 {
     public StepType Type => StepType.Upload;
     public StepName Name => StepName.UploadPdfGoogleDrive;
+    public StepName? Dependency => StepName.PdfFiles;
 
     // todo seria bom que essas verificações garantissem que armazenamento > tamanho do arquivo
     public Task<Result> ValidateAsync(CancellationToken _)

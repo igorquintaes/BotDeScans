@@ -19,12 +19,16 @@ public class UploadZipBoxStepTests : UnitTest
     public class Properties : UploadZipBoxStepTests
     {
         [Fact]
+        public void ShouldHaveExpectedType() =>
+            step.Type.Should().Be(StepType.Upload);
+
+        [Fact]
         public void ShouldHaveExpectedName() =>
             step.Name.Should().Be(StepName.UploadZipBox);
 
         [Fact]
-        public void ShouldHaveExpectedType() =>
-            step.Type.Should().Be(StepType.Upload);
+        public void ShouldHaveExpectedDependency() =>
+            step.Dependency.Should().Be(StepName.ZipFiles);
     }
 
     public class ValidateAsync : UploadZipBoxStepTests

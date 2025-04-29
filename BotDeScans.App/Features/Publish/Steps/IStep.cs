@@ -10,9 +10,12 @@ public interface IStep
 }
 
 public interface IManagementStep : IStep
-{ }
+{
+    public bool IsMandatory { get; }
+}
 
 public interface IPublishStep : IStep
 {
+    public StepName? Dependency { get; }
     public abstract Task<Result> ValidateAsync(CancellationToken cancellationToken);
 }

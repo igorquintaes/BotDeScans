@@ -25,12 +25,16 @@ public class SetupStepTests : UnitTest
     public class Properties : SetupStepTests
     {
         [Fact]
+        public void ShouldHaveExpectedType() =>
+            step.Type.Should().Be(StepType.Management);
+
+        [Fact]
         public void ShouldHaveExpectedName() =>
             step.Name.Should().Be(StepName.Setup);
 
         [Fact]
-        public void ShouldHaveExpectedType() =>
-            step.Type.Should().Be(StepType.Management);
+        public void ShouldHaveExpectedIsMandatory() =>
+            step.IsMandatory.Should().Be(true);
     }
 
     public class ExecuteAsync : SetupStepTests

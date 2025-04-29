@@ -22,12 +22,16 @@ public class DownloadStepTests : UnitTest
     public class Properties : DownloadStepTests
     {
         [Fact]
+        public void ShouldHaveExpectedType() =>
+            step.Type.Should().Be(StepType.Management);
+
+        [Fact]
         public void ShouldHaveExpectedName() =>
             step.Name.Should().Be(StepName.Download);
 
         [Fact]
-        public void ShouldHaveExpectedType() =>
-            step.Type.Should().Be(StepType.Management);
+        public void ShouldHaveExpectedIsMandatory() =>
+            step.IsMandatory.Should().Be(true);
     }
 
     public class ExecuteAsync : DownloadStepTests

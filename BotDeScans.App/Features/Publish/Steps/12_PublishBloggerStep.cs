@@ -11,6 +11,7 @@ public class PublishBloggerStep(
 {
     public StepType Type => StepType.Publish;
     public StepName Name => StepName.PublishBlogspot;
+    public StepName? Dependency => null;
 
     public Task<Result> ValidateAsync(CancellationToken _) =>
         Task.FromResult(Result.Ok());

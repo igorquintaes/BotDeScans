@@ -19,12 +19,16 @@ public class UploadPdfBoxStepTests : UnitTest
     public class Properties : UploadPdfBoxStepTests
     {
         [Fact]
+        public void ShouldHaveExpectedType() =>
+            step.Type.Should().Be(StepType.Upload);
+
+        [Fact]
         public void ShouldHaveExpectedName() =>
             step.Name.Should().Be(StepName.UploadPdfBox);
 
         [Fact]
-        public void ShouldHaveExpectedType() =>
-            step.Type.Should().Be(StepType.Upload);
+        public void ShouldHaveExpectedDependency() =>
+            step.Dependency.Should().Be(StepName.PdfFiles);
     }
 
     public class ValidateAsync : UploadPdfBoxStepTests
