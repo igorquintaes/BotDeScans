@@ -47,16 +47,20 @@ public class TitleValidator : AbstractValidator<Title>
             .DependentRules(() =>
             {
                 RuleFor(model => model.DiscordRoleId)
-                    .MustAsync(async (_, prop, context, cancellationToken) => await MustHaveDiscordRole(prop, context, rolesService, cancellationToken))
+                    .MustAsync(async (_, prop, context, cancellationToken) => await RoleMustExists(prop!.Value, rolesService, context, cancellationToken))
                     .When(prop => prop.DiscordRoleId.HasValue &&
                                   prop.DiscordRoleId != default(ulong) &&
                                   pingType is PingType.Global or PingType.Role);
             });
     }
 
-    static async Task<bool> MustHaveDiscordRole(ulong? prop, ValidationContext<Title> context, RolesService rolesService, CancellationToken cancellationToken)
+    static async Task<bool> RoleMustExists(
+        ulong prop, 
+        RolesService rolesService, 
+        ValidationContext<Title> context, 
+        CancellationToken cancellationToken)
     {
-        var rolesResult = await rolesService.GetRoleFromGuildAsync(prop!.Value.ToString(), cancellationToken);
+        var rolesResult = await rolesService.GetRoleFromGuildAsync(prop.ToString(), cancellationToken);
         if (rolesResult.IsSuccess)
             return true;
 

@@ -1,6 +1,7 @@
 ﻿using BotDeScans.App.Features.Publish.Discord;
 using BotDeScans.App.Features.Publish.Pings;
 using BotDeScans.App.Features.Publish.State.Models;
+using BotDeScans.App.Features.Publish.Steps;
 using BotDeScans.App.Models;
 using BotDeScans.App.Services.Discord;
 using FluentValidation;
@@ -29,7 +30,7 @@ public class PublishStateValidator : AbstractValidator<PublishState>
 
         RuleFor(model => model.Title)
             .Must(prop => prop.References.Any(reference => reference.Key == ExternalReference.MangaDex))
-            .When(prop => prop.Steps.Any(step => step.Key.Name == Steps.Enums.StepName.UploadMangadex))
+            .When(prop => prop.Steps.Any(step => step.Key is UploadMangaDexStep))
             .WithMessage("Não foi definida uma referência para a publicação da obra na MangaDex.")
             .SetValidator(titleValidator);
 
@@ -42,15 +43,25 @@ public class PublishStateValidator : AbstractValidator<PublishState>
             .Must(_ => string.IsNullOrWhiteSpace(globalPingValue) is false)
             .When(_ => pingType == PingType.Global)
             .WithMessage("É necessário definir um valor para ping global no arquivo de configuração do Bot de Scans.")
-            .MustAsync(async (_, prop, context, cancellationToken) =>
+            .DependentRules(() =>
             {
-                var rolesResult = await rolesService.GetRoleFromGuildAsync(globalPingValue!, cancellationToken);
-                if (rolesResult.IsSuccess)
-                    return true;
+                RuleFor(model => model)
+                    .MustAsync(async (_, prop, context, cancellationToken) => await RoleMustExists(globalPingValue!, rolesService, context, cancellationToken))
+                    .When(prop => pingType is PingType.Global);
+            });
+    }
 
-                context.AddFailure(string.Join("; ", rolesResult.Errors.Select(error => error.Message)));
-                return false;
-            })
-            .When(prop => string.IsNullOrWhiteSpace(globalPingValue) is false && pingType is PingType.Global);
+    private static async Task<bool> RoleMustExists(
+        string role,
+        RolesService rolesService,
+        ValidationContext<PublishState> context, 
+        CancellationToken cancellationToken)
+    {
+        var rolesResult = await rolesService.GetRoleFromGuildAsync(role, cancellationToken);
+        if (rolesResult.IsSuccess)
+            return true;
+
+        context.AddFailure(string.Join("; ", rolesResult.Errors.Select(error => error.Message)));
+        return false;
     }
 }
