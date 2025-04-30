@@ -1,7 +1,7 @@
 ﻿using BotDeScans.App.Extensions;
 using BotDeScans.App.Features.Publish.Discord;
+using BotDeScans.App.Features.Publish.State;
 using BotDeScans.App.Services.Discord;
-using FluentResults;
 using Microsoft.Extensions.Configuration;
 namespace BotDeScans.App.Features.Publish.Pings;
 
@@ -14,16 +14,11 @@ public class GlobalPing(
 
     protected override PingType Type => PingType.Global;
 
-    public override async Task<Result<string>> GetPingAsTextAsync(CancellationToken cancellationToken)
+    public override async Task<string> GetPingAsTextAsync(CancellationToken cancellationToken)
     {
         var globalRoleName = configuration.GetRequiredValue<string>(GLOBAL_ROLE_KEY);
         var globalRoleAsPingResult = await rolesService.GetRoleFromGuildAsync(globalRoleName, cancellationToken);
-        if (globalRoleAsPingResult.IsFailed)
-            return globalRoleAsPingResult.ToResult();
-
         var titleRoleAsPingResult = await rolesService.GetRoleFromGuildAsync(publishState.Title.DiscordRoleId.ToString()!, cancellationToken);
-        if (titleRoleAsPingResult.IsFailed)
-            return titleRoleAsPingResult.ToResult();
 
         return $"{globalRoleAsPingResult.Value.ToDiscordString()}, {titleRoleAsPingResult.Value.ToDiscordString()}";
     }

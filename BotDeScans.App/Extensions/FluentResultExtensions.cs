@@ -81,9 +81,6 @@ public static class FluentResultExtensions
         return await feedbackService.SendContextualEmbedAsync(errorEmbed, ct: cancellationToken);
     }
 
-    public static Task<Remora.Results.IResult> PostErrorOnDiscord<T>(this Result<T> result, ExtendedFeedbackService feedbackService, CancellationToken cancellationToken)
-        => result.ToResult().PostErrorOnDiscord(feedbackService, cancellationToken);
-
     private static IEnumerable<Error> GetErrors(MangaDexError[] mangaDexErrors)
         => mangaDexErrors.Length > 0
             ? mangaDexErrors.Select(x => new Error($"{x.Status} - {x.Title} - {x.Detail}"))

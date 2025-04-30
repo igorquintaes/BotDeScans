@@ -11,7 +11,7 @@ namespace BotDeScans.App.Services.Discord.Conditions;
 
 // todo: parametrizar a partir de arquivo de configuration
 public class RoleAuthorizeCondition(
-    IOperationContext commandContext,
+    IOperationContext context,
     IDiscordRestGuildAPI discordRestGuildAPI,
     IDiscordRestInteractionAPI discordRestInteractionAPI,
     RolesService rolesService) : ICondition<RoleAuthorizeAttribute>
@@ -20,7 +20,7 @@ public class RoleAuthorizeCondition(
         RoleAuthorizeAttribute attribute,
         CancellationToken ct = default)
     {
-        if (commandContext is not InteractionContext interactionContext)
+        if (context is not InteractionContext interactionContext)
             return new InvalidOperationError($"slash-command is mandatory!");
 
         var guildId = interactionContext.Interaction.GuildID.Value;

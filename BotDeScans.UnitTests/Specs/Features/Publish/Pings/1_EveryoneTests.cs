@@ -43,7 +43,7 @@ public class EveryoneTests : UnitTest
         public async Task ShouldReturnExpectedText()
         {
             var result = await ping.GetPingAsTextAsync(cancellationToken);
-            result.Should().BeSuccess().And.HaveValue("@everyone");
+            result.Should().Be("@everyone");
         }
     }
 }

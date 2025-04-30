@@ -1,20 +1,19 @@
 ﻿using BotDeScans.App.Features.Mega;
 using BotDeScans.App.Features.Mega.InternalServices;
+using BotDeScans.App.Features.Publish.State;
 using BotDeScans.App.Features.Publish.Steps.Enums;
 using FluentResults;
 namespace BotDeScans.App.Features.Publish.Steps;
 
 public class UploadPdfMegaStep(
-MegaService megaService,
-MegaSettingsService megaSettingsService,
-    PublishState state) : IStep
+    MegaService megaService,
+    MegaSettingsService megaSettingsService,
+    PublishState state) : IPublishStep
 {
-    public StepName StepName => StepName.UploadPdfMega;
+    public StepType Type => StepType.Upload;
+    public StepName Name => StepName.UploadPdfMega;
 
-    public Task<Result> ValidateBeforeFilesManagementAsync(CancellationToken _)
-        => Task.FromResult(Result.Ok());
-
-    public Task<Result> ValidateAfterFilesManagementAsync(CancellationToken _)
+    public Task<Result> ValidateAsync(CancellationToken _)
         => Task.FromResult(Result.Ok());
 
     public async Task<Result> ExecuteAsync(CancellationToken cancellationToken)

@@ -1,4 +1,6 @@
-﻿namespace BotDeScans.App.Features.Publish;
+﻿using BotDeScans.App.Features.Publish.State;
+
+namespace BotDeScans.App.Features.Publish;
 
 public class PublishReplacerService(PublishState publishState)
 {
@@ -18,7 +20,7 @@ public class PublishReplacerService(PublishState publishState)
             { "GOOGLE_DRIVE_ZIP_LINK", state => state.ReleaseLinks.DriveZip },
             { "GOOGLE_DRIVE_PDF_LINK", state => state.ReleaseLinks.DrivePdf },
             { "MANGADEX_LINK",         state => state.ReleaseLinks.MangaDexLink },
-            { "BOX_PDF_READER",        state => state.ReleaseLinks.BoxPdfReaderKey }
+            { "BOX_PDF_READER",        state => state.InternalData.BoxPdfReaderKey }
         };
 
     public virtual string Replace(string text)

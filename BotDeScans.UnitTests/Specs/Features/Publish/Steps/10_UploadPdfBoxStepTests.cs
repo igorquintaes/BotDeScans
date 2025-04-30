@@ -1,4 +1,4 @@
-﻿using BotDeScans.App.Features.Publish;
+﻿using BotDeScans.App.Features.Publish.State;
 using BotDeScans.App.Features.Publish.Steps;
 using BotDeScans.App.Features.Publish.Steps.Enums;
 using BotDeScans.App.Services;
@@ -7,7 +7,7 @@ namespace BotDeScans.UnitTests.Specs.Features.Publish.Steps;
 
 public class UploadPdfBoxStepTests : UnitTest
 {
-    private readonly IStep step;
+    private readonly UploadPdfBoxStep step;
 
     public UploadPdfBoxStepTests()
     {
@@ -20,30 +20,19 @@ public class UploadPdfBoxStepTests : UnitTest
     {
         [Fact]
         public void ShouldHaveExpectedName() =>
-            step.StepName.Should().Be(StepName.UploadPdfBox);
+            step.Name.Should().Be(StepName.UploadPdfBox);
 
         [Fact]
         public void ShouldHaveExpectedType() =>
-            step.StepType.Should().Be(StepType.Upload);
+            step.Type.Should().Be(StepType.Upload);
     }
 
-    public class ValidateBeforeFilesManagementAsync : UploadPdfBoxStepTests
+    public class ValidateAsync : UploadPdfBoxStepTests
     {
         [Fact]
         public async Task ShouldReturnSuccess()
         {
-            var result = await step.ValidateBeforeFilesManagementAsync(cancellationToken);
-
-            result.Should().BeSuccess();
-        }
-    }
-
-    public class ValidateAfterFilesManagementAsync : UploadPdfBoxStepTests
-    {
-        [Fact]
-        public async Task ShouldReturnSuccess()
-        {
-            var result = await step.ValidateAfterFilesManagementAsync(cancellationToken);
+            var result = await step.ValidateAsync(cancellationToken);
 
             result.Should().BeSuccess();
         }
@@ -101,14 +90,14 @@ public class UploadPdfBoxStepTests : UnitTest
             const string LINK = "http://escoladescans.com/sample.pdf";
             const string EXPECTED_KEY = "sample";
 
-            fixture.Freeze<PublishState>().ReleaseLinks.BoxPdfReaderKey = null!;
+            fixture.Freeze<PublishState>().InternalData.BoxPdfReaderKey = null!;
 
             A.CallTo(() => fixture.FreezeFake<BoxFile>().SharedLink.DownloadUrl)
                 .Returns(LINK);
 
             await step.ExecuteAsync(cancellationToken);
 
-            fixture.Freeze<PublishState>().ReleaseLinks.BoxPdfReaderKey.Should().Be(EXPECTED_KEY);
+            fixture.Freeze<PublishState>().InternalData.BoxPdfReaderKey.Should().Be(EXPECTED_KEY);
         }
     }
 }

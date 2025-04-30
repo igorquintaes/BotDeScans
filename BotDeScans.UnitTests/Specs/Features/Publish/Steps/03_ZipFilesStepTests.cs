@@ -1,4 +1,4 @@
-﻿using BotDeScans.App.Features.Publish;
+﻿using BotDeScans.App.Features.Publish.State;
 using BotDeScans.App.Features.Publish.Steps;
 using BotDeScans.App.Features.Publish.Steps.Enums;
 using BotDeScans.App.Services;
@@ -7,7 +7,7 @@ namespace BotDeScans.UnitTests.Specs.Features.Publish.Steps;
 
 public class ZipFilesStepTests : UnitTest
 {
-    private readonly IStep step;
+    private readonly ZipFilesStep step;
 
     public ZipFilesStepTests()
     {
@@ -21,33 +21,11 @@ public class ZipFilesStepTests : UnitTest
     {
         [Fact]
         public void ShouldHaveExpectedName() =>
-            step.StepName.Should().Be(StepName.ZipFiles);
+            step.Name.Should().Be(StepName.ZipFiles);
 
         [Fact]
         public void ShouldHaveExpectedType() =>
-            step.StepType.Should().Be(StepType.Management);
-    }
-
-    public class ValidateBeforeFilesManagementAsync : ZipFilesStepTests
-    {
-        [Fact]
-        public async Task ShouldReturnSuccess()
-        {
-            var result = await step.ValidateBeforeFilesManagementAsync(cancellationToken);
-
-            result.Should().BeSuccess();
-        }
-    }
-
-    public class ValidateAfterFilesManagementAsync : ZipFilesStepTests
-    {
-        [Fact]
-        public async Task ShouldReturnSuccess()
-        {
-            var result = await step.ValidateAfterFilesManagementAsync(cancellationToken);
-
-            result.Should().BeSuccess();
-        }
+            step.Type.Should().Be(StepType.Management);
     }
 
     public class ExecuteAsync : ZipFilesStepTests

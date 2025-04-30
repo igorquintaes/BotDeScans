@@ -1,4 +1,5 @@
-﻿using BotDeScans.App.Features.Publish.Steps.Enums;
+﻿using BotDeScans.App.Features.Publish.State;
+using BotDeScans.App.Features.Publish.Steps.Enums;
 using BotDeScans.App.Services;
 using FluentResults;
 namespace BotDeScans.App.Features.Publish.Steps;
@@ -6,14 +7,12 @@ namespace BotDeScans.App.Features.Publish.Steps;
 public class PublishBloggerStep(
     GoogleBloggerService googleBloggerService,
     PublishReplacerService publishReplacerService,
-    PublishState state) : IStep
+    PublishState state) : IPublishStep
 {
-    public StepName StepName => StepName.PublishBlogspot;
+    public StepType Type => StepType.Publish;
+    public StepName Name => StepName.PublishBlogspot;
 
-    public Task<Result> ValidateBeforeFilesManagementAsync(CancellationToken _) =>
-        Task.FromResult(Result.Ok());
-
-    public Task<Result> ValidateAfterFilesManagementAsync(CancellationToken _) =>
+    public Task<Result> ValidateAsync(CancellationToken _) =>
         Task.FromResult(Result.Ok());
 
     public async Task<Result> ExecuteAsync(CancellationToken cancellationToken)

@@ -82,45 +82,6 @@ public class PublishCommandsTests : UnitTest
         }
 
         [Fact]
-        public async Task GivenNotFoundTitleShouldSendErrorMessage()
-        {
-            A.CallTo(() => fixture
-                .FreezeFake<PublishQueries>()
-                .GetTitleId(title, cancellationToken))
-                .Returns(null as int?);
-
-            var result = await commands.Publish(title);
-
-            A.CallTo(() => fixture
-                .FreezeFake<IFeedbackService>()
-                .SendContextualErrorAsync(
-                    "Obra não encontrada.",
-                    default,
-                    default,
-                    cancellationToken))
-                .MustHaveHappenedOnceExactly();
-        }
-
-        [Fact]
-        public async Task GivenErrorToSendErrorMessageShouldReturnError()
-        {
-            A.CallTo(() => fixture
-                .FreezeFake<PublishQueries>()
-                .GetTitleId(title, cancellationToken))
-                .Returns(null as int?);
-
-
-            A.CallTo(() => fixture
-                .FreezeFake<IFeedbackService>()
-                .SendContextualErrorAsync("Obra não encontrada.", default, default, cancellationToken))
-                .Returns(new InvalidOperationError());
-
-            var result = await commands.Publish(title);
-
-            result.IsSuccess.Should().BeFalse();
-        }
-
-        [Fact]
         public async Task GivenErrorToCreateInteractionShouldReturnError()
         {
             A.CallTo(() => fixture

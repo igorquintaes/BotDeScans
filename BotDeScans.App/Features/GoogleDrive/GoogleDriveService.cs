@@ -1,7 +1,6 @@
 ﻿using BotDeScans.App.Extensions;
 using BotDeScans.App.Features.GoogleDrive.InternalServices;
 using FluentResults;
-using FluentValidation;
 using Microsoft.Extensions.Configuration;
 using System.Collections.Concurrent;
 using File = Google.Apis.Drive.v3.Data.File;
@@ -12,7 +11,6 @@ public class GoogleDriveService(
     GoogleDriveFoldersService googleDriveFoldersService,
     GoogleDriveResourcesService googleDriveResourcesService,
     GoogleDrivePermissionsService googleDrivePermissionsService,
-    IValidator<IList<File>> validator,
     IConfiguration configuration)
 {
     public const string REWRITE_KEY = "GoogleDrive:RewriteExistingFile";
@@ -76,24 +74,6 @@ public class GoogleDriveService(
         return deleteResult.ToResult();
     }
 
-    public virtual Result<string> GetFolderIdFromUrl(string? url)
-    {
-        if (!Uri.TryCreate(url, UriKind.Absolute, out var uri) || uri.Authority != "drive.google.com")
-            return Result.Fail("O link informado é inválido."); ;
-
-        var resourceId = url
-            .Replace("?id=", "/")
-            .Replace("?usp=sharing", "")
-            .Replace("?usp=share_link", "")
-            .Split("/")
-            .Last();
-
-
-        return resourceId.Length != 33
-            ? Result.Fail("O link informado é inválido.")
-            : Result.Ok(resourceId);
-    }
-
     public virtual async Task<Result> SaveFilesAsync(
         string folderId,
         string directory,
@@ -114,18 +94,6 @@ public class GoogleDriveService(
         });
 
         return new Result().WithErrors(errors);
-    }
-
-    public virtual async Task<Result> ValidateFilesAsync(
-        string folderId,
-        CancellationToken cancellationToken)
-    {
-        var fileListResult = await googleDriveFilesService.GetManyAsync(folderId, cancellationToken);
-        if (fileListResult.IsFailed)
-            return fileListResult.ToResult();
-
-        var validationResult = await validator.ValidateAsync(fileListResult.Value, cancellationToken);
-        return validationResult.ToResult();
     }
 
     public virtual async Task<Result> GrantReaderAccessToBotFilesAsync(

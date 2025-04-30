@@ -1,18 +1,17 @@
 ﻿using BotDeScans.App.Features.GoogleDrive;
+using BotDeScans.App.Features.Publish.State;
 using BotDeScans.App.Features.Publish.Steps.Enums;
 using FluentResults;
 namespace BotDeScans.App.Features.Publish.Steps;
 
 public class UploadZipGoogleDriveStep(
     GoogleDriveService googleDriveService,
-    PublishState state) : IStep
+    PublishState state) : IPublishStep
 {
-    public StepName StepName => StepName.UploadZipGoogleDrive;
+    public StepType Type => StepType.Upload;
+    public StepName Name => StepName.UploadZipGoogleDrive;
 
-    public Task<Result> ValidateBeforeFilesManagementAsync(CancellationToken _)
-        => Task.FromResult(Result.Ok());
-
-    public Task<Result> ValidateAfterFilesManagementAsync(CancellationToken _)
+    public Task<Result> ValidateAsync(CancellationToken _)
         => Task.FromResult(Result.Ok());
     // todo: pegar o tamanho do arquivo e ver se tem espaço disponível no Google Drive
 

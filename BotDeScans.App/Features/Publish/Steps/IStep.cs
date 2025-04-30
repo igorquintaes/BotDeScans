@@ -5,8 +5,14 @@ namespace BotDeScans.App.Features.Publish.Steps;
 public interface IStep
 {
     public Task<Result> ExecuteAsync(CancellationToken cancellationToken);
-    public Task<Result> ValidateBeforeFilesManagementAsync(CancellationToken cancellationToken);
-    public Task<Result> ValidateAfterFilesManagementAsync(CancellationToken cancellationToken);
-    public StepName StepName { get; }
-    public StepType StepType => StepsInfo.StepNameType[StepName];
+    public StepName Name { get; }
+    public StepType Type { get; }
+}
+
+public interface IManagementStep : IStep
+{ }
+
+public interface IPublishStep : IStep
+{
+    public abstract Task<Result> ValidateAsync(CancellationToken cancellationToken);
 }

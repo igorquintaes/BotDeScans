@@ -1,4 +1,4 @@
-﻿using BotDeScans.App.Features.Publish;
+﻿using BotDeScans.App.Features.Publish.State;
 using BotDeScans.App.Features.Publish.Steps;
 using BotDeScans.App.Features.Publish.Steps.Enums;
 using BotDeScans.App.Services;
@@ -10,7 +10,7 @@ namespace BotDeScans.UnitTests.Specs.Features.Publish.Steps;
 
 public class CompressFilesStepTests : UnitTest
 {
-    private readonly IStep step;
+    private readonly CompressFilesStep step;
 
     public CompressFilesStepTests()
     {
@@ -23,33 +23,11 @@ public class CompressFilesStepTests : UnitTest
     {
         [Fact]
         public void ShouldHaveExpectedName() =>
-            step.StepName.Should().Be(StepName.Compress);
+            step.Name.Should().Be(StepName.Compress);
 
         [Fact]
         public void ShouldHaveExpectedType() =>
-            step.StepType.Should().Be(StepType.Management);
-    }
-
-    public class ValidateBeforeFilesManagementAsync : CompressFilesStepTests
-    {
-        [Fact]
-        public async Task ShouldReturnSuccess()
-        {
-            var result = await step.ValidateBeforeFilesManagementAsync(cancellationToken);
-
-            result.Should().BeSuccess();
-        }
-    }
-
-    public class ValidateAfterFilesManagementAsync : CompressFilesStepTests
-    {
-        [Fact]
-        public async Task ShouldReturnSuccess()
-        {
-            var result = await step.ValidateAfterFilesManagementAsync(cancellationToken);
-
-            result.Should().BeSuccess();
-        }
+            step.Type.Should().Be(StepType.Management);
     }
 
     public class ExecuteAsync : CompressFilesStepTests, IDisposable

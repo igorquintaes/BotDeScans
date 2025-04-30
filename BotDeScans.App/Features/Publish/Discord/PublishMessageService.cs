@@ -1,5 +1,7 @@
 ﻿using BotDeScans.App.Builders;
 using BotDeScans.App.Extensions;
+using BotDeScans.App.Features.Publish.State;
+using BotDeScans.App.Features.Publish.State.Models;
 using Microsoft.Extensions.Configuration;
 using OneOf;
 using Remora.Discord.API.Abstractions.Objects;
@@ -13,12 +15,11 @@ using System.ComponentModel;
 using System.Diagnostics.CodeAnalysis;
 using System.Drawing;
 using System.Reflection;
-using static BotDeScans.App.Features.Publish.PublishState;
-
 namespace BotDeScans.App.Features.Publish.Discord;
 
 [ExcludeFromCodeCoverage]
 public class PublishMessageService(
+    IOperationContext context,
     PublishState publishState,
     PublishReplacerService publishReplacerService,
     IFeedbackService feedbackService,
@@ -29,17 +30,17 @@ public class PublishMessageService(
     private Result<IMessage>? trackingMessage = null;
 
     public virtual async Task<FluentResults.Result> UpdateTrackingMessageAsync(
-        InteractionContext interactionContext,
         CancellationToken cancellationToken)
     {
+        var interactionContext = context as InteractionContext;
         var steps = publishState.Steps!;
-        var embed = new Embed(steps.Header, Description: steps.Details, Colour: steps.ColorStatus);
+        var embed = new Embed(steps.StatusMessage, Description: steps.Details, Colour: steps.ColorStatus);
 
         trackingMessage = trackingMessage is null
             ? await feedbackService.SendContextualEmbedAsync(embed, ct: cancellationToken)
             : await discordRestInteractionAPI.EditFollowupMessageAsync(
                 trackingMessage.Value.Entity.Author.ID,
-                interactionContext.Interaction.Token,
+                interactionContext!.Interaction.Token,
                 messageID: trackingMessage.Value.Entity.ID,
                 embeds: new List<Embed> { embed },
                 ct: cancellationToken);
@@ -52,29 +53,28 @@ public class PublishMessageService(
     }
 
     public virtual async Task<Result<IMessage>> ErrorReleaseMessageAsync(
-        InteractionContext interactionContext,
         FluentResults.Result errorResult,
         CancellationToken cancellationToken)
     {
-        var channel = interactionContext.Interaction.Channel!.Value.ID!.Value;
+        var interactionContext = context as InteractionContext;
+        var channel = interactionContext!.Interaction.Channel!.Value.ID!.Value;
         var embed = EmbedBuilder.CreateErrorEmbed(errorResult);
 
         return await feedbackService.SendEmbedAsync(channel, embed, ct: cancellationToken);
     }
 
     public virtual async Task<Result<IMessage>> SuccessReleaseMessageAsync(
-        InteractionContext interactionContext,
-        string content,
         CancellationToken cancellationToken)
     {
+        var interactionContext = context as InteractionContext;
         var releaseChannel = new Snowflake(configuration.GetRequiredValue<ulong>("Discord:ReleaseChannel"));
         var coverFileName = Path.GetFileName(publishState.InternalData.CoverFilePath);
         using var cover = new FileStream(publishState.InternalData.CoverFilePath, FileMode.Open);
 
         return await discordRestChannelAPI.CreateMessageAsync(
             channelID: releaseChannel,
-            content: content,
-            embeds: new[] { PublishEmbed(interactionContext, coverFileName) },
+            content: publishState.InternalData.Pings!,
+            embeds: new[] { PublishEmbed(interactionContext!, coverFileName) },
             attachments: new[] { OneOf<FileData, IPartialAttachment>.FromT0(new FileData(coverFileName, cover)) },
             components: new[] { new ActionRowComponent([PromotedButton]) },
             ct: cancellationToken);
@@ -95,25 +95,23 @@ public class PublishMessageService(
             Colour: Color.Green,
             Fields: CreatePublishLinkFields(),
             Author: new EmbedAuthor(
-                Name: interactionContext.GetUserName(),
-                IconUrl: interactionContext.GetUserAvatarUrl()));
+                Name: interactionContext!.GetUserName(),
+                IconUrl: interactionContext!.GetUserAvatarUrl()));
     }
 
-    private List<EmbedField> CreatePublishLinkFields()
-        => typeof(Links)
-            .GetProperties()
-            .Where(property => Attribute.IsDefined(property, typeof(DescriptionAttribute)))
-            .Select(property => new
-            {
-                Label = property.GetCustomAttribute<DescriptionAttribute>()!.Description,
-                Link = property.GetValue(publishState.ReleaseLinks, null)?.ToString()
-            })
-            .Where(x => !string.IsNullOrWhiteSpace(x.Link))
-            .Select(x => new EmbedField(x.Label, $":white_check_mark:  [Acesse]({x.Link})", true))
-            .ToList();
+    private List<EmbedField> CreatePublishLinkFields() => typeof(Links)
+        .GetProperties()
+        .Select(property => new
+        {
+            Label = property.GetCustomAttribute<DescriptionAttribute>()!.Description,
+            Link = property.GetValue(publishState.ReleaseLinks, null)?.ToString()
+        })
+        .Where(x => !string.IsNullOrWhiteSpace(x.Link))
+        .Select(x => new EmbedField(x.Label, $":white_check_mark:  [Acesse]({x.Link})", true))
+        .ToList();
 
     private static readonly ButtonComponent PromotedButton = new(
-            ButtonComponentStyle.Link,
-            Label: "Escola de Scans",
-            URL: "https://www.youtube.com/c/EscoladeScans");
+        ButtonComponentStyle.Link,
+        Label: "Escola de Scans",
+        URL: "https://www.youtube.com/c/EscoladeScans");
 }

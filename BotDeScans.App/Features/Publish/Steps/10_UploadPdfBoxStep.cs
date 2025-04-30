@@ -1,18 +1,17 @@
-﻿using BotDeScans.App.Features.Publish.Steps.Enums;
+﻿using BotDeScans.App.Features.Publish.State;
+using BotDeScans.App.Features.Publish.Steps.Enums;
 using BotDeScans.App.Services;
 using FluentResults;
 namespace BotDeScans.App.Features.Publish.Steps;
 
 public class UploadPdfBoxStep(
     BoxService boxService,
-    PublishState state) : IStep
+    PublishState state) : IPublishStep
 {
-    public StepName StepName => StepName.UploadPdfBox;
+    public StepType Type => StepType.Upload;
+    public StepName Name => StepName.UploadPdfBox;
 
-    public Task<Result> ValidateBeforeFilesManagementAsync(CancellationToken _)
-        => Task.FromResult(Result.Ok());
-
-    public Task<Result> ValidateAfterFilesManagementAsync(CancellationToken _)
+    public Task<Result> ValidateAsync(CancellationToken _)
         => Task.FromResult(Result.Ok());
 
     public async Task<Result> ExecuteAsync(CancellationToken cancellationToken)
@@ -23,7 +22,7 @@ public class UploadPdfBoxStep(
             parentFolderId: titleFolder.Id);
 
         state.ReleaseLinks.BoxPdf = file.SharedLink.DownloadUrl;
-        state.ReleaseLinks.BoxPdfReaderKey = file.SharedLink.DownloadUrl
+        state.InternalData.BoxPdfReaderKey = file.SharedLink.DownloadUrl
             .Split("/")
             .Last()
             .Replace(".pdf", "", StringComparison.InvariantCultureIgnoreCase);

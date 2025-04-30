@@ -21,12 +21,12 @@ public class Program
 {
     public static async Task Main(string[] args)
     {
-        var cts = new CancellationTokenSource();
-        Console.CancelKeyPress += (s, e) =>
+        var cancelationTokenSource = new CancellationTokenSource();
+        Console.CancelKeyPress += (_, @event) =>
         {
             Console.WriteLine("Closing...");
-            cts.Cancel();
-            e.Cancel = true;
+            cancelationTokenSource.Cancel();
+            @event.Cancel = true;
         };
 
         var host = Host
@@ -56,10 +56,10 @@ public class Program
                 File.WriteAllBytes(DatabaseContext.DbPath, []);
 
             var db = scope.ServiceProvider.GetRequiredService<DatabaseContext>();
-            await db.Database.MigrateAsync(cts.Token);
+            await db.Database.MigrateAsync(cancelationTokenSource.Token);
 
             var setupDiscordService = scope.ServiceProvider.GetRequiredService<SetupDiscordService>();
-            var discordUpdateResult = await setupDiscordService.SetupAsync(cts.Token);
+            var discordUpdateResult = await setupDiscordService.SetupAsync(cancelationTokenSource.Token);
             warmupResult.WithReasons(discordUpdateResult.Reasons);
 
             var setupClientsService = scope.ServiceProvider.GetRequiredService<SetupStepsService>();
@@ -67,7 +67,7 @@ public class Program
             warmupResult.WithReasons(setupClientsResult.Reasons);
 
             var setupPublishStepsService = scope.ServiceProvider.GetRequiredService<SetupClientsService>();
-            var setupPublishStepsResult = await setupPublishStepsService.SetupAsync(cts.Token);
+            var setupPublishStepsResult = await setupPublishStepsService.SetupAsync(cancelationTokenSource.Token);
             warmupResult.WithReasons(setupPublishStepsResult.Reasons);
         }
 

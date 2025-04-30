@@ -1,5 +1,5 @@
 ﻿using BotDeScans.App.Features.GoogleDrive;
-using BotDeScans.App.Features.Publish;
+using BotDeScans.App.Features.Publish.State;
 using BotDeScans.App.Features.Publish.Steps;
 using BotDeScans.App.Features.Publish.Steps.Enums;
 using FluentResults;
@@ -8,7 +8,7 @@ namespace BotDeScans.UnitTests.Specs.Features.Publish.Steps;
 
 public class UploadZipGoogleDriveStepTests : UnitTest
 {
-    private readonly IStep step;
+    private readonly UploadZipGoogleDriveStep step;
 
     public UploadZipGoogleDriveStepTests()
     {
@@ -21,30 +21,19 @@ public class UploadZipGoogleDriveStepTests : UnitTest
     {
         [Fact]
         public void ShouldHaveExpectedName() =>
-            step.StepName.Should().Be(StepName.UploadZipGoogleDrive);
+            step.Name.Should().Be(StepName.UploadZipGoogleDrive);
 
         [Fact]
         public void ShouldHaveExpectedType() =>
-            step.StepType.Should().Be(StepType.Upload);
+            step.Type.Should().Be(StepType.Upload);
     }
 
-    public class ValidateBeforeFilesManagementAsync : UploadZipGoogleDriveStepTests
+    public class ValidateAsync : UploadZipGoogleDriveStepTests
     {
         [Fact]
         public async Task ShouldReturnSuccess()
         {
-            var result = await step.ValidateBeforeFilesManagementAsync(cancellationToken);
-
-            result.Should().BeSuccess();
-        }
-    }
-
-    public class ValidateAfterFilesManagementAsync : UploadZipGoogleDriveStepTests
-    {
-        [Fact]
-        public async Task ShouldReturnSuccess()
-        {
-            var result = await step.ValidateAfterFilesManagementAsync(cancellationToken);
+            var result = await step.ValidateAsync(cancellationToken);
 
             result.Should().BeSuccess();
         }
