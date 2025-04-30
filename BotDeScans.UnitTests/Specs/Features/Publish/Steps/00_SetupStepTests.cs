@@ -69,7 +69,7 @@ public class SetupStepTests : UnitTest
 
             A.CallTo(() => fixture
                 .FreezeFake<PublishQueries>()
-                .GetTitle(title.Id, cancellationToken))
+                .GetTitleAsync(title.Id, cancellationToken))
                 .Returns(title);
 
             await step.ExecuteAsync(cancellationToken);

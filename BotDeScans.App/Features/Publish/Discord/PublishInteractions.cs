@@ -16,10 +16,10 @@ public class PublishInteractions(
     [Description("Publica novo lançamento")]
     public async Task<IResult> PublishAsync(
         string driveUrl,
-        string? chapterName,
+        string chapterName,
         string chapterNumber,
-        string? chapterVolume,
-        string? message,
+        string chapterVolume,
+        string message,
         string state)
     {
         publishState.ReleaseInfo = new(driveUrl, chapterName, chapterNumber, chapterVolume, message, int.Parse(state));
@@ -28,6 +28,7 @@ public class PublishInteractions(
         Log.Information(publishState.ReleaseInfo.ToString());
 
         var result = await stepsService.ExecuteAsync(CancellationToken);
+        result.LogIfFailed();
 
         return result.IsSuccess
             ? await messageService.SuccessReleaseMessageAsync(CancellationToken)

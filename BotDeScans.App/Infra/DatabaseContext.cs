@@ -4,10 +4,16 @@ namespace BotDeScans.App.Infra;
 
 public class DatabaseContext : DbContext
 {
-    public DbSet<Title> Titles { get; protected init; } = default!;
-    public DbSet<TitleReference> TitleReferences { get; protected init; } = default!;
+    public virtual DbSet<Title> Titles { get; protected init; } = default!;
+    public virtual DbSet<TitleReference> TitleReferences { get; protected init; } = default!;
 
-    public static string DbPath { get; } = Path.Join(AppDomain.CurrentDomain.BaseDirectory, "database.db");
+    public virtual string DbPath => Path.Join(AppDomain.CurrentDomain.BaseDirectory, "database.db");
+
+    public DatabaseContext()
+        : base() { }
+
+    public DatabaseContext(DbContextOptions options)
+        : base(options) { }
 
     protected override void OnConfiguring(DbContextOptionsBuilder options)
         => options.UseSqlite($"Data Source={DbPath}");

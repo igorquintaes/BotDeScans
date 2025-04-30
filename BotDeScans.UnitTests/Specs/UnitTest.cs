@@ -8,7 +8,7 @@ public abstract class UnitTest
     protected readonly IFixture fixture = CreateFixture();
     protected readonly CancellationToken cancellationToken = TestContext.Current.CancellationToken;
 
-    private static IFixture CreateFixture()
+    protected static IFixture CreateFixture()
     {
         var fixture = new Fixture().Customize(new AutoFakeItEasyCustomization());
         fixture.Behaviors.Remove(new ThrowingRecursionBehavior());

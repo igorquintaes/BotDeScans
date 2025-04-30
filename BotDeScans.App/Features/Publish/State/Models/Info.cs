@@ -16,10 +16,10 @@ public record Info
 
     public Info(
         string downloadUrl,
-        string? chapterName,
+        string chapterName,
         string chapterNumber,
-        string? chapterVolume,
-        string? message,
+        string chapterVolume,
+        string message,
         int titleId)
     {
         GoogleDriveUrl = new GoogleDriveUrl(downloadUrl);

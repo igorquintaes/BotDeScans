@@ -1,12 +1,10 @@
 ﻿using BotDeScans.App.Builders;
-using BotDeScans.App.Models;
 using BotDeScans.App.Services.Discord;
 using FluentResults;
 using FluentValidation.Results;
 using Google;
 using MangaDexSharp;
 using System.Text.Json;
-
 namespace BotDeScans.App.Extensions;
 
 public static class FluentResultExtensions
@@ -86,3 +84,7 @@ public static class FluentResultExtensions
             ? mangaDexErrors.Select(x => new Error($"{x.Status} - {x.Title} - {x.Detail}"))
             : ([new Error("Generic error")]);
 }
+
+public record ErrorInfo(string Message, int Number, int Depth, ErrorType Type);
+
+public enum ErrorType { Regular, Exception }

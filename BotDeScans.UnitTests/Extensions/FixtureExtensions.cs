@@ -2,6 +2,7 @@
 using FakeItEasy.Creation;
 using Microsoft.Extensions.Configuration;
 using Remora.Commands.Groups;
+using Remora.Discord.Interactivity;
 using System.Reflection;
 namespace BotDeScans.UnitTests.Extensions;
 

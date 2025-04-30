@@ -21,7 +21,7 @@ public class PublishCommands(
     [RoleAuthorize("Publisher")]
     [SuppressInteractionResponse(true)]
     [Description("Abre uma modal com as opções de publicação de um novo lançamento")]
-    public async Task<IResult> Publish(
+    public async Task<IResult> PublishAsync(
         [AutocompleteProvider(AutocompleteTitles.Id)]
         [Description("Nome da obra")]
         string title)
@@ -29,7 +29,7 @@ public class PublishCommands(
         if (context is not InteractionContext interactionContext)
             return Result.FromSuccess();
 
-        var titleId = await publishQueries.GetTitleId(title, CancellationToken);
+        var titleId = await publishQueries.GetTitleIdAsync(title, CancellationToken);
         var modal = new ModalBuilder(nameof(PublishInteractions.PublishAsync), "Publicar novo lançamento")
             .AddField(fieldName: "driveUrl", label: "Link do capítulo")
             .AddField(fieldName: "chapterName", label: "Nome do capítulo", isRequired: false)
@@ -37,13 +37,12 @@ public class PublishCommands(
             .AddField(fieldName: "chapterVolume", label: "Número do Volume", isRequired: false)
             .AddField(fieldName: "message", label: "Mensagem de postagem", isRequired: false, TextInputStyle.Paragraph)
             .CreateWithState(titleId.ToString());
-
-        var response = new InteractionResponse(InteractionCallbackType.Modal, modal);
+ 
         return await interactionAPI.CreateInteractionResponseAsync
         (
             interactionContext.Interaction.ID,
             interactionContext.Interaction.Token,
-            response,
+            new InteractionResponse(InteractionCallbackType.Modal, modal),
             ct: CancellationToken
         );
     }

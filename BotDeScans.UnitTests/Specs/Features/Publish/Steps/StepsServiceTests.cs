@@ -128,6 +128,26 @@ public class StepsServiceTests : UnitTest
         }
 
         [Fact]
+        public async Task GivenExceptionExecutionShouldReturnFailResult()
+        {
+            const string ERROR_MESSAGE = "Fatal error ocurred. More information inside log file.";
+            A.CallTo(() => fixture
+                .Freeze<PublishState>()
+                .Steps.PublishSteps.First().Step
+                .ValidateAsync(cancellationToken))
+                .Throws(new Exception("some message."));
+
+            var result = await service.ExecuteAsync(cancellationToken);
+            result.Should().BeFailure().And
+                .HaveError(ERROR_MESSAGE).And
+                .Match(result => 
+                    result.Errors.Count == 1 && 
+                    result.Errors.First().Reasons
+                        .Select(reason => reason.Message)
+                        .Contains("some message."));
+        }
+
+        [Fact]
         public async Task GivenErrorExecutionShouldBreakChainCall()
         {
             var firstManagementStep = fixture.Freeze<PublishState>().Steps.ManagementSteps.First();
@@ -138,6 +158,50 @@ public class StepsServiceTests : UnitTest
             A.CallTo(() => firstPublishStep.Step
                 .ValidateAsync(cancellationToken))
                 .Returns(Result.Fail("some error message"));
+
+            await service.ExecuteAsync(cancellationToken);
+
+            // Call chain
+            A.CallTo(() => fixture.FreezeFake<PublishMessageService>().UpdateTrackingMessageAsync(cancellationToken)).MustHaveHappened()
+                .Then(A.CallTo(() => firstManagementStep.Step.ExecuteAsync(cancellationToken)).MustHaveHappenedOnceExactly())
+                .Then(A.CallTo(() => firstManagementStep.Info.UpdateStatus(A<Result>.Ignored)).MustHaveHappenedOnceExactly())
+                .Then(A.CallTo(() => fixture.FreezeFake<PublishMessageService>().UpdateTrackingMessageAsync(cancellationToken)).MustHaveHappened())
+                .Then(A.CallTo(() => secondManagementStep.Step.ExecuteAsync(cancellationToken)).MustHaveHappenedOnceExactly())
+                .Then(A.CallTo(() => secondManagementStep.Info.UpdateStatus(A<Result>.Ignored)).MustHaveHappenedOnceExactly())
+                .Then(A.CallTo(() => fixture.FreezeFake<PublishMessageService>().UpdateTrackingMessageAsync(cancellationToken)).MustHaveHappened())
+                .Then(A.CallTo(() => firstPublishStep.Step.ValidateAsync(cancellationToken)).MustHaveHappenedOnceExactly())
+                .Then(A.CallTo(() => firstPublishStep.Info.UpdateStatus(A<Result>.Ignored)).MustHaveHappened())
+                .Then(A.CallTo(() => fixture.FreezeFake<PublishMessageService>().UpdateTrackingMessageAsync(cancellationToken)).MustHaveHappened());
+
+            // Not executed due error
+            A.CallTo(() => firstPublishStep.Step.ExecuteAsync(cancellationToken)).MustNotHaveHappened();
+            A.CallTo(() => secondPublishStep.Step.ValidateAsync(cancellationToken)).MustNotHaveHappened();
+            A.CallTo(() => secondPublishStep.Step.ExecuteAsync(cancellationToken)).MustNotHaveHappened();
+            A.CallTo(() => secondPublishStep.Info.UpdateStatus(A<Result>.Ignored)).MustNotHaveHappened();
+
+            // Update tracking error times
+            A.CallTo(() => fixture
+                .FreezeFake<PublishMessageService>()
+                .UpdateTrackingMessageAsync(cancellationToken))
+                .MustHaveHappened(4, Times.Exactly);
+
+            // Publish step was interrupted in validation, so its UpdateStatus must be called once exactly
+            A.CallTo(() => firstPublishStep.Info
+                .UpdateStatus(A<Result>.Ignored))
+                .MustHaveHappenedOnceExactly();
+        }
+
+        [Fact]
+        public async Task GivenExceptionExecutionShouldBreakChainCall()
+        {
+            var firstManagementStep = fixture.Freeze<PublishState>().Steps.ManagementSteps.First();
+            var secondManagementStep = fixture.Freeze<PublishState>().Steps.ManagementSteps.Last();
+            var firstPublishStep = fixture.Freeze<PublishState>().Steps.PublishSteps.First();
+            var secondPublishStep = fixture.Freeze<PublishState>().Steps.PublishSteps.Last();
+
+            A.CallTo(() => firstPublishStep.Step
+                .ValidateAsync(cancellationToken))
+                .Throws(new Exception("some message."));
 
             await service.ExecuteAsync(cancellationToken);
 
