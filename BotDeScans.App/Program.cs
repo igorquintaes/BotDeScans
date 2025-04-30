@@ -52,9 +52,8 @@ public class Program
         var warmupResult = Result.Ok();
         using (var scope = host.Services.CreateScope())
         {
-            // todo
-            //if (File.Exists(DatabaseContext.DbPath) is false)
-            //    File.WriteAllBytes(DatabaseContext.DbPath, []);
+            if (File.Exists(DatabaseContext.DbPath) is false)
+                File.WriteAllBytes(DatabaseContext.DbPath, []);
 
             var db = scope.ServiceProvider.GetRequiredService<DatabaseContext>();
             await db.Database.MigrateAsync(cancelationTokenSource.Token);
