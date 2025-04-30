@@ -37,7 +37,7 @@ public class PublishCommands(
             .AddField(fieldName: "chapterVolume", label: "Número do Volume", isRequired: false)
             .AddField(fieldName: "message", label: "Mensagem de postagem", isRequired: false, TextInputStyle.Paragraph)
             .CreateWithState(titleId.ToString());
- 
+
         return await interactionAPI.CreateInteractionResponseAsync
         (
             interactionContext.Interaction.ID,

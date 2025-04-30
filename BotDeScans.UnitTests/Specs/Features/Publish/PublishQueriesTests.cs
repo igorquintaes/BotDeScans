@@ -8,7 +8,7 @@ public class PublishQueriesTests : UnitQueriesTest, IDisposable
 {
     private readonly PublishQueries queries;
 
-    public PublishQueriesTests() => 
+    public PublishQueriesTests() =>
         queries = fixture.Create<PublishQueries>();
 
     public class GetTitleAsync : PublishQueriesTests

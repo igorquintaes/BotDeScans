@@ -4,7 +4,7 @@ namespace BotDeScans.UnitTests.Specs;
 
 public abstract class UnitQueriesTest : UnitTest, IDisposable
 {
-    protected readonly new IFixture fixture = CreateDatabaseFixture();
+    protected new readonly IFixture fixture = CreateDatabaseFixture();
 
     private static IFixture CreateDatabaseFixture()
     {

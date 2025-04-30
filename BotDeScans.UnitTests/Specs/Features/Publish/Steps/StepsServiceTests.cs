@@ -2,7 +2,6 @@
 using BotDeScans.App.Features.Publish.State;
 using BotDeScans.App.Features.Publish.State.Models;
 using BotDeScans.App.Features.Publish.Steps;
-using BotDeScans.App.Features.Publish.Steps.Enums;
 using FluentResults;
 namespace BotDeScans.UnitTests.Specs.Features.Publish.Steps;
 
@@ -140,8 +139,8 @@ public class StepsServiceTests : UnitTest
             var result = await service.ExecuteAsync(cancellationToken);
             result.Should().BeFailure().And
                 .HaveError(ERROR_MESSAGE).And
-                .Match(result => 
-                    result.Errors.Count == 1 && 
+                .Match(result =>
+                    result.Errors.Count == 1 &&
                     result.Errors.First().Reasons
                         .Select(reason => reason.Message)
                         .Contains("some message."));

@@ -23,7 +23,7 @@ public class PublishService(IConfiguration configuration, IEnumerable<IStep> all
             .ToList();
 
         return new EnabledSteps(enabledSteps.ToDictionary(
-            step => step, 
+            step => step,
             step => new StepInfo(step)));
     }
 
@@ -33,7 +33,7 @@ public class PublishService(IConfiguration configuration, IEnumerable<IStep> all
     private static List<IStep> GetConfigurationSteps(IConfiguration configuration, IEnumerable<IStep> allSteps)
     {
         var stepNames = configuration.GetRequiredValues<StepName>(
-            key: STEPS_KEY, 
+            key: STEPS_KEY,
             value => Enum.Parse(typeof(StepName), value));
 
         return allSteps

@@ -39,9 +39,9 @@ public class TitleValidator : AbstractValidator<Title>
     }
 
     static async Task<bool> RoleMustExists(
-        ulong prop, 
-        RolesService rolesService, 
-        ValidationContext<Title> context, 
+        ulong prop,
+        RolesService rolesService,
+        ValidationContext<Title> context,
         CancellationToken cancellationToken)
     {
         var rolesResult = await rolesService.GetRoleFromGuildAsync(prop.ToString(), cancellationToken);

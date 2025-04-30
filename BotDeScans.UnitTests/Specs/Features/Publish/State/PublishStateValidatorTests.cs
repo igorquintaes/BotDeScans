@@ -61,7 +61,7 @@ public class PublishStateValidatorTests : UnitTest
         A.CallTo(() => fixture
             .FreezeFake<IValidator<Title>>()
             .ValidateAsync(
-            A<IValidationContext>.That.Matches(x => (Title)x.InstanceToValidate == data.Title), 
+            A<IValidationContext>.That.Matches(x => (Title)x.InstanceToValidate == data.Title),
                 cancellationToken))
             .MustHaveHappenedOnceExactly();
 
@@ -80,7 +80,7 @@ public class PublishStateValidatorTests : UnitTest
             .Build<PublishState>()
             .With(x => x.Title, fixture
                 .Build<Title>()
-                .With(x => x.References,[ ])
+                .With(x => x.References, [])
                 .Create())
             .With(x => x.Steps, new EnabledSteps(new Dictionary<IStep, StepInfo>
             {

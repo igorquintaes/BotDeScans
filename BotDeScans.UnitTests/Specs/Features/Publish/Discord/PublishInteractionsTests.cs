@@ -3,14 +3,14 @@ using BotDeScans.App.Features.Publish.Discord;
 using BotDeScans.App.Features.Publish.State;
 using BotDeScans.App.Features.Publish.State.Models;
 using BotDeScans.App.Features.Publish.Steps;
-using Remora.Discord.API.Abstractions.Objects;
 using FluentResults;
+using Remora.Discord.API.Abstractions.Objects;
 
 namespace BotDeScans.UnitTests.Specs.Features.Publish.Discord;
 
 public class PublishInteractionsTests : UnitTest
 {
-    private readonly PublishInteractions interactions; 
+    private readonly PublishInteractions interactions;
 
     public PublishInteractionsTests()
     {
@@ -31,7 +31,7 @@ public class PublishInteractionsTests : UnitTest
             .SuccessReleaseMessageAsync(cancellationToken))
             .Returns(fixture.FreezeFake<Remora.Results.IResult<IMessage>>());
 
-        interactions = fixture.CreateCommand<PublishInteractions>(cancellationToken); 
+        interactions = fixture.CreateCommand<PublishInteractions>(cancellationToken);
     }
 
     public class PublishAsync : PublishInteractionsTests

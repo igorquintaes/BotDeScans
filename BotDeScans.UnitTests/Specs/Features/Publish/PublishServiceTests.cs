@@ -2,7 +2,6 @@
 using BotDeScans.App.Features.Publish.Steps;
 using BotDeScans.App.Features.Publish.Steps.Enums;
 using FluentAssertions.Execution;
-using System.Linq;
 using System.Reflection;
 using System.Runtime.CompilerServices;
 namespace BotDeScans.UnitTests.Specs.Features.Publish;

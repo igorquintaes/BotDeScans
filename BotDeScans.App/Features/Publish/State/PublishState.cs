@@ -54,7 +54,7 @@ public class PublishStateValidator : AbstractValidator<PublishState>
     private static async Task<bool> RoleMustExists(
         string role,
         RolesService rolesService,
-        ValidationContext<PublishState> context, 
+        ValidationContext<PublishState> context,
         CancellationToken cancellationToken)
     {
         var rolesResult = await rolesService.GetRoleFromGuildAsync(role, cancellationToken);
