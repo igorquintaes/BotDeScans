@@ -2,6 +2,8 @@
 using BotDeScans.App.Services;
 using BotDeScans.App.Services.Initializations;
 using FluentResults;
+using FluentValidation;
+using FluentValidation.Results;
 namespace BotDeScans.UnitTests.Specs.Services.Initializations;
 
 public class SetupClientsServiceTests : UnitTest
@@ -30,6 +32,11 @@ public class SetupClientsServiceTests : UnitTest
                 .Returns(fixture.FreezeFake<FakeClientFactory>());
 
             A.CallTo(() => fixture
+                .FreezeFake<IServiceProvider>()
+                .GetService(typeof(IValidator<FakeClientFactory>)))
+                .Returns(fixture.FreezeFake<IValidator<FakeClientFactory>>());
+
+            A.CallTo(() => fixture
                 .FreezeFake<FakeClientFactory>()
                 .ExpectedInPublishFeature)
                 .Returns(true);
@@ -44,13 +51,13 @@ public class SetupClientsServiceTests : UnitTest
         }
 
         [Fact]
-        public async Task GivenErrorToValidateClientConfigurationShouldReturnFailResult()
+        public async Task GivenValidationErrorShouldReturnFailResult()
         {
             const string ERROR_MESSAGE = "some-error";
             A.CallTo(() => fixture
-                .FreezeFake<FakeClientFactory>()
-                .ValidateConfiguration())
-                .Returns(Result.Fail(ERROR_MESSAGE));
+                .FreezeFake<IValidator<FakeClientFactory>>()
+                .ValidateAsync(fixture.FreezeFake<FakeClientFactory>(), cancellationToken))
+                .Returns(new ValidationResult([new ValidationFailure("prop", ERROR_MESSAGE)]));
 
             var result = await service.SetupAsync(cancellationToken);
 
@@ -103,11 +110,6 @@ public class SetupClientsServiceTests : UnitTest
 
             A.CallTo(() => fixture
                 .FreezeFake<FakeClientFactory>()
-                .ValidateConfiguration())
-                .MustNotHaveHappened();
-
-            A.CallTo(() => fixture
-                .FreezeFake<FakeClientFactory>()
                 .CreateAsync(A<CancellationToken>.Ignored))
                 .MustNotHaveHappened();
 
@@ -134,9 +136,6 @@ public class SetupClientsServiceTests : UnitTest
         public class FakeClientFactory : ClientFactory<object>
         {
             public override bool ExpectedInPublishFeature =>
-                throw new NotImplementedException();
-
-            public override Result ValidateConfiguration() =>
                 throw new NotImplementedException();
 
             public override Task<Result<object>> CreateAsync(CancellationToken cancellationToken) =>

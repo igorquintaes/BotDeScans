@@ -3,6 +3,7 @@ using BotDeScans.App.Features.Publish.Steps.Enums;
 using BotDeScans.App.Services;
 using CG.Web.MegaApiClient;
 using FluentResults;
+using FluentValidation;
 using Microsoft.Extensions.Configuration;
 namespace BotDeScans.App.Features.Mega;
 
@@ -19,10 +20,10 @@ public class MegaClientFactory(IConfiguration configuration) : ClientFactory<IMe
         var client = new MegaApiClient();
 
         await client.LoginAsync(user, pass);
-        if (!client.IsLoggedIn)
-            return Result.Fail("Unable to login on Mega. Check your user and pass, or if your account is blocked.");
 
-        return Result.Ok<IMegaApiClient>(client);
+        return client.IsLoggedIn is false
+            ? Result.Fail("Unable to login on Mega. Check your user and pass, or if your account is blocked.")
+            : Result.Ok<IMegaApiClient>(client);
     }
 
     public override async Task<Result> HealthCheckAsync(IMegaApiClient client, CancellationToken cancellationToken)
@@ -30,19 +31,21 @@ public class MegaClientFactory(IConfiguration configuration) : ClientFactory<IMe
         var accInfo = await client.GetAccountInformationAsync();
         return Result.OkIf(accInfo is not null, "Error while trying to retrieve information from account.");
     }
+}
 
-    public override Result ValidateConfiguration()
+public class MegaClientFactoryValidator : AbstractValidator<MegaClientFactory>
+{
+    public MegaClientFactoryValidator(IConfiguration configuration)
     {
-        var aggregatedResult = Result.Ok();
+        var userResult = configuration.GetRequiredValueAsResult<string>("Mega:User");
+        var passResult = configuration.GetRequiredValueAsResult<string>("Mega:Pass");
 
-        var user = configuration.GetValue<string?>("Mega:User");
-        if (string.IsNullOrWhiteSpace(user))
-            aggregatedResult = aggregatedResult.WithError("'Mega:User': value not found in config.json.");
+        RuleFor(factory => factory)
+            .Must(_ => userResult.IsSuccess)
+            .WithMessage(userResult.ToValidationErrorMessage());
 
-        var pass = configuration.GetValue<string?>("Mega:Pass");
-        if (string.IsNullOrWhiteSpace(pass))
-            aggregatedResult = aggregatedResult.WithError("'Mega:Pass': value not found in config.json.");
-
-        return aggregatedResult;
+        RuleFor(factory => factory)
+            .Must(_ => passResult.IsSuccess)
+            .WithMessage(passResult.ToValidationErrorMessage());
     }
 }

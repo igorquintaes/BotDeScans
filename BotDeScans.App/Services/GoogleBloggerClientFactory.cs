@@ -2,6 +2,7 @@
 using BotDeScans.App.Features.Publish.Steps.Enums;
 using BotDeScans.App.Services.Wrappers;
 using FluentResults;
+using FluentValidation;
 using Google.Apis.Auth.OAuth2;
 using Google.Apis.Blogger.v3;
 using Google.Apis.Services;
@@ -19,37 +20,6 @@ public class GoogleBloggerClientFactory(
     public override bool ExpectedInPublishFeature => configuration
         .GetRequiredValues<StepName>("Settings:Publish:Steps", value => Enum.Parse(typeof(StepName), value))
         .Any(x => x == StepName.PublishBlogspot);
-
-    public override Result ValidateConfiguration()
-    {
-        var aggregatedResult = Result.Ok();
-
-        var bloggerId = configuration.GetValue<string?>("Blogger:Id");
-        if (string.IsNullOrWhiteSpace(bloggerId))
-            aggregatedResult = aggregatedResult.WithError($"'Blogger:Id': value not found in config.json.");
-
-        var bloggerUrl = configuration.GetValue<string?>("Blogger:Url");
-        if (string.IsNullOrWhiteSpace(bloggerUrl))
-            aggregatedResult = aggregatedResult.WithError($"'Blogger:Url': value not found in config.json.");
-
-        if (string.IsNullOrWhiteSpace(bloggerUrl) is false
-            && Uri.TryCreate(bloggerUrl, UriKind.Absolute, out var _) is false)
-            aggregatedResult = aggregatedResult.WithError("Não foi possível identificar o link do Blogger como válido.");
-
-        var baseDirectory = AppDomain.CurrentDomain.BaseDirectory;
-        var templateFileName = GoogleBloggerService.TEMPLATE_FILE_NAME;
-        var templateFilePath = Path.Combine(baseDirectory, "config", templateFileName);
-        if (!File.Exists(templateFilePath))
-            aggregatedResult = aggregatedResult.WithError($"Não foi possível encontrar o arquivo de template : {templateFileName}");
-
-        var credentialResult = ConfigFileExists(CREDENTIALS_FILE_NAME);
-        aggregatedResult = aggregatedResult.WithReasons(credentialResult.Reasons);
-
-        var templateResult = ConfigFileExists(GoogleBloggerService.TEMPLATE_FILE_NAME);
-        aggregatedResult = aggregatedResult.WithReasons(templateResult.Reasons);
-
-        return aggregatedResult;
-    }
 
     public override async Task<Result<BloggerService>> CreateAsync(
         CancellationToken cancellationToken = default)
@@ -80,5 +50,38 @@ public class GoogleBloggerClientFactory(
 
         var listResult = await googleWrapper.ExecuteAsync(listRequest, cancellationToken);
         return listResult.ToResult();
+    }
+}
+
+public class GoogleBloggerClientFactoryValidator : AbstractValidator<GoogleBloggerClientFactory>
+{
+    public GoogleBloggerClientFactoryValidator(IConfiguration configuration)
+    {
+        var bloggerIdResult = configuration.GetRequiredValueAsResult<string>("Blogger:Id");
+        var bloggerUrlResult = configuration.GetRequiredValueAsResult<string>("Blogger:Url");
+
+        RuleFor(factory => factory)
+            .Must(_ => bloggerIdResult.IsSuccess)
+            .WithMessage(bloggerIdResult.ToValidationErrorMessage());
+
+        RuleFor(factory => factory)
+            .Must(_ => bloggerUrlResult.IsSuccess)
+            .WithMessage(bloggerUrlResult.ToValidationErrorMessage());
+
+        RuleFor(factory => factory)
+            .Must(_ => Uri.TryCreate(bloggerUrlResult.Value, UriKind.Absolute, out var _))
+            .WithMessage("Não foi possível identificar o link do Blogger como válido.")
+            .When(_ => bloggerUrlResult.IsSuccess);
+
+        var credentialResult = GoogleBloggerClientFactory.ConfigFileExists(GoogleBloggerClientFactory.CREDENTIALS_FILE_NAME);
+        var templateResult = GoogleBloggerClientFactory.ConfigFileExists(GoogleBloggerService.TEMPLATE_FILE_NAME);
+
+        RuleFor(factory => factory)
+            .Must(_ => credentialResult.IsSuccess)
+            .WithMessage(credentialResult.ToValidationErrorMessage());
+
+        RuleFor(factory => factory)
+            .Must(_ => templateResult.IsSuccess)
+            .WithMessage(templateResult.ToValidationErrorMessage());
     }
 }

@@ -1,8 +1,10 @@
 ﻿using BotDeScans.App.Extensions;
 using BotDeScans.App.Features.Publish.Steps.Enums;
 using FluentResults;
+using FluentValidation;
 using MangaDexSharp;
 using Microsoft.Extensions.Configuration;
+using SixLabors.ImageSharp;
 
 namespace BotDeScans.App.Services;
 
@@ -14,33 +16,6 @@ public class MangaDexClientTokenFactory(
     public override bool ExpectedInPublishFeature => configuration
         .GetRequiredValues<StepName>("Settings:Publish:Steps", value => Enum.Parse(typeof(StepName), value))
         .Any(x => x == StepName.UploadMangadex);
-
-    public override Result ValidateConfiguration()
-    {
-        var aggregatedResult = Result.Ok();
-
-        var username = configuration.GetValue<string?>("Mangadex:Username");
-        if (string.IsNullOrWhiteSpace(username))
-            aggregatedResult = aggregatedResult.WithError("'Mangadex:Username': value not found in config.json.");
-
-        var password = configuration.GetValue<string?>("Mangadex:Password");
-        if (string.IsNullOrWhiteSpace(password))
-            aggregatedResult = aggregatedResult.WithError("'Mangadex:Password': value not found in config.json.");
-
-        var clientId = configuration.GetValue<string?>("Mangadex:ClientId");
-        if (string.IsNullOrWhiteSpace(clientId))
-            aggregatedResult = aggregatedResult.WithError("'Mangadex:ClientId': value not found in config.json.");
-
-        var clientSecret = configuration.GetValue<string?>("Mangadex:ClientSecret");
-        if (string.IsNullOrWhiteSpace(clientSecret))
-            aggregatedResult = aggregatedResult.WithError("'Mangadex:ClientSecret': value not found in config.json.");
-
-        var groupId = configuration.GetValue<string?>("Mangadex:GroupId");
-        if (string.IsNullOrWhiteSpace(groupId))
-            aggregatedResult = aggregatedResult.WithError("'Mangadex:GroupId': value not found in config.json.");
-
-        return aggregatedResult;
-    }
 
     public override async Task<Result<MangaDexAccessToken>> CreateAsync(CancellationToken cancellationToken)
     {
@@ -76,4 +51,36 @@ public class MangaDexClientTokenFactory(
 public class MangaDexAccessToken(string value)
 {
     public string Value { get; } = value;
+}
+
+public class MangaDexClientTokenFactoryValidator : AbstractValidator<MangaDexClientTokenFactory>
+{
+    public MangaDexClientTokenFactoryValidator(IConfiguration configuration)
+    {
+        var groupIdResult = configuration.GetRequiredValueAsResult<string>("Mangadex:GroupId");
+        var usernameResult = configuration.GetRequiredValueAsResult<string>("Mangadex:Username");
+        var passwordResult = configuration.GetRequiredValueAsResult<string>("Mangadex:Password");
+        var clientIdResult = configuration.GetRequiredValueAsResult<string>("Mangadex:ClientId");
+        var clientSecredResult = configuration.GetRequiredValueAsResult<string>("Mangadex:ClientSecret");
+
+        RuleFor(factory => factory)
+            .Must(_ => groupIdResult.IsSuccess)
+            .WithMessage(groupIdResult.ToValidationErrorMessage());
+
+        RuleFor(factory => factory)
+            .Must(_ => usernameResult.IsSuccess)
+            .WithMessage(usernameResult.ToValidationErrorMessage());
+
+        RuleFor(factory => factory)
+            .Must(_ => passwordResult.IsSuccess)
+            .WithMessage(passwordResult.ToValidationErrorMessage());
+
+        RuleFor(factory => factory)
+            .Must(_ => clientIdResult.IsSuccess)
+            .WithMessage(clientIdResult.ToValidationErrorMessage());
+
+        RuleFor(factory => factory)
+            .Must(_ => clientSecredResult.IsSuccess)
+            .WithMessage(clientSecredResult.ToValidationErrorMessage());
+    }
 }

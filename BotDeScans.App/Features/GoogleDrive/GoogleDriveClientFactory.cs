@@ -1,6 +1,8 @@
-﻿using BotDeScans.App.Services;
+﻿using BotDeScans.App.Extensions;
+using BotDeScans.App.Services;
 using BotDeScans.App.Services.Wrappers;
 using FluentResults;
+using FluentValidation;
 using Google.Apis.Auth.OAuth2;
 using Google.Apis.Drive.v3;
 using Google.Apis.Services;
@@ -11,9 +13,6 @@ public class GoogleDriveClientFactory(GoogleWrapper googleWrapper) : ClientFacto
     public const string CREDENTIALS_FILE_NAME = "googledrive.json";
 
     public override bool ExpectedInPublishFeature => true;
-
-    public override Result ValidateConfiguration() =>
-        ConfigFileExists(CREDENTIALS_FILE_NAME);
 
     public override async Task<Result<DriveService>> CreateAsync(CancellationToken cancellationToken = default)
     {
@@ -34,5 +33,17 @@ public class GoogleDriveClientFactory(GoogleWrapper googleWrapper) : ClientFacto
 
         var listResult = await googleWrapper.ExecuteAsync(listRequest, cancellationToken);
         return listResult.ToResult();
+    }
+}
+
+public class GoogleDriveClientFactoryValidator : AbstractValidator<GoogleDriveClientFactory>
+{
+    public GoogleDriveClientFactoryValidator()
+    {
+        var credentialResult = GoogleDriveClientFactory.ConfigFileExists(GoogleDriveClientFactory.CREDENTIALS_FILE_NAME);
+
+        RuleFor(factory => factory)
+            .Must(_ => credentialResult.IsSuccess)
+            .WithMessage(credentialResult.ToValidationErrorMessage());
     }
 }
