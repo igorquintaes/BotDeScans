@@ -1,6 +1,7 @@
 ﻿using BotDeScans.App.Extensions;
 using BotDeScans.App.Features.GoogleDrive.Discord;
 using BotDeScans.App.Features.GoogleDrive.InternalServices;
+using BotDeScans.App.Services.Initializations.ClientFactories;
 using Google.Apis.Drive.v3;
 using Microsoft.Extensions.DependencyInjection;
 using Remora.Commands.Extensions;
@@ -20,6 +21,5 @@ internal static class AddDependencies
         .AddScoped<GoogleDrivePermissionsService>()
         .AddScoped<GoogleDriveResourcesService>()
         .AddScoped<GoogleDriveSettingsService>()
-        .AddScoped<GoogleDriveClientFactory>()
-        .AddExternalClientAsSingleton<DriveService, GoogleDriveClientFactory>();
+        .AddScoped<GoogleDriveClientFactory>();
 }

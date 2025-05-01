@@ -7,13 +7,13 @@ public class PublishReplacerServiceTests : UnitTest
 {
     public class Replace : PublishReplacerServiceTests
     {
-        private static new IFixture fixture => ReplaceTestData.Fixture;
+        private static IFixture Fixture => ReplaceTestData.Fixture;
 
         [Theory]
         [ClassData(typeof(ReplaceTestData))]
         public void ShouldReplaceText(string key, Func<string?> value)
         {
-            var replacer = fixture.Create<PublishReplacerService>();
+            var replacer = Fixture.Create<PublishReplacerService>();
             var text = $"abc{key}xyz";
 
             var result = replacer.Replace(text);
@@ -25,9 +25,9 @@ public class PublishReplacerServiceTests : UnitTest
         [ClassData(typeof(RemoveTestData))]
         public void ShouldRemoveText(string keyStart, string keyEnd, string? value)
         {
-            var replacer = fixture.Create<PublishReplacerService>();
+            var replacer = Fixture.Create<PublishReplacerService>();
             var text = $"abc{keyStart}something{keyEnd}xyz";
-            SetPublishStateReplaceFieldsValue(fixture.Freeze<PublishState>(), value);
+            SetPublishStateReplaceFieldsValue(Fixture.Freeze<PublishState>(), value);
 
             var result = replacer.Replace(text);
 
@@ -38,9 +38,9 @@ public class PublishReplacerServiceTests : UnitTest
         [ClassData(typeof(RemoveTestData))]
         public void ShouldRemoveOnlyTags(string keyStart, string keyEnd, string? _)
         {
-            var replacer = fixture.Create<PublishReplacerService>();
+            var replacer = Fixture.Create<PublishReplacerService>();
             var text = $"abc{keyStart}something{keyEnd}xyz";
-            SetPublishStateReplaceFieldsValue(fixture.Freeze<PublishState>(), "some-value");
+            SetPublishStateReplaceFieldsValue(Fixture.Freeze<PublishState>(), "some-value");
 
             var result = replacer.Replace(text);
 
@@ -52,11 +52,11 @@ public class PublishReplacerServiceTests : UnitTest
         [InlineData("value")]
         public void ShouldRemoveWronglyOpeningTag(string? keyValue)
         {
-            var replacer = fixture.Create<PublishReplacerService>();
+            var replacer = Fixture.Create<PublishReplacerService>();
             var sampleKey = PublishReplacerService.ReplaceRules.First().Key;
             var openingKey = $"!##START_REMOVE_IF_EMPTY_{sampleKey}##!";
             var text = $"abc{openingKey}xyz";
-            SetPublishStateReplaceFieldsValue(fixture.Freeze<PublishState>(), keyValue);
+            SetPublishStateReplaceFieldsValue(Fixture.Freeze<PublishState>(), keyValue);
 
             var result = replacer.Replace(text);
 
@@ -68,11 +68,11 @@ public class PublishReplacerServiceTests : UnitTest
         [InlineData("value")]
         public void ShouldRemoveWronglyClosingTag(string? keyValue)
         {
-            var replacer = fixture.Create<PublishReplacerService>();
+            var replacer = Fixture.Create<PublishReplacerService>();
             var sampleKey = PublishReplacerService.ReplaceRules.First().Key;
             var openingKey = $"!##END_REMOVE_IF_EMPTY_{sampleKey}##!";
             var text = $"abc{openingKey}xyz";
-            SetPublishStateReplaceFieldsValue(fixture.Freeze<PublishState>(), keyValue);
+            SetPublishStateReplaceFieldsValue(Fixture.Freeze<PublishState>(), keyValue);
 
             var result = replacer.Replace(text);
 
@@ -82,11 +82,11 @@ public class PublishReplacerServiceTests : UnitTest
         [Fact]
         public void GivenAllReplacementRulesShouldApplyAllTogether()
         {
-            fixture.Freeze<PublishState>().ReleaseLinks.BoxPdf = null;
-            fixture.Freeze<PublishState>().ReleaseLinks.DriveZip = "drive-zip";
-            fixture.Freeze<PublishState>().ReleaseLinks.DrivePdf = "drive-pdf";
+            Fixture.Freeze<PublishState>().ReleaseLinks.BoxPdf = null;
+            Fixture.Freeze<PublishState>().ReleaseLinks.DriveZip = "drive-zip";
+            Fixture.Freeze<PublishState>().ReleaseLinks.DrivePdf = "drive-pdf";
 
-            var replacer = fixture.Create<PublishReplacerService>();
+            var replacer = Fixture.Create<PublishReplacerService>();
 
             var text = "1-!##BOX_PDF_LINK##!-1" +
                        "2-!##START_REMOVE_IF_EMPTY_BOX_PDF_LINK##!-2" +
@@ -155,7 +155,7 @@ public class PublishReplacerServiceTests : UnitTest
         private static void SetPublishStateReplaceFieldsValue(PublishState publishState, string? value)
         {
             publishState.Title = publishState.Title with { Name = value! };
-            publishState.ReleaseInfo = new(default!, value, value!, value, value, default);
+            publishState.ReleaseInfo = new(default!, value!, value!, value!, value!, default);
             publishState.InternalData.BloggerImageAsBase64 = value;
             publishState.InternalData.BoxPdfReaderKey = value;
             publishState.ReleaseLinks.MegaZip = value;

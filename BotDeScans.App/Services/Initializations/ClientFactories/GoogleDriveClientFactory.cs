@@ -1,12 +1,10 @@
-﻿using BotDeScans.App.Extensions;
-using BotDeScans.App.Services;
+﻿using BotDeScans.App.Services.Initializations.ClientFactories.Base;
 using BotDeScans.App.Services.Wrappers;
 using FluentResults;
-using FluentValidation;
 using Google.Apis.Auth.OAuth2;
 using Google.Apis.Drive.v3;
 using Google.Apis.Services;
-namespace BotDeScans.App.Features.GoogleDrive;
+namespace BotDeScans.App.Services.Initializations.ClientFactories;
 
 public class GoogleDriveClientFactory(GoogleWrapper googleWrapper) : ClientFactory<DriveService>
 {
@@ -33,17 +31,5 @@ public class GoogleDriveClientFactory(GoogleWrapper googleWrapper) : ClientFacto
 
         var listResult = await googleWrapper.ExecuteAsync(listRequest, cancellationToken);
         return listResult.ToResult();
-    }
-}
-
-public class GoogleDriveClientFactoryValidator : AbstractValidator<GoogleDriveClientFactory>
-{
-    public GoogleDriveClientFactoryValidator()
-    {
-        var credentialResult = GoogleDriveClientFactory.ConfigFileExists(GoogleDriveClientFactory.CREDENTIALS_FILE_NAME);
-
-        RuleFor(factory => factory)
-            .Must(_ => credentialResult.IsSuccess)
-            .WithMessage(credentialResult.ToValidationErrorMessage());
     }
 }

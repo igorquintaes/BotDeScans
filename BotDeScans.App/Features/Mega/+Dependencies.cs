@@ -1,6 +1,7 @@
 ﻿using BotDeScans.App.Extensions;
 using BotDeScans.App.Features.Mega.Discord;
 using BotDeScans.App.Features.Mega.InternalServices;
+using BotDeScans.App.Services.Initializations.ClientFactories;
 using CG.Web.MegaApiClient;
 using Microsoft.Extensions.DependencyInjection;
 using Remora.Commands.Extensions;
@@ -18,6 +19,5 @@ internal static class AddDependencies
         .AddScoped<MegaFilesService>()
         .AddScoped<MegaFoldersService>()
         .AddScoped<MegaResourcesService>()
-        .AddScoped<MegaSettingsService>()
-        .AddExternalClientAsScoped<IMegaApiClient, MegaClientFactory>();
+        .AddScoped<MegaSettingsService>();
 }

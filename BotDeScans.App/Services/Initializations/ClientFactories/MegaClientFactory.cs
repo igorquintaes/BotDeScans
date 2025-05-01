@@ -1,11 +1,11 @@
 ﻿using BotDeScans.App.Extensions;
 using BotDeScans.App.Features.Publish.Steps.Enums;
-using BotDeScans.App.Services;
+using BotDeScans.App.Services.Initializations.ClientFactories.Base;
 using CG.Web.MegaApiClient;
 using FluentResults;
 using FluentValidation;
 using Microsoft.Extensions.Configuration;
-namespace BotDeScans.App.Features.Mega;
+namespace BotDeScans.App.Services.Initializations.ClientFactories;
 
 public class MegaClientFactory(IConfiguration configuration) : ClientFactory<IMegaApiClient>
 {
@@ -30,22 +30,5 @@ public class MegaClientFactory(IConfiguration configuration) : ClientFactory<IMe
     {
         var accInfo = await client.GetAccountInformationAsync();
         return Result.OkIf(accInfo is not null, "Error while trying to retrieve information from account.");
-    }
-}
-
-public class MegaClientFactoryValidator : AbstractValidator<MegaClientFactory>
-{
-    public MegaClientFactoryValidator(IConfiguration configuration)
-    {
-        var userResult = configuration.GetRequiredValueAsResult<string>("Mega:User");
-        var passResult = configuration.GetRequiredValueAsResult<string>("Mega:Pass");
-
-        RuleFor(factory => factory)
-            .Must(_ => userResult.IsSuccess)
-            .WithMessage(userResult.ToValidationErrorMessage());
-
-        RuleFor(factory => factory)
-            .Must(_ => passResult.IsSuccess)
-            .WithMessage(passResult.ToValidationErrorMessage());
     }
 }

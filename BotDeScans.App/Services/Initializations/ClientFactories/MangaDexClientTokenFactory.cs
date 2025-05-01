@@ -1,12 +1,12 @@
 ﻿using BotDeScans.App.Extensions;
 using BotDeScans.App.Features.Publish.Steps.Enums;
+using BotDeScans.App.Services.Initializations.ClientFactories.Base;
 using FluentResults;
-using FluentValidation;
 using MangaDexSharp;
 using Microsoft.Extensions.Configuration;
 using SixLabors.ImageSharp;
 
-namespace BotDeScans.App.Services;
+namespace BotDeScans.App.Services.Initializations.ClientFactories;
 
 public class MangaDexClientTokenFactory(
     IMangaDex mangaDex,
@@ -51,36 +51,4 @@ public class MangaDexClientTokenFactory(
 public class MangaDexAccessToken(string value)
 {
     public string Value { get; } = value;
-}
-
-public class MangaDexClientTokenFactoryValidator : AbstractValidator<MangaDexClientTokenFactory>
-{
-    public MangaDexClientTokenFactoryValidator(IConfiguration configuration)
-    {
-        var groupIdResult = configuration.GetRequiredValueAsResult<string>("Mangadex:GroupId");
-        var usernameResult = configuration.GetRequiredValueAsResult<string>("Mangadex:Username");
-        var passwordResult = configuration.GetRequiredValueAsResult<string>("Mangadex:Password");
-        var clientIdResult = configuration.GetRequiredValueAsResult<string>("Mangadex:ClientId");
-        var clientSecredResult = configuration.GetRequiredValueAsResult<string>("Mangadex:ClientSecret");
-
-        RuleFor(factory => factory)
-            .Must(_ => groupIdResult.IsSuccess)
-            .WithMessage(groupIdResult.ToValidationErrorMessage());
-
-        RuleFor(factory => factory)
-            .Must(_ => usernameResult.IsSuccess)
-            .WithMessage(usernameResult.ToValidationErrorMessage());
-
-        RuleFor(factory => factory)
-            .Must(_ => passwordResult.IsSuccess)
-            .WithMessage(passwordResult.ToValidationErrorMessage());
-
-        RuleFor(factory => factory)
-            .Must(_ => clientIdResult.IsSuccess)
-            .WithMessage(clientIdResult.ToValidationErrorMessage());
-
-        RuleFor(factory => factory)
-            .Must(_ => clientSecredResult.IsSuccess)
-            .WithMessage(clientSecredResult.ToValidationErrorMessage());
-    }
 }

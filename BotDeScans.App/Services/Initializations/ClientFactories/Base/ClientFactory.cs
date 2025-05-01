@@ -1,5 +1,5 @@
 ﻿using FluentResults;
-namespace BotDeScans.App.Services;
+namespace BotDeScans.App.Services.Initializations.ClientFactories.Base;
 
 public abstract class ClientFactory<TClient>
 {
