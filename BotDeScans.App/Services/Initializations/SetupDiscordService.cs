@@ -54,7 +54,7 @@ public class SetupDiscordServiceValidator : AbstractValidator<SetupDiscordServic
             .Must(_ => pingTypeResult.IsSuccess)
             .WithMessage(pingTypeResult.ToValidationErrorMessage());
 
-        When(_ => pingTypeResult.IsSuccess && pingTypeResult.Value is PingType.Global, () =>
+        When(_ => pingTypeResult.ValueOrDefault is PingType.Global, () =>
         {
             var globalPingResult = configuration.GetRequiredValueAsResult<string>(GlobalPing.GLOBAL_ROLE_KEY);
 
