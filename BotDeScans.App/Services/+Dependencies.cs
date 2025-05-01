@@ -5,7 +5,7 @@ using BotDeScans.App.Features.Publish.Steps;
 using BotDeScans.App.Features.Titles;
 using BotDeScans.App.Services.Discord;
 using BotDeScans.App.Services.Initializations;
-using BotDeScans.App.Services.Initializations.ClientFactories;
+using BotDeScans.App.Services.Initializations.Factories;
 using BotDeScans.App.Services.Logging;
 using BotDeScans.App.Services.Wrappers;
 using FluentValidation;

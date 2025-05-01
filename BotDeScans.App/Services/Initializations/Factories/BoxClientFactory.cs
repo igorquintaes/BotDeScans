@@ -1,13 +1,13 @@
 ﻿using BotDeScans.App.Extensions;
 using BotDeScans.App.Features.Publish.Steps.Enums;
-using BotDeScans.App.Services.Initializations.ClientFactories.Base;
+using BotDeScans.App.Services.Initializations.Factories.Base;
 using Box.V2;
 using Box.V2.Config;
 using Box.V2.JWTAuth;
 using FluentResults;
 using Microsoft.Extensions.Configuration;
 
-namespace BotDeScans.App.Services.Initializations.ClientFactories;
+namespace BotDeScans.App.Services.Initializations.Factories;
 
 public class BoxClientFactory(IConfiguration configuration) : ClientFactory<IBoxClient>
 {

@@ -1,5 +1,5 @@
 ﻿using BotDeScans.App.Extensions;
-using BotDeScans.App.Services.Initializations.ClientFactories;
+using BotDeScans.App.Services.Initializations.Factories;
 using FluentValidation;
 
 namespace BotDeScans.App.Services.Initializations.FactoriesValidators;

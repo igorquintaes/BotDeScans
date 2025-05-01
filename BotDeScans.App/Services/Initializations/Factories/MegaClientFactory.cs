@@ -1,11 +1,10 @@
 ﻿using BotDeScans.App.Extensions;
 using BotDeScans.App.Features.Publish.Steps.Enums;
-using BotDeScans.App.Services.Initializations.ClientFactories.Base;
+using BotDeScans.App.Services.Initializations.Factories.Base;
 using CG.Web.MegaApiClient;
 using FluentResults;
-using FluentValidation;
 using Microsoft.Extensions.Configuration;
-namespace BotDeScans.App.Services.Initializations.ClientFactories;
+namespace BotDeScans.App.Services.Initializations.Factories;
 
 public class MegaClientFactory(IConfiguration configuration) : ClientFactory<IMegaApiClient>
 {

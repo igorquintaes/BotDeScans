@@ -1,6 +1,6 @@
 ﻿using BotDeScans.App.Features.GoogleDrive.InternalServices;
 using BotDeScans.App.Services.Initializations;
-using BotDeScans.App.Services.Initializations.ClientFactories.Base;
+using BotDeScans.App.Services.Initializations.Factories.Base;
 using FluentResults;
 using FluentValidation;
 using FluentValidation.Results;

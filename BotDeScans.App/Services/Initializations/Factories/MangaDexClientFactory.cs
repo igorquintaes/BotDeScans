@@ -1,12 +1,12 @@
 ﻿using BotDeScans.App.Extensions;
 using BotDeScans.App.Features.Publish.Steps.Enums;
-using BotDeScans.App.Services.Initializations.ClientFactories.Base;
+using BotDeScans.App.Services.Initializations.Factories.Base;
 using FluentResults;
 using MangaDexSharp;
 using Microsoft.Extensions.Configuration;
 using SixLabors.ImageSharp;
 
-namespace BotDeScans.App.Services.Initializations.ClientFactories;
+namespace BotDeScans.App.Services.Initializations.Factories;
 
 public class MangaDexClientFactory(
     IMangaDex mangaDex,

@@ -6,7 +6,7 @@ using Google.Apis.Drive.v3;
 using Microsoft.Extensions.DependencyInjection;
 using System.Diagnostics.CodeAnalysis;
 
-namespace BotDeScans.App.Services.Initializations.ClientFactories;
+namespace BotDeScans.App.Services.Initializations.Factories;
 
 [ExcludeFromCodeCoverage]
 internal static class AddDependencies

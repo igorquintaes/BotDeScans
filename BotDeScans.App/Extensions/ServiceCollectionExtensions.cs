@@ -1,4 +1,4 @@
-﻿using BotDeScans.App.Services.Initializations.ClientFactories.Base;
+﻿using BotDeScans.App.Services.Initializations.Factories.Base;
 using Microsoft.Extensions.DependencyInjection;
 namespace BotDeScans.App.Extensions;
 

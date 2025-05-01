@@ -1,9 +1,9 @@
 ﻿using BotDeScans.App.Features.Publish.Steps.Enums;
-using BotDeScans.App.Services.Initializations.ClientFactories;
+using BotDeScans.App.Services.Initializations.Factories;
 using MangaDexSharp;
 using Microsoft.Extensions.Configuration;
 
-namespace BotDeScans.UnitTests.Specs.Services.Initializations.FactoriesValidators;
+namespace BotDeScans.UnitTests.Specs.Services.Initializations.Factories;
 
 public class MangaDexClientFactoryTests : UnitTest
 {

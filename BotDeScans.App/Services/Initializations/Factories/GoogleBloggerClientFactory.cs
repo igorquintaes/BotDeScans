@@ -1,6 +1,6 @@
 ﻿using BotDeScans.App.Extensions;
 using BotDeScans.App.Features.Publish.Steps.Enums;
-using BotDeScans.App.Services.Initializations.ClientFactories.Base;
+using BotDeScans.App.Services.Initializations.Factories.Base;
 using BotDeScans.App.Services.Wrappers;
 using FluentResults;
 using Google.Apis.Auth.OAuth2;
@@ -8,7 +8,7 @@ using Google.Apis.Blogger.v3;
 using Google.Apis.Services;
 using Google.Apis.Util.Store;
 using Microsoft.Extensions.Configuration;
-namespace BotDeScans.App.Services.Initializations.ClientFactories;
+namespace BotDeScans.App.Services.Initializations.Factories;
 
 public class GoogleBloggerClientFactory(
     IConfiguration configuration,

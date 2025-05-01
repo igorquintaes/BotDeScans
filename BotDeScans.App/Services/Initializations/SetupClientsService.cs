@@ -4,7 +4,7 @@ using FluentValidation;
 using Microsoft.Extensions.DependencyInjection;
 using System.Reflection;
 using BotDeScans.App.Extensions;
-using BotDeScans.App.Services.Initializations.ClientFactories.Base;
+using BotDeScans.App.Services.Initializations.Factories.Base;
 namespace BotDeScans.App.Services.Initializations;
 
 public class SetupClientsService(IServiceProvider serviceProvider)
@@ -53,7 +53,7 @@ public class SetupClientsService(IServiceProvider serviceProvider)
         foreach (var factoryType in factoryTypes)
         {
             dynamic factory = serviceProvider.GetRequiredService(factoryType);
-            if (factory.ExpectedInPublishFeature is false)
+            if (factory.Enabled is false)
                 continue;
 
             var factoryValidatorType = typeof(IValidator<>).MakeGenericType(factoryType);

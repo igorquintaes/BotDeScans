@@ -1,10 +1,10 @@
-﻿using BotDeScans.App.Services.Initializations.ClientFactories.Base;
+﻿using BotDeScans.App.Services.Initializations.Factories.Base;
 using BotDeScans.App.Services.Wrappers;
 using FluentResults;
 using Google.Apis.Auth.OAuth2;
 using Google.Apis.Drive.v3;
 using Google.Apis.Services;
-namespace BotDeScans.App.Services.Initializations.ClientFactories;
+namespace BotDeScans.App.Services.Initializations.Factories;
 
 public class GoogleDriveClientFactory(GoogleWrapper googleWrapper) : ClientFactory<DriveService>
 {
