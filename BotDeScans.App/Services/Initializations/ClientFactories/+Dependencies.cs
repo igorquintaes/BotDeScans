@@ -16,5 +16,5 @@ internal static class AddDependencies
         .AddExternalClientAsSingleton<BloggerService, GoogleBloggerClientFactory>()
         .AddExternalClientAsSingleton<DriveService, GoogleDriveClientFactory>()
         .AddExternalClientAsScoped<IMegaApiClient, MegaClientFactory>()
-        .AddExternalClientAsScoped<MangaDexAccessToken, MangaDexClientTokenFactory>();
+        .AddExternalClientAsScoped<MangaDexAccessToken, MangaDexClientFactory>();
 }

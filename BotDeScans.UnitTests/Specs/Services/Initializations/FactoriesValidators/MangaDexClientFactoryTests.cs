@@ -5,19 +5,19 @@ using Microsoft.Extensions.Configuration;
 
 namespace BotDeScans.UnitTests.Specs.Services.Initializations.FactoriesValidators;
 
-public class MangaDexClientTokenFactoryTests : UnitTest
+public class MangaDexClientFactoryTests : UnitTest
 {
-    private readonly MangaDexClientTokenFactory factory;
+    private readonly MangaDexClientFactory factory;
 
-    public MangaDexClientTokenFactoryTests()
+    public MangaDexClientFactoryTests()
     {
         fixture.FreezeFake<IMangaDex>();
         fixture.FreezeFake<IConfiguration>();
 
-        factory = fixture.Create<MangaDexClientTokenFactory>();
+        factory = fixture.Create<MangaDexClientFactory>();
     }
 
-    public class ExpectedInPublishFeature : MangaDexClientTokenFactoryTests
+    public class ExpectedInPublishFeature : MangaDexClientFactoryTests
     {
         [Fact]
         public void GivenExpectedStepInsideArrayShouldReturnTrue()
@@ -45,7 +45,7 @@ public class MangaDexClientTokenFactoryTests : UnitTest
         }
     }
 
-    public class CreateAsync : MangaDexClientTokenFactoryTests
+    public class CreateAsync : MangaDexClientFactoryTests
     {
         public CreateAsync()
         {
@@ -150,7 +150,7 @@ public class MangaDexClientTokenFactoryTests : UnitTest
         }
     }
 
-    public class HealthCheckAsync : MangaDexClientTokenFactoryTests
+    public class HealthCheckAsync : MangaDexClientFactoryTests
     {
         private readonly MangaDexAccessToken mangaDexAccessToken;
 

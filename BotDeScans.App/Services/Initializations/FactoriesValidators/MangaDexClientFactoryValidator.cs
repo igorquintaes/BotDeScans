@@ -5,9 +5,9 @@ using Microsoft.Extensions.Configuration;
 
 namespace BotDeScans.App.Services.Initializations.FactoriesValidators;
 
-public class MangaDexClientTokenFactoryValidator : AbstractValidator<MangaDexClientTokenFactory>
+public class MangaDexClientFactoryValidator : AbstractValidator<MangaDexClientFactory>
 {
-    public MangaDexClientTokenFactoryValidator(IConfiguration configuration)
+    public MangaDexClientFactoryValidator(IConfiguration configuration)
     {
         var groupIdResult = configuration.GetRequiredValueAsResult<string>("Mangadex:GroupId");
         var usernameResult = configuration.GetRequiredValueAsResult<string>("Mangadex:Username");

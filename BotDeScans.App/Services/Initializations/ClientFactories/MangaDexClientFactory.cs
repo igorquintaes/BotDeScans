@@ -8,7 +8,7 @@ using SixLabors.ImageSharp;
 
 namespace BotDeScans.App.Services.Initializations.ClientFactories;
 
-public class MangaDexClientTokenFactory(
+public class MangaDexClientFactory(
     IMangaDex mangaDex,
     IConfiguration configuration)
     : ClientFactory<MangaDexAccessToken>
