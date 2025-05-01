@@ -28,7 +28,7 @@ public class MangaDexClientTokenFactoryTests : UnitTest
                     .GetValues<StepName>()
                     .Select(x => x.ToString()));
 
-            factory.ExpectedInPublishFeature.Should().BeTrue();
+            factory.Enabled.Should().BeTrue();
         }
 
         [Fact]
@@ -41,7 +41,7 @@ public class MangaDexClientTokenFactoryTests : UnitTest
                     .Except([StepName.UploadMangadex])
                     .Select(x => x.ToString()));
 
-            factory.ExpectedInPublishFeature.Should().BeFalse();
+            factory.Enabled.Should().BeFalse();
         }
     }
 

@@ -27,7 +27,7 @@ public static class ServiceCollectionExtensions
     {
         var factory = serviceProvider.GetRequiredService<TFactory>();
 
-        return factory.ExpectedInPublishFeature
+        return factory.Enabled
              ? factory.SafeCreateAsync(CancellationToken.None)
                       .GetAwaiter()
                       .GetResult()

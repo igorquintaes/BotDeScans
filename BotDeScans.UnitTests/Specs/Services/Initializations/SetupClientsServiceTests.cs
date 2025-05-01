@@ -38,7 +38,7 @@ public class SetupClientsServiceTests : UnitTest
 
             A.CallTo(() => fixture
                 .FreezeFake<FakeClientFactory>()
-                .ExpectedInPublishFeature)
+                .Enabled)
                 .Returns(true);
         }
 
@@ -103,7 +103,7 @@ public class SetupClientsServiceTests : UnitTest
         {
             A.CallTo(() => fixture
                 .FreezeFake<FakeClientFactory>()
-                .ExpectedInPublishFeature)
+                .Enabled)
                 .Returns(false);
 
             var result = await service.SetupAsync(cancellationToken);
@@ -135,7 +135,7 @@ public class SetupClientsServiceTests : UnitTest
 
         public class FakeClientFactory : ClientFactory<object>
         {
-            public override bool ExpectedInPublishFeature =>
+            public override bool Enabled =>
                 throw new NotImplementedException();
 
             public override Task<Result<object>> CreateAsync(CancellationToken cancellationToken) =>

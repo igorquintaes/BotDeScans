@@ -17,7 +17,7 @@ public class GoogleBloggerClientFactory(
 {
     public const string CREDENTIALS_FILE_NAME = "blogger.json";
 
-    public override bool ExpectedInPublishFeature => configuration
+    public override bool Enabled => configuration
         .GetRequiredValues<StepName>("Settings:Publish:Steps", value => Enum.Parse(typeof(StepName), value))
         .Any(x => x == StepName.PublishBlogspot);
 

@@ -3,7 +3,7 @@ namespace BotDeScans.App.Services.Initializations.ClientFactories.Base;
 
 public abstract class ClientFactory<TClient>
 {
-    public abstract bool ExpectedInPublishFeature { get; }
+    public abstract bool Enabled { get; }
     public abstract Task<Result<TClient>> CreateAsync(CancellationToken cancellationToken);
     public abstract Task<Result> HealthCheckAsync(TClient client, CancellationToken cancellationToken);
 

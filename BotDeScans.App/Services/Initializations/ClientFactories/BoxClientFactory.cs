@@ -13,7 +13,7 @@ public class BoxClientFactory(IConfiguration configuration) : ClientFactory<IBox
 {
     public const string CREDENTIALS_FILE_NAME = "box.json";
 
-    public override bool ExpectedInPublishFeature => configuration
+    public override bool Enabled => configuration
         .GetRequiredValues<StepName>("Settings:Publish:Steps", value => Enum.Parse(typeof(StepName), value))
         .Any(x => x is StepName.UploadPdfBox or StepName.UploadZipBox);
 
