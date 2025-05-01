@@ -10,40 +10,32 @@ public class SetupClientsService(IServiceProvider serviceProvider)
     {
         Console.WriteLine("Initalizing External Clients...");
 
-        var factoryTypes = Assembly
+        var aggregatedResult = Result.Ok();
+        foreach (var factoryType in Assembly
             .GetEntryAssembly()!
             .GetTypes()
             .Where(type => type.BaseType is not null
                         && type.BaseType.IsGenericType
-                        && type.BaseType.GetGenericTypeDefinition() == typeof(ClientFactory<>));
-
-        var aggregatedResult = Result.Ok();
-        foreach (var factoryType in factoryTypes)
+                        && type.BaseType.GetGenericTypeDefinition() == typeof(ClientFactory<>)))
         {
             dynamic factory = serviceProvider.GetRequiredService(factoryType);
             if (factory.ExpectedInPublishFeature is false)
                 continue;
 
             var validationResult = factory.ValidateConfiguration();
-            if (validationResult.IsFailed)
-            {
-                aggregatedResult = aggregatedResult.WithErrors(validationResult.Errors);
+            aggregatedResult = aggregatedResult.WithReasons(validationResult.Reasons);
+            if (aggregatedResult.IsFailed)
                 continue;
-            }
 
             var clientResult = await factory.SafeCreateAsync(cancellationToken);
-            if (clientResult.IsFailed)
-            {
-                aggregatedResult = aggregatedResult.WithErrors(clientResult.Errors);
+            aggregatedResult = aggregatedResult.WithReasons(clientResult.Reasons);
+            if (aggregatedResult.IsFailed)
                 continue;
-            }
 
             var healthCheckResult = await factory.HealthCheckAsync(clientResult.Value, cancellationToken);
-            if (healthCheckResult.IsFailed)
-            {
-                aggregatedResult = aggregatedResult.WithErrors(healthCheckResult.Errors);
+            aggregatedResult = aggregatedResult.WithReasons(healthCheckResult.Reasons);
+            if (aggregatedResult.IsFailed)
                 continue;
-            }
         }
 
         if (aggregatedResult.IsFailed)
