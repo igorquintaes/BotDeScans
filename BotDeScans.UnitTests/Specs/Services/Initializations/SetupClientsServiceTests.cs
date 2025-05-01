@@ -1,8 +1,8 @@
 ﻿using BotDeScans.App.Features.GoogleDrive.InternalServices;
 using BotDeScans.App.Services;
-using BotDeScans.App.Services.Initializatiors;
+using BotDeScans.App.Services.Initializations;
 using FluentResults;
-namespace BotDeScans.UnitTests.Specs.Services.Initializators;
+namespace BotDeScans.UnitTests.Specs.Services.Initializations;
 
 public class SetupClientsServiceTests : UnitTest
 {

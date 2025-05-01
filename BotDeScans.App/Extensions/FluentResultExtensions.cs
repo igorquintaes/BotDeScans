@@ -9,6 +9,17 @@ namespace BotDeScans.App.Extensions;
 
 public static class FluentResultExtensions
 {
+    public static string ToValidationErrorMessage(this ResultBase result)
+    {
+        // Fluent validation throws an exception due null or empty error message.
+        // Needs of execution time error messages can lead exeptions here without a default valid string.
+        if (result.IsSuccess)
+            return "Ignore.";
+
+        var errorMessages = result.Errors.GetErrorsInfo().Select(x => x.Message);
+        return string.Join("; ", errorMessages);
+    }
+
     public static Result WithConditionalError(this Result result, Func<bool> conditionToAddError, string error) =>
         conditionToAddError.Invoke()
             ? result.WithError(error)

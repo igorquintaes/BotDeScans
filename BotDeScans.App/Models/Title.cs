@@ -4,7 +4,6 @@ using BotDeScans.App.Features.Publish.Pings;
 using BotDeScans.App.Services.Discord;
 using FluentValidation;
 using Microsoft.Extensions.Configuration;
-using SixLabors.ImageSharp;
 namespace BotDeScans.App.Models;
 
 public record Title(string Name, ulong? DiscordRoleId)
@@ -31,14 +30,14 @@ public class TitleValidator : AbstractValidator<Title>
             .DependentRules(() =>
             {
                 RuleFor(model => model.DiscordRoleId)
-                    .MustAsync(async (_, prop, context, cancellationToken) => await RoleMustExists(prop!.Value, rolesService, context, cancellationToken))
+                    .MustAsync(async (_, prop, context, ct) => await RoleMustExists(prop!.Value, rolesService, context, ct))
                     .When(prop => prop.DiscordRoleId.HasValue &&
                                   prop.DiscordRoleId != default(ulong) &&
                                   pingType is PingType.Global or PingType.Role);
             });
     }
 
-    static async Task<bool> RoleMustExists(
+    private static async Task<bool> RoleMustExists(
         ulong prop,
         RolesService rolesService,
         ValidationContext<Title> context,
@@ -48,7 +47,7 @@ public class TitleValidator : AbstractValidator<Title>
         if (rolesResult.IsSuccess)
             return true;
 
-        context.AddFailure(string.Join("; ", rolesResult.Errors.Select(error => error.Message)));
-        return false;
+        context.AddFailure(rolesResult.ToValidationErrorMessage());
+        return true;
     }
 }

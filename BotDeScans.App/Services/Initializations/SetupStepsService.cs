@@ -3,7 +3,7 @@ using BotDeScans.App.Features.Publish.Steps;
 using BotDeScans.App.Features.Publish.Steps.Enums;
 using FluentResults;
 using Microsoft.Extensions.Configuration;
-namespace BotDeScans.App.Services.Initializatiors;
+namespace BotDeScans.App.Services.Initializations;
 
 public class SetupStepsService(
     IConfiguration configuration,

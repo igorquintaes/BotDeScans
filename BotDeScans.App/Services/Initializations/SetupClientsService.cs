@@ -2,7 +2,7 @@
 using FluentResults;
 using Microsoft.Extensions.DependencyInjection;
 using System.Reflection;
-namespace BotDeScans.App.Services.Initializatiors;
+namespace BotDeScans.App.Services.Initializations;
 
 public class SetupClientsService(IServiceProvider serviceProvider)
 {

@@ -1,9 +1,11 @@
-﻿using BotDeScans.App.Infra;
+﻿using BotDeScans.App.Extensions;
+using BotDeScans.App.Infra;
 using BotDeScans.App.Services;
 using BotDeScans.App.Services.Discord;
-using BotDeScans.App.Services.Initializatiors;
+using BotDeScans.App.Services.Initializations;
 using BotDeScans.App.Services.Logging;
 using FluentResults;
+using FluentValidation;
 using MangaDexSharp;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
@@ -21,11 +23,11 @@ public class Program
 {
     public static async Task Main(string[] args)
     {
-        var cancelationTokenSource = new CancellationTokenSource();
+        var cts = new CancellationTokenSource();
         Console.CancelKeyPress += (_, @event) =>
         {
             Console.WriteLine("Closing...");
-            cancelationTokenSource.Cancel();
+            cts.Cancel();
             @event.Cancel = true;
         };
 
@@ -56,10 +58,25 @@ public class Program
                 File.WriteAllBytes(DatabaseContext.DbPath, []);
 
             var db = scope.ServiceProvider.GetRequiredService<DatabaseContext>();
-            await db.Database.MigrateAsync(cancelationTokenSource.Token);
+            await db.Database.MigrateAsync(cts.Token);
+            
+            var validationsResult = Result.Ok();
 
+            // todo: abstrair lógica em dois métodos (validação/execução), dentro de classe isolada para warmup
             var setupDiscordService = scope.ServiceProvider.GetRequiredService<SetupDiscordService>();
-            var discordUpdateResult = await setupDiscordService.SetupAsync(cancelationTokenSource.Token);
+            var setupDiscordValidator = scope.ServiceProvider.GetRequiredService<IValidator<SetupDiscordService>>();
+            var setupDiscordValidationResult = await setupDiscordValidator.ValidateAsync(setupDiscordService, cts.Token);
+            if (setupDiscordValidationResult.IsValid is false)
+                validationsResult.WithErrors(setupDiscordValidationResult.ToResult().Errors);
+
+            if (validationsResult.IsFailed)
+            {
+                LogErrors(warmupResult);
+                return;
+            }
+
+
+            var discordUpdateResult = await setupDiscordService.SetupAsync(cts.Token);
             warmupResult.WithReasons(discordUpdateResult.Reasons);
 
             var setupClientsService = scope.ServiceProvider.GetRequiredService<SetupStepsService>();
@@ -67,7 +84,7 @@ public class Program
             warmupResult.WithReasons(setupClientsResult.Reasons);
 
             var setupPublishStepsService = scope.ServiceProvider.GetRequiredService<SetupClientsService>();
-            var setupPublishStepsResult = await setupPublishStepsService.SetupAsync(cancelationTokenSource.Token);
+            var setupPublishStepsResult = await setupPublishStepsService.SetupAsync(cts.Token);
             warmupResult.WithReasons(setupPublishStepsResult.Reasons);
         }
 

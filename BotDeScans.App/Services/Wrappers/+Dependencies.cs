@@ -7,5 +7,6 @@ internal static class AddDependencies
 {
     internal static IServiceCollection AddWrappers(this IServiceCollection services) => services
         .AddSingleton<GoogleWrapper>()
+        .AddSingleton<SlashServiceWrapper>()
         .AddSingleton<StreamWrapper>();
 }

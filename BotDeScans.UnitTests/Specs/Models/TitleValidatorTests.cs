@@ -34,6 +34,25 @@ public class TitleValidatorTests : UnitTest
     }
 
     [Theory]
+    [InlineData(PingType.Role, 1UL)]
+    [InlineData(PingType.Global, 1UL)]
+    public async Task GivenValidDataForRequiredPingRoleShouldReturnSuccess(PingType pingType, ulong roleId)
+    {
+        fixture.FreezeFakeConfiguration(Ping.PING_TYPE_KEY, pingType.ToString());
+        A.CallTo(() => fixture
+            .FreezeFake<RolesService>()
+            .GetRoleFromGuildAsync(roleId.ToString(), cancellationToken))
+            .Returns(Result.Ok(fixture.FreezeFake<IRole>()));
+
+        var title = fixture.Create<Title>() with { DiscordRoleId = roleId };
+        var result = await fixture
+              .Create<TitleValidator>()
+              .TestValidateAsync(title, default, cancellationToken);
+
+        result.ShouldNotHaveAnyValidationErrors();
+    }
+
+    [Theory]
     [InlineData(PingType.Role, 0UL)]
     [InlineData(PingType.Role, null)]
     [InlineData(PingType.Global, 0UL)]
@@ -41,14 +60,19 @@ public class TitleValidatorTests : UnitTest
     public async Task GivenRequiredPingRoleShouldHaveDiscordRoleIdDefined(PingType pingType, ulong? roleId)
     {
         fixture.FreezeFakeConfiguration(Ping.PING_TYPE_KEY, pingType.ToString());
+
+        var expectedErrorMessage = 
+            $"Não foi definida uma role para o Discord nesta obra, obrigatória para o ping de tipo {pingType}. " +
+             "Defina, ou mude o tipo de ping para publicação no arquivo de configuração do Bot de Scans.";
+
         var title = fixture.Create<Title>() with { DiscordRoleId = roleId };
         var result = await fixture
               .Create<TitleValidator>()
               .TestValidateAsync(title, default, cancellationToken);
 
         result.ShouldHaveValidationErrorFor(prop => prop.DiscordRoleId)
-              .WithErrorMessage($"Não foi definida uma role para o Discord nesta obra, obrigatória para o ping de tipo {pingType}. " +
-                                 "Defina, ou mude o tipo de ping para publicação no arquivo de configuração do Bot de Scans.");
+              .WithErrorMessage(expectedErrorMessage)
+              .Only();
     }
 
     [Theory]
@@ -69,25 +93,7 @@ public class TitleValidatorTests : UnitTest
               .TestValidateAsync(title, default, cancellationToken);
 
         result.ShouldHaveValidationErrorFor(prop => prop.DiscordRoleId)
-              .WithErrorMessage("err-1; err-2");
-    }
-
-    [Theory]
-    [InlineData(PingType.Role, 1UL)]
-    [InlineData(PingType.Global, 1UL)]
-    public async Task GivenValidDataForRequiredPingRoleShouldReturnSuccess(PingType pingType, ulong roleId)
-    {
-        fixture.FreezeFakeConfiguration(Ping.PING_TYPE_KEY, pingType.ToString());
-        A.CallTo(() => fixture
-            .FreezeFake<RolesService>()
-            .GetRoleFromGuildAsync(roleId.ToString(), cancellationToken))
-            .Returns(Result.Ok(fixture.FreezeFake<IRole>()));
-
-        var title = fixture.Create<Title>() with { DiscordRoleId = roleId };
-        var result = await fixture
-              .Create<TitleValidator>()
-              .TestValidateAsync(title, default, cancellationToken);
-
-        result.ShouldNotHaveAnyValidationErrors();
+              .WithErrorMessage("err-1; err-2")
+              .Only();
     }
 }
