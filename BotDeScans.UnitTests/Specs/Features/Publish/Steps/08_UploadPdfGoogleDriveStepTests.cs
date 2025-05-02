@@ -20,12 +20,16 @@ public class UploadPdfGoogleDriveStepTests : UnitTest
     public class Properties : UploadPdfGoogleDriveStepTests
     {
         [Fact]
+        public void ShouldHaveExpectedType() =>
+            step.Type.Should().Be(StepType.Upload);
+
+        [Fact]
         public void ShouldHaveExpectedName() =>
             step.Name.Should().Be(StepName.UploadPdfGoogleDrive);
 
         [Fact]
-        public void ShouldHaveExpectedType() =>
-            step.Type.Should().Be(StepType.Upload);
+        public void ShouldHaveExpectedDependency() =>
+            step.Dependency.Should().Be(StepName.PdfFiles);
     }
 
     public class ValidateAsync : UploadPdfGoogleDriveStepTests

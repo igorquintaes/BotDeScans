@@ -21,6 +21,9 @@ public class AutocompleteTitles(DatabaseContext databaseContext) : IAutocomplete
         return titles
             .OrderByDescending(title => Fuzz.Ratio(userInput, title))
             .Take(25)
+            .Select(title => title.Length > 100 
+                ? string.Concat(title.AsSpan(0, 96), "...")
+                : title)
             .Select(title => new ApplicationCommandOptionChoice(title, title))
             .ToList();
     }

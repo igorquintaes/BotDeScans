@@ -10,6 +10,7 @@ public class CompressFilesStep(
 {
     public StepType Type => StepType.Management;
     public StepName Name => StepName.Compress;
+    public bool IsMandatory => true;
 
     public async Task<Result> ExecuteAsync(CancellationToken cancellationToken)
     {

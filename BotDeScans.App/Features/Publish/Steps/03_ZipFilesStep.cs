@@ -11,6 +11,7 @@ public class ZipFilesStep(
 {
     public StepType Type => StepType.Management;
     public StepName Name => StepName.ZipFiles;
+    public bool IsMandatory => false;
 
     public Task<Result> ExecuteAsync(CancellationToken cancellationToken)
     {

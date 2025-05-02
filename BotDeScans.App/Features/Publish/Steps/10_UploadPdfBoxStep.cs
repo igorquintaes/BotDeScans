@@ -10,6 +10,7 @@ public class UploadPdfBoxStep(
 {
     public StepType Type => StepType.Upload;
     public StepName Name => StepName.UploadPdfBox;
+    public StepName? Dependency => StepName.PdfFiles;
 
     public Task<Result> ValidateAsync(CancellationToken _)
         => Task.FromResult(Result.Ok());

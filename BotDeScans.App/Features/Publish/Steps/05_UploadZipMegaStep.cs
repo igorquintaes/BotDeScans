@@ -12,6 +12,7 @@ public class UploadZipMegaStep(
 {
     public StepType Type => StepType.Upload;
     public StepName Name => StepName.UploadZipMega;
+    public StepName? Dependency => StepName.ZipFiles;
 
     public Task<Result> ValidateAsync(CancellationToken _)
         => Task.FromResult(Result.Ok());

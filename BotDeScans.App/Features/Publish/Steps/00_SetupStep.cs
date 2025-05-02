@@ -14,10 +14,11 @@ public class SetupStep(
 {
     public StepType Type => StepType.Management;
     public StepName Name => StepName.Setup;
+    public bool IsMandatory => true;
 
     public async Task<Result> ExecuteAsync(CancellationToken cancellationToken)
     {
-        publishState.Title = await publishQueries.GetTitle(publishState.ReleaseInfo.TitleId, cancellationToken);
+        publishState.Title = await publishQueries.GetTitleAsync(publishState.ReleaseInfo.TitleId, cancellationToken);
 
         var initialValidation = await publishStateValidator.ValidateAsync(publishState, cancellationToken);
         if (initialValidation.IsValid is false)

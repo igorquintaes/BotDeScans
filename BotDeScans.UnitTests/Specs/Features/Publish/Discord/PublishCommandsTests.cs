@@ -10,19 +10,18 @@ namespace BotDeScans.UnitTests.Specs.Features.Publish.Discord;
 
 public class PublishCommandsTests : UnitTest
 {
-    public class Publish : PublishCommandsTests
+    public class PublishAsync : PublishCommandsTests
     {
-        private const int TITLE_ID = 123456;
+        private const int TEST_TITLE_ID = 123456;
 
         private readonly string title;
         private readonly PublishCommands commands;
 
-        public Publish()
+        public PublishAsync()
         {
             title = fixture.Create<string>();
 
             fixture.FreezeFake<PublishQueries>();
-            fixture.FreezeFake<IFeedbackService>();
             fixture.FreezeFake<IDiscordRestInteractionAPI>();
             fixture.Inject<IOperationContext>(new FakeInteractionContext(fixture));
 
@@ -30,8 +29,8 @@ public class PublishCommandsTests : UnitTest
 
             A.CallTo(() => fixture
                 .FreezeFake<PublishQueries>()
-                .GetTitleId(title, cancellationToken))
-                .Returns(TITLE_ID);
+                .GetTitleIdAsync(title, cancellationToken))
+                .Returns(TEST_TITLE_ID);
 
             A.CallTo(() => fixture
                 .FreezeFake<IDiscordRestInteractionAPI>()
@@ -47,17 +46,15 @@ public class PublishCommandsTests : UnitTest
         [Fact]
         public async Task GivenSuccessExecutionShouldReturnSuccess()
         {
-            var result = await commands.Publish(title);
+            var result = await commands.PublishAsync(title);
 
             result.IsSuccess.Should().BeTrue();
-
-            A.CallTo(fixture.FreezeFake<IFeedbackService>()).MustNotHaveHappened();
         }
 
         [Fact]
         public async Task GivenSuccessExecutionShouldReturnExpectedObjectInMessage()
         {
-            await commands.Publish(title);
+            await commands.PublishAsync(title);
 
             var modalData = Fake.GetCalls(fixture
                 .FreezeFake<IDiscordRestInteractionAPI>())
@@ -72,7 +69,7 @@ public class PublishCommandsTests : UnitTest
             fixture.Inject(A.Fake<IOperationContext>());
             var commands = fixture.CreateCommand<PublishCommands>(cancellationToken);
 
-            var result = await commands.Publish(title);
+            var result = await commands.PublishAsync(title);
 
             result.IsSuccess.Should().BeTrue();
 
@@ -94,7 +91,7 @@ public class PublishCommandsTests : UnitTest
                     cancellationToken))
                 .Returns(new InvalidOperationError());
 
-            var result = await commands.Publish(title);
+            var result = await commands.PublishAsync(title);
 
             result.IsSuccess.Should().BeFalse();
         }

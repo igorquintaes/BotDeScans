@@ -1,6 +1,6 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
 using System.Diagnostics.CodeAnalysis;
-namespace BotDeScans.App.Services.Initializatiors;
+namespace BotDeScans.App.Services.Initializations;
 
 [ExcludeFromCodeCoverage]
 internal static class AddDependencies

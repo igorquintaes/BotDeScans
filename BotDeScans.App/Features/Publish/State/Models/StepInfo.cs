@@ -5,14 +5,14 @@ namespace BotDeScans.App.Features.Publish.State.Models;
 
 public class StepInfo(IStep step)
 {
-    public StepStatus StepStatus { get; private set; } = step.Type == StepType.Management
+    public StepStatus Status { get; private set; } = step is IManagementStep
          ? StepStatus.QueuedForExecution
          : StepStatus.QueuedForValidation;
 
-    public void UpdateStatus(Result result) =>
-        StepStatus = result.IsFailed
+    public virtual void UpdateStatus(Result result) =>
+        Status = result.IsFailed
             ? StepStatus.Error
-            : StepStatus == StepStatus.QueuedForValidation
+            : Status == StepStatus.QueuedForValidation
                 ? StepStatus.QueuedForExecution
                 : StepStatus.Success;
 }

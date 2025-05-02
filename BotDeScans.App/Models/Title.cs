@@ -4,29 +4,12 @@ using BotDeScans.App.Features.Publish.Pings;
 using BotDeScans.App.Services.Discord;
 using FluentValidation;
 using Microsoft.Extensions.Configuration;
-using SixLabors.ImageSharp;
 namespace BotDeScans.App.Models;
 
 public record Title(string Name, ulong? DiscordRoleId)
 {
     public int Id { get; init; }
     public List<TitleReference> References { get; init; } = [];
-
-    public Title UpdateReference(TitleReference titleReference)
-    {
-        var oldReference = References.FirstOrDefault(x => x.Key != titleReference.Key);
-        if (oldReference is null)
-            return this with { References = [.. References, titleReference] };
-
-        return this with
-        {
-            References =
-            [
-                ..References.Where(x => x.Key != titleReference.Key),
-                oldReference with { Value = titleReference.Value }
-            ]
-        };
-    }
 }
 
 public class TitleValidator : AbstractValidator<Title>
@@ -47,20 +30,24 @@ public class TitleValidator : AbstractValidator<Title>
             .DependentRules(() =>
             {
                 RuleFor(model => model.DiscordRoleId)
-                    .MustAsync(async (_, prop, context, cancellationToken) => await MustHaveDiscordRole(prop, context, rolesService, cancellationToken))
+                    .MustAsync(async (_, prop, context, ct) => await RoleMustExists(prop!.Value, rolesService, context, ct))
                     .When(prop => prop.DiscordRoleId.HasValue &&
                                   prop.DiscordRoleId != default(ulong) &&
                                   pingType is PingType.Global or PingType.Role);
             });
     }
 
-    static async Task<bool> MustHaveDiscordRole(ulong? prop, ValidationContext<Title> context, RolesService rolesService, CancellationToken cancellationToken)
+    private static async Task<bool> RoleMustExists(
+        ulong prop,
+        RolesService rolesService,
+        ValidationContext<Title> context,
+        CancellationToken cancellationToken)
     {
-        var rolesResult = await rolesService.GetRoleFromGuildAsync(prop!.Value.ToString(), cancellationToken);
+        var rolesResult = await rolesService.GetRoleFromGuildAsync(prop.ToString(), cancellationToken);
         if (rolesResult.IsSuccess)
             return true;
 
-        context.AddFailure(string.Join("; ", rolesResult.Errors.Select(error => error.Message)));
-        return false;
+        context.AddFailure(rolesResult.ToValidationErrorMessage());
+        return true;
     }
 }

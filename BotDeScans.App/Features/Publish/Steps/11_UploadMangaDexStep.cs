@@ -11,6 +11,7 @@ public class UploadMangaDexStep(
 {
     public StepType Type => StepType.Upload;
     public StepName Name => StepName.UploadMangadex;
+    public StepName? Dependency => StepName.ZipFiles;
 
     // API validations
     // (OK) 1 active upload session per account -> You need to either commit or abandon your current upload session before starting a new one 

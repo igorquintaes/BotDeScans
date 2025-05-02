@@ -34,7 +34,7 @@ public class PublishMessageService(
     {
         var interactionContext = context as InteractionContext;
         var steps = publishState.Steps!;
-        var embed = new Embed(steps.StatusMessage, Description: steps.Details, Colour: steps.ColorStatus);
+        var embed = new Embed(steps.MessageStatus, Description: steps.Details, Colour: steps.ColorStatus);
 
         trackingMessage = trackingMessage is null
             ? await feedbackService.SendContextualEmbedAsync(embed, ct: cancellationToken)
@@ -52,7 +52,7 @@ public class PublishMessageService(
                 .WithError(trackingMessage.Value.Error.Message);
     }
 
-    public virtual async Task<Result<IMessage>> ErrorReleaseMessageAsync(
+    public virtual async Task<IResult<IMessage>> ErrorReleaseMessageAsync(
         FluentResults.Result errorResult,
         CancellationToken cancellationToken)
     {
@@ -63,7 +63,7 @@ public class PublishMessageService(
         return await feedbackService.SendEmbedAsync(channel, embed, ct: cancellationToken);
     }
 
-    public virtual async Task<Result<IMessage>> SuccessReleaseMessageAsync(
+    public virtual async Task<IResult<IMessage>> SuccessReleaseMessageAsync(
         CancellationToken cancellationToken)
     {
         var interactionContext = context as InteractionContext;

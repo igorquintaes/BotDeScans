@@ -1,5 +1,4 @@
 ﻿using BotDeScans.App.Extensions;
-using BotDeScans.App.Models;
 using FluentResults;
 using Remora.Discord.API.Abstractions.Objects;
 using Remora.Discord.API.Objects;

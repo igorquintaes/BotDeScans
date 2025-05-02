@@ -22,12 +22,16 @@ public class PublishBloggerStepTests : UnitTest
     public class Properties : PublishBloggerStepTests
     {
         [Fact]
+        public void ShouldHaveExpectedType() =>
+            step.Type.Should().Be(StepType.Publish);
+
+        [Fact]
         public void ShouldHaveExpectedName() =>
             step.Name.Should().Be(StepName.PublishBlogspot);
 
         [Fact]
-        public void ShouldHaveExpectedType() =>
-            step.Type.Should().Be(StepType.Publish);
+        public void ShouldHaveExpectedDependency() =>
+            step.Dependency.Should().Be(null);
     }
 
     public class ValidateAsync : PublishBloggerStepTests

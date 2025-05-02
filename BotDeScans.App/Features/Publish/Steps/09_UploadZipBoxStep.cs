@@ -10,6 +10,7 @@ public class UploadZipBoxStep(
 {
     public StepType Type => StepType.Upload;
     public StepName Name => StepName.UploadZipBox;
+    public StepName? Dependency => StepName.ZipFiles;
 
     public Task<Result> ValidateAsync(CancellationToken _)
         => Task.FromResult(Result.Ok());

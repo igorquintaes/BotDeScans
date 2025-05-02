@@ -20,12 +20,16 @@ public class PdfFilesStepTests : UnitTest
     public class Properties : PdfFilesStepTests
     {
         [Fact]
+        public void ShouldHaveExpectedType() =>
+            step.Type.Should().Be(StepType.Management);
+
+        [Fact]
         public void ShouldHaveExpectedName() =>
             step.Name.Should().Be(StepName.PdfFiles);
 
         [Fact]
-        public void ShouldHaveExpectedType() =>
-            step.Type.Should().Be(StepType.Management);
+        public void ShouldHaveExpectedIsMandatory() =>
+            step.IsMandatory.Should().Be(false);
     }
 
     public class ExecuteAsync : PdfFilesStepTests

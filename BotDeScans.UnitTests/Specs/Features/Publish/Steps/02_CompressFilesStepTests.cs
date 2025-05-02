@@ -22,12 +22,16 @@ public class CompressFilesStepTests : UnitTest
     public class Properties : CompressFilesStepTests
     {
         [Fact]
+        public void ShouldHaveExpectedType() =>
+            step.Type.Should().Be(StepType.Management);
+
+        [Fact]
         public void ShouldHaveExpectedName() =>
             step.Name.Should().Be(StepName.Compress);
 
         [Fact]
-        public void ShouldHaveExpectedType() =>
-            step.Type.Should().Be(StepType.Management);
+        public void ShouldHaveExpectedIsMandatory() =>
+            step.IsMandatory.Should().Be(true);
     }
 
     public class ExecuteAsync : CompressFilesStepTests, IDisposable
