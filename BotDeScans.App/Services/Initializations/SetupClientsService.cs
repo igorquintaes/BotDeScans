@@ -1,7 +1,10 @@
 ﻿using BotDeScans.App.Features.GoogleDrive.InternalServices;
 using FluentResults;
+using FluentValidation;
 using Microsoft.Extensions.DependencyInjection;
 using System.Reflection;
+using BotDeScans.App.Extensions;
+using BotDeScans.App.Services.Initializations.Factories.Base;
 namespace BotDeScans.App.Services.Initializations;
 
 public class SetupClientsService(IServiceProvider serviceProvider)
@@ -11,19 +14,10 @@ public class SetupClientsService(IServiceProvider serviceProvider)
         Console.WriteLine("Initalizing External Clients...");
 
         var aggregatedResult = Result.Ok();
-        foreach (var factoryType in Assembly
-            .GetEntryAssembly()!
-            .GetTypes()
-            .Where(type => type.BaseType is not null
-                        && type.BaseType.IsGenericType
-                        && type.BaseType.GetGenericTypeDefinition() == typeof(ClientFactory<>)))
+        foreach (var (factory, factoryValidator) in GetEnabledFactoriesData())
         {
-            dynamic factory = serviceProvider.GetRequiredService(factoryType);
-            if (factory.ExpectedInPublishFeature is false)
-                continue;
-
-            var validationResult = factory.ValidateConfiguration();
-            aggregatedResult = aggregatedResult.WithReasons(validationResult.Reasons);
+            var validationResult = await factoryValidator.ValidateAsync(factory, cancellationToken);
+            aggregatedResult = aggregatedResult.WithReasons(FluentResultExtensions.ToResult(validationResult).Reasons);
             if (aggregatedResult.IsFailed)
                 continue;
 
@@ -46,5 +40,26 @@ public class SetupClientsService(IServiceProvider serviceProvider)
         return await serviceProvider
             .GetRequiredService<GoogleDriveSettingsService>()
             .SetUpBaseFolderAsync(cancellationToken);
+    }
+
+    private IEnumerable<(dynamic factory, dynamic validator)> GetEnabledFactoriesData()
+    {
+        var factoryTypes = Assembly
+            .GetEntryAssembly()!
+            .GetTypes()
+            .Where(type => type.BaseType?.IsGenericType == true
+                        && type.BaseType.GetGenericTypeDefinition() == typeof(ClientFactory<>));
+
+        foreach (var factoryType in factoryTypes)
+        {
+            dynamic factory = serviceProvider.GetRequiredService(factoryType);
+            if (factory.Enabled is false)
+                continue;
+
+            var factoryValidatorType = typeof(IValidator<>).MakeGenericType(factoryType);
+            dynamic factoryValidator = serviceProvider.GetRequiredService(factoryValidatorType);
+
+            yield return (factory, factoryValidator);
+        }
     }
 }

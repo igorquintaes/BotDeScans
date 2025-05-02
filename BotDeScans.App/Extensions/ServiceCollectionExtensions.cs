@@ -1,4 +1,4 @@
-﻿using BotDeScans.App.Services;
+﻿using BotDeScans.App.Services.Initializations.Factories.Base;
 using Microsoft.Extensions.DependencyInjection;
 namespace BotDeScans.App.Extensions;
 
@@ -27,7 +27,7 @@ public static class ServiceCollectionExtensions
     {
         var factory = serviceProvider.GetRequiredService<TFactory>();
 
-        return factory.ExpectedInPublishFeature
+        return factory.Enabled
              ? factory.SafeCreateAsync(CancellationToken.None)
                       .GetAwaiter()
                       .GetResult()

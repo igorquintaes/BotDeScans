@@ -1,11 +1,13 @@
 ﻿using BotDeScans.App.Extensions;
 using BotDeScans.App.Features.Publish.Steps.Enums;
+using BotDeScans.App.Services.Initializations.Factories;
 using BotDeScans.App.Services.Wrappers;
 using Box.V2;
 using Box.V2.Config;
 using Box.V2.JWTAuth;
 using Box.V2.Models;
 using FluentResults;
+using FluentValidation;
 using Microsoft.Extensions.Configuration;
 namespace BotDeScans.App.Services;
 
@@ -56,34 +58,5 @@ public class BoxService(
             });
 
         return boxResult;
-    }
-}
-
-// todo: mover para um arquivo próprio depois de refatorarmos todo o uso do box
-public class BoxClientFactory(IConfiguration configuration) : ClientFactory<IBoxClient>
-{
-    public const string CREDENTIALS_FILE_NAME = "box.json";
-
-    public override bool ExpectedInPublishFeature => configuration
-        .GetRequiredValues<StepName>("Settings:Publish:Steps", value => Enum.Parse(typeof(StepName), value))
-        .Any(x => x is StepName.UploadPdfBox or StepName.UploadZipBox);
-
-    public override async Task<Result<IBoxClient>> CreateAsync(
-        CancellationToken cancellationToken = default)
-    {
-        await using var credentialStream = GetConfigFileAsStream(CREDENTIALS_FILE_NAME).Value;
-        var config = BoxConfig.CreateFromJsonFile(credentialStream);
-        var boxJwt = new BoxJWTAuth(config);
-        var adminToken = await boxJwt.AdminTokenAsync();
-        return boxJwt.AdminClient(adminToken);
-    }
-
-    public override Result ValidateConfiguration() =>
-        ConfigFileExists(CREDENTIALS_FILE_NAME);
-
-    public override async Task<Result> HealthCheckAsync(IBoxClient client, CancellationToken cancellationToken)
-    {
-        var accInfo = await client.FoldersManager.GetFolderItemsAsync("0", 1);
-        return Result.OkIf(accInfo is not null, "Unknown error while trying to retrieve information from account.");
     }
 }

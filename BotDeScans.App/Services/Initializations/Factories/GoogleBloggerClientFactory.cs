@@ -1,5 +1,6 @@
 ﻿using BotDeScans.App.Extensions;
 using BotDeScans.App.Features.Publish.Steps.Enums;
+using BotDeScans.App.Services.Initializations.Factories.Base;
 using BotDeScans.App.Services.Wrappers;
 using FluentResults;
 using Google.Apis.Auth.OAuth2;
@@ -7,7 +8,7 @@ using Google.Apis.Blogger.v3;
 using Google.Apis.Services;
 using Google.Apis.Util.Store;
 using Microsoft.Extensions.Configuration;
-namespace BotDeScans.App.Services;
+namespace BotDeScans.App.Services.Initializations.Factories;
 
 public class GoogleBloggerClientFactory(
     IConfiguration configuration,
@@ -16,40 +17,9 @@ public class GoogleBloggerClientFactory(
 {
     public const string CREDENTIALS_FILE_NAME = "blogger.json";
 
-    public override bool ExpectedInPublishFeature => configuration
+    public override bool Enabled => configuration
         .GetRequiredValues<StepName>("Settings:Publish:Steps", value => Enum.Parse(typeof(StepName), value))
         .Any(x => x == StepName.PublishBlogspot);
-
-    public override Result ValidateConfiguration()
-    {
-        var aggregatedResult = Result.Ok();
-
-        var bloggerId = configuration.GetValue<string?>("Blogger:Id");
-        if (string.IsNullOrWhiteSpace(bloggerId))
-            aggregatedResult = aggregatedResult.WithError($"'Blogger:Id': value not found in config.json.");
-
-        var bloggerUrl = configuration.GetValue<string?>("Blogger:Url");
-        if (string.IsNullOrWhiteSpace(bloggerUrl))
-            aggregatedResult = aggregatedResult.WithError($"'Blogger:Url': value not found in config.json.");
-
-        if (string.IsNullOrWhiteSpace(bloggerUrl) is false
-            && Uri.TryCreate(bloggerUrl, UriKind.Absolute, out var _) is false)
-            aggregatedResult = aggregatedResult.WithError("Não foi possível identificar o link do Blogger como válido.");
-
-        var baseDirectory = AppDomain.CurrentDomain.BaseDirectory;
-        var templateFileName = GoogleBloggerService.TEMPLATE_FILE_NAME;
-        var templateFilePath = Path.Combine(baseDirectory, "config", templateFileName);
-        if (!File.Exists(templateFilePath))
-            aggregatedResult = aggregatedResult.WithError($"Não foi possível encontrar o arquivo de template : {templateFileName}");
-
-        var credentialResult = ConfigFileExists(CREDENTIALS_FILE_NAME);
-        aggregatedResult = aggregatedResult.WithReasons(credentialResult.Reasons);
-
-        var templateResult = ConfigFileExists(GoogleBloggerService.TEMPLATE_FILE_NAME);
-        aggregatedResult = aggregatedResult.WithReasons(templateResult.Reasons);
-
-        return aggregatedResult;
-    }
 
     public override async Task<Result<BloggerService>> CreateAsync(
         CancellationToken cancellationToken = default)

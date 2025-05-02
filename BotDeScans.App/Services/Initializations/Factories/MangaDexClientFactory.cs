@@ -1,46 +1,21 @@
 ﻿using BotDeScans.App.Extensions;
 using BotDeScans.App.Features.Publish.Steps.Enums;
+using BotDeScans.App.Services.Initializations.Factories.Base;
 using FluentResults;
 using MangaDexSharp;
 using Microsoft.Extensions.Configuration;
+using SixLabors.ImageSharp;
 
-namespace BotDeScans.App.Services;
+namespace BotDeScans.App.Services.Initializations.Factories;
 
-public class MangaDexClientTokenFactory(
+public class MangaDexClientFactory(
     IMangaDex mangaDex,
     IConfiguration configuration)
     : ClientFactory<MangaDexAccessToken>
 {
-    public override bool ExpectedInPublishFeature => configuration
+    public override bool Enabled => configuration
         .GetRequiredValues<StepName>("Settings:Publish:Steps", value => Enum.Parse(typeof(StepName), value))
         .Any(x => x == StepName.UploadMangadex);
-
-    public override Result ValidateConfiguration()
-    {
-        var aggregatedResult = Result.Ok();
-
-        var username = configuration.GetValue<string?>("Mangadex:Username");
-        if (string.IsNullOrWhiteSpace(username))
-            aggregatedResult = aggregatedResult.WithError("'Mangadex:Username': value not found in config.json.");
-
-        var password = configuration.GetValue<string?>("Mangadex:Password");
-        if (string.IsNullOrWhiteSpace(password))
-            aggregatedResult = aggregatedResult.WithError("'Mangadex:Password': value not found in config.json.");
-
-        var clientId = configuration.GetValue<string?>("Mangadex:ClientId");
-        if (string.IsNullOrWhiteSpace(clientId))
-            aggregatedResult = aggregatedResult.WithError("'Mangadex:ClientId': value not found in config.json.");
-
-        var clientSecret = configuration.GetValue<string?>("Mangadex:ClientSecret");
-        if (string.IsNullOrWhiteSpace(clientSecret))
-            aggregatedResult = aggregatedResult.WithError("'Mangadex:ClientSecret': value not found in config.json.");
-
-        var groupId = configuration.GetValue<string?>("Mangadex:GroupId");
-        if (string.IsNullOrWhiteSpace(groupId))
-            aggregatedResult = aggregatedResult.WithError("'Mangadex:GroupId': value not found in config.json.");
-
-        return aggregatedResult;
-    }
 
     public override async Task<Result<MangaDexAccessToken>> CreateAsync(CancellationToken cancellationToken)
     {

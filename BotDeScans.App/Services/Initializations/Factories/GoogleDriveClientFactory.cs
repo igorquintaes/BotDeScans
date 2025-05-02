@@ -1,19 +1,16 @@
-﻿using BotDeScans.App.Services;
+﻿using BotDeScans.App.Services.Initializations.Factories.Base;
 using BotDeScans.App.Services.Wrappers;
 using FluentResults;
 using Google.Apis.Auth.OAuth2;
 using Google.Apis.Drive.v3;
 using Google.Apis.Services;
-namespace BotDeScans.App.Features.GoogleDrive;
+namespace BotDeScans.App.Services.Initializations.Factories;
 
 public class GoogleDriveClientFactory(GoogleWrapper googleWrapper) : ClientFactory<DriveService>
 {
     public const string CREDENTIALS_FILE_NAME = "googledrive.json";
 
-    public override bool ExpectedInPublishFeature => true;
-
-    public override Result ValidateConfiguration() =>
-        ConfigFileExists(CREDENTIALS_FILE_NAME);
+    public override bool Enabled => true;
 
     public override async Task<Result<DriveService>> CreateAsync(CancellationToken cancellationToken = default)
     {

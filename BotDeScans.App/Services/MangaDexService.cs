@@ -1,4 +1,5 @@
 ﻿using BotDeScans.App.Extensions;
+using BotDeScans.App.Services.Initializations.Factories;
 using FluentResults;
 using MangaDexSharp;
 using Microsoft.Extensions.Configuration;
