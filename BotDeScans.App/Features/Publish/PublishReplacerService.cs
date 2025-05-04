@@ -19,7 +19,8 @@ public class PublishReplacerService(PublishState publishState)
             { "BOX_PDF_LINK",          state => state.ReleaseLinks.BoxPdf },
             { "GOOGLE_DRIVE_ZIP_LINK", state => state.ReleaseLinks.DriveZip },
             { "GOOGLE_DRIVE_PDF_LINK", state => state.ReleaseLinks.DrivePdf },
-            { "MANGADEX_LINK",         state => state.ReleaseLinks.MangaDexLink },
+            { "MANGADEX_LINK",         state => state.ReleaseLinks.MangaDex },
+            { "SAKURAMANGAS_LINK",     state => state.ReleaseLinks.SakuraMangas },
             { "BOX_PDF_READER",        state => state.InternalData.BoxPdfReaderKey }
         };
 

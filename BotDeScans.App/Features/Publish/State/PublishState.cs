@@ -34,6 +34,12 @@ public class PublishStateValidator : AbstractValidator<PublishState>
             .WithMessage("Não foi definida uma referência para a publicação da obra na MangaDex.")
             .SetValidator(titleValidator);
 
+        RuleFor(model => model.Title)
+            .Must(prop => prop.References.Any(reference => reference.Key == ExternalReference.MangaDex))
+            .When(prop => prop.Steps.Any(step => step.Key is UploadSakuraMangasStep))
+            .WithMessage("Não foi definida uma referência para a publicação da obra na Sakura Mangás. (Mesma referência que a MangaDex)")
+            .SetValidator(titleValidator);
+
         var globalPingValue = configuration.GetValue<string?>(GlobalPing.GLOBAL_ROLE_KEY, null);
         var pingTypeAsString = configuration.GetValue<string?>(Ping.PING_TYPE_KEY, null);
         var isPingTypeValid = Enum.TryParse<PingType>(pingTypeAsString, out var pingType);

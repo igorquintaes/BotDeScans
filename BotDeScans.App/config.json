@@ -55,6 +55,10 @@
     "ClientId": "",
     "ClientSecret": ""
   },
+  "SakuraMangas": {
+    "User": "",
+    "Pass": ""
+  },
   "UserAgent": "BotDeScans/0.0.1",
   "Compress": {
     "Grayscale": {

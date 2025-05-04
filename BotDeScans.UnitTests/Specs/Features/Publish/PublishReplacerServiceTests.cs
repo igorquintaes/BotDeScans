@@ -164,7 +164,8 @@ public class PublishReplacerServiceTests : UnitTest
             publishState.ReleaseLinks.BoxPdf = value;
             publishState.ReleaseLinks.DriveZip = value;
             publishState.ReleaseLinks.DrivePdf = value;
-            publishState.ReleaseLinks.MangaDexLink = value;
+            publishState.ReleaseLinks.MangaDex = value;
+            publishState.ReleaseLinks.SakuraMangas = value;
         }
     }
 }

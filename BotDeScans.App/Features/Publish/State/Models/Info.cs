@@ -1,7 +1,6 @@
 ﻿using BotDeScans.App.Extensions;
 using BotDeScans.App.Features.GoogleDrive.Models;
 using FluentValidation;
-using System.Text.RegularExpressions;
 namespace BotDeScans.App.Features.Publish.State.Models;
 
 public record Info
@@ -50,7 +49,8 @@ public partial class InfoValidator : AbstractValidator<Info>
             .WithMessage("Nome de capítulo muito longo.");
 
         RuleFor(model => model.ChapterNumber)
-            .Must(prop => ChapterNumberPattern().Match(prop).Success)
+            .Must(prop => double.TryParse(prop, out var _)
+                       && (!prop.Contains('.') || prop.Split('.')[1].Length <= 1))
             .WithMessage("Número do capítulo inválido.");
 
         RuleFor(model => model.ChapterVolume)
@@ -61,7 +61,4 @@ public partial class InfoValidator : AbstractValidator<Info>
         RuleFor(model => model.GoogleDriveUrl)
             .SetValidator(googleDriveUrlValidator);
     }
-
-    [GeneratedRegex("^(0|[1-9]\\d*)((.\\d+){1,2})?[a-z]?$")]
-    private static partial Regex ChapterNumberPattern();
 }

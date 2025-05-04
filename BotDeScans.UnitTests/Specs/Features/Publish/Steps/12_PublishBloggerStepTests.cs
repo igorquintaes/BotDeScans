@@ -120,7 +120,7 @@ public class PublishBloggerStepTests : UnitTest
 
             await step.ExecuteAsync(cancellationToken);
 
-            fixture.Freeze<PublishState>().ReleaseLinks.BloggerLink.Should().Be(url);
+            fixture.Freeze<PublishState>().ReleaseLinks.Blogger.Should().Be(url);
         }
     }
 }
