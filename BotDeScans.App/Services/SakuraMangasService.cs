@@ -6,8 +6,8 @@ namespace BotDeScans.App.Services;
 
 public class SakuraMangasService(
     HttpClient httpClient,
-    string User,
-    string Pass)
+    string user,
+    string pass)
 {
     private const string UPLOAD_URL = "https://sakuramangas.org/dist/sistema/models/mangas/api.php";
 
@@ -22,8 +22,8 @@ public class SakuraMangasService(
         // campo 'scanparceira', string não obrigatória e igual à cadastrada na Sakura
         using var form = new MultipartFormDataContent
         {
-            { new StringContent(User), "email" },
-            { new StringContent(Pass), "senha" },
+            { new StringContent(user), "email" },
+            { new StringContent(pass), "senha" },
             { new StringContent(mangaDexId), "mangadexid" },
             { new StringContent(chapterNumber), "numchapter" }
         };
@@ -46,15 +46,15 @@ public class SakuraMangasService(
         var objectResponse = JsonSerializer.Deserialize<SakuraRequestResponse>(stringResponseContent);
         return string.IsNullOrWhiteSpace(objectResponse!.error_code)
             ? Result.Ok(objectResponse.chapter_url!)
-            : HandleError(stringResponseContent);
+            : HandleError(stringResponseContent, objectResponse.message);
     }
 
-    public async Task<Result> ValidateCredentialsAsync(CancellationToken cancellationToken)
+    public virtual async Task<Result> PingCredentialsAsync(CancellationToken cancellationToken)
     {
         using var form = new MultipartFormDataContent
         {
-            { new StringContent(User), "email" },
-            { new StringContent(Pass), "senha" },
+            { new StringContent(user), "email" },
+            { new StringContent(pass), "senha" },
             { new StringContent(Guid.Empty.ToString()), "mangadexid" },
             { new StringContent("1"), "numchapter" }
         };
@@ -69,8 +69,7 @@ public class SakuraMangasService(
         if (objectResponse!.error_code == "MANGA_NOT_FOUND")
             return Result.Ok();
 
-        var errorMessage = objectResponse!.error_code == "AUTH_INVALID" ? "Usuário ou senhas incorretos." : null;
-        return HandleError(stringResponseContent, errorMessage);
+        return HandleError(stringResponseContent, objectResponse.message);
     }
 
     private static Result HandleError(string responseContent, string? errorMessage = null)

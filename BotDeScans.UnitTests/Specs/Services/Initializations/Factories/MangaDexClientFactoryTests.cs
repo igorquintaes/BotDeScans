@@ -17,7 +17,7 @@ public class MangaDexClientFactoryTests : UnitTest
         factory = fixture.Create<MangaDexClientFactory>();
     }
 
-    public class ExpectedInPublishFeature : MangaDexClientFactoryTests
+    public class Enabled : MangaDexClientFactoryTests
     {
         [Fact]
         public void GivenExpectedStepInsideArrayShouldReturnTrue()

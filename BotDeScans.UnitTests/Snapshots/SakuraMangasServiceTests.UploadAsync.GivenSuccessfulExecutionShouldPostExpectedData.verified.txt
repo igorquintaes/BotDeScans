@@ -1,0 +1,86 @@
+﻿[
+  {
+    Headers: [
+      {
+        Content-Type: [
+          text/plain; charset=utf-8
+        ]
+      },
+      {
+        Content-Disposition: [
+          form-data; name=email
+        ]
+      }
+    ]
+  },
+  {
+    Headers: [
+      {
+        Content-Type: [
+          text/plain; charset=utf-8
+        ]
+      },
+      {
+        Content-Disposition: [
+          form-data; name=senha
+        ]
+      }
+    ]
+  },
+  {
+    Headers: [
+      {
+        Content-Type: [
+          text/plain; charset=utf-8
+        ]
+      },
+      {
+        Content-Disposition: [
+          form-data; name=mangadexid
+        ]
+      }
+    ]
+  },
+  {
+    Headers: [
+      {
+        Content-Type: [
+          text/plain; charset=utf-8
+        ]
+      },
+      {
+        Content-Disposition: [
+          form-data; name=numchapter
+        ]
+      }
+    ]
+  },
+  {
+    Headers: [
+      {
+        Content-Type: [
+          text/plain; charset=utf-8
+        ]
+      },
+      {
+        Content-Disposition: [
+          form-data; name=titulochapter
+        ]
+      }
+    ]
+  },
+  {
+    Headers: [
+      {
+        Content-Type: [
+          application/zip
+        ]
+      },
+      {
+        Content-Disposition: [
+          form-data; name=file-upload; filename=fake-file.zip; filename*=utf-8''fake-file.zip
+        ]
+      }
+    ]
+  }
+]

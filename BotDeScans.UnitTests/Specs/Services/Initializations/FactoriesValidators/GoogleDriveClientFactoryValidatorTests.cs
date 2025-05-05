@@ -1,5 +1,4 @@
-﻿using BotDeScans.App.Features.Publish.Steps;
-using BotDeScans.App.Services.Initializations.Factories;
+﻿using BotDeScans.App.Services.Initializations.Factories;
 using BotDeScans.App.Services.Initializations.FactoriesValidators;
 using FluentValidation.TestHelper;
 
@@ -16,7 +15,6 @@ public class GoogleDriveClientFactoryValidatorTests : UnitTest
     {
         if (File.Exists(credentialPath) is false)
             File.Create(credentialPath).Dispose();
-
     }
 
     [Fact]

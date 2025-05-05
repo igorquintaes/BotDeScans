@@ -10,6 +10,12 @@ public class UploadSakuraMangasStep(
     SakuraMangasService sakuraMangasService,
     PublishState state) : IPublishStep
 {
+    // todo: será necessário criar um campo com flag sobre continuar a execução em casos de erro;
+    // por exemplo, não temos como validar ainda com a SakuraMangás erros como 
+    // o upload de páginas ainda não criadas para os projetos (MANGA_NOT_FOUND)
+    // ou já existente por outra scan (CHAPTER_EXISTS_OTHER_SCAN) e demais cenários.
+    // Como não é possível validar antes do upload, devemos permitir falhar e continuar a execução.
+
     public StepName? Dependency => StepName.ZipFiles;
 
     public StepName Name => StepName.UploadSakuraMangas;
