@@ -15,7 +15,7 @@ public class InfoValidatorTests : UnitTest
 
         data = fixture.Build<Info>()
             .With(x => x.ChapterName, fixture.StringOfLength(255))
-            .With(x => x.ChapterNumber, "10")
+            .With(x => x.ChapterNumber, "10.1")
             .With(x => x.ChapterVolume, "1")
             .Create();
     }
@@ -37,6 +37,10 @@ public class InfoValidatorTests : UnitTest
     [InlineData("invalid")]
     [InlineData("10invalid")]
     [InlineData("invalid10")]
+    [InlineData("1A")]
+    [InlineData("1.11")]
+    [InlineData("1-1")]
+    [InlineData("1,11")]
     public void GivenChapterNumberNotMatchingPatternShouldReturnError(string chapterNumber) =>
         fixture.Create<InfoValidator>()
                 .TestValidate(data with { ChapterNumber = chapterNumber })

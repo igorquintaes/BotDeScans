@@ -11,7 +11,7 @@ public class SakuraMangasService(
 {
     private const string UPLOAD_URL = "https://sakuramangas.org/dist/sistema/models/mangas/api.php";
 
-    public async Task<Result<string>> UploadAsync(
+    public virtual async Task<Result<string>> UploadAsync(
         string chapterNumber,
         string? chapterName,
         string mangaDexId,
