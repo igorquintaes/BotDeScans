@@ -96,7 +96,7 @@ public class PublishStateValidatorTests : UnitTest
     }
 
     [Fact]
-    public async Task GivenMangadexStepShouldReturnInvalidWhenItsReferenceIsNotSet()
+    public async Task GivenMangadexStepShouldReturnInvalidWhenReferenceIsNotSet()
     {
         var data = fixture
             .Build<PublishState>()
@@ -116,6 +116,29 @@ public class PublishStateValidatorTests : UnitTest
 
         result.ShouldHaveValidationErrorFor(prop => prop.Title)
               .WithErrorMessage("Não foi definida uma referência para a publicação da obra na MangaDex.");
+    }
+
+    [Fact]
+    public async Task GivenSakuraMangasStepShouldReturnInvalidWhenReferenceIsNotSet()
+    {
+        var data = fixture
+            .Build<PublishState>()
+            .With(x => x.Title, fixture
+                .Build<Title>()
+                .With(x => x.References, [])
+                .Create())
+            .With(x => x.Steps, new EnabledSteps(new Dictionary<IStep, StepInfo>
+            {
+                { A.Fake<UploadSakuraMangasStep>(), A.Fake<StepInfo>() }
+            }))
+            .Create();
+
+        var result = await fixture
+              .Create<PublishStateValidator>()
+              .TestValidateAsync(data, default, cancellationToken);
+
+        result.ShouldHaveValidationErrorFor(prop => prop.Title)
+              .WithErrorMessage("Não foi definida uma referência para a publicação da obra na Sakura Mangás. (Use a mesma da MangaDex)");
     }
 
     [Theory]

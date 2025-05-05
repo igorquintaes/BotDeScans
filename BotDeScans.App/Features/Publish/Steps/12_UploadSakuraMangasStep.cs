@@ -6,7 +6,7 @@ using FluentResults;
 
 namespace BotDeScans.App.Features.Publish.Steps;
 
-internal class UploadSakuraMangasStep(
+public class UploadSakuraMangasStep(
     SakuraMangasService sakuraMangasService,
     PublishState state) : IPublishStep
 {
