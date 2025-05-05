@@ -2,6 +2,7 @@
 using Serilog;
 using System.Net.Http.Headers;
 using System.Text.Json;
+using System.Text.Json.Serialization;
 namespace BotDeScans.App.Services;
 
 public class SakuraMangasService(
@@ -9,7 +10,7 @@ public class SakuraMangasService(
     string user,
     string pass)
 {
-    private const string UPLOAD_URL = "https://sakuramangas.org/dist/sistema/models/mangas/api.php";
+    private const string UPLOAD_URL = "https://sakuramangas.org/dist/sistema/models/mangas/api.php"; 
 
     public virtual async Task<Result<string>> UploadAsync(
         string chapterNumber,
@@ -44,9 +45,9 @@ public class SakuraMangasService(
             return HandleError(stringResponseContent);
 
         var objectResponse = JsonSerializer.Deserialize<SakuraRequestResponse>(stringResponseContent);
-        return string.IsNullOrWhiteSpace(objectResponse!.error_code)
-            ? Result.Ok(objectResponse.chapter_url!)
-            : HandleError(stringResponseContent, objectResponse.message);
+        return string.IsNullOrWhiteSpace(objectResponse!.ErrorCode)
+            ? Result.Ok(objectResponse.ChapterUrl!)
+            : HandleError(stringResponseContent, objectResponse.Message);
     }
 
     public virtual async Task<Result> PingCredentialsAsync(CancellationToken cancellationToken)
@@ -66,10 +67,10 @@ public class SakuraMangasService(
             return HandleError(stringResponseContent);
 
         var objectResponse = JsonSerializer.Deserialize<SakuraRequestResponse>(stringResponseContent);
-        if (objectResponse!.error_code == "MANGA_NOT_FOUND")
+        if (objectResponse!.ErrorCode == "MANGA_NOT_FOUND")
             return Result.Ok();
 
-        return HandleError(stringResponseContent, objectResponse.message);
+        return HandleError(stringResponseContent, objectResponse.Message);
     }
 
     private static Result HandleError(string responseContent, string? errorMessage = null)
@@ -82,7 +83,14 @@ public class SakuraMangasService(
     }
 }
 
-// todo: usar um deserializer baseado em snake_case 
-#pragma warning disable IDE1006 // Estilos de Nomenclatxura
-public record SakuraRequestResponse(string? message, string? error_code, int? id_capitulo, string? chapter_url);
-#pragma warning restore IDE1006 // Estilos de Nomenclatura
+public record SakuraRequestResponse
+{
+    [JsonPropertyName("id_capitulo")]
+    public int? IdCapitulo { get; set; }
+    [JsonPropertyName("message")]
+    public string? Message { get; set; }
+    [JsonPropertyName("error_code")]
+    public string? ErrorCode { get; set; }
+    [JsonPropertyName("chapter_url")]
+    public string? ChapterUrl { get; set; }
+}
