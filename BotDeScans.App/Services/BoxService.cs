@@ -7,9 +7,9 @@ public class BoxService(
     StreamWrapper streamWrapper,
     IBoxClient boxClient)
 {
-    private const string rootFolderId = "0";
+    public const string ROOT_ID = "0";
 
-    public virtual async Task<BoxFolder> GetOrCreateFolderAsync(string folderName, string parentFolderId = rootFolderId)
+    public virtual async Task<BoxFolder> GetOrCreateFolderAsync(string folderName, string parentFolderId = ROOT_ID)
     {
         // Todo: There is a limit of 1k folders that can be retrieved in a request.
         // Is not expected to reach this quantity in a single folder,
@@ -29,7 +29,7 @@ public class BoxService(
             });
     }
 
-    public virtual async Task<BoxFile> CreateFileAsync(string filePath, string parentFolderId = rootFolderId)
+    public virtual async Task<BoxFile> CreateFileAsync(string filePath, string parentFolderId = ROOT_ID)
     {
         var fileName = Path.GetFileName(filePath);
         var req = new BoxFileRequest()

@@ -6,6 +6,7 @@ using Box.V2.Config;
 using Box.V2.JWTAuth;
 using FluentResults;
 using Microsoft.Extensions.Configuration;
+using System.Diagnostics.CodeAnalysis;
 
 namespace BotDeScans.App.Services.Initializations.Factories;
 
@@ -17,6 +18,7 @@ public class BoxClientFactory(IConfiguration configuration) : ClientFactory<IBox
         .GetRequiredValues<StepName>("Settings:Publish:Steps", value => Enum.Parse(typeof(StepName), value))
         .Any(x => x is StepName.UploadPdfBox or StepName.UploadZipBox);
 
+    [ExcludeFromCodeCoverage(Justification = "BoxJWTAuth is not mockable  - all code relies this class.")]
     public override async Task<Result<IBoxClient>> CreateAsync(
         CancellationToken cancellationToken = default)
     {
@@ -29,7 +31,7 @@ public class BoxClientFactory(IConfiguration configuration) : ClientFactory<IBox
 
     public override async Task<Result> HealthCheckAsync(IBoxClient client, CancellationToken cancellationToken)
     {
-        var accInfo = await client.FoldersManager.GetFolderItemsAsync("0", 1);
-        return Result.OkIf(accInfo is not null, "Unknown error while trying to retrieve information from account.");
+        var accInfo = await client.FoldersManager.GetFolderItemsAsync(BoxService.ROOT_ID, limit: 1);
+        return Result.OkIf(accInfo is not null && accInfo.TotalCount == 1, "Unknown error while trying to retrieve information from account.");
     }
 }

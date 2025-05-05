@@ -1,8 +1,8 @@
 ﻿using BotDeScans.App.Services.Initializations.Factories;
 using BotDeScans.App.Services.Wrappers;
-using Google.Apis.Drive.v3.Data;
-using Google.Apis.Drive.v3;
 using FluentResults;
+using Google.Apis.Drive.v3;
+using Google.Apis.Drive.v3.Data;
 
 namespace BotDeScans.UnitTests.Specs.Services.Initializations.Factories;
 
@@ -107,6 +107,17 @@ ZUp8AsbVqF6rbLiiUfJMo2btGclQu4DEVyS+ymFA65tXDLUuR9EDqJYdqHNZJ5B8
                 cancellationToken);
 
             result.Should().BeSuccess();
+        }
+
+        [Fact]
+        public async Task GivenSuccessfulExecutionShouldQueryWithExpectedParameters()
+        {
+            await factory.HealthCheckAsync(
+                fixture.FreezeFake<DriveService>(),
+                cancellationToken);
+
+            fixture.FreezeFake<FilesResource.ListRequest>().PageSize.Should().Be(1);
+            fixture.FreezeFake<FilesResource.ListRequest>().Q.Should().Be("'root' in parents");
         }
 
         [Fact]
