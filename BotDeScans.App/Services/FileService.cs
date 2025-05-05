@@ -38,7 +38,7 @@ public class FileService
         using var newFile = ZipFile.Open(filePath, ZipArchiveMode.Create);
         for (var i = 0; i < pages.Length; i++)
         {
-            var pageNumber = (i+1).ToString("D" + pagesQuantity);
+            var pageNumber = (i + 1).ToString("D" + pagesQuantity);
             newFile.CreateEntryFromFile(pages[i], pageNumber + Path.GetExtension(pages[i]), CompressionLevel.SmallestSize);
         }
 

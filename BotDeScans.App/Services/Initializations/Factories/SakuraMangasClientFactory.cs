@@ -31,6 +31,6 @@ public class SakuraMangasClientFactory(IConfiguration configuration) : ClientFac
         return Task.FromResult(Result.Ok(service));
     }
 
-    public override async Task<Result> HealthCheckAsync(SakuraMangasService client, CancellationToken cancellationToken) => 
+    public override async Task<Result> HealthCheckAsync(SakuraMangasService client, CancellationToken cancellationToken) =>
         await client.PingCredentialsAsync(cancellationToken);
 }

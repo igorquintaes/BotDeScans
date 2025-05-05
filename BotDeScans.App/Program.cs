@@ -59,7 +59,7 @@ public class Program
 
             var db = scope.ServiceProvider.GetRequiredService<DatabaseContext>();
             await db.Database.MigrateAsync(cts.Token);
-            
+
             var validationsResult = Result.Ok();
 
             // todo: abstrair lógica em dois métodos (validação/execução), dentro de classe isolada para warmup

@@ -1,7 +1,6 @@
 ﻿using BotDeScans.App.Extensions;
 using BotDeScans.App.Features.GoogleDrive.Models;
 using FluentValidation;
-using System.Globalization;
 using System.Text.RegularExpressions;
 namespace BotDeScans.App.Features.Publish.State.Models;
 

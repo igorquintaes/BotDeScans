@@ -77,7 +77,7 @@ public class SakuraMangasService(
         Log.Error(responseContent);
 
         return new Error(
-            message: errorMessage ?? "Erro ao se comunicar com a Sakura Mangás. Cheque o arquivo de logs para mais detalhes.", 
+            message: errorMessage ?? "Erro ao se comunicar com a Sakura Mangás. Cheque o arquivo de logs para mais detalhes.",
             causedBy: new Error(responseContent));
     }
 }

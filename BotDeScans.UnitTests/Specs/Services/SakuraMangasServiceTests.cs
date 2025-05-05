@@ -49,10 +49,10 @@ public class SakuraMangasServiceTests : UnitTest
             var mangaDexId = fixture.Create<string>();
 
             var result = await service.UploadAsync(
-                chapterNumber, 
-                chapterName, 
+                chapterNumber,
+                chapterName,
                 mangaDexId,
-                uploadFilePath, 
+                uploadFilePath,
                 cancellationToken);
 
             result.Should().BeSuccess().And.HaveValue("https://sakuramangas.org/obras/tail-star/111");
