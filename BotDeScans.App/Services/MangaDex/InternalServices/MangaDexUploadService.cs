@@ -64,7 +64,7 @@ public class MangaDexUploadService(
                 if (uploadResult.IsFailed)
                     return uploadResult.ToResult();
 
-                pageIds.AddRange(uploadResult.Value.Select(x => x.Id));
+                pageIds.AddRange(uploadResult.Value.Select(x => x.Id).ToArray());
             }
         }
 

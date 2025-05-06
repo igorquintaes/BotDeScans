@@ -20,6 +20,7 @@ internal static class AddDependencies
     internal static IServiceCollection AddServices(this IServiceCollection services) => services
         .AddDiscordServices()
         .AddPublishServices()
+        .AddMangaDexServices()
         .AddGoogleDrive()
         .AddMega()
         .AddTitleServices()
@@ -34,6 +35,5 @@ internal static class AddDependencies
         .AddScoped<BoxService>()
         .AddScoped<FileReleaseService>()
         .AddScoped<GoogleBloggerService>()
-        .AddScoped<MangaDexService>()
         .AddValidatorsFromAssemblyContaining<Program>();
 }
