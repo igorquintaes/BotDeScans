@@ -4,6 +4,7 @@ using BotDeScans.App.Services.Initializations.Factories.Base;
 using CG.Web.MegaApiClient;
 using FluentResults;
 using Microsoft.Extensions.Configuration;
+using System.Diagnostics.CodeAnalysis;
 namespace BotDeScans.App.Services.Initializations.Factories;
 
 public class MegaClientFactory(IConfiguration configuration) : ClientFactory<IMegaApiClient>
@@ -16,13 +17,13 @@ public class MegaClientFactory(IConfiguration configuration) : ClientFactory<IMe
     {
         var user = configuration.GetRequiredValue<string>("Mega:User");
         var pass = configuration.GetRequiredValue<string>("Mega:Pass");
-        var client = new MegaApiClient();
+        var client = CreateClient();
 
         await client.LoginAsync(user, pass);
 
         return client.IsLoggedIn is false
             ? Result.Fail("Unable to login on Mega. Check your user and pass, or if your account is blocked.")
-            : Result.Ok<IMegaApiClient>(client);
+            : Result.Ok(client);
     }
 
     public override async Task<Result> HealthCheckAsync(IMegaApiClient client, CancellationToken cancellationToken)
@@ -30,4 +31,7 @@ public class MegaClientFactory(IConfiguration configuration) : ClientFactory<IMe
         var accInfo = await client.GetAccountInformationAsync();
         return Result.OkIf(accInfo is not null, "Error while trying to retrieve information from account.");
     }
+
+    [ExcludeFromCodeCoverage(Justification = "Object creation wrapper")]
+    protected virtual IMegaApiClient CreateClient() => new MegaApiClient();
 }
