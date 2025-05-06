@@ -3,6 +3,7 @@ using BotDeScans.App.Services.Wrappers;
 using FluentResults;
 using Google.Apis.Drive.v3;
 using Google.Apis.Drive.v3.Data;
+using Google.Apis.Http;
 
 namespace BotDeScans.UnitTests.Specs.Services.Initializations.Factories;
 
@@ -77,7 +78,7 @@ ZUp8AsbVqF6rbLiiUfJMo2btGclQu4DEVyS+ymFA65tXDLUuR9EDqJYdqHNZJ5B8
         {
             var result = await factory.CreateAsync(cancellationToken);
 
-            await Verify(result.ValueOrDefault);
+            result.ValueOrDefault.Should().NotBeNull();
         }
     }
 

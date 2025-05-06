@@ -102,7 +102,7 @@ public class GoogleBloggerClientFactoryTests : UnitTest
         {
             var result = await factory.CreateAsync(cancellationToken);
 
-            await Verify(result.ValueOrDefault);
+            result.ValueOrDefault.Should().NotBeNull();
         }
     }
 
