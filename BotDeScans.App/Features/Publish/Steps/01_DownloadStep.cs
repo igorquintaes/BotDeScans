@@ -20,7 +20,7 @@ public class DownloadStep(
         var coverDirectory = fileReleaseService.CreateScopedDirectory();
 
         var saveFilesResult = await googleDriveService.SaveFilesAsync(
-            state.ReleaseInfo.GoogleDriveUrl.Id,
+            state.ChapterInfo.GoogleDriveUrl.Id,
             downloadDirectory,
             cancellationToken);
 

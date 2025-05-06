@@ -22,10 +22,10 @@ public class PublishInteractions(
         string message,
         string state)
     {
-        publishState.ReleaseInfo = new(driveUrl, chapterName, chapterNumber, chapterVolume, message, int.Parse(state));
+        publishState.ChapterInfo = new(driveUrl, chapterName, chapterNumber, chapterVolume, message, int.Parse(state));
         publishState.Steps = publishService.GetEnabledSteps();
 
-        Log.Information(publishState.ReleaseInfo.ToString());
+        Log.Information(publishState.ChapterInfo.ToString());
 
         var result = await stepsService.ExecuteAsync(CancellationToken);
         result.LogIfFailed();

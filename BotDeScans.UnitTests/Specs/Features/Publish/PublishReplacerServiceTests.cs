@@ -155,7 +155,7 @@ public class PublishReplacerServiceTests : UnitTest
         private static void SetPublishStateReplaceFieldsValue(PublishState publishState, string? value)
         {
             publishState.Title = publishState.Title with { Name = value! };
-            publishState.ReleaseInfo = new(default!, value!, value!, value!, value!, default);
+            publishState.ChapterInfo = new(default!, value!, value!, value!, value!, default);
             publishState.InternalData.BloggerImageAsBase64 = value;
             publishState.InternalData.BoxPdfReaderKey = value;
             publishState.ReleaseLinks.MegaZip = value;

@@ -24,10 +24,10 @@ public class PublishBloggerStep(
 
         // todo: parametrizar valores de title abaixo no futuro
         var post = await googleBloggerService.PostAsync(
-            title: $"[{state.Title.Name}] Capítulo {state.ReleaseInfo.ChapterNumber}",
+            title: $"[{state.Title.Name}] Capítulo {state.ChapterInfo.ChapterNumber}",
             htmlContent: htmlContent,
             label: state.Title.Name,
-            chapterNumber: state.ReleaseInfo.ChapterNumber,
+            chapterNumber: state.ChapterInfo.ChapterNumber,
             cancellationToken);
 
         state.ReleaseLinks.Blogger = post.Url;

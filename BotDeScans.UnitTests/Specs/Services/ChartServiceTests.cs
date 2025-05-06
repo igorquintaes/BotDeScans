@@ -1,4 +1,4 @@
-﻿using BotDeScans.App.Models;
+﻿using BotDeScans.App.Models.DTOs;
 using BotDeScans.App.Services;
 using System.Diagnostics.CodeAnalysis;
 using System.Drawing;

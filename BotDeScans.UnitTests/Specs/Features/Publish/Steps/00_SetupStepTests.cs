@@ -3,7 +3,7 @@ using BotDeScans.App.Features.Publish.Pings;
 using BotDeScans.App.Features.Publish.State;
 using BotDeScans.App.Features.Publish.Steps;
 using BotDeScans.App.Features.Publish.Steps.Enums;
-using BotDeScans.App.Models;
+using BotDeScans.App.Models.Entities;
 using FluentValidation;
 using FluentValidation.Results;
 namespace BotDeScans.UnitTests.Specs.Features.Publish.Steps;
@@ -64,7 +64,7 @@ public class SetupStepTests : UnitTest
         {
             var title = fixture
                 .Build<Title>()
-                .With(x => x.Id, fixture.Freeze<PublishState>().ReleaseInfo.TitleId)
+                .With(x => x.Id, fixture.Freeze<PublishState>().ChapterInfo.TitleId)
                 .Create();
 
             A.CallTo(() => fixture

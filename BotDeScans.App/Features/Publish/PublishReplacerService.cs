@@ -8,10 +8,10 @@ public class PublishReplacerService(PublishState publishState)
         ReplaceRules = new Dictionary<string, Func<PublishState, string?>>()
         {
             { "TITLE",                 state => state.Title.Name },
-            { "CHAPTER_NAME",          state => state.ReleaseInfo.ChapterName },
-            { "CHAPTER_NUMBER",        state => state.ReleaseInfo.ChapterNumber },
-            { "VOLUME_NUMBER",         state => state.ReleaseInfo.ChapterVolume },
-            { "MESSAGE",               state => state.ReleaseInfo.Message },
+            { "CHAPTER_NAME",          state => state.ChapterInfo.ChapterName },
+            { "CHAPTER_NUMBER",        state => state.ChapterInfo.ChapterNumber },
+            { "VOLUME_NUMBER",         state => state.ChapterInfo.ChapterVolume },
+            { "MESSAGE",               state => state.ChapterInfo.Message },
             { "MEGA_ZIP_LINK",         state => state.ReleaseLinks.MegaZip },
             { "MEGA_PDF_LINK",         state => state.ReleaseLinks.MegaPdf },
             { "BOX_ZIP_LINK",          state => state.ReleaseLinks.BoxZip },

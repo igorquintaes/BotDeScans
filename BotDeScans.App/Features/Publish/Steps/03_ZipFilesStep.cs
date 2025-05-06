@@ -16,7 +16,7 @@ public class ZipFilesStep(
     public Task<Result> ExecuteAsync(CancellationToken cancellationToken)
     {
         var zipFileResult = fileService.CreateZipFile(
-            fileName: state.ReleaseInfo.ChapterNumber,
+            fileName: state.ChapterInfo.ChapterNumber,
             resourcesDirectory: state.InternalData.OriginContentFolder,
             destinationDirectory: fileReleaseService.CreateScopedDirectory());
 

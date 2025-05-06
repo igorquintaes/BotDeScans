@@ -25,11 +25,21 @@ public static class FluentResultExtensions
             ? result.WithError(error)
             : result;
 
-    public static Result AsFailResult<T>(this MangaDexRoot<T> mangaDexResponse) where T : new() =>
-        Result.Fail(GetErrors(mangaDexResponse.Errors));
+    public static Result<T> AsResult<T>(this MangaDexRoot<T> mangaDexResponse, params int[] allowedStatusCodes) where T : new()
+    {
+        if (mangaDexResponse.Errors.All(x => allowedStatusCodes.Contains(x.Status)))
+            return Result.Ok(mangaDexResponse.Data);
 
-    public static Result AsFailResult(this MangaDexRoot mangaDexResponse) =>
-        Result.Fail(GetErrors(mangaDexResponse.Errors));
+        return Result.Fail(GetErrors(mangaDexResponse));
+    }
+
+    public static Result AsResult(this MangaDexRoot mangaDexResponse, params int[] allowedStatusCodes)
+    {
+        if (mangaDexResponse.Errors.All(x => allowedStatusCodes.Contains(x.Status)))
+            return Result.Ok();
+
+        return Result.Fail(GetErrors(mangaDexResponse));
+    }
 
     public static Result ToResult(this ValidationResult validationResult) =>
         validationResult.IsValid
@@ -90,10 +100,8 @@ public static class FluentResultExtensions
         return await feedbackService.SendContextualEmbedAsync(errorEmbed, ct: cancellationToken);
     }
 
-    private static IEnumerable<Error> GetErrors(MangaDexError[] mangaDexErrors)
-        => mangaDexErrors.Length > 0
-            ? mangaDexErrors.Select(x => new Error($"{x.Status} - {x.Title} - {x.Detail}"))
-            : ([new Error("Generic error")]);
+    private static IEnumerable<Error> GetErrors(MangaDexRoot mangaDexErrors)
+        => mangaDexErrors.Errors.Select(x => new Error($"{x.Status} - {x.Title} - {x.Detail}"));
 }
 
 public record ErrorInfo(string Message, int Number, int Depth, ErrorType Type);

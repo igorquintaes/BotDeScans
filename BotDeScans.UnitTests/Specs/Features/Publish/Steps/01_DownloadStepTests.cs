@@ -48,7 +48,7 @@ public class DownloadStepTests : UnitTest
             A.CallTo(() => fixture
                 .FreezeFake<GoogleDriveService>()
                 .SaveFilesAsync(
-                    fixture.Freeze<PublishState>().ReleaseInfo.GoogleDriveUrl.Id,
+                    fixture.Freeze<PublishState>().ChapterInfo.GoogleDriveUrl.Id,
                     scopedDirectories[0],
                     cancellationToken))
                 .Returns(Result.Ok());

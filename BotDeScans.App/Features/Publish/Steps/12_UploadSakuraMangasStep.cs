@@ -1,6 +1,6 @@
 ﻿using BotDeScans.App.Features.Publish.State;
 using BotDeScans.App.Features.Publish.Steps.Enums;
-using BotDeScans.App.Models;
+using BotDeScans.App.Models.Entities;
 using BotDeScans.App.Services;
 using FluentResults;
 
@@ -28,8 +28,8 @@ public class UploadSakuraMangasStep(
     public async Task<Result> ExecuteAsync(CancellationToken cancellationToken)
     {
         var uploadResult = await sakuraMangasService.UploadAsync(
-            state.ReleaseInfo.ChapterNumber,
-            state.ReleaseInfo.ChapterName,
+            state.ChapterInfo.ChapterNumber,
+            state.ChapterInfo.ChapterName,
             state.Title.References.Single(x => x.Key == ExternalReference.MangaDex).Value,
             state.InternalData.ZipFilePath!,
             cancellationToken);

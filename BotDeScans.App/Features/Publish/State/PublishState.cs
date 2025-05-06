@@ -2,7 +2,7 @@
 using BotDeScans.App.Features.Publish.Pings;
 using BotDeScans.App.Features.Publish.State.Models;
 using BotDeScans.App.Features.Publish.Steps;
-using BotDeScans.App.Models;
+using BotDeScans.App.Models.Entities;
 using BotDeScans.App.Services.Discord;
 using FluentValidation;
 using Microsoft.Extensions.Configuration;
@@ -12,7 +12,7 @@ public class PublishState
 {
     public EnabledSteps Steps { get; set; } = null!;
     public Title Title { get; set; } = null!;
-    public Info ReleaseInfo { get; set; } = null!;
+    public Info ChapterInfo { get; set; } = null!;
     public Links ReleaseLinks { get; set; } = new();
     public InternalData InternalData { get; set; } = new();
 }
@@ -25,7 +25,7 @@ public class PublishStateValidator : AbstractValidator<PublishState>
         IValidator<Info> infoValidator,
         IValidator<Title> titleValidator)
     {
-        RuleFor(model => model.ReleaseInfo)
+        RuleFor(model => model.ChapterInfo)
             .SetValidator(infoValidator);
 
         RuleFor(model => model.Title)

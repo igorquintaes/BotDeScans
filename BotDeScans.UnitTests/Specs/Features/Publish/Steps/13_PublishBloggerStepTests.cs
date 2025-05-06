@@ -72,10 +72,10 @@ public class PublishBloggerStepTests : UnitTest
             A.CallTo(() => fixture
                 .FreezeFake<GoogleBloggerService>()
                 .PostAsync(
-                    $"[{state.Title.Name}] Capítulo {state.ReleaseInfo.ChapterNumber}",
+                    $"[{state.Title.Name}] Capítulo {state.ChapterInfo.ChapterNumber}",
                     replacedTemplate,
                     state.Title.Name,
-                    state.ReleaseInfo.ChapterNumber,
+                    state.ChapterInfo.ChapterNumber,
                     cancellationToken))
                 .Returns(new Post());
         }

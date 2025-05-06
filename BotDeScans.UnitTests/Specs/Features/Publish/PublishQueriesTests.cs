@@ -1,6 +1,6 @@
 ﻿using BotDeScans.App.Features.Publish;
 using BotDeScans.App.Infra;
-using BotDeScans.App.Models;
+using BotDeScans.App.Models.Entities;
 
 namespace BotDeScans.UnitTests.Specs.Features.Publish;
 
