@@ -11,7 +11,6 @@ internal static class AddDependencies
 {
     internal static IServiceCollection AddLoggingServices(this IServiceCollection services) => services
         .AddPostExecutionEvent<LogEvent>()
-        .AddSingleton<LoggerService>()
         .AddLogging();
 
     internal static IHostBuilder AddLoggingToHost(this IHostBuilder hostBuilder) => hostBuilder
