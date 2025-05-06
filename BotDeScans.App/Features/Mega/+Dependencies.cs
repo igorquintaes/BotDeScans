@@ -1,8 +1,5 @@
-﻿using BotDeScans.App.Extensions;
-using BotDeScans.App.Features.Mega.Discord;
+﻿using BotDeScans.App.Features.Mega.Discord;
 using BotDeScans.App.Features.Mega.InternalServices;
-using BotDeScans.App.Services.Initializations.Factories;
-using CG.Web.MegaApiClient;
 using Microsoft.Extensions.DependencyInjection;
 using Remora.Commands.Extensions;
 using System.Diagnostics.CodeAnalysis;

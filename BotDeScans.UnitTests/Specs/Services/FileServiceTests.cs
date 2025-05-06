@@ -91,6 +91,8 @@ public class FileServiceTests : UnitTest
         [Fact]
         public void ShouldContainsExpectedFilesInsideZipFile()
         {
+            File.Create(Path.Combine(resourcesDirectory, "cover.png")).Dispose();
+            File.Create(Path.Combine(resourcesDirectory, "credits.png")).Dispose();
             File.Create(Path.Combine(resourcesDirectory, "01.png")).Dispose();
             File.Create(Path.Combine(resourcesDirectory, "02.png")).Dispose();
 
@@ -105,7 +107,36 @@ public class FileServiceTests : UnitTest
                 .Select(x => x.Name)
                 .OrderBy(x => x)
                 .Should().BeEquivalentTo(
-                    ["01.png", "02.png"],
+                    ["1.png", "2.png", "3.png", "4.png"],
+                    options => options.WithStrictOrdering());
+        }
+
+        [Fact]
+        public void ShouldContainsExpectedFilesInsideZipFileCreatingPadingLeftZeroes()
+        {
+            File.Create(Path.Combine(resourcesDirectory, "cover.png")).Dispose();
+            File.Create(Path.Combine(resourcesDirectory, "credits.png")).Dispose();
+            File.Create(Path.Combine(resourcesDirectory, "01.png")).Dispose();
+            File.Create(Path.Combine(resourcesDirectory, "02.png")).Dispose();
+            File.Create(Path.Combine(resourcesDirectory, "03.png")).Dispose();
+            File.Create(Path.Combine(resourcesDirectory, "04.png")).Dispose();
+            File.Create(Path.Combine(resourcesDirectory, "05.png")).Dispose();
+            File.Create(Path.Combine(resourcesDirectory, "06.png")).Dispose();
+            File.Create(Path.Combine(resourcesDirectory, "07.png")).Dispose();
+            File.Create(Path.Combine(resourcesDirectory, "08.png")).Dispose();
+
+            var result = service.CreateZipFile(
+                "fileName",
+                resourcesDirectory,
+                destinationDirectory);
+
+            using var zipFile = ZipFile.Open(result.Value, ZipArchiveMode.Read);
+
+            var filesInsideZipFile = zipFile.Entries
+                .Select(x => x.Name)
+                .OrderBy(x => x)
+                .Should().BeEquivalentTo(
+                    ["01.png", "02.png", "03.png", "04.png", "05.png", "06.png", "07.png", "08.png", "09.png", "10.png"],
                     options => options.WithStrictOrdering());
         }
 

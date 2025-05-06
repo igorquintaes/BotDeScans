@@ -42,7 +42,7 @@ public class UploadMangaDexStep(
         if (uploadResult.IsFailed)
             return uploadResult.ToResult();
 
-        state.ReleaseLinks.MangaDexLink = $"https://mangadex.org/chapter/{uploadResult.Value}/1";
+        state.ReleaseLinks.MangaDex = $"https://mangadex.org/chapter/{uploadResult.Value}/1";
         return Result.Ok();
     }
 }

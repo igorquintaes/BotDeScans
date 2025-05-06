@@ -90,11 +90,11 @@ public class UploadMangDexStepTests : UnitTest
         public async Task GivenSuccessfulExecutionShouldSetMangadexLinkStateValue()
         {
             var expectedLink = $"https://mangadex.org/chapter/{CHAPTER_ID}/1";
-            fixture.Freeze<PublishState>().ReleaseLinks.MangaDexLink = null!;
+            fixture.Freeze<PublishState>().ReleaseLinks.MangaDex = null!;
 
             await step.ExecuteAsync(cancellationToken);
 
-            fixture.Freeze<PublishState>().ReleaseLinks.MangaDexLink.Should().Be(expectedLink);
+            fixture.Freeze<PublishState>().ReleaseLinks.MangaDex.Should().Be(expectedLink);
         }
 
         [Fact]

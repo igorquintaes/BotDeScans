@@ -10,7 +10,7 @@ using Remora.Rest.Core;
 namespace BotDeScans.App.Services.Initializations;
 
 public class SetupDiscordService(
-    SlashServiceWrapper slashService, 
+    SlashServiceWrapper slashService,
     IConfiguration configuration)
 {
     public virtual async Task<Result> SetupAsync(CancellationToken cancellationToken)

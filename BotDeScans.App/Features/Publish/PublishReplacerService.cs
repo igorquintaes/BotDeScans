@@ -12,14 +12,15 @@ public class PublishReplacerService(PublishState publishState)
             { "CHAPTER_NUMBER",        state => state.ReleaseInfo.ChapterNumber },
             { "VOLUME_NUMBER",         state => state.ReleaseInfo.ChapterVolume },
             { "MESSAGE",               state => state.ReleaseInfo.Message },
-            { "BLOGGER_COVER_IMAGE",   state => state.InternalData.BloggerImageAsBase64 },
             { "MEGA_ZIP_LINK",         state => state.ReleaseLinks.MegaZip },
             { "MEGA_PDF_LINK",         state => state.ReleaseLinks.MegaPdf },
             { "BOX_ZIP_LINK",          state => state.ReleaseLinks.BoxZip },
             { "BOX_PDF_LINK",          state => state.ReleaseLinks.BoxPdf },
             { "GOOGLE_DRIVE_ZIP_LINK", state => state.ReleaseLinks.DriveZip },
             { "GOOGLE_DRIVE_PDF_LINK", state => state.ReleaseLinks.DrivePdf },
-            { "MANGADEX_LINK",         state => state.ReleaseLinks.MangaDexLink },
+            { "MANGADEX_LINK",         state => state.ReleaseLinks.MangaDex },
+            { "SAKURAMANGAS_LINK",     state => state.ReleaseLinks.SakuraMangas },
+            { "BLOGGER_COVER_IMAGE",   state => state.InternalData.BloggerImageAsBase64 },
             { "BOX_PDF_READER",        state => state.InternalData.BoxPdfReaderKey }
         };
 

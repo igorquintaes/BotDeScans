@@ -22,8 +22,11 @@ public record Links
     public string? BoxPdf { get; set; }
 
     [Description("MangaDex")]
-    public string? MangaDexLink { get; set; }
+    public string? MangaDex { get; set; }
+
+    [Description("Sakura Mangás")]
+    public string? SakuraMangas { get; set; }
 
     [Description("Blogger")]
-    public string? BloggerLink { get; set; }
+    public string? Blogger { get; set; }
 }

@@ -32,10 +32,15 @@ public class FileService
         if (resourcesDirectory.Equals(destinationDirectory, StringComparison.InvariantCultureIgnoreCase))
             return Result.Fail("Source and destination directories should not be the same.");
 
+        var pages = Directory.GetFiles(resourcesDirectory).OrderBy(x => x).ToArray();
+        var pagesQuantity = Math.Floor(Math.Log10(pages.Length) + 1);
         var filePath = Path.Combine(destinationDirectory, $"{fileName}.zip");
         using var newFile = ZipFile.Open(filePath, ZipArchiveMode.Create);
-        foreach (var file in Directory.GetFiles(resourcesDirectory))
-            newFile.CreateEntryFromFile(file, Path.GetFileName(file), CompressionLevel.SmallestSize);
+        for (var i = 0; i < pages.Length; i++)
+        {
+            var pageNumber = (i + 1).ToString("D" + pagesQuantity);
+            newFile.CreateEntryFromFile(pages[i], pageNumber + Path.GetExtension(pages[i]), CompressionLevel.SmallestSize);
+        }
 
         return filePath;
     }

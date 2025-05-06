@@ -61,7 +61,7 @@ public class TitleValidatorTests : UnitTest
     {
         fixture.FreezeFakeConfiguration(Ping.PING_TYPE_KEY, pingType.ToString());
 
-        var expectedErrorMessage = 
+        var expectedErrorMessage =
             $"Não foi definida uma role para o Discord nesta obra, obrigatória para o ping de tipo {pingType}. " +
              "Defina, ou mude o tipo de ping para publicação no arquivo de configuração do Bot de Scans.";
 
