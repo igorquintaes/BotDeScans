@@ -20,7 +20,7 @@ public class TitleValidatorTests : UnitTest
     public async Task GivenValidDataForNonRequiredPingRoleShouldReturnSuccess(PingType pingType, ulong? roleId)
     {
         fixture.FreezeFakeConfiguration(Ping.PING_TYPE_KEY, pingType.ToString());
-        var title = fixture.Create<Title>() with { DiscordRoleId = roleId };
+        var title = fixture.Build<Title>().With(x => x.DiscordRoleId, roleId).Create();
         var result = await fixture
               .Create<TitleValidator>()
               .TestValidateAsync(title, default, cancellationToken);
@@ -44,7 +44,7 @@ public class TitleValidatorTests : UnitTest
             .GetRoleFromGuildAsync(roleId.ToString(), cancellationToken))
             .Returns(Result.Ok(fixture.FreezeFake<IRole>()));
 
-        var title = fixture.Create<Title>() with { DiscordRoleId = roleId };
+        var title = fixture.Build<Title>().With(x => x.DiscordRoleId, roleId).Create();
         var result = await fixture
               .Create<TitleValidator>()
               .TestValidateAsync(title, default, cancellationToken);
@@ -65,7 +65,7 @@ public class TitleValidatorTests : UnitTest
             $"Não foi definida uma role para o Discord nesta obra, obrigatória para o ping de tipo {pingType}. " +
              "Defina, ou mude o tipo de ping para publicação no arquivo de configuração do Bot de Scans.";
 
-        var title = fixture.Create<Title>() with { DiscordRoleId = roleId };
+        var title = fixture.Build<Title>().With(x => x.DiscordRoleId, roleId).Create();
         var result = await fixture
               .Create<TitleValidator>()
               .TestValidateAsync(title, default, cancellationToken);
@@ -87,7 +87,7 @@ public class TitleValidatorTests : UnitTest
             .Returns(Result.Fail(["err-1", "err-2"]));
 
 
-        var title = fixture.Create<Title>() with { DiscordRoleId = roleId };
+        var title = fixture.Build<Title>().With(x => x.DiscordRoleId, roleId).Create();
         var result = await fixture
               .Create<TitleValidator>()
               .TestValidateAsync(title, default, cancellationToken);

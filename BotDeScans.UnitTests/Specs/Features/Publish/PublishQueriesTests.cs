@@ -16,11 +16,17 @@ public class PublishQueriesTests : UnitQueriesTest, IDisposable
         [Fact]
         public async Task GivenExpectedIdShouldReturnTitle()
         {
-            var expectedTitle = fixture.Create<Title>() with { Id = 1, References = [] };
-            var unexpectedTitle = fixture.Create<Title>() with { Id = 2, References = [] };
-            var expectedReference = fixture.Create<TitleReference>() with { Id = 1, TitleId = expectedTitle.Id, Title = default! };
-            var unexpectedReference = fixture.Create<TitleReference>() with { Id = 2, TitleId = unexpectedTitle.Id, Title = default! };
-            var expectedResult = expectedTitle with { References = [expectedReference] };
+            var expectedTitle = fixture.Build<Title>().With(x => x.Id, 1).With(x => x.References, []).Create();
+            var unexpectedTitle = fixture.Build<Title>().With(x => x.Id, 2).With(x => x.References, []).Create();
+            var expectedReference = fixture.Build<TitleReference>().With(x => x.Id, 1).With(x => x.Title, expectedTitle).Create();
+            var unexpectedReference = fixture.Build<TitleReference>().With(x => x.Id, 2).With(x => x.Title, unexpectedTitle).Create();
+            var expectedResult = new Title
+            {
+                Id = expectedTitle.Id,
+                Name = expectedTitle.Name,
+                References = [expectedReference],
+                DiscordRoleId = expectedTitle.DiscordRoleId
+            };
 
             await fixture.Freeze<DatabaseContext>().AddAsync(expectedTitle, cancellationToken);
             await fixture.Freeze<DatabaseContext>().AddAsync(unexpectedTitle, cancellationToken);
@@ -39,8 +45,8 @@ public class PublishQueriesTests : UnitQueriesTest, IDisposable
         [Fact]
         public async Task GivenExpectedNameShouldReturnTitleId()
         {
-            var expectedTitle = fixture.Create<Title>() with { Id = 1, References = [] };
-            var unexpectedTitle = fixture.Create<Title>() with { Id = 2, References = [] };
+            var expectedTitle = fixture.Build<Title>().With(x => x.Id, 1).With(x => x.References, []).Create();
+            var unexpectedTitle = fixture.Build<Title>().With(x => x.Id, 2).With(x => x.References, []).Create();
 
             await fixture.Freeze<DatabaseContext>().AddAsync(expectedTitle, cancellationToken);
             await fixture.Freeze<DatabaseContext>().AddAsync(unexpectedTitle, cancellationToken);
