@@ -62,7 +62,7 @@ public class PublishInteractionsTests : UnitTest
                 info.Message!,
                 info.TitleId.ToString());
 
-            fixture.Freeze<PublishState>().ReleaseInfo.Should().BeEquivalentTo(info);
+            fixture.Freeze<PublishState>().ChapterInfo.Should().BeEquivalentTo(info);
             fixture.Freeze<PublishState>().Steps.Should().BeEquivalentTo(enabledSteps);
         }
 

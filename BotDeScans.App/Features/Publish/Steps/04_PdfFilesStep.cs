@@ -16,7 +16,7 @@ public class PdfFilesStep(
     public async Task<Result> ExecuteAsync(CancellationToken cancellationToken)
     {
         var pdfFileResult = await fileService.CreatePdfFileAsync(
-            fileName: state.ReleaseInfo.ChapterNumber,
+            fileName: state.ChapterInfo.ChapterNumber,
             resourcesDirectory: state.InternalData.OriginContentFolder,
             destinationDirectory: fileReleaseService.CreateScopedDirectory());
 

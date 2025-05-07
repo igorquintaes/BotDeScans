@@ -1,5 +1,5 @@
 ﻿using System.ComponentModel;
-namespace BotDeScans.App.Models;
+namespace BotDeScans.App.Models.Entities;
 
 public record TitleReference
 {

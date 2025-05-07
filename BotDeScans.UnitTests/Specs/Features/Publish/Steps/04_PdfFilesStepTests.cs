@@ -47,7 +47,7 @@ public class PdfFilesStepTests : UnitTest
             A.CallTo(() => fixture
                 .FreezeFake<FileService>()
                 .CreatePdfFileAsync(
-                    fixture.Freeze<PublishState>().ReleaseInfo.ChapterNumber,
+                    fixture.Freeze<PublishState>().ChapterInfo.ChapterNumber,
                     fixture.Freeze<PublishState>().InternalData.OriginContentFolder,
                     scopedDirectory))
                 .Returns(Result.Ok(pdfDirectory));

@@ -1,7 +1,7 @@
 ﻿using BotDeScans.App.Features.Publish.State;
 using BotDeScans.App.Features.Publish.Steps;
 using BotDeScans.App.Features.Publish.Steps.Enums;
-using BotDeScans.App.Models;
+using BotDeScans.App.Models.Entities;
 using BotDeScans.App.Services;
 using FluentResults;
 namespace BotDeScans.UnitTests.Specs.Features.Publish.Steps;
@@ -63,8 +63,8 @@ public class UploadSakuraMangasStepTests : UnitTest
             A.CallTo(() => fixture
                 .FreezeFake<SakuraMangasService>()
                 .UploadAsync(
-                    state.ReleaseInfo.ChapterNumber,
-                    state.ReleaseInfo.ChapterName,
+                    state.ChapterInfo.ChapterNumber,
+                    state.ChapterInfo.ChapterName,
                     state.Title.References.Single().Value,
                     state.InternalData.ZipFilePath!,
                     cancellationToken))

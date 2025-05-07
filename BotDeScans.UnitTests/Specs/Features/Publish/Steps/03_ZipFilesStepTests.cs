@@ -47,7 +47,7 @@ public class ZipFilesStepTests : UnitTest
             A.CallTo(() => fixture
                 .FreezeFake<FileService>()
                 .CreateZipFile(
-                    fixture.Freeze<PublishState>().ReleaseInfo.ChapterNumber,
+                    fixture.Freeze<PublishState>().ChapterInfo.ChapterNumber,
                     fixture.Freeze<PublishState>().InternalData.OriginContentFolder,
                     scopedDirectory))
                 .Returns(Result.Ok(zipDirectory));

@@ -1,4 +1,4 @@
-﻿using BotDeScans.App.Models;
+﻿using BotDeScans.App.Models.DTOs;
 using ScottPlot;
 namespace BotDeScans.App.Services;
 

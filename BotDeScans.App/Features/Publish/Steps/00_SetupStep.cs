@@ -18,7 +18,7 @@ public class SetupStep(
 
     public async Task<Result> ExecuteAsync(CancellationToken cancellationToken)
     {
-        publishState.Title = await publishQueries.GetTitleAsync(publishState.ReleaseInfo.TitleId, cancellationToken);
+        publishState.Title = await publishQueries.GetTitleAsync(publishState.ChapterInfo.TitleId, cancellationToken);
 
         var initialValidation = await publishStateValidator.ValidateAsync(publishState, cancellationToken);
         if (initialValidation.IsValid is false)

@@ -1,4 +1,4 @@
-﻿using BotDeScans.App.Models;
+﻿using BotDeScans.App.Models.DTOs;
 using BotDeScans.App.Services.Wrappers;
 using FluentResults;
 using Google.Apis.Drive.v3;

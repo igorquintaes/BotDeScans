@@ -84,12 +84,12 @@ public class PublishMessageService(
         InteractionContext interactionContext,
         string coverFileName)
     {
-        var message = string.IsNullOrWhiteSpace(publishState.ReleaseInfo.Message)
+        var message = string.IsNullOrWhiteSpace(publishState.ChapterInfo.Message)
             ? string.Empty
-            : publishReplacerService.Replace(publishState.ReleaseInfo.Message);
+            : publishReplacerService.Replace(publishState.ChapterInfo.Message);
 
         return new(
-            Title: $"#{publishState.ReleaseInfo.ChapterNumber} {publishState.Title.Name}",
+            Title: $"#{publishState.ChapterInfo.ChapterNumber} {publishState.Title.Name}",
             Image: new EmbedImage($"attachment://{coverFileName}"),
             Description: message,
             Colour: Color.Green,

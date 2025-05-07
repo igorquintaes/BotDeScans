@@ -3,7 +3,7 @@ using BotDeScans.App.Features.Publish.Pings;
 using BotDeScans.App.Features.Publish.State;
 using BotDeScans.App.Features.Publish.State.Models;
 using BotDeScans.App.Features.Publish.Steps;
-using BotDeScans.App.Models;
+using BotDeScans.App.Models.Entities;
 using BotDeScans.App.Services.Discord;
 using FluentResults;
 using FluentValidation;
@@ -68,7 +68,7 @@ public class PublishStateValidatorTests : UnitTest
         A.CallTo(() => fixture
             .FreezeFake<IValidator<Info>>()
             .ValidateAsync(
-                A<IValidationContext>.That.Matches(x => (Info)x.InstanceToValidate == data.ReleaseInfo),
+                A<IValidationContext>.That.Matches(x => (Info)x.InstanceToValidate == data.ChapterInfo),
                 cancellationToken))
             .MustHaveHappenedOnceExactly();
     }

@@ -1,9 +1,11 @@
 ﻿using BotDeScans.App.Features.Publish.State;
+using BotDeScans.App.Features.Publish.State.Models;
 using BotDeScans.App.Features.Publish.Steps;
 using BotDeScans.App.Features.Publish.Steps.Enums;
-using BotDeScans.App.Models;
-using BotDeScans.App.Services;
+using BotDeScans.App.Models.Entities;
+using BotDeScans.App.Services.MangaDex;
 using FluentResults;
+using MangaDexSharp;
 using Microsoft.Extensions.Configuration;
 namespace BotDeScans.UnitTests.Specs.Features.Publish.Steps;
 
@@ -63,19 +65,12 @@ public class UploadMangDexStepTests : UnitTest
 
             A.CallTo(() => fixture
                 .FreezeFake<MangaDexService>()
-                .ClearPendingUploadsAsync())
-                .Returns(Result.Ok());
-
-            A.CallTo(() => fixture
-                .FreezeFake<MangaDexService>()
-                .UploadChapterAsync(
+                .UploadAsync(
+                    fixture.Freeze<PublishState>().ChapterInfo,
                     fixture.Freeze<PublishState>().Title.References.Single().Value,
-                    fixture.Freeze<PublishState>().ReleaseInfo.ChapterName,
-                    fixture.Freeze<PublishState>().ReleaseInfo.ChapterNumber,
-                    fixture.Freeze<PublishState>().ReleaseInfo.ChapterVolume,
                     fixture.Freeze<PublishState>().InternalData.OriginContentFolder,
                     cancellationToken))
-                .Returns(Result.Ok(CHAPTER_ID));
+                .Returns(Result.Ok(new Chapter() { Id = CHAPTER_ID }));
         }
 
         [Fact]
@@ -98,31 +93,14 @@ public class UploadMangDexStepTests : UnitTest
         }
 
         [Fact]
-        public async Task GivenErrorToClearPendingUploadsShouldReturnFailResult()
-        {
-            const string ERROR_MESSAGE = "some error.";
-
-            A.CallTo(() => fixture
-                .FreezeFake<MangaDexService>()
-                .ClearPendingUploadsAsync())
-                .Returns(Result.Fail(ERROR_MESSAGE));
-
-            var result = await step.ExecuteAsync(cancellationToken);
-
-            result.Should().BeFailure().And.HaveError(ERROR_MESSAGE);
-        }
-
-        [Fact]
         public async Task GivenErrorToUploadChapterShouldReturnFailResult()
         {
             const string ERROR_MESSAGE = "some error.";
 
             A.CallTo(() => fixture
                 .FreezeFake<MangaDexService>()
-                .UploadChapterAsync(
-                    A<string>.Ignored,
-                    A<string>.Ignored,
-                    A<string>.Ignored,
+                .UploadAsync(
+                    A<Info>.Ignored,
                     A<string>.Ignored,
                     A<string>.Ignored,
                     A<CancellationToken>.Ignored))

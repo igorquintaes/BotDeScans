@@ -1,4 +1,4 @@
-﻿using BotDeScans.App.Models;
+﻿using BotDeScans.App.Models.DTOs;
 using CG.Web.MegaApiClient;
 using FluentResults;
 

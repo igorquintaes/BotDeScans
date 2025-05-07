@@ -1,7 +1,7 @@
 ﻿using BotDeScans.App.Builders;
 using BotDeScans.App.Extensions;
 using BotDeScans.App.Infra;
-using BotDeScans.App.Models;
+using BotDeScans.App.Models.Entities;
 using BotDeScans.App.Services.Discord;
 using FluentValidation;
 using Microsoft.EntityFrameworkCore;

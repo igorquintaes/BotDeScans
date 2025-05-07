@@ -4,7 +4,7 @@ using BotDeScans.App.Features.Publish.Pings;
 using BotDeScans.App.Services.Discord;
 using FluentValidation;
 using Microsoft.Extensions.Configuration;
-namespace BotDeScans.App.Models;
+namespace BotDeScans.App.Models.Entities;
 
 public record Title(string Name, ulong? DiscordRoleId)
 {

@@ -1,11 +1,11 @@
 ﻿using BotDeScans.App.Features.Publish.Discord;
 using BotDeScans.App.Features.Publish.Pings;
-using BotDeScans.App.Models;
+using BotDeScans.App.Models.Entities;
 using BotDeScans.App.Services.Discord;
 using FluentResults;
 using FluentValidation.TestHelper;
 using Remora.Discord.API.Abstractions.Objects;
-namespace BotDeScans.UnitTests.Specs.Models;
+namespace BotDeScans.UnitTests.Specs.Models.Entities;
 
 public class TitleValidatorTests : UnitTest
 {

@@ -14,7 +14,7 @@ namespace BotDeScans.App.Services.Discord;
 internal static class AddDependencies
 {
     internal static IServiceCollection AddDiscordServices(this IServiceCollection services) => services
-        .AddDiscordCommands()
+        .AddDiscordCommands(true)
         .AddAutocompleteProvider<AutocompleteTitles>()
         .AddCondition<RoleAuthorizeCondition>()
         .AddScoped<RolesService>()

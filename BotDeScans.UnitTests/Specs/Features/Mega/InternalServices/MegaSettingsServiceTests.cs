@@ -1,5 +1,5 @@
 ﻿using BotDeScans.App.Features.Mega.InternalServices;
-using BotDeScans.App.Models;
+using BotDeScans.App.Models.DTOs;
 using CG.Web.MegaApiClient;
 using FluentAssertions.Execution;
 using System.Reflection;
