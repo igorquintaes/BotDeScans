@@ -17,45 +17,48 @@ public class UpdateInteractions(
     RolesService rolesService,
     IValidator<Title> validator) : InteractionGroup
 {
-    [Modal(nameof(UpdateAsync))]
-    [Description("Atualiza dados da obra")]
-    public async Task<IResult> UpdateAsync(
-    string name,
-    string? role,
-    string state)
-    {
-        var title = await databaseContext.Titles.AsNoTracking()
-            .FirstOrDefaultAsync(x => x.Id == int.Parse(state));
 
-        if (title is null)
-            return await feedbackService.SendContextualWarningAsync(
-                "Obra não encontrada.",
-                ct: CancellationToken);
 
-        ulong? roleId = null;
-        if (string.IsNullOrEmpty(role) is false)
-        {
-            var roleResult = await rolesService.GetRoleFromGuildAsync(role!, CancellationToken);
-            if (roleResult.IsFailed)
-                return await feedbackService.SendContextualEmbedAsync(
-                embed: EmbedBuilder.CreateErrorEmbed(roleResult.ToResult()),
-                ct: CancellationToken);
+    // todo
+    //[Modal(nameof(UpdateAsync))]
+    //[Description("Atualiza dados da obra")]
+    //public async Task<IResult> UpdateAsync(
+    //string name,
+    //string? role,
+    //string state)
+    //{
+    //    var title = await databaseContext.Titles.AsNoTracking()
+    //        .FirstOrDefaultAsync(x => x.Id == int.Parse(state));
 
-            roleId = roleResult.Value.ID.Value;
-        }
+    //    if (title is null)
+    //        return await feedbackService.SendContextualWarningAsync(
+    //            "Obra não encontrada.",
+    //            ct: CancellationToken);
 
-        var newTitle = title with { Name = name, DiscordRoleId = roleId };
-        var validatioResult = await validator.ValidateAsync(title);
-        if (validatioResult.IsValid is false)
-            return await feedbackService.SendContextualEmbedAsync(
-                embed: EmbedBuilder.CreateErrorEmbed(validatioResult.ToResult()),
-                ct: CancellationToken);
+    //    ulong? roleId = null;
+    //    if (string.IsNullOrEmpty(role) is false)
+    //    {
+    //        var roleResult = await rolesService.GetRoleFromGuildAsync(role!, CancellationToken);
+    //        if (roleResult.IsFailed)
+    //            return await feedbackService.SendContextualEmbedAsync(
+    //            embed: EmbedBuilder.CreateErrorEmbed(roleResult.ToResult()),
+    //            ct: CancellationToken);
 
-        databaseContext.Update(newTitle);
-        await databaseContext.SaveChangesAsync(CancellationToken);
+    //        roleId = roleResult.Value.ID.Value;
+    //    }
 
-        return await feedbackService.SendContextualEmbedAsync(
-            embed: EmbedBuilder.CreateSuccessEmbed("Obra atualizada com sucesso!"),
-            ct: CancellationToken);
-    }
+    //    var newTitle = title with { Name = name, DiscordRoleId = roleId };
+    //    var validatioResult = await validator.ValidateAsync(title);
+    //    if (validatioResult.IsValid is false)
+    //        return await feedbackService.SendContextualEmbedAsync(
+    //            embed: EmbedBuilder.CreateErrorEmbed(validatioResult.ToResult()),
+    //            ct: CancellationToken);
+
+    //    databaseContext.Update(newTitle);
+    //    await databaseContext.SaveChangesAsync(CancellationToken);
+
+    //    return await feedbackService.SendContextualEmbedAsync(
+    //        embed: EmbedBuilder.CreateSuccessEmbed("Obra atualizada com sucesso!"),
+    //        ct: CancellationToken);
+    //}
 }

@@ -3,7 +3,6 @@ using BotDeScans.App.Builders;
 using BotDeScans.App.Features.Titles.Create;
 using BotDeScans.App.Features.Titles.Update;
 using BotDeScans.App.Infra;
-using BotDeScans.App.Models.Entities;
 using BotDeScans.App.Services.Discord.Autocomplete;
 using BotDeScans.App.Services.MangaDex;
 using Microsoft.EntityFrameworkCore;
@@ -92,7 +91,7 @@ public class TitleCommands(
                 "Obra não encontrada.",
                 ct: CancellationToken);
 
-        var modal = new ModalBuilder(nameof(UpdateInteractions.UpdateAsync), "Atualizar Obra")
+        var modal = new ModalBuilder("UpdateAsync", "Atualizar Obra")
             .AddField(fieldName: "name", value: title.Name, label: "Nome da obra")
             .AddField(fieldName: "role", value: title.DiscordRoleId.ToString(), label: "Cargo do Discord (Nome ou ID)", isRequired: false)
             .CreateWithState(title.Id.ToString());
@@ -105,97 +104,5 @@ public class TitleCommands(
             response,
             ct: CancellationToken
         );
-    }
-
-    [Command("references-list")]
-    [RoleAuthorize("Staff")]
-    [Description("Adiciona ou atualiza referências externas para a obra.")]
-    public async Task<IResult> References(
-        [AutocompleteProvider(AutocompleteTitles.Id)]
-        [Description("Nome da obra")]
-        string titleName)
-    {
-        // todo: pagination based on titles length (characters quantity) - discord api
-        var title = await databaseContext.Titles
-            .Where(x => x.Name == titleName)
-            .Include(x => x.References)
-            .FirstOrDefaultAsync();
-
-        if (title is null)
-            return await feedbackService.SendContextualWarningAsync(
-                "Obra não encontrada.",
-                ct: CancellationToken);
-
-        if (title.References.Count == 0)
-            return await feedbackService.SendContextualWarningAsync(
-                "Obra sem referências cadastradas.",
-                ct: CancellationToken);
-
-        var titlesListAsText = title.References
-            .Select((x, index) => new { Number = index + 1, x.Key, x.Value })
-            .Select(x => string.Format("{0}. {1}{2}{3}{2}", x.Number, x.Key.ToString(), Environment.NewLine, x.Value));
-
-        return await feedbackService.SendContextualEmbedAsync(
-            embed: EmbedBuilder.CreateSuccessEmbed(
-                title: title.Name,
-                description: string.Join(Environment.NewLine, titlesListAsText)),
-            ct: CancellationToken);
-    }
-
-    [Command("references-update")]
-    [RoleAuthorize("Publisher")]
-    [Description("Adiciona ou atualiza referências externas para a obra.")]
-    public async Task<IResult> References(
-        [AutocompleteProvider(AutocompleteTitles.Id)]
-        [Description("Nome da obra")]
-        string titleName,
-        [Description("Nome da referência")]
-        ExternalReference referenceName,
-        [Description("Valor da referência")]
-        string referenceValue)
-    {
-        var title = await databaseContext.Titles
-            .Where(x => x.Name == titleName)
-            .FirstOrDefaultAsync();
-
-        if (title is null)
-            return await feedbackService.SendContextualWarningAsync(
-                "Obra não encontrada.",
-                ct: CancellationToken);
-
-        var referenceValueParsedResult = referenceName switch
-        {
-            ExternalReference.MangaDex => mangaDexService.GetTitleIdFromUrl(referenceValue),
-            _ => FluentResults.Result.Fail("Referência inválida")
-        };
-
-        if (referenceValueParsedResult.IsFailed)
-            return await feedbackService.SendContextualEmbedAsync(
-                embed: EmbedBuilder.CreateErrorEmbed(referenceValueParsedResult.ToResult()),
-                ct: CancellationToken);
-
-        var reference = await databaseContext.TitleReferences
-            .AsNoTracking()
-            .Where(x => x.TitleId == title.Id && x.Key == referenceName)
-            .FirstOrDefaultAsync();
-
-        if (reference is null)
-        {
-            var newReference = new TitleReference { Key = referenceName, Value = referenceValueParsedResult.Value, Title = title };
-
-            await databaseContext.AddAsync(newReference);
-            await databaseContext.SaveChangesAsync(CancellationToken);
-        }
-        else
-        {
-            var updatedReference = reference with { Value = referenceValueParsedResult.Value };
-            databaseContext.Update(updatedReference);
-            await databaseContext.SaveChangesAsync(CancellationToken);
-        }
-
-        return await feedbackService.SendContextualEmbedAsync(
-            embed: EmbedBuilder.CreateSuccessEmbed(title: "Referência atualizada."),
-            ct: CancellationToken);
-
     }
 }
