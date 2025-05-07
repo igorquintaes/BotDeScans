@@ -38,7 +38,6 @@ public class Program
             .ConfigureServices(services => services
                 .AddServices()
                 .AddInfraDependencies()
-                .AddDiscordCommands(true)
                 .AddInteractivity()
                 .AddLazyCache()
                 .AddMangaDex())
