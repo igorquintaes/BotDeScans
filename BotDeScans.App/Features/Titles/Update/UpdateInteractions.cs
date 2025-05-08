@@ -18,8 +18,8 @@ public class UpdateInteractions(
     RolesService rolesService,
     IValidator<Title> validator) : InteractionGroup
 {
-   [Modal(nameof(UpdateAsync))]
-   [Description("Atualiza dados da obra")]
+    [Modal(nameof(UpdateAsync))]
+    [Description("Atualiza dados da obra")]
     public async Task<IResult> UpdateAsync(
     string name,
     string? role,

@@ -71,8 +71,4 @@
     </None>
   </ItemGroup>
 
-  <ItemGroup>
-    <Folder Include="Infra\Migrations\" />
-  </ItemGroup>
-
 </Project>

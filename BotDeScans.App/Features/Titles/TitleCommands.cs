@@ -3,7 +3,6 @@ using BotDeScans.App.Builders;
 using BotDeScans.App.Features.Titles.Create;
 using BotDeScans.App.Infra;
 using BotDeScans.App.Services.Discord.Autocomplete;
-using BotDeScans.App.Services.MangaDex;
 using Microsoft.EntityFrameworkCore;
 using Remora.Commands.Attributes;
 using Remora.Commands.Groups;
@@ -22,8 +21,7 @@ public class TitleCommands(
     IOperationContext context,
     IDiscordRestInteractionAPI interactionAPI,
     FeedbackService feedbackService,
-    DatabaseContext databaseContext,
-    MangaDexService mangaDexService) : CommandGroup
+    DatabaseContext databaseContext) : CommandGroup
 {
     [Command("create")]
     [RoleAuthorize("Publisher")]
