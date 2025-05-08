@@ -6,7 +6,7 @@ using MangaDexSharp;
 namespace BotDeScans.App.Services.MangaDex.InternalServices;
 
 public class MangaDexUploadService(
-    MangaDexAccessToken mangaDexAccessToken, 
+    MangaDexAccessToken mangaDexAccessToken,
     FileService fileService,
     IMangaDex mangaDex)
 {

@@ -13,7 +13,7 @@ namespace BotDeScans.App.Features.References.Update;
 
 [Group("references")]
 public class Commands(
-    Handler handler, 
+    Handler handler,
     IFeedbackService feedbackService) : CommandGroup
 {
     [Command("update")]
@@ -30,7 +30,7 @@ public class Commands(
     {
         var request = new Request(title, reference, value);
 
-        var result = await handler.ExecuteAsync(request, CancellationToken); 
+        var result = await handler.ExecuteAsync(request, CancellationToken);
         var embed = result.IsSuccess
             ? EmbedBuilder.CreateSuccessEmbed($"Referência atualizada!")
             : EmbedBuilder.CreateErrorEmbed(result);

@@ -1,6 +1,6 @@
 ﻿namespace BotDeScans.App.Models.DTOs;
 
-public sealed class FileChunk : IDisposable 
+public sealed class FileChunk : IDisposable
 {
     private readonly Dictionary<string, FileStream> _files = [];
 

@@ -1,5 +1,4 @@
-﻿using Bogus;
-using BotDeScans.App.Features.Publish.Steps;
+﻿using BotDeScans.App.Features.Publish.Steps;
 using BotDeScans.App.Features.Publish.Steps.Enums;
 using BotDeScans.App.Services.Initializations;
 
@@ -16,7 +15,7 @@ public class SetupStepsServiceTests : UnitTest
 
         fixture.Inject<IEnumerable<IStep>>([mangaDexStep, bloggerStep]);
         fixture.FreezeFakeConfiguration(
-            SetupStepsService.STEPS_KEY, 
+            SetupStepsService.STEPS_KEY,
             [mangaDexStep.Name.ToString(), bloggerStep.Name.ToString()]);
 
         service = fixture.Create<SetupStepsService>();

@@ -3,17 +3,17 @@ using FluentValidation;
 
 namespace BotDeScans.App.Features.References.Update;
 
-public record Request(string Title, ExternalReference ReferenceKey, string ReferenceValue)
+public record Request(string Title, ExternalReference ReferenceKey, string ReferenceRawValue)
 {
     public const int GUID_CHAR_LENGHT = 36;
     public const string MANGADEX_ID_URL_PREFIX = "/title/";
 
-    public string ReferenceId => ReferenceKey switch
+    public string ReferenceValue => ReferenceKey switch
     {
-        _ => Guid.TryParse(ReferenceValue, out var guidResult)
+        _ => Guid.TryParse(ReferenceRawValue, out var guidResult)
             ? guidResult.ToString()
-            : ReferenceValue.Substring(
-                ReferenceValue.IndexOf(MANGADEX_ID_URL_PREFIX) + MANGADEX_ID_URL_PREFIX.Length, 
+            : ReferenceRawValue.Substring(
+                ReferenceRawValue.IndexOf(MANGADEX_ID_URL_PREFIX) + MANGADEX_ID_URL_PREFIX.Length,
                 GUID_CHAR_LENGHT)
     };
 }
@@ -26,12 +26,12 @@ public class RequestValidator : AbstractValidator<Request>
 
         RuleFor(request => request.ReferenceKey).IsInEnum();
 
-        RuleFor(request => request.ReferenceValue).NotEmpty();
+        RuleFor(request => request.ReferenceRawValue).NotEmpty();
 
         When(request => request.ReferenceKey == ExternalReference.MangaDex
-                     && string.IsNullOrWhiteSpace(request.ReferenceValue) is false, () =>
+                     && string.IsNullOrWhiteSpace(request.ReferenceRawValue) is false, () =>
         {
-            RuleFor(request => request.ReferenceValue)
+            RuleFor(request => request.ReferenceRawValue)
                 .Must(reference => IsMangaValidMangaDexReference(reference))
                 .WithMessage($"Valor de referência inválida para {ExternalReference.MangaDex}. " +
                              $"É necessário o ID da obra ou o link da página da obra.");

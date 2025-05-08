@@ -11,7 +11,7 @@ public class LogEventTests : UnitTest
     public LogEventTests()
     {
         fixture.FreezeFake<ILogger>();
-        
+
         logEvent = fixture.Create<LogEvent>();
     }
 

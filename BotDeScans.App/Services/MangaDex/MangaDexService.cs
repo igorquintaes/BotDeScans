@@ -34,8 +34,8 @@ public partial class MangaDexService(
             return sessionResult.ToResult();
 
         var uploadResult = await mangaDexUploadService.UploadFilesAsync(
-            filesDirectory, 
-            sessionResult.Value.Id, 
+            filesDirectory,
+            sessionResult.Value.Id,
             cancellationToken);
 
         if (uploadResult.IsFailed)

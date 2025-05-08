@@ -1,14 +1,9 @@
-﻿using BotDeScans.App.Builders;
-using BotDeScans.App.Extensions;
-using BotDeScans.App.Infra;
+﻿using BotDeScans.App.Infra;
 using BotDeScans.App.Models.Entities;
 using BotDeScans.App.Services.Discord;
 using FluentValidation;
-using Microsoft.EntityFrameworkCore;
 using Remora.Discord.Commands.Feedback.Services;
 using Remora.Discord.Interactivity;
-using Remora.Results;
-using System.ComponentModel;
 namespace BotDeScans.App.Features.Titles.Update;
 
 public class UpdateInteractions(

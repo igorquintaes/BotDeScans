@@ -1,7 +1,6 @@
 ﻿using BotDeScans.App.Attributes;
 using BotDeScans.App.Builders;
 using BotDeScans.App.Features.Titles.Create;
-using BotDeScans.App.Features.Titles.Update;
 using BotDeScans.App.Infra;
 using BotDeScans.App.Services.Discord.Autocomplete;
 using BotDeScans.App.Services.MangaDex;

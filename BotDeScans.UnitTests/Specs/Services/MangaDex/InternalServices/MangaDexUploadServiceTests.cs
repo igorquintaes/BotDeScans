@@ -1,16 +1,9 @@
 ﻿using BotDeScans.App.Models.DTOs;
-using BotDeScans.App.Models.Entities;
 using BotDeScans.App.Services;
 using BotDeScans.App.Services.Initializations.Factories;
 using BotDeScans.App.Services.MangaDex.InternalServices;
-using FakeItEasy;
 using FluentAssertions.Execution;
-using FluentResults;
 using MangaDexSharp;
-using Microsoft.Testing.Platform.TestHost;
-using Microsoft.VisualStudio.TestPlatform.ObjectModel.DataCollection;
-using Remora.Discord.API.Objects;
-using System.Text.RegularExpressions;
 
 namespace BotDeScans.UnitTests.Specs.Services.MangaDex.InternalServices;
 
@@ -313,7 +306,7 @@ public class MangaDexUploadServiceTests : UnitTest
             A.CallTo(() => fixture
                 .FreezeFake<IMangaDexUploadService>()
                 .Commit(
-                    sessionId, 
+                    sessionId,
                     A<UploadSessionCommit>.That.Matches(data =>
                         data.Chapter.Chapter == chapterNumber &&
                         data.Chapter.Volume == volume &&
