@@ -9,8 +9,8 @@ namespace BotDeScans.App.Models.Entities;
 public class Title
 {
     public int Id { get; init; }
-    public required string Name { get; init; }
-    public required ulong? DiscordRoleId { get; init; }
+    public required string Name { get; set; }
+    public required ulong? DiscordRoleId { get; set; }
     public List<TitleReference> References { get; init; } = [];
 
     public void AddOrUpdateReference(ExternalReference key, string value)
