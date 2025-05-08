@@ -48,24 +48,4 @@ public partial class MangaDexService(
             info.ChapterVolume,
             uploadResult.Value);
     }
-
-    public virtual Result<string> GetTitleIdFromUrl(string url)
-    {
-        const int GUID_CHAR_LENGHT = 36;
-        const string ID_URL_PREFIX = "/title/";
-
-        if (Guid.TryParse(url, out var guidResult))
-            return guidResult.ToString();
-
-        if (!Uri.TryCreate(url, UriKind.Absolute, out var uri) || uri.Authority != "mangadex.org")
-            return Result.Fail("O link informado não é da MangaDex.");
-
-        if (url.Contains(ID_URL_PREFIX) is false)
-            return Result.Fail("O link informado não é de uma página de obra.");
-
-        var titleId = url.Substring(url.IndexOf(ID_URL_PREFIX) + ID_URL_PREFIX.Length, GUID_CHAR_LENGHT);
-        return Guid.TryParse(titleId, out var titleIdResult)
-            ? Result.Ok(titleIdResult.ToString())
-            : Result.Fail("O link informado está em formato inválido.");
-    }
 }
