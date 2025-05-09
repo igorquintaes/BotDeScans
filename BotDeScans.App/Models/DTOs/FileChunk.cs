@@ -2,19 +2,19 @@
 
 public sealed class FileChunk : IDisposable
 {
-    private readonly Dictionary<string, FileStream> _files = [];
+    private readonly List<FileStream> _files = [];
 
-    public IReadOnlyDictionary<string, FileStream> Files => _files;
+    public IList<FileStream> Files => _files;
 
-    public void Add(string fileName, FileStream stream) => _files.Add(fileName, stream);
+    public void Add(string fileName, FileStream stream) => _files.Add(stream);
 
     public int Count => _files.Count;
 
-    public long TotalSize => _files.Values.Sum(fs => fs.Length);
+    public long TotalSize => _files.Sum(fs => fs.Length);
 
     public void Dispose()
     {
-        foreach (var stream in _files.Values)
+        foreach (var stream in _files)
             stream.Dispose();
 
         _files.Clear();

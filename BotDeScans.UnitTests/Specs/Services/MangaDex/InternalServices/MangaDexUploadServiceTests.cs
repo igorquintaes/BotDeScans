@@ -216,8 +216,8 @@ public class MangaDexUploadServiceTests : UnitTest
                     fixture.Freeze<MangaDexAccessToken>().Value,
                     cancellationToken,
                     A<StreamFileUpload[]>.That.Matches(files =>
-                        files.Any(file => file.FileName == chunk1.Files.First().Key && file.Data == chunk1.Files.First().Value) &&
-                        files.Any(file => file.FileName == chunk1.Files.Last().Key && file.Data == chunk1.Files.Last().Value) &&
+                        files.Any(file => file.FileName == chunk1.Files.First().Name && file.Data == chunk1.Files.First()) &&
+                        files.Any(file => file.FileName == chunk1.Files.Last().Name && file.Data == chunk1.Files.Last()) &&
                         files.Count() == 2)))
                 .Returns(new UploadSessionFileList
                 {
@@ -235,7 +235,7 @@ public class MangaDexUploadServiceTests : UnitTest
                     fixture.Freeze<MangaDexAccessToken>().Value,
                     cancellationToken,
                     A<StreamFileUpload[]>.That.Matches(files =>
-                        files.Any(file => file.FileName == chunk2.Files.First().Key && file.Data == chunk2.Files.First().Value) &&
+                        files.Any(file => file.FileName == chunk2.Files.First().Name && file.Data == chunk2.Files.First()) &&
                         files.Count() == 1)))
                 .Returns(new UploadSessionFileList
                 {

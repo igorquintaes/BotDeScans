@@ -14,7 +14,7 @@ public class MangaDexUploadService(
     {
         const int NOT_FOUND = 404;
         var sessionResponse = await mangaDex.Upload.Get(mangaDexAccessToken.Value);
-        return sessionResponse.AsResult(NOT_FOUND);
+        return sessionResponse.AsResult(allowedStatusCodes: NOT_FOUND);
     }
 
     public virtual async Task<Result> AbandonSessionAsync(
@@ -51,7 +51,7 @@ public class MangaDexUploadService(
             using (chunk)
             {
                 var files = chunk.Files
-                    .Select(data => new StreamFileUpload(data.Key, data.Value))
+                    .Select(data => new StreamFileUpload(data.Name, data))
                     .ToArray();
 
                 var uploadResponse = await mangaDex.Upload.Upload(
