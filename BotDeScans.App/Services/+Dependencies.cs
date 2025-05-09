@@ -2,6 +2,7 @@
 using BotDeScans.App.Features.Mega;
 using BotDeScans.App.Features.Publish;
 using BotDeScans.App.Features.Publish.Steps;
+using BotDeScans.App.Features.References;
 using BotDeScans.App.Features.Titles;
 using BotDeScans.App.Services.Discord;
 using BotDeScans.App.Services.Initializations;
@@ -24,6 +25,7 @@ internal static class AddDependencies
         .AddGoogleDrive()
         .AddMega()
         .AddTitleServices()
+        .AddReferencesServices()
         .AddInitializators()
         .AddLoggingServices()
         .AddWrappers()

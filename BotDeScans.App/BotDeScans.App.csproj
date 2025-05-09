@@ -71,9 +71,4 @@
     </None>
   </ItemGroup>
 
-  <ItemGroup>
-    <Folder Include="Features\Titles\References\" />
-    <Folder Include="Infra\Migrations\" />
-  </ItemGroup>
-
 </Project>

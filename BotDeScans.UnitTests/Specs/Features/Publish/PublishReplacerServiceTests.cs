@@ -1,6 +1,7 @@
 ﻿using AutoFixture.AutoFakeItEasy;
 using BotDeScans.App.Features.Publish;
 using BotDeScans.App.Features.Publish.State;
+using BotDeScans.App.Models.Entities;
 namespace BotDeScans.UnitTests.Specs.Features.Publish;
 
 public class PublishReplacerServiceTests : UnitTest
@@ -154,7 +155,15 @@ public class PublishReplacerServiceTests : UnitTest
 
         private static void SetPublishStateReplaceFieldsValue(PublishState publishState, string? value)
         {
-            publishState.Title = publishState.Title with { Name = value! };
+            var title = new Title
+            {
+                Id = publishState.Title.Id,
+                Name = value!,
+                References = publishState.Title.References,
+                DiscordRoleId = publishState.Title.DiscordRoleId
+            };
+
+            publishState.Title = title;
             publishState.ChapterInfo = new(default!, value!, value!, value!, value!, default);
             publishState.InternalData.BloggerImageAsBase64 = value;
             publishState.InternalData.BoxPdfReaderKey = value;

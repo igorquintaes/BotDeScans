@@ -36,4 +36,21 @@ public static class ConfigurationExtensions
             .Select(x => (T)parser(x))
             .Distinct()
             .ToArray();
+
+    public static T[] GetValues<T>(this IConfiguration configuration, string key, Func<string, object> parser)
+    {
+        var section = configuration.GetSection(key);
+        if (section is null)
+            return [];
+
+        var items = section.Get<List<string>>();
+        if (items is null)
+            return [];
+
+        return items
+            .Where(x => x is not null)
+            .Select(x => (T)parser(x))
+            .Distinct()
+            .ToArray();
+    }
 }

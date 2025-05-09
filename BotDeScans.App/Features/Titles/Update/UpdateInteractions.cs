@@ -5,6 +5,7 @@ using BotDeScans.App.Models.Entities;
 using BotDeScans.App.Services.Discord;
 using FluentValidation;
 using Microsoft.EntityFrameworkCore;
+using Remora.Discord.API.Objects;
 using Remora.Discord.Commands.Feedback.Services;
 using Remora.Discord.Interactivity;
 using Remora.Results;
@@ -24,16 +25,13 @@ public class UpdateInteractions(
     string? role,
     string state)
     {
-        var title = await databaseContext.Titles.AsNoTracking()
-            .FirstOrDefaultAsync(x => x.Id == int.Parse(state));
-
-        if (title is null)
-            return await feedbackService.SendContextualWarningAsync(
-                "Obra não encontrada.",
-                ct: CancellationToken);
+        var titleId = int.Parse(state);
+        var title = await databaseContext.Titles.SingleAsync(
+            x => x.Id == titleId, 
+            CancellationToken);
 
         ulong? roleId = null;
-        if (string.IsNullOrEmpty(role) is false)
+        if (string.IsNullOrWhiteSpace(role) is false)
         {
             var roleResult = await rolesService.GetRoleFromGuildAsync(role!, CancellationToken);
             if (roleResult.IsFailed)
@@ -44,14 +42,15 @@ public class UpdateInteractions(
             roleId = roleResult.Value.ID.Value;
         }
 
-        var newTitle = title with { Name = name, DiscordRoleId = roleId };
+        title.Name = name;
+        title.DiscordRoleId = roleId;
+
         var validatioResult = await validator.ValidateAsync(title);
         if (validatioResult.IsValid is false)
             return await feedbackService.SendContextualEmbedAsync(
                 embed: EmbedBuilder.CreateErrorEmbed(validatioResult.ToResult()),
                 ct: CancellationToken);
 
-        databaseContext.Update(newTitle);
         await databaseContext.SaveChangesAsync(CancellationToken);
 
         return await feedbackService.SendContextualEmbedAsync(

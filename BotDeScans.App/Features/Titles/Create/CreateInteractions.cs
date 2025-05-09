@@ -36,7 +36,7 @@ public class CreateInteractions(
             return await feedbackService.SendContextualEmbedAsync(
                 embed: EmbedBuilder.CreateErrorEmbed(roleResult.ToResult()),
                 ct: CancellationToken);
-        var title = new Title(name, roleResult.Value?.ID.Value);
+        var title = new Title { Name = name, DiscordRoleId = roleResult.Value?.ID.Value };
         var validationResult = await validator.ValidateAsync(title);
         if (validationResult.IsValid is false)
             return await feedbackService.SendContextualEmbedAsync(

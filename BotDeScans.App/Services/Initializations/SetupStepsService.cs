@@ -9,12 +9,13 @@ public class SetupStepsService(
     IConfiguration configuration,
     IEnumerable<IStep> steps)
 {
+    public const string STEPS_KEY = "Settings:Publish:Steps";
+
     public Result Setup()
     {
         Console.WriteLine("Validating Publish Steps...");
 
-        const string STEPS_KEY = "Settings:Publish:Steps";
-        var expectedStepsAsString = configuration.GetRequiredValues<string>(STEPS_KEY, value => value);
+        var expectedStepsAsString = configuration.GetValues<string>(STEPS_KEY, value => value);
         if (expectedStepsAsString.Length == 0)
             return Result.Fail($"Não foi encontrado nenhum passo de publicação em '{STEPS_KEY}'.");
 
@@ -22,14 +23,14 @@ public class SetupStepsService(
         foreach (var configurationStepAsString in expectedStepsAsString)
         {
             if (!Enum.TryParse(typeof(StepName), configurationStepAsString, out var configurationStep))
-                return Result.Fail($"Não foi possível converter o tipo '{configurationStepAsString}' em um passo de publicação válido.");
+                return Result.Fail($"{STEPS_KEY}: Não foi possível converter o tipo '{configurationStepAsString}' em um passo de publicação válido.");
 
             expectedStepsNames.Add((StepName)configurationStep);
         }
 
         return steps.Where(step => expectedStepsNames.Contains(step.Name))
                     .All(step => step.Type != StepType.Upload)
-                        ? Result.Fail($"Não foi encontrado nenhum passo de publicação para disponibilização de lançamentos em '{STEPS_KEY}'.")
+                        ? Result.Fail($"Não foi encontrado nenhum passo de upload de lançamentos em '{STEPS_KEY}'.")
                         : Result.Ok();
     }
 }

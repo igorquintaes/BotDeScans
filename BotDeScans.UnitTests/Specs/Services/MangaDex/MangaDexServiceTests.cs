@@ -55,10 +55,10 @@ public class MangaDexServiceTests : UnitTest
             A.CallTo(() => fixture
                 .FreezeFake<MangaDexUploadService>()
                 .CommitSessionAsync(
-                    sessionId, 
-                    info.ChapterName, 
-                    info.ChapterNumber, 
-                    info.ChapterVolume, 
+                    sessionId,
+                    info.ChapterName,
+                    info.ChapterNumber,
+                    info.ChapterVolume,
                     uploadsIds))
                 .Returns(Result.Ok(commitValue));
         }

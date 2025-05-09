@@ -2,7 +2,7 @@
 
 namespace BotDeScans.UnitTests.Specs;
 
-public abstract class UnitQueriesTest : UnitTest, IDisposable
+public abstract class UnitPersistenceTest : UnitTest, IDisposable
 {
     protected new readonly IFixture fixture = CreateDatabaseFixture();
 

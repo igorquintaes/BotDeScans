@@ -240,7 +240,7 @@ public class FileServiceTests : UnitTest
         [Fact]
         public void ShouldReturnSingleChunkWhenFilesBelowLimits()
         {
-            files  = CreateTempFiles(3, 100);
+            files = CreateTempFiles(3, 100);
             chunks = service
                     .CreateChunks(files, maxChunkFiles: 10, maxChunkBytes: 1024 * 1024)
                     .ToArray();
