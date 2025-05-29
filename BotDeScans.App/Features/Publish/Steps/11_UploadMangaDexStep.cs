@@ -24,9 +24,9 @@ public class UploadMangaDexStep(
     {
         var mangaDexReference = state.Title.References.Single(x => x.Key == ExternalReference.MangaDex);
         var uploadResult = await mangaDexService.UploadAsync(
-            state.ChapterInfo, 
-            mangaDexReference.Value, 
-            state.InternalData.OriginContentFolder, 
+            state.ChapterInfo,
+            mangaDexReference.Value,
+            state.InternalData.OriginContentFolder,
             cancellationToken);
 
         if (uploadResult.IsFailed)

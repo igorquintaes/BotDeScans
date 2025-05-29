@@ -11,7 +11,6 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using Remora.Discord.Commands.Extensions;
 using Remora.Discord.Interactivity.Extensions;
 using Serilog;
 using System.Diagnostics.CodeAnalysis;

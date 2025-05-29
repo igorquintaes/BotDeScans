@@ -1,17 +1,17 @@
-﻿using BotDeScans.App.Features.Publish;
+﻿using BotDeScans.App.Features.References.Update;
 using BotDeScans.App.Infra;
 using BotDeScans.App.Models.Entities;
 
-namespace BotDeScans.UnitTests.Specs.Features.Publish;
+namespace BotDeScans.UnitTests.Specs.Features.References.Update;
 
-public class PublishQueriesTests : UnitPersistenceTest, IDisposable
+public class PersistenceTests : UnitPersistenceTest
 {
-    private readonly PublishQueries queries;
+    private readonly Persistence persistence;
 
-    public PublishQueriesTests() =>
-        queries = fixture.Create<PublishQueries>();
+    public PersistenceTests() =>
+        persistence = fixture.Create<Persistence>();
 
-    public class GetTitleAsync : PublishQueriesTests
+    public class GetTitleAsync : PersistenceTests
     {
         [Fact]
         public async Task GivenExpectedIdShouldReturnTitle()
@@ -34,27 +34,9 @@ public class PublishQueriesTests : UnitPersistenceTest, IDisposable
             await fixture.Freeze<DatabaseContext>().AddAsync(unexpectedReference, cancellationToken);
             await fixture.Freeze<DatabaseContext>().SaveChangesAsync(cancellationToken);
 
-            var result = await queries.GetTitleAsync(expectedTitle.Id, cancellationToken);
+            var result = await persistence.GetTitleAsync(expectedTitle.Name, cancellationToken);
 
             result.Should().BeEquivalentTo(expectedResult);
-        }
-    }
-
-    public class GetTitleIdAsync : PublishQueriesTests
-    {
-        [Fact]
-        public async Task GivenExpectedNameShouldReturnTitleId()
-        {
-            var expectedTitle = fixture.Build<Title>().With(x => x.Id, 1).With(x => x.References, []).Create();
-            var unexpectedTitle = fixture.Build<Title>().With(x => x.Id, 2).With(x => x.References, []).Create();
-
-            await fixture.Freeze<DatabaseContext>().AddAsync(expectedTitle, cancellationToken);
-            await fixture.Freeze<DatabaseContext>().AddAsync(unexpectedTitle, cancellationToken);
-            await fixture.Freeze<DatabaseContext>().SaveChangesAsync(cancellationToken);
-
-            var result = await queries.GetTitleIdAsync(expectedTitle.Name, cancellationToken);
-
-            result.Should().Be(expectedTitle.Id);
         }
     }
 }

@@ -32,7 +32,7 @@ jobs:
         
     - name: Execute unit tests
       id: test
-      run: dotnet test BotDeScans.sln --configuration Release --no-build --verbosity normal --collect:"XPlat Code Coverage" --results-directory ./coverage /p:exclude-by-attribute="GeneratedCodeAttribute" /p:exclude-by-file="**/Migrations/**/*"
+      run: dotnet test BotDeScans.sln --configuration Release --no-build --verbosity normal --collect:"XPlat Code Coverage" --results-directory ./coverage /p:exclude-by-attribute="GeneratedCodeAttribute" /p:exclude-by-attribute="ExcludeFromCodeCoverageAttribute" /p:exclude-by-file="**/Migrations/**/*"
         
     - name: Code Coverage Report
       id: report

@@ -76,8 +76,8 @@ public class FileService
     }
 
     public virtual IEnumerable<FileChunk> CreateChunks(
-        IEnumerable<string> filesPaths, 
-        int maxChunkFiles, 
+        IEnumerable<string> filesPaths,
+        int maxChunkFiles,
         long maxChunkBytes)
     {
         var chunk = new FileChunk();

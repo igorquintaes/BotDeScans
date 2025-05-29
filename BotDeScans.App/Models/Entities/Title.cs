@@ -6,10 +6,22 @@ using FluentValidation;
 using Microsoft.Extensions.Configuration;
 namespace BotDeScans.App.Models.Entities;
 
-public record Title(string Name, ulong? DiscordRoleId)
+public class Title
 {
     public int Id { get; init; }
+    public required string Name { get; set; }
+    public required ulong? DiscordRoleId { get; set; }
     public List<TitleReference> References { get; init; } = [];
+
+    public void AddOrUpdateReference(ExternalReference key, string value)
+    {
+        var reference = References.SingleOrDefault(r => r.Key == key);
+
+        if (reference is null)
+            References.Add(new TitleReference { Key = key, Value = value });
+        else
+            reference.Value = value;
+    }
 }
 
 public class TitleValidator : AbstractValidator<Title>
