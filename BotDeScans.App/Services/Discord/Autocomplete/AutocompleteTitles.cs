@@ -17,7 +17,7 @@ public class AutocompleteTitles(DatabaseContext databaseContext) : IAutocomplete
         CancellationToken ct = default)
     {
         var titles = await databaseContext.Titles
-            .Where(x => x.Name.Contains(userInput))
+            .Where(x => EF.Functions.Like(x.Name, $"%{userInput}%"))
             .Take(25)
             .ToArrayAsync(ct);
 
