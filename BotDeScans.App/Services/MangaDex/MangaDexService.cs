@@ -1,5 +1,5 @@
 ﻿using BotDeScans.App.Extensions;
-using BotDeScans.App.Features.Publish.State.Models;
+using BotDeScans.App.Models.DTOs;
 using BotDeScans.App.Services.MangaDex.InternalServices;
 using FluentResults;
 using MangaDexSharp;

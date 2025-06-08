@@ -1,12 +1,12 @@
 ﻿using BotDeScans.App.Extensions;
-using BotDeScans.App.Features.Publish.State;
+using BotDeScans.App.Features.Publish.Interaction;
 using Google.Apis.Blogger.v3;
 using Google.Apis.Blogger.v3.Data;
 using Microsoft.Extensions.Configuration;
 namespace BotDeScans.App.Services;
 
 public class GoogleBloggerService(
-    PublishState state,
+    State state,
     ImageService imageService,
     BloggerService bloggerService,
     IConfiguration configuration)

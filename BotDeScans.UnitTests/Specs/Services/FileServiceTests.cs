@@ -1,6 +1,4 @@
-﻿using BotDeScans.App.Models.DTOs;
-using BotDeScans.App.Services;
-using FluentAssertions.Execution;
+﻿using BotDeScans.App.Services;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.PixelFormats;
 using System.IO.Compression;
@@ -221,80 +219,6 @@ public class FileServiceTests : UnitTest
         {
             Directory.Delete(destinationDirectory, true);
             Directory.Delete(resourcesDirectory, true);
-            GC.SuppressFinalize(this);
-        }
-    }
-
-    public class CreateChunks : FileServiceTests, IDisposable
-    {
-        private string[] files = [];
-        private FileChunk[] chunks = [];
-
-        [Fact]
-        public void GivenNoFilesShouldReturnEmpty() => service
-            .CreateChunks(files, maxChunkFiles: 10, maxChunkBytes: 1024 * 1024)
-            .ToArray()
-            .Should()
-            .BeEmpty();
-
-        [Fact]
-        public void ShouldReturnSingleChunkWhenFilesBelowLimits()
-        {
-            files = CreateTempFiles(3, 100);
-            chunks = service
-                    .CreateChunks(files, maxChunkFiles: 10, maxChunkBytes: 1024 * 1024)
-                    .ToArray();
-
-            using var _ = new AssertionScope();
-            chunks.Should().HaveCount(1);
-            chunks[0].Count.Should().Be(3);
-        }
-
-        [Fact]
-        public void ShouldSplitChunksWhenFileCountExceedsLimit()
-        {
-            files = CreateTempFiles(12, 100);
-            chunks = service
-                    .CreateChunks(files, maxChunkFiles: 5, maxChunkBytes: 1024 * 1024)
-                    .ToArray();
-
-            using var _ = new AssertionScope();
-            chunks.Should().HaveCount(3);
-            chunks[0].Count.Should().Be(5);
-            chunks[1].Count.Should().Be(5);
-            chunks[2].Count.Should().Be(2);
-        }
-
-        [Fact]
-        public void ShouldSplitChunksWhenFileSizeExceedsLimit()
-        {
-            files = CreateTempFiles(5, 600 * 1024); // 600KB each
-            chunks = service
-                    .CreateChunks(files, maxChunkFiles: 10, maxChunkBytes: 1024 * 1024) // 1MB limit
-                    .ToArray();
-
-            chunks.Should().HaveCount(5); // each file is too big to pair with another
-            chunks.All(c => c.Count == 1).Should().BeTrue();
-        }
-
-        private static string[] CreateTempFiles(int count, int bytesPerFile) => Enumerable
-            .Range(0, count)
-            .Select(_ =>
-            {
-                var path = Path.GetTempFileName();
-                File.WriteAllBytes(path, new byte[bytesPerFile]);
-                return path;
-            })
-            .ToArray();
-
-        public void Dispose()
-        {
-            foreach (var chunk in chunks)
-                chunk.Dispose();
-
-            foreach (var file in files)
-                File.Delete(file);
-
             GC.SuppressFinalize(this);
         }
     }
