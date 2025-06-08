@@ -39,7 +39,8 @@ public class Program
                 .AddInfraDependencies()
                 .AddInteractivity()
                 .AddLazyCache()
-                .AddMangaDex())
+                .AddMangaDex()
+                .AddMangaDexUtils())
             .ConfigureAppConfiguration(config => config
                 .AddEnvironmentVariables()
                 .AddJsonFile("config.json", optional: true, reloadOnChange: true)
@@ -105,6 +106,6 @@ public class Program
         Log.Error(errorAsJson);
 
         Console.ForegroundColor = defaultConsoleForegroundColor;
-        Console.ReadKey();
+        Console.ReadLine();
     }
 }

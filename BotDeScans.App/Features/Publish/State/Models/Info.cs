@@ -6,6 +6,7 @@ namespace BotDeScans.App.Features.Publish.State.Models;
 
 public record Info
 {
+    public string Language => "pt-br";
     public GoogleDriveUrl GoogleDriveUrl { get; init; }
     public string? ChapterName { get; init; }
     public string ChapterNumber { get; init; }

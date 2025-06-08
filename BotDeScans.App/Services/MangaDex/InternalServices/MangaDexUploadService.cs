@@ -1,19 +1,21 @@
 ﻿using BotDeScans.App.Extensions;
+using BotDeScans.App.Features.Publish.State.Models;
 using BotDeScans.App.Services.Initializations.Factories;
 using FluentResults;
 using MangaDexSharp;
+using MangaDexSharp.Utilities.Upload;
 
 namespace BotDeScans.App.Services.MangaDex.InternalServices;
 
 public class MangaDexUploadService(
     MangaDexAccessToken mangaDexAccessToken,
-    FileService fileService,
+    IUploadUtilityService uploadUtilityService,
     IMangaDex mangaDex)
 {
     public virtual async Task<Result<UploadSession>> GetOpenSessionAsync()
     {
         const int NOT_FOUND = 404;
-        var sessionResponse = await mangaDex.Upload.Get(mangaDexAccessToken.Value);
+        var sessionResponse = await mangaDex.Upload.Get(default, mangaDexAccessToken.Value);
         return sessionResponse.AsResult(allowedStatusCodes: NOT_FOUND);
     }
 
@@ -24,73 +26,28 @@ public class MangaDexUploadService(
         return abandonResponse.AsResult();
     }
 
-    public virtual async Task<Result<UploadSession>> CreateSessionAsync(
-        string titleId,
-        string groupId)
-    {
-        var createSessionResponse = await mangaDex.Upload.Begin(titleId, [groupId], mangaDexAccessToken.Value);
-        return createSessionResponse.AsResult();
-    }
-
-    public virtual async Task<Result<string[]>> UploadFilesAsync(
+    public virtual async Task<Chapter> UploadFilesAsync(
         string directory,
-        string sessionId,
+        string titleId,
+        string groupId,
+        Info info,
         CancellationToken cancellationToken)
     {
-        const int MAX_CHUNK_FILES = 10;
-        const long MAX_CHUNK_BYTES = 150 * 1024 * 1024; // 150MB
+        var session = await uploadUtilityService.New(titleId, [groupId], c => c
+            .WithAuthToken(mangaDexAccessToken.Value)
+            .WithCancellationToken(cancellationToken)
+            .WithMaxBatchSize(10)
+            .WithPageOrderFactory(file => file.OrderBy(x => x.Attributes!.OriginalFileName)));
 
-        var pageIds = new List<string>();
-        var filesPaths = Directory
-            .GetFiles(directory)
-            .OrderBy(x => x);
+        foreach (var file in Directory.GetFiles(directory))
+            await session.UploadFile(file);
 
-        var chunks = fileService.CreateChunks(filesPaths, MAX_CHUNK_FILES, MAX_CHUNK_BYTES);
-        foreach (var chunk in chunks)
+        return await session.Commit(new()
         {
-            using (chunk)
-            {
-                var files = chunk.Files
-                    .Select(data => new StreamFileUpload(data.Name, data))
-                    .ToArray();
-
-                var uploadResponse = await mangaDex.Upload.Upload(
-                    sessionId,
-                    mangaDexAccessToken.Value,
-                    cancellationToken,
-                    files);
-
-                var uploadResult = uploadResponse.AsResult();
-                if (uploadResult.IsFailed)
-                    return uploadResult.ToResult();
-
-                pageIds.AddRange(uploadResult.Value.Select(x => x.Id).ToArray());
-            }
-        }
-
-        return Result.Ok(pageIds.ToArray());
-    }
-
-    public virtual async Task<Result<Chapter>> CommitSessionAsync(
-        string sessionId,
-        string? chapterName,
-        string chapterNumber,
-        string? volume,
-        string[] pagesIds)
-    {
-        var sessionData = new UploadSessionCommit
-        {
-            Chapter = new()
-            {
-                Chapter = chapterNumber,
-                Volume = volume,
-                Title = chapterName,
-                TranslatedLanguage = "pt-br" // todo: parametrizar após internacionalização
-            },
-            PageOrder = pagesIds
-        };
-
-        var uploadCommitResult = await mangaDex.Upload.Commit(sessionId, sessionData, mangaDexAccessToken.Value);
-        return uploadCommitResult.AsResult();
+            Chapter = info.ChapterNumber,
+            Volume = info.ChapterVolume,
+            Title = info.ChapterName,
+            TranslatedLanguage = info.Language // todo: suport more languages after app internationalization
+        });
     }
 }
