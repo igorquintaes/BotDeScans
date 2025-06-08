@@ -29,23 +29,12 @@ public partial class MangaDexService(
         }
 
         var groupId = configuration.GetRequiredValue<string>("Mangadex:GroupId");
-        var sessionResult = await mangaDexUploadService.CreateSessionAsync(titleId, groupId);
-        if (sessionResult.IsFailed)
-            return sessionResult.ToResult();
 
-        var uploadResult = await mangaDexUploadService.UploadFilesAsync(
+        return await mangaDexUploadService.UploadFilesAsync(
             filesDirectory,
-            sessionResult.Value.Id,
+            titleId,
+            groupId,
+            info,
             cancellationToken);
-
-        if (uploadResult.IsFailed)
-            return uploadResult.ToResult();
-
-        return await mangaDexUploadService.CommitSessionAsync(
-            sessionResult.Value.Id,
-            info.ChapterName,
-            info.ChapterNumber,
-            info.ChapterVolume,
-            uploadResult.Value);
     }
 }

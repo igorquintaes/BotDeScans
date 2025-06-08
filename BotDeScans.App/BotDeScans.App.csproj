@@ -37,7 +37,8 @@
     <PackageReference Include="itext" Version="9.1.0" />
     <PackageReference Include="LazyCache" Version="2.4.0" />
     <PackageReference Include="LazyCache.AspNetCore" Version="2.4.0" />
-    <PackageReference Include="MangaDexSharp" Version="1.1.8" />
+    <PackageReference Include="MangaDexSharp" Version="1.3.1" />
+    <PackageReference Include="MangaDexSharp.Utilities" Version="1.3.1" />
     <PackageReference Include="MegaApiClient" Version="1.10.4" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="9.0.4" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="9.0.4">

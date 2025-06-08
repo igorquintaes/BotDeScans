@@ -1,9 +1,9 @@
-﻿using BotDeScans.App.Models.DTOs;
-using BotDeScans.App.Services;
+﻿using BotDeScans.App.Features.Publish.State.Models;
 using BotDeScans.App.Services.Initializations.Factories;
 using BotDeScans.App.Services.MangaDex.InternalServices;
-using FluentAssertions.Execution;
 using MangaDexSharp;
+using MangaDexSharp.Utilities.Upload;
+using static MangaDexSharp.UploadSessionFile;
 
 namespace BotDeScans.UnitTests.Specs.Services.MangaDex.InternalServices;
 
@@ -14,7 +14,7 @@ public class MangaDexUploadServiceTests : UnitTest
     public MangaDexUploadServiceTests()
     {
         fixture.Freeze<MangaDexAccessToken>();
-        fixture.FreezeFake<FileService>();
+        fixture.FreezeFake<IUploadUtilityService>();
         fixture.FreezeFake<IMangaDex>();
 
         A.CallTo(() => fixture
@@ -33,7 +33,7 @@ public class MangaDexUploadServiceTests : UnitTest
 
             A.CallTo(() => fixture
                 .FreezeFake<IMangaDexUploadService>()
-                .Get(fixture.Freeze<MangaDexAccessToken>().Value))
+                .Get(default, fixture.Freeze<MangaDexAccessToken>().Value))
                 .Returns(new MangaDexRoot<UploadSession> { Data = uploadSession });
 
             var result = await service.GetOpenSessionAsync();
@@ -54,7 +54,7 @@ public class MangaDexUploadServiceTests : UnitTest
 
             A.CallTo(() => fixture
                 .FreezeFake<IMangaDexUploadService>()
-                .Get(fixture.Freeze<MangaDexAccessToken>().Value))
+                .Get(default, fixture.Freeze<MangaDexAccessToken>().Value))
                 .Returns(root);
 
             var result = await service.GetOpenSessionAsync();
@@ -75,7 +75,7 @@ public class MangaDexUploadServiceTests : UnitTest
 
             A.CallTo(() => fixture
                 .FreezeFake<IMangaDexUploadService>()
-                .Get(fixture.Freeze<MangaDexAccessToken>().Value))
+                .Get(default, fixture.Freeze<MangaDexAccessToken>().Value))
                 .Returns(root);
 
             var result = await service.GetOpenSessionAsync();
@@ -122,64 +122,17 @@ public class MangaDexUploadServiceTests : UnitTest
         }
     }
 
-    public class CreateSessionAsync : MangaDexUploadServiceTests
-    {
-        [Fact]
-        public async Task GivenSuccessfulExecutionShouldReturnSuccessResult()
-        {
-            var titleId = fixture.Create<string>();
-            var groupId = fixture.Create<string>();
-            var uploadSession = fixture.Create<UploadSession>();
-
-            A.CallTo(() => fixture
-                .FreezeFake<IMangaDexUploadService>()
-                .Begin(titleId, new[] { groupId }, fixture.Freeze<MangaDexAccessToken>().Value))
-                .Returns(new MangaDexRoot<UploadSession> { Data = uploadSession });
-
-            var result = await service.CreateSessionAsync(titleId, groupId);
-
-            result.Should().BeSuccess().And.HaveValue(uploadSession);
-        }
-
-        [Fact]
-        public async Task GivenUnexpectedErrorShouldReturnSuccessResult()
-        {
-            const int ERROR = 500;
-            var titleId = fixture.Create<string>();
-            var groupId = fixture.Create<string>();
-            var uploadSession = fixture.Create<UploadSession>();
-
-            var root = new MangaDexRoot<UploadSession>
-            {
-                Data = uploadSession,
-                Errors = [new MangaDexError { Status = ERROR, Title = "some-title", Detail = "some-detail", Id = "some-id" }]
-            };
-
-            A.CallTo(() => fixture
-                .FreezeFake<IMangaDexUploadService>()
-                .Begin(titleId, new[] { groupId }, fixture.Freeze<MangaDexAccessToken>().Value))
-                .Returns(root);
-
-            var result = await service.CreateSessionAsync(titleId, groupId);
-
-            result.Should().BeFailure().And.HaveError("500 - some-title - some-detail");
-        }
-    }
-
     public class UploadFilesAsync : MangaDexUploadServiceTests
     {
         private static readonly string filesPath = Path.Combine(
                 AppDomain.CurrentDomain.BaseDirectory,
                 "files");
 
-        private readonly string sessionId;
+        private readonly string titleId;
+        private readonly string groupId;
 
         public UploadFilesAsync()
         {
-            const int MAX_CHUNK_FILES = 10;
-            const long MAX_CHUNK_BYTES = 150 * 1024 * 1024;
-            sessionId = fixture.Create<string>();
-
             if (Directory.Exists(filesPath))
                 Directory.Delete(filesPath, true);
 
@@ -188,172 +141,151 @@ public class MangaDexUploadServiceTests : UnitTest
             File.Create(Path.Combine(filesPath, "2.png")).Dispose();
             File.Create(Path.Combine(filesPath, "3.png")).Dispose();
 
-            var chunk1 = new FileChunk();
-            chunk1.Add("NAME-1", File.OpenRead(Path.Combine(filesPath, "1.png")));
-            chunk1.Add("NAME-2", File.OpenRead(Path.Combine(filesPath, "2.png")));
-
-            var chunk2 = new FileChunk();
-            chunk2.Add("NAME-3", File.OpenRead(Path.Combine(filesPath, "3.png")));
-
-            var chunks = new List<FileChunk> { chunk1, chunk2 };
+            titleId = fixture.Create<string>();
+            groupId = fixture.Create<string>();
 
             A.CallTo(() => fixture
-                .FreezeFake<FileService>()
-                .CreateChunks(
-                    A<IOrderedEnumerable<string>>.That.Matches(files =>
-                        files.Contains(Path.Combine(filesPath, "1.png")) &&
-                        files.Contains(Path.Combine(filesPath, "2.png")) &&
-                        files.Contains(Path.Combine(filesPath, "3.png")) &&
-                        files.Count() == 3),
-                    MAX_CHUNK_FILES,
-                    MAX_CHUNK_BYTES))
-                .Returns(chunks);
+                .FreezeFake<IUploadUtilityService>()
+                .New(
+                    titleId, 
+                    A<string[]>.That.Matches(x => x.Count() == 1 && x[0] == groupId),
+                    A<Action<IUploadSettings>>.Ignored))
+                .Returns(fixture.FreezeFake<IUploadInstance>());
 
             A.CallTo(() => fixture
-                .FreezeFake<IMangaDexUploadService>()
-                .Upload(
-                    sessionId,
-                    fixture.Freeze<MangaDexAccessToken>().Value,
-                    cancellationToken,
-                    A<StreamFileUpload[]>.That.Matches(files =>
-                        files.Any(file => file.FileName == chunk1.Files.First().Name && file.Data == chunk1.Files.First()) &&
-                        files.Any(file => file.FileName == chunk1.Files.Last().Name && file.Data == chunk1.Files.Last()) &&
-                        files.Count() == 2)))
-                .Returns(new UploadSessionFileList
-                {
-                    Data =
-                    [
-                        new UploadSessionFile { Id = "ID-1" },
-                        new UploadSessionFile { Id = "ID-2" },
-                    ]
-                });
-
-            A.CallTo(() => fixture
-                .FreezeFake<IMangaDexUploadService>()
-                .Upload(
-                    sessionId,
-                    fixture.Freeze<MangaDexAccessToken>().Value,
-                    cancellationToken,
-                    A<StreamFileUpload[]>.That.Matches(files =>
-                        files.Any(file => file.FileName == chunk2.Files.First().Name && file.Data == chunk2.Files.First()) &&
-                        files.Count() == 1)))
-                .Returns(new UploadSessionFileList
-                {
-                    Data =
-                    [
-                        new UploadSessionFile { Id = "ID-3" },
-                    ]
-                });
-
+                .FreezeFake<IUploadInstance>()
+                .Commit(
+                    A<ChapterDraft>.That.Matches(x =>
+                        x.Chapter == fixture.Freeze<Info>().ChapterNumber &&
+                        x.Volume == fixture.Freeze<Info>().ChapterVolume &&
+                        x.Title == fixture.Freeze<Info>().ChapterName &&
+                        x.TranslatedLanguage == fixture.Freeze<Info>().Language),
+                    default))
+                .Returns(fixture.Freeze<Chapter>());
         }
 
         [Fact]
-        public async Task GivenSuccessfulExecutionShouldReturnSuccessResult()
+        public async Task GivenSuccessfulExecutionShouldReturnExpectedChapter()
         {
-            var result = await service.UploadFilesAsync(filesPath, sessionId, cancellationToken);
+            var chapter = await service.UploadFilesAsync(
+                filesPath, 
+                titleId, 
+                groupId, 
+                fixture.Freeze<Info>(), 
+                cancellationToken);
 
-            using var _ = new AssertionScope();
-            result.Should().BeSuccess();
-            result.ValueOrDefault.Should().BeEquivalentTo(["ID-1", "ID-2", "ID-3"], options => options.WithStrictOrdering());
+            chapter.Should().Be(fixture.Freeze<Chapter>());
         }
 
         [Fact]
-        public async Task GivenExecutionErrorShouldReturnFailResultAndStopUpload()
+        public async Task GivenDirectoryShouldUploadAllFilesInside()
         {
-            const int ERROR = 500;
-            var root = new UploadSessionFileList
-            {
-                Errors = [new MangaDexError { Status = ERROR, Title = "some-title", Detail = "some-detail", Id = "some-id" }]
-            };
+            await service.UploadFilesAsync(
+                filesPath,
+                titleId,
+                groupId,
+                fixture.Freeze<Info>(),
+                cancellationToken);
 
             A.CallTo(() => fixture
-                .FreezeFake<IMangaDexUploadService>()
-                .Upload(
-                    sessionId,
-                    fixture.Freeze<MangaDexAccessToken>().Value,
-                    cancellationToken,
-                    A<StreamFileUpload[]>.Ignored))
-                .Returns(root);
-
-            var result = await service.UploadFilesAsync(filesPath, sessionId, cancellationToken);
-
-            using var _ = new AssertionScope();
-            result.Should().BeFailure().And.HaveError("500 - some-title - some-detail");
+                .FreezeFake<IUploadInstance>()
+                .UploadFile(Path.Combine(filesPath, "1.png"), default))
+                .MustHaveHappenedOnceExactly();
 
             A.CallTo(() => fixture
-                .FreezeFake<IMangaDexUploadService>()
-                .Upload(
-                    A<string>.Ignored,
-                    A<string>.Ignored,
-                    cancellationToken,
-                    A<StreamFileUpload[]>.Ignored))
+                .FreezeFake<IUploadInstance>()
+                .UploadFile(Path.Combine(filesPath, "2.png"), default))
+                .MustHaveHappenedOnceExactly();
+
+            A.CallTo(() => fixture
+                .FreezeFake<IUploadInstance>()
+                .UploadFile(Path.Combine(filesPath, "3.png"), default))
                 .MustHaveHappenedOnceExactly();
         }
-    }
-
-    public class CommitSessionAsync : MangaDexUploadServiceTests
-    {
-        [Fact]
-        public async Task GivenSuccessfulExecutionShouldReturnSuccessResult()
-        {
-            var sessionId = fixture.Create<string>();
-            var chapterName = fixture.Create<string>();
-            var chapterNumber = fixture.Create<string>();
-            var volume = fixture.Create<string>();
-            var pagesIds = fixture.CreateMany<string>().ToArray();
-            var chapter = fixture.Create<Chapter>();
-
-            A.CallTo(() => fixture
-                .FreezeFake<IMangaDexUploadService>()
-                .Commit(
-                    sessionId,
-                    A<UploadSessionCommit>.That.Matches(data =>
-                        data.Chapter.Chapter == chapterNumber &&
-                        data.Chapter.Volume == volume &&
-                        data.Chapter.Title == chapterName &&
-                        data.Chapter.TranslatedLanguage == "pt-br" &&
-                        data.PageOrder == pagesIds),
-                    fixture.Freeze<MangaDexAccessToken>().Value))
-                .Returns(new MangaDexRoot<Chapter> { Data = chapter });
-
-            var result = await service.CommitSessionAsync(sessionId, chapterName, chapterNumber, volume, pagesIds);
-
-            result.Should().BeSuccess().And.HaveValue(chapter);
-        }
 
         [Fact]
-        public async Task GivenUnexpectedErrorShouldReturnSuccessResult()
+        public async Task ShouldBuildExpectedUploadSettings()
         {
-            const int ERROR = 500;
-            var sessionId = fixture.Create<string>();
-            var chapterName = fixture.Create<string>();
-            var chapterNumber = fixture.Create<string>();
-            var volume = fixture.Create<string>();
-            var pagesIds = fixture.CreateMany<string>().ToArray();
-            var chapter = fixture.Create<Chapter>();
-
-            var root = new MangaDexRoot<Chapter>
-            {
-                Data = chapter,
-                Errors = [new MangaDexError { Status = ERROR, Title = "some-title", Detail = "some-detail", Id = "some-id" }]
-            };
+            // Arrange
+            UploadSessionFile[] orderedUploadSessionFiles = [];
 
             A.CallTo(() => fixture
-                .FreezeFake<IMangaDexUploadService>()
-                .Commit(
-                    sessionId,
-                    A<UploadSessionCommit>.That.Matches(data =>
-                        data.Chapter.Chapter == chapterNumber &&
-                        data.Chapter.Volume == volume &&
-                        data.Chapter.Title == chapterName &&
-                        data.Chapter.TranslatedLanguage == "pt-br" &&
-                        data.PageOrder == pagesIds),
-                    fixture.Freeze<MangaDexAccessToken>().Value))
-                .Returns(root);
+                .FreezeFake<IUploadSettings>()
+                .WithAuthToken(A<string>.Ignored))
+                .Returns(fixture.FreezeFake<IUploadSettings>());
 
-            var result = await service.CommitSessionAsync(sessionId, chapterName, chapterNumber, volume, pagesIds);
+            A.CallTo(() => fixture
+                .FreezeFake<IUploadSettings>()
+                .WithCancellationToken(A<CancellationToken>.Ignored))
+                .Returns(fixture.FreezeFake<IUploadSettings>());
 
-            result.Should().BeFailure().And.HaveError("500 - some-title - some-detail");
+            A.CallTo(() => fixture
+                .FreezeFake<IUploadSettings>()
+                .WithMaxBatchSize(A<int>.Ignored))
+                .Returns(fixture.FreezeFake<IUploadSettings>());
+
+            A.CallTo(() => fixture
+                .FreezeFake<IUploadSettings>()
+                .WithPageOrderFactory(A<Func<IEnumerable<UploadSessionFile>, IOrderedEnumerable<UploadSessionFile>>>.Ignored))
+                .Returns(fixture.FreezeFake<IUploadSettings>());
+
+            A.CallTo(() => fixture
+                .FreezeFake<IUploadUtilityService>()
+                .New(A<string>.Ignored,
+                     A<string[]>.Ignored,
+                     A<Action<IUploadSettings>>.Ignored))
+                .Invokes((string _, string[] _, Action<IUploadSettings> action) =>
+                     action.Invoke(fixture.FreezeFake<IUploadSettings>()));
+
+            A.CallTo(() => fixture
+                .FreezeFake<IUploadSettings>()
+                .WithPageOrderFactory(A<Func<IEnumerable<UploadSessionFile>, IOrderedEnumerable<UploadSessionFile>>>.Ignored))
+                .Invokes((Func<IEnumerable<UploadSessionFile>, IOrderedEnumerable<UploadSessionFile>> factory) =>
+                {
+                    var randomSessionFiles = new List<UploadSessionFile>()
+                    {
+                        new() { Attributes = new UploadSessionFileAttributesModel { OriginalFileName = "02.png" } },
+                        new() { Attributes = new UploadSessionFileAttributesModel { OriginalFileName = "01.png" } },
+                        new() { Attributes = new UploadSessionFileAttributesModel { OriginalFileName = "cover.png" } },
+                        new() { Attributes = new UploadSessionFileAttributesModel { OriginalFileName = "03.png" } }
+                    };
+
+                    orderedUploadSessionFiles = factory(randomSessionFiles).ToArray();
+                });
+
+            // Act
+            await service.UploadFilesAsync(
+                filesPath,
+                titleId,
+                groupId,
+                fixture.Freeze<Info>(),
+                cancellationToken);
+
+            // Assert
+            A.CallTo(() => fixture
+                .FreezeFake<IUploadSettings>()
+                .WithAuthToken(fixture.Freeze<MangaDexAccessToken>().Value))
+                .MustHaveHappenedOnceExactly();
+
+            A.CallTo(() => fixture
+                .FreezeFake<IUploadSettings>()
+                .WithCancellationToken(cancellationToken))
+                .MustHaveHappenedOnceExactly();
+
+            A.CallTo(() => fixture
+                .FreezeFake<IUploadSettings>()
+                .WithMaxBatchSize(10))
+                .MustHaveHappenedOnceExactly();
+
+            A.CallTo(() => fixture
+                .FreezeFake<IUploadSettings>()
+                .WithPageOrderFactory(A<Func<IEnumerable<UploadSessionFile>, IOrderedEnumerable<UploadSessionFile>>>.Ignored))
+                .MustHaveHappenedOnceExactly();
+
+            orderedUploadSessionFiles[0].Attributes!.OriginalFileName.Should().Be("01.png");
+            orderedUploadSessionFiles[1].Attributes!.OriginalFileName.Should().Be("02.png");
+            orderedUploadSessionFiles[2].Attributes!.OriginalFileName.Should().Be("03.png");
+            orderedUploadSessionFiles[3].Attributes!.OriginalFileName.Should().Be("cover.png");
         }
     }
 }

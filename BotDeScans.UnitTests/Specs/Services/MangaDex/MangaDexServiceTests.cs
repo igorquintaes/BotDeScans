@@ -1,9 +1,12 @@
 ﻿using BotDeScans.App.Features.Publish.State.Models;
 using BotDeScans.App.Services.MangaDex;
 using BotDeScans.App.Services.MangaDex.InternalServices;
+using FakeItEasy;
 using FluentResults;
 using MangaDexSharp;
 using Microsoft.Extensions.Configuration;
+using Microsoft.VisualStudio.TestPlatform.ObjectModel.DataCollection;
+using System.Text.RegularExpressions;
 
 namespace BotDeScans.UnitTests.Specs.Services.MangaDex;
 
@@ -19,73 +22,68 @@ public class MangaDexServiceTests : UnitTest
         service = fixture.Create<MangaDexService>();
     }
 
-    public class UploadAsync : MangaDexServiceTests
+    public class UploadFilesAsync : MangaDexServiceTests
     {
-        private readonly Info info;
         private readonly string titleId;
         private readonly string filesDirectory;
+        private readonly string sessionId;
 
-        private readonly Chapter commitValue;
-
-        public UploadAsync()
+        public UploadFilesAsync()
         {
-            info = fixture.Create<Info>();
             titleId = fixture.Create<string>();
             filesDirectory = fixture.Create<string>();
-
+            sessionId = fixture.Create<string>();
             var groupId = fixture.Create<string>();
+
             fixture.FreezeFakeConfiguration("Mangadex:GroupId", groupId);
 
-            var sessionId = fixture.Create<string>();
             A.CallTo(() => fixture
                 .FreezeFake<MangaDexUploadService>()
-                .CreateSessionAsync(titleId, groupId))
+                .GetOpenSessionAsync())
                 .Returns(Result.Ok(new UploadSession { Id = sessionId }));
 
-            var uploadsIds = fixture.CreateMany<string>().ToArray();
+            A.CallTo(() => fixture
+                .FreezeFake<MangaDexUploadService>()
+                .AbandonSessionAsync(sessionId))
+                .Returns(Result.Ok());
+
             A.CallTo(() => fixture
                 .FreezeFake<MangaDexUploadService>()
                 .UploadFilesAsync(
                     filesDirectory,
-                    sessionId,
+                    titleId,
+                    groupId,
+                    fixture.Freeze<Info>(),
                     cancellationToken))
-                .Returns(Result.Ok(uploadsIds));
-
-            commitValue = fixture.Create<Chapter>();
-            A.CallTo(() => fixture
-                .FreezeFake<MangaDexUploadService>()
-                .CommitSessionAsync(
-                    sessionId,
-                    info.ChapterName,
-                    info.ChapterNumber,
-                    info.ChapterVolume,
-                    uploadsIds))
-                .Returns(Result.Ok(commitValue));
+                .Returns(fixture.Freeze<Chapter>());
         }
 
         [Fact]
         public async Task GivenSuccessfulExecutionShouldReturnSuccessResult()
         {
-            var result = await service.UploadAsync(info, titleId, filesDirectory, cancellationToken);
+            var result = await service.UploadAsync(fixture.Freeze<Info>(), titleId, filesDirectory, cancellationToken);
 
-            result.Should().BeSuccess().And.HaveValue(commitValue);
+            result.Should().BeSuccess().And.HaveValue(fixture.Freeze<Chapter>());
         }
 
         [Fact]
         public async Task GivenExistingSessionShouldCallAbandonSession()
         {
-            var existingSessionId = fixture.Create<string>();
+            await service.UploadAsync(fixture.Freeze<Info>(), titleId, filesDirectory, cancellationToken);
 
             A.CallTo(() => fixture
                 .FreezeFake<MangaDexUploadService>()
-                .GetOpenSessionAsync())
-                .Returns(Result.Ok(new UploadSession { Id = existingSessionId }));
-
-            await service.UploadAsync(info, titleId, filesDirectory, cancellationToken);
+                .AbandonSessionAsync(sessionId))
+                .MustHaveHappenedOnceExactly();
 
             A.CallTo(() => fixture
                 .FreezeFake<MangaDexUploadService>()
-                .AbandonSessionAsync(existingSessionId))
+                .UploadFilesAsync(
+                    A<string>.Ignored,
+                    A<string>.Ignored,
+                    A<string>.Ignored,
+                    A<Info>.Ignored,
+                    cancellationToken))
                 .MustHaveHappenedOnceExactly();
         }
 
@@ -93,19 +91,55 @@ public class MangaDexServiceTests : UnitTest
         [InlineData("")]
         [InlineData(" ")]
         [InlineData(null)]
-        public async Task GivenNoExistingSessionShouldNotCallAbandonSession(string? existingSessionId)
+        public async Task GivenNoneExistingSessionIdShouldNotCallAbandonSession(string? existingSessionId)
         {
             A.CallTo(() => fixture
                 .FreezeFake<MangaDexUploadService>()
                 .GetOpenSessionAsync())
                 .Returns(Result.Ok(new UploadSession { Id = existingSessionId! }));
 
-            await service.UploadAsync(info, titleId, filesDirectory, cancellationToken);
+            await service.UploadAsync(fixture.Freeze<Info>(), titleId, filesDirectory, cancellationToken);
 
             A.CallTo(() => fixture
                 .FreezeFake<MangaDexUploadService>()
                 .AbandonSessionAsync(A<string>.Ignored))
                 .MustNotHaveHappened();
+
+            A.CallTo(() => fixture
+                .FreezeFake<MangaDexUploadService>()
+                .UploadFilesAsync(
+                    A<string>.Ignored,
+                    A<string>.Ignored,
+                    A<string>.Ignored,
+                    A<Info>.Ignored,
+                    cancellationToken))
+                .MustHaveHappenedOnceExactly();
+        }
+
+        [Fact]
+        public async Task GivenNoneExistingSessionShouldNotCallAbandonSession()
+        {
+            A.CallTo(() => fixture
+                .FreezeFake<MangaDexUploadService>()
+                .GetOpenSessionAsync())
+                .Returns(Result.Ok(null as UploadSession)!);
+
+            await service.UploadAsync(fixture.Freeze<Info>(), titleId, filesDirectory, cancellationToken);
+
+            A.CallTo(() => fixture
+                .FreezeFake<MangaDexUploadService>()
+                .AbandonSessionAsync(A<string>.Ignored))
+                .MustNotHaveHappened();
+
+            A.CallTo(() => fixture
+                .FreezeFake<MangaDexUploadService>()
+                .UploadFilesAsync(
+                    A<string>.Ignored,
+                    A<string>.Ignored,
+                    A<string>.Ignored,
+                    A<Info>.Ignored,
+                    cancellationToken))
+                .MustHaveHappenedOnceExactly();
         }
 
         [Fact]
@@ -118,7 +152,7 @@ public class MangaDexServiceTests : UnitTest
                 .GetOpenSessionAsync())
                 .Returns(Result.Fail(ERROR_MESSAGE));
 
-            var result = await service.UploadAsync(info, titleId, filesDirectory, cancellationToken);
+            var result = await service.UploadAsync(fixture.Freeze<Info>(), titleId, filesDirectory, cancellationToken);
 
             result.Should().BeFailure().And.HaveError(ERROR_MESSAGE);
         }
@@ -130,60 +164,10 @@ public class MangaDexServiceTests : UnitTest
 
             A.CallTo(() => fixture
                 .FreezeFake<MangaDexUploadService>()
-                .GetOpenSessionAsync())
-                .Returns(Result.Ok(new UploadSession { Id = fixture.Create<string>() }));
-
-            A.CallTo(() => fixture
-                .FreezeFake<MangaDexUploadService>()
-                .AbandonSessionAsync(A<string>.Ignored))
+                .AbandonSessionAsync(sessionId))
                 .Returns(Result.Fail(ERROR_MESSAGE));
 
-            var result = await service.UploadAsync(info, titleId, filesDirectory, cancellationToken);
-
-            result.Should().BeFailure().And.HaveError(ERROR_MESSAGE);
-        }
-
-        [Fact]
-        public async Task GivenErrorToCreateSessionShouldReturnFailResult()
-        {
-            const string ERROR_MESSAGE = "some error.";
-
-            A.CallTo(() => fixture
-                .FreezeFake<MangaDexUploadService>()
-                .CreateSessionAsync(A<string>.Ignored, A<string>.Ignored))
-                .Returns(Result.Fail(ERROR_MESSAGE));
-
-            var result = await service.UploadAsync(info, titleId, filesDirectory, cancellationToken);
-
-            result.Should().BeFailure().And.HaveError(ERROR_MESSAGE);
-        }
-
-        [Fact]
-        public async Task GivenErrorToUploadFilesShouldReturnFailResult()
-        {
-            const string ERROR_MESSAGE = "some error.";
-
-            A.CallTo(() => fixture
-                .FreezeFake<MangaDexUploadService>()
-                .UploadFilesAsync(A<string>.Ignored, A<string>.Ignored, cancellationToken))
-                .Returns(Result.Fail(ERROR_MESSAGE));
-
-            var result = await service.UploadAsync(info, titleId, filesDirectory, cancellationToken);
-
-            result.Should().BeFailure().And.HaveError(ERROR_MESSAGE);
-        }
-
-        [Fact]
-        public async Task GivenErrorToCommitSessionShouldReturnFailResult()
-        {
-            const string ERROR_MESSAGE = "some error.";
-
-            A.CallTo(() => fixture
-                .FreezeFake<MangaDexUploadService>()
-                .CommitSessionAsync(A<string>.Ignored, A<string>.Ignored, A<string>.Ignored, A<string>.Ignored, A<string[]>.Ignored))
-                .Returns(Result.Fail(ERROR_MESSAGE));
-
-            var result = await service.UploadAsync(info, titleId, filesDirectory, cancellationToken);
+            var result = await service.UploadAsync(fixture.Freeze<Info>(), titleId, filesDirectory, cancellationToken);
 
             result.Should().BeFailure().And.HaveError(ERROR_MESSAGE);
         }
