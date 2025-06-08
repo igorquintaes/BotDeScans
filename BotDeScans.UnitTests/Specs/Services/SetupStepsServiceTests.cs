@@ -1,5 +1,5 @@
-﻿using BotDeScans.App.Features.Publish.Steps;
-using BotDeScans.App.Features.Publish.Steps.Enums;
+﻿using BotDeScans.App.Features.Publish.Interaction.Steps;
+using BotDeScans.App.Features.Publish.Interaction.Steps.Enums;
 using BotDeScans.App.Services.Initializations;
 
 namespace BotDeScans.UnitTests.Specs.Services;

@@ -1,4 +1,4 @@
-﻿using BotDeScans.App.Features.Publish.Steps.Enums;
+﻿using BotDeScans.App.Features.Publish.Interaction.Steps.Enums;
 using BotDeScans.App.Services;
 using BotDeScans.App.Services.Initializations.Factories;
 using FluentAssertions.Execution;

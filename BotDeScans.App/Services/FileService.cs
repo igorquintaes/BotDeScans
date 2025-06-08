@@ -1,5 +1,4 @@
-﻿using BotDeScans.App.Models.DTOs;
-using FluentResults;
+﻿using FluentResults;
 using iText.IO.Image;
 using iText.Kernel.Geom;
 using iText.Kernel.Pdf;
@@ -73,33 +72,5 @@ public class FileService
         document.Close();
 
         return filePath;
-    }
-
-    public virtual IEnumerable<FileChunk> CreateChunks(
-        IEnumerable<string> filesPaths,
-        int maxChunkFiles,
-        long maxChunkBytes)
-    {
-        var chunk = new FileChunk();
-
-        foreach (var filePath in filesPaths)
-        {
-            var fileInfo = new FileInfo(filePath);
-            var fileSize = fileInfo.Length;
-
-            if (chunk.TotalSize + fileSize > maxChunkBytes ||
-                chunk.Count + 1 > maxChunkFiles)
-            {
-                yield return chunk;
-                chunk = new FileChunk();
-            }
-
-            var fileName = Path.GetFileName(filePath);
-            var fileStream = File.OpenRead(filePath);
-            chunk.Add(fileName, fileStream);
-        }
-
-        if (chunk.Count > 0)
-            yield return chunk;
     }
 }

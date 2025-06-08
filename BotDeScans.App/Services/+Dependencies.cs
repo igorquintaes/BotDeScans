@@ -1,7 +1,6 @@
 ﻿using BotDeScans.App.Features.GoogleDrive;
 using BotDeScans.App.Features.Mega;
 using BotDeScans.App.Features.Publish;
-using BotDeScans.App.Features.Publish.Steps;
 using BotDeScans.App.Features.References;
 using BotDeScans.App.Features.Titles;
 using BotDeScans.App.Services.Discord;
@@ -33,7 +32,6 @@ internal static class AddDependencies
         .AddSingleton<ChartService>()
         .AddSingleton<FileService>()
         .AddSingleton<ImageService>()
-        .AddScoped<StepsService>()
         .AddScoped<BoxService>()
         .AddScoped<FileReleaseService>()
         .AddScoped<GoogleBloggerService>()
