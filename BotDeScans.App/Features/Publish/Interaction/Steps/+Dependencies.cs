@@ -20,5 +20,6 @@ internal static class AddDependencies
         .AddScoped<IStep, ZipFilesStep>()
         .AddScoped<IStep, CompressFilesStep>()
         .AddScoped<IStep, DownloadStep>()
-        .AddScoped<IStep, SetupStep>();
+        .AddScoped<IStep, SetupStep>()
+        .AddScoped<StepsService>();
 }
