@@ -33,7 +33,7 @@ public class InteractionsTests : UnitTest
         interactions = fixture.CreateCommand<Interactions>(cancellationToken);
     }
 
-    public class PublishAsync : InteractionsTests
+    public class ExecuteAsync : InteractionsTests
     {
         [Fact]
         public async Task GivenSuccessfulExecutionShouldReturnSuccessResult()

@@ -1,4 +1,4 @@
-﻿using BotDeScans.App.Features.Publish.Command;
+﻿using BotDeScans.App.Features.Titles.Create;
 using BotDeScans.UnitTests.FakeObjects;
 using Remora.Discord.API.Abstractions.Rest;
 using Remora.Discord.API.Objects;
@@ -6,7 +6,7 @@ using Remora.Discord.Commands.Contexts;
 using Remora.Discord.Commands.Feedback.Services;
 using Remora.Results;
 
-namespace BotDeScans.UnitTests.Specs.Features.Publish.Command;
+namespace BotDeScans.UnitTests.Specs.Features.Titles.Create;
 
 public class CommandsTests : UnitTest
 {
@@ -22,8 +22,6 @@ public class CommandsTests : UnitTest
 
     public class ExecuteAsync : CommandsTests
     {
-        private const int titleId = 123456;
-
         public ExecuteAsync()
         {
             A.CallTo(() => fixture
@@ -40,7 +38,7 @@ public class CommandsTests : UnitTest
         [Fact]
         public async Task GivenSuccessExecutionShouldReturnSuccess()
         {
-            var result = await commands.ExecuteAsync(titleId);
+            var result = await commands.ExecuteAsync();
 
             result.IsSuccess.Should().BeTrue();
         }
@@ -48,7 +46,7 @@ public class CommandsTests : UnitTest
         [Fact]
         public async Task GivenSuccessExecutionShouldReturnExpectedObjectInMessage()
         {
-            await commands.ExecuteAsync(titleId);
+            await commands.ExecuteAsync();
 
             var modalData = Fake.GetCalls(fixture
                 .FreezeFake<IDiscordRestInteractionAPI>())
@@ -63,7 +61,7 @@ public class CommandsTests : UnitTest
             fixture.Inject(A.Fake<IOperationContext>());
             var commands = fixture.CreateCommand<Commands>(cancellationToken);
 
-            var result = await commands.ExecuteAsync(titleId);
+            var result = await commands.ExecuteAsync();
 
             result.IsSuccess.Should().BeTrue();
 
@@ -84,7 +82,7 @@ public class CommandsTests : UnitTest
                     cancellationToken))
                 .Returns(new InvalidOperationError());
 
-            var result = await commands.ExecuteAsync(titleId);
+            var result = await commands.ExecuteAsync();
 
             result.IsSuccess.Should().BeFalse();
         }

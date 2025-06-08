@@ -1,0 +1,46 @@
+﻿[
+  {
+    CustomID: remora::interactivity::modal::Titles.Create.Interaction,
+    Title: Cadastrar nova obra,
+    Components: [
+      {
+        Components: [
+          {
+            CustomID: name,
+            Style: Short,
+            Label: Nome da obra,
+            IsRequired: {
+              Value: true,
+              HasValue: true
+            },
+            Value: {
+              Value: ,
+              HasValue: true
+            },
+            Type: TextInput
+          }
+        ],
+        Type: ActionRow
+      },
+      {
+        Components: [
+          {
+            CustomID: role,
+            Style: Short,
+            Label: Cargo do Discord para notificação,
+            IsRequired: {
+              Value: false,
+              HasValue: true
+            },
+            Value: {
+              Value: ,
+              HasValue: true
+            },
+            Type: TextInput
+          }
+        ],
+        Type: ActionRow
+      }
+    ]
+  }
+]
