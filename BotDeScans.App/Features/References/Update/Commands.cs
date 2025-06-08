@@ -22,7 +22,7 @@ public class Commands(
     public async Task<IResult> UpdateAsync(
         [AutocompleteProvider(AutocompleteTitles.Id)]
         [Description("Nome da obra")]
-        string title,
+        int title,
         [Description("Nome da referência")]
         ExternalReference reference,
         [Description("Valor da referência")]

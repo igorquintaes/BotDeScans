@@ -77,12 +77,12 @@ public class TitleCommands(
     public async Task<IResult> Update(
         [AutocompleteProvider(AutocompleteTitles.Id)]
         [Description("Nome da obra")]
-        string titleName)
+        int titleId)
     {
         if (context is not InteractionContext interactionContext)
             return Result.FromSuccess();
 
-        var title = await databaseContext.Titles.FirstOrDefaultAsync(x => x.Name == titleName);
+        var title = await databaseContext.Titles.FirstOrDefaultAsync(x => x.Id == titleId);
         if (title is null)
             return await feedbackService.SendContextualWarningAsync(
                 "Obra não encontrada.",

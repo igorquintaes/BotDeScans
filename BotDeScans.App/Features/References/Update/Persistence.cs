@@ -8,9 +8,9 @@ public class Persistence(DatabaseContext context) : SaveChanges(context)
 {
     private readonly DatabaseContext context = context;
 
-    public virtual Task<Title> GetTitleAsync(string name, CancellationToken cancellationToken) =>
+    public virtual Task<Title> GetTitleAsync(int id, CancellationToken cancellationToken) =>
         context.Titles
             .Include(x => x.References)
-            .Where(x => x.Name == name)
+            .Where(x => x.Id == id)
             .SingleAsync(cancellationToken);
 }

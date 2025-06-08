@@ -1,5 +1,5 @@
 ﻿using BotDeScans.App.Infra;
-using FuzzySharp;
+using BotDeScans.App.Models;
 using Microsoft.EntityFrameworkCore;
 using Remora.Discord.API.Abstractions.Objects;
 using Remora.Discord.API.Objects;
@@ -16,15 +16,17 @@ public class AutocompleteTitles(DatabaseContext databaseContext) : IAutocomplete
         string userInput,
         CancellationToken ct = default)
     {
-        var titles = await databaseContext.Titles.Select(x => x.Name).ToArrayAsync(ct);
+        var titles = await databaseContext.Titles
+            .Where(x => x.Name.Contains(userInput))
+            .Take(25)
+            .ToArrayAsync(ct);
 
         return titles
-            .OrderByDescending(title => Fuzz.Ratio(userInput, title))
-            .Take(25)
-            .Select(title => title.Length > 100
-                ? string.Concat(title.AsSpan(0, 96), "...")
-                : title)
-            .Select(title => new ApplicationCommandOptionChoice(title, title))
+            .Select(title => new ApplicationCommandOptionChoice(
+                Name: title.Name.Length > Consts.DISCORD_PARAM_MAX_LENGTH
+                    ? string.Concat(title.Name.AsSpan(0, 96), "...")
+                    : title.Name,
+                Value: title.Id))
             .ToList();
     }
 }

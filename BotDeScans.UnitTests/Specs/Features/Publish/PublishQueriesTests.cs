@@ -39,22 +39,4 @@ public class PublishQueriesTests : UnitPersistenceTest, IDisposable
             result.Should().BeEquivalentTo(expectedResult);
         }
     }
-
-    public class GetTitleIdAsync : PublishQueriesTests
-    {
-        [Fact]
-        public async Task GivenExpectedNameShouldReturnTitleId()
-        {
-            var expectedTitle = fixture.Build<Title>().With(x => x.Id, 1).With(x => x.References, []).Create();
-            var unexpectedTitle = fixture.Build<Title>().With(x => x.Id, 2).With(x => x.References, []).Create();
-
-            await fixture.Freeze<DatabaseContext>().AddAsync(expectedTitle, cancellationToken);
-            await fixture.Freeze<DatabaseContext>().AddAsync(unexpectedTitle, cancellationToken);
-            await fixture.Freeze<DatabaseContext>().SaveChangesAsync(cancellationToken);
-
-            var result = await queries.GetTitleIdAsync(expectedTitle.Name, cancellationToken);
-
-            result.Should().Be(expectedTitle.Id);
-        }
-    }
 }

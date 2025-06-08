@@ -38,7 +38,7 @@ public class HandlerTests : UnitTest
 
             A.CallTo(() => fixture
                 .FreezeFake<Persistence>()
-                .GetTitleAsync(request.Title, cancellationToken))
+                .GetTitleAsync(request.TitleId, cancellationToken))
                 .Returns(title);
         }
 
