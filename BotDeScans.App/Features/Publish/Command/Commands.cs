@@ -22,7 +22,7 @@ public class Commands(
     [RoleAuthorize("Publisher")]
     [SuppressInteractionResponse(true)]
     [Description("Abre uma modal com as opções de publicação de um novo lançamento")]
-    public async Task<IResult> PublishAsync(
+    public async Task<IResult> ExecuteAsync(
         [AutocompleteProvider(AutocompleteTitles.Id)]
         [Description("Nome da obra")]
         int title)
@@ -30,7 +30,7 @@ public class Commands(
         if (context is not InteractionContext interactionContext)
             return Result.FromSuccess();
 
-        var modal = new ModalBuilder(nameof(Interactions.PublishAsync), "Publicar novo lançamento")
+        var modal = new ModalBuilder(Interactions.MODAL_NAME, "Publicar novo lançamento")
             .AddField(fieldName: "driveUrl", label: "Link do capítulo")
             .AddField(fieldName: "chapterName", label: "Nome do capítulo", isRequired: false)
             .AddField(fieldName: "chapterNumber", label: "Número do capítulo")

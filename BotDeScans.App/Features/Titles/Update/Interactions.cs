@@ -9,9 +9,10 @@ using Remora.Discord.Commands.Feedback.Services;
 using Remora.Discord.Interactivity;
 using Remora.Results;
 using System.ComponentModel;
+
 namespace BotDeScans.App.Features.Titles.Update;
 
-public class UpdateInteractions(
+public class Interactions(
     DatabaseContext databaseContext,
     FeedbackService feedbackService,
     RolesService rolesService,

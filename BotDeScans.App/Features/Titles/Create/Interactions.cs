@@ -10,17 +10,20 @@ using Remora.Discord.Commands.Feedback.Services;
 using Remora.Discord.Interactivity;
 using Remora.Results;
 using System.ComponentModel;
+
 namespace BotDeScans.App.Features.Titles.Create;
 
-public class CreateInteractions(
+public class Interactions(
     DatabaseContext databaseContext,
     FeedbackService feedbackService,
     RolesService rolesService,
     IValidator<Title> validator) : InteractionGroup
 {
-    [Modal(nameof(CreateAsync))]
+    public const string MODAL_NAME = "Titles.Create.Interaction";
+
+    [Modal(MODAL_NAME)]
     [Description("Cadastra nova obra")]
-    public async Task<IResult> CreateAsync(
+    public async Task<IResult> ExecuteAsync(
         string name,
         string role)
     {
@@ -36,6 +39,7 @@ public class CreateInteractions(
             return await feedbackService.SendContextualEmbedAsync(
                 embed: EmbedBuilder.CreateErrorEmbed(roleResult.ToResult()),
                 ct: CancellationToken);
+
         var title = new Title { Name = name, DiscordRoleId = roleResult.Value?.ID.Value };
         var validationResult = await validator.ValidateAsync(title);
         if (validationResult.IsValid is false)

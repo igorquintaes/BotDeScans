@@ -12,9 +12,11 @@ public class Interactions(
     State interactionState,
     Handler handler) : InteractionGroup
 {
-    [Modal(nameof(PublishAsync))]
+    public const string MODAL_NAME = "Features.Publish.Interaction";
+
+    [Modal(MODAL_NAME)]
     [Description("Publica novo lançamento")]
-    public async Task<IResult> PublishAsync(
+    public async Task<IResult> ExecuteAsync(
         string driveUrl,
         string chapterName,
         string chapterNumber,

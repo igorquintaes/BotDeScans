@@ -40,7 +40,7 @@ public class CommandsTests : UnitTest
         [Fact]
         public async Task GivenSuccessExecutionShouldReturnSuccess()
         {
-            var result = await commands.PublishAsync(titleId);
+            var result = await commands.ExecuteAsync(titleId);
 
             result.IsSuccess.Should().BeTrue();
         }
@@ -48,7 +48,7 @@ public class CommandsTests : UnitTest
         [Fact]
         public async Task GivenSuccessExecutionShouldReturnExpectedObjectInMessage()
         {
-            await commands.PublishAsync(titleId);
+            await commands.ExecuteAsync(titleId);
 
             var modalData = Fake.GetCalls(fixture
                 .FreezeFake<IDiscordRestInteractionAPI>())
@@ -63,7 +63,7 @@ public class CommandsTests : UnitTest
             fixture.Inject(A.Fake<IOperationContext>());
             var commands = fixture.CreateCommand<Commands>(cancellationToken);
 
-            var result = await commands.PublishAsync(titleId);
+            var result = await commands.ExecuteAsync(titleId);
 
             result.IsSuccess.Should().BeTrue();
 
@@ -84,7 +84,7 @@ public class CommandsTests : UnitTest
                     cancellationToken))
                 .Returns(new InvalidOperationError());
 
-            var result = await commands.PublishAsync(titleId);
+            var result = await commands.ExecuteAsync(titleId);
 
             result.IsSuccess.Should().BeFalse();
         }
