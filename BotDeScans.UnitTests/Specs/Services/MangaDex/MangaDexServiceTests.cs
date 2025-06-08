@@ -1,12 +1,9 @@
 ﻿using BotDeScans.App.Features.Publish.State.Models;
 using BotDeScans.App.Services.MangaDex;
 using BotDeScans.App.Services.MangaDex.InternalServices;
-using FakeItEasy;
 using FluentResults;
 using MangaDexSharp;
 using Microsoft.Extensions.Configuration;
-using Microsoft.VisualStudio.TestPlatform.ObjectModel.DataCollection;
-using System.Text.RegularExpressions;
 
 namespace BotDeScans.UnitTests.Specs.Services.MangaDex;
 
@@ -22,13 +19,13 @@ public class MangaDexServiceTests : UnitTest
         service = fixture.Create<MangaDexService>();
     }
 
-    public class UploadFilesAsync : MangaDexServiceTests
+    public class UploadAsync : MangaDexServiceTests
     {
         private readonly string titleId;
         private readonly string filesDirectory;
         private readonly string sessionId;
 
-        public UploadFilesAsync()
+        public UploadAsync()
         {
             titleId = fixture.Create<string>();
             filesDirectory = fixture.Create<string>();

@@ -147,7 +147,7 @@ public class MangaDexUploadServiceTests : UnitTest
             A.CallTo(() => fixture
                 .FreezeFake<IUploadUtilityService>()
                 .New(
-                    titleId, 
+                    titleId,
                     A<string[]>.That.Matches(x => x.Count() == 1 && x[0] == groupId),
                     A<Action<IUploadSettings>>.Ignored))
                 .Returns(fixture.FreezeFake<IUploadInstance>());
@@ -168,10 +168,10 @@ public class MangaDexUploadServiceTests : UnitTest
         public async Task GivenSuccessfulExecutionShouldReturnExpectedChapter()
         {
             var chapter = await service.UploadFilesAsync(
-                filesPath, 
-                titleId, 
-                groupId, 
-                fixture.Freeze<Info>(), 
+                filesPath,
+                titleId,
+                groupId,
+                fixture.Freeze<Info>(),
                 cancellationToken);
 
             chapter.Should().Be(fixture.Freeze<Chapter>());

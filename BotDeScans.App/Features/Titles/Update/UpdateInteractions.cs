@@ -5,7 +5,6 @@ using BotDeScans.App.Models.Entities;
 using BotDeScans.App.Services.Discord;
 using FluentValidation;
 using Microsoft.EntityFrameworkCore;
-using Remora.Discord.API.Objects;
 using Remora.Discord.Commands.Feedback.Services;
 using Remora.Discord.Interactivity;
 using Remora.Results;
@@ -27,7 +26,7 @@ public class UpdateInteractions(
     {
         var titleId = int.Parse(state);
         var title = await databaseContext.Titles.SingleAsync(
-            x => x.Id == titleId, 
+            x => x.Id == titleId,
             CancellationToken);
 
         ulong? roleId = null;
