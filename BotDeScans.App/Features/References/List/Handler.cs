@@ -2,9 +2,9 @@
 
 public class Handler(Persistence persistence)
 {
-    public async Task<string[]> ExecuteAsync(string titleName, CancellationToken cancellationToken)
+    public async Task<string[]> ExecuteAsync(int titleId, CancellationToken cancellationToken)
     {
-        var references = await persistence.GetReferencesAsync(titleName, cancellationToken);
+        var references = await persistence.GetReferencesAsync(titleId, cancellationToken);
 
         return references.Count == 0
             ? ["A obra não contém referências."]

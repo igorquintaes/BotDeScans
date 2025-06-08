@@ -16,15 +16,15 @@ public class HandlerTests : UnitTest
 
     public class ExecuteAsync : HandlerTests
     {
-        private readonly string titleName;
+        private readonly int titleId;
 
         public ExecuteAsync()
         {
-            titleName = fixture.Create<string>();
+            titleId = fixture.Create<int>();
 
             A.CallTo(() => fixture
                 .FreezeFake<Persistence>()
-                .GetReferencesAsync(titleName, cancellationToken))
+                .GetReferencesAsync(titleId, cancellationToken))
                 .Returns(
                 [
                     new() { Key = ExternalReference.MangaDex, Value = "manga-dex-value" },
@@ -35,7 +35,7 @@ public class HandlerTests : UnitTest
         [Fact]
         public async Task GivenReferencesFoundShouldReturnExpectedStringList()
         {
-            var result = await handler.ExecuteAsync(titleName, cancellationToken);
+            var result = await handler.ExecuteAsync(titleId, cancellationToken);
 
             var expectedStrings = new[]
             {
@@ -51,10 +51,10 @@ public class HandlerTests : UnitTest
         {
             A.CallTo(() => fixture
                 .FreezeFake<Persistence>()
-                .GetReferencesAsync(titleName, cancellationToken))
+                .GetReferencesAsync(titleId, cancellationToken))
                 .Returns([]);
 
-            var result = await handler.ExecuteAsync(titleName, cancellationToken);
+            var result = await handler.ExecuteAsync(titleId, cancellationToken);
 
             var expectedStrings = new[] { "A obra não contém referências." };
 

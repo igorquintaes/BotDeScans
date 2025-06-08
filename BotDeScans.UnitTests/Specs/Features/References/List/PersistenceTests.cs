@@ -29,7 +29,7 @@ public class PersistenceTests : UnitPersistenceTest
             await fixture.Freeze<DatabaseContext>().AddAsync(unexpectedReference, cancellationToken);
             await fixture.Freeze<DatabaseContext>().SaveChangesAsync(cancellationToken);
 
-            var result = await persistence.GetReferencesAsync(expectedTitle.Name, cancellationToken);
+            var result = await persistence.GetReferencesAsync(expectedTitle.Id, cancellationToken);
 
             result.Should().BeEquivalentTo(expectedResult);
         }

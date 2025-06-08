@@ -14,7 +14,6 @@ namespace BotDeScans.App.Features.Publish.Discord;
 
 public class PublishCommands(
     IOperationContext context,
-    PublishQueries publishQueries,
     IDiscordRestInteractionAPI interactionAPI) : CommandGroup
 {
     [Command("publish")]
@@ -24,19 +23,18 @@ public class PublishCommands(
     public async Task<IResult> PublishAsync(
         [AutocompleteProvider(AutocompleteTitles.Id)]
         [Description("Nome da obra")]
-        string title)
+        int title)
     {
         if (context is not InteractionContext interactionContext)
             return Result.FromSuccess();
 
-        var titleId = await publishQueries.GetTitleIdAsync(title, CancellationToken);
         var modal = new ModalBuilder(nameof(PublishInteractions.PublishAsync), "Publicar novo lançamento")
             .AddField(fieldName: "driveUrl", label: "Link do capítulo")
             .AddField(fieldName: "chapterName", label: "Nome do capítulo", isRequired: false)
             .AddField(fieldName: "chapterNumber", label: "Número do capítulo")
             .AddField(fieldName: "chapterVolume", label: "Número do Volume", isRequired: false)
             .AddField(fieldName: "message", label: "Mensagem de postagem", isRequired: false, TextInputStyle.Paragraph)
-            .CreateWithState(titleId.ToString());
+            .CreateWithState(title.ToString());
 
         return await interactionAPI.CreateInteractionResponseAsync
         (

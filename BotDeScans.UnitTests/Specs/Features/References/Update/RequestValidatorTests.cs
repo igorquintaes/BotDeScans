@@ -6,7 +6,7 @@ namespace BotDeScans.UnitTests.Specs.Features.References.Update;
 
 public class RequestValidatorTests : UnitTest
 {
-    private static readonly Request request = new("random-title", ExternalReference.MangaDex, Guid.NewGuid().ToString());
+    private static readonly Request request = new(9, ExternalReference.MangaDex, Guid.NewGuid().ToString());
 
     [Fact]
     public void GivenValidDataShouldNotHaveValidationErrors() =>
@@ -14,14 +14,11 @@ public class RequestValidatorTests : UnitTest
                .TestValidate(request)
                .ShouldNotHaveAnyValidationErrors();
 
-    [Theory]
-    [InlineData("")]
-    [InlineData(" ")]
-    [InlineData(null)]
-    public void GivenEmptyTitleShouldHaveValidationErrors(string? title) =>
+    [Fact]
+    public void GivenEmptyTitleIdShouldHaveValidationErrors() =>
         fixture.Create<RequestValidator>()
-               .TestValidate(request with { Title = title! })
-               .ShouldHaveValidationErrorFor(x => x.Title)
+               .TestValidate(request with { TitleId = default })
+               .ShouldHaveValidationErrorFor(x => x.TitleId)
                .Only();
 
     [Theory]

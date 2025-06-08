@@ -9,10 +9,4 @@ public class PublishQueries(DatabaseContext databaseContext)
         => databaseContext.Titles
             .Include(x => x.References)
             .SingleAsync(x => x.Id == id, cancellationToken);
-
-    public virtual Task<int> GetTitleIdAsync(string name, CancellationToken cancellationToken) =>
-        databaseContext.Titles
-            .Where(x => x.Name == name)
-            .Select(x => x.Id)
-            .SingleAsync(cancellationToken);
 }

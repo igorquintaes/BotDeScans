@@ -21,9 +21,9 @@ public class Commands(
     public async Task<IResult> ListAsync(
         [AutocompleteProvider(AutocompleteTitles.Id)]
         [Description("Nome da obra")]
-        string titleName)
+        int title)
     {
-        var result = await handler.ExecuteAsync(titleName, CancellationToken);
+        var result = await handler.ExecuteAsync(title, CancellationToken);
         var embed = EmbedBuilder.CreateSuccessEmbed(string.Join(Environment.NewLine, result));
 
         return await feedbackService.SendContextualEmbedAsync(embed, ct: CancellationToken);

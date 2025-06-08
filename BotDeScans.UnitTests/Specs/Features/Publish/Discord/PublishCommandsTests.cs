@@ -12,25 +12,16 @@ public class PublishCommandsTests : UnitTest
 {
     public class PublishAsync : PublishCommandsTests
     {
-        private const int TEST_TITLE_ID = 123456;
-
-        private readonly string title;
+        private const int titleId = 123456;
         private readonly PublishCommands commands;
 
         public PublishAsync()
         {
-            title = fixture.Create<string>();
-
             fixture.FreezeFake<PublishQueries>();
             fixture.FreezeFake<IDiscordRestInteractionAPI>();
             fixture.Inject<IOperationContext>(new FakeInteractionContext(fixture));
 
             commands = fixture.CreateCommand<PublishCommands>(cancellationToken);
-
-            A.CallTo(() => fixture
-                .FreezeFake<PublishQueries>()
-                .GetTitleIdAsync(title, cancellationToken))
-                .Returns(TEST_TITLE_ID);
 
             A.CallTo(() => fixture
                 .FreezeFake<IDiscordRestInteractionAPI>()
@@ -46,7 +37,7 @@ public class PublishCommandsTests : UnitTest
         [Fact]
         public async Task GivenSuccessExecutionShouldReturnSuccess()
         {
-            var result = await commands.PublishAsync(title);
+            var result = await commands.PublishAsync(titleId);
 
             result.IsSuccess.Should().BeTrue();
         }
@@ -54,7 +45,7 @@ public class PublishCommandsTests : UnitTest
         [Fact]
         public async Task GivenSuccessExecutionShouldReturnExpectedObjectInMessage()
         {
-            await commands.PublishAsync(title);
+            await commands.PublishAsync(titleId);
 
             var modalData = Fake.GetCalls(fixture
                 .FreezeFake<IDiscordRestInteractionAPI>())
@@ -69,7 +60,7 @@ public class PublishCommandsTests : UnitTest
             fixture.Inject(A.Fake<IOperationContext>());
             var commands = fixture.CreateCommand<PublishCommands>(cancellationToken);
 
-            var result = await commands.PublishAsync(title);
+            var result = await commands.PublishAsync(titleId);
 
             result.IsSuccess.Should().BeTrue();
 
@@ -91,7 +82,7 @@ public class PublishCommandsTests : UnitTest
                     cancellationToken))
                 .Returns(new InvalidOperationError());
 
-            var result = await commands.PublishAsync(title);
+            var result = await commands.PublishAsync(titleId);
 
             result.IsSuccess.Should().BeFalse();
         }

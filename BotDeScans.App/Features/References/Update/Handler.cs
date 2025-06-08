@@ -14,7 +14,7 @@ public class Handler(
         if (validationResult.IsValid is false)
             return validationResult.ToResult();
 
-        var title = await persistence.GetTitleAsync(request.Title, cancellationToken);
+        var title = await persistence.GetTitleAsync(request.TitleId, cancellationToken);
 
         title.AddOrUpdateReference(request.ReferenceKey, request.ReferenceValue);
 

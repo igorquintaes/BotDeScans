@@ -8,10 +8,10 @@ public class Persistence(DatabaseContext context)
 {
     private readonly DatabaseContext context = context;
 
-    public virtual Task<List<TitleReference>> GetReferencesAsync(string titleName, CancellationToken cancellationToken) =>
+    public virtual Task<List<TitleReference>> GetReferencesAsync(int titleId, CancellationToken cancellationToken) =>
         context.Titles
-            .Where(x => x.Name == titleName)
             .Include(x => x.References)
+            .Where(x => x.Id == titleId)
             .SelectMany(x => x.References)
             .ToListAsync(cancellationToken);
 }

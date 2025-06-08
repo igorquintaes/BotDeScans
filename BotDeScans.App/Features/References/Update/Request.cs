@@ -3,7 +3,7 @@ using FluentValidation;
 
 namespace BotDeScans.App.Features.References.Update;
 
-public record Request(string Title, ExternalReference ReferenceKey, string ReferenceRawValue)
+public record Request(int TitleId, ExternalReference ReferenceKey, string ReferenceRawValue)
 {
     public const int GUID_CHAR_LENGHT = 36;
     public const string MANGADEX_ID_URL_PREFIX = "/title/";
@@ -22,7 +22,7 @@ public class RequestValidator : AbstractValidator<Request>
 {
     public RequestValidator()
     {
-        RuleFor(request => request.Title).NotEmpty();
+        RuleFor(request => request.TitleId).NotEmpty();
 
         RuleFor(request => request.ReferenceKey).IsInEnum();
 
