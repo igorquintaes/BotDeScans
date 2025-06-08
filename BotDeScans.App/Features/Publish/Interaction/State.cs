@@ -1,11 +1,11 @@
-﻿using BotDeScans.App.Features.Publish.Interaction.Pings;
-using BotDeScans.App.Features.Publish.Interaction.Models;
+﻿using BotDeScans.App.Features.Publish.Interaction.Models;
+using BotDeScans.App.Features.Publish.Interaction.Pings;
 using BotDeScans.App.Features.Publish.Interaction.Steps;
+using BotDeScans.App.Models.DTOs;
 using BotDeScans.App.Models.Entities;
 using BotDeScans.App.Services.Discord;
 using FluentValidation;
 using Microsoft.Extensions.Configuration;
-using BotDeScans.App.Models.DTOs;
 
 namespace BotDeScans.App.Features.Publish.Interaction;
 

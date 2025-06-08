@@ -40,17 +40,17 @@ public class HandlerTests : UnitTest
         {
             await handler.ExecuteAsync(cancellationToken);
 
-            var firstManagementStep = fixture.Freeze<State>().Steps.ManagementSteps.First().Step;
-            var secondManagementStep = fixture.Freeze<State>().Steps.ManagementSteps.Last().Step;
-            var firstPublishStep = fixture.Freeze<State>().Steps.PublishSteps.First().Step;
-            var secondPublishStep = fixture.Freeze<State>().Steps.PublishSteps.Last().Step;
+            var managementStep1 = fixture.Freeze<State>().Steps.ManagementSteps.First().Step;
+            var managementStep2 = fixture.Freeze<State>().Steps.ManagementSteps.Last().Step;
+            var publishStep1 = fixture.Freeze<State>().Steps.PublishSteps.First().Step;
+            var publishStep2 = fixture.Freeze<State>().Steps.PublishSteps.Last().Step;
 
-            A.CallTo(() => firstManagementStep.ExecuteAsync(cancellationToken)).MustHaveHappenedOnceExactly()
-                .Then(A.CallTo(() => secondManagementStep.ExecuteAsync(cancellationToken)).MustHaveHappenedOnceExactly())
-                .Then(A.CallTo(() => firstPublishStep.ValidateAsync(cancellationToken)).MustHaveHappenedOnceExactly())
-                .Then(A.CallTo(() => secondPublishStep.ValidateAsync(cancellationToken)).MustHaveHappenedOnceExactly())
-                .Then(A.CallTo(() => firstPublishStep.ExecuteAsync(cancellationToken)).MustHaveHappenedOnceExactly())
-                .Then(A.CallTo(() => secondPublishStep.ExecuteAsync(cancellationToken)).MustHaveHappenedOnceExactly());
+            A.CallTo(() => managementStep1.ExecuteAsync(cancellationToken)).MustHaveHappenedOnceExactly()
+                .Then(A.CallTo(() => managementStep2.ExecuteAsync(cancellationToken)).MustHaveHappenedOnceExactly())
+                .Then(A.CallTo(() => publishStep1.ValidateAsync(cancellationToken)).MustHaveHappenedOnceExactly())
+                .Then(A.CallTo(() => publishStep2.ValidateAsync(cancellationToken)).MustHaveHappenedOnceExactly())
+                .Then(A.CallTo(() => publishStep1.ExecuteAsync(cancellationToken)).MustHaveHappenedOnceExactly())
+                .Then(A.CallTo(() => publishStep2.ExecuteAsync(cancellationToken)).MustHaveHappenedOnceExactly());
         }
 
         [Fact]
@@ -69,15 +69,15 @@ public class HandlerTests : UnitTest
         {
             await handler.ExecuteAsync(cancellationToken);
 
-            var firstManagementStep = fixture.Freeze<State>().Steps.ManagementSteps.First();
-            var secondManagementStep = fixture.Freeze<State>().Steps.ManagementSteps.Last();
-            var firstPublishStep = fixture.Freeze<State>().Steps.PublishSteps.First();
-            var secondPublishStep = fixture.Freeze<State>().Steps.PublishSteps.Last();
+            var managementInfo1 = fixture.Freeze<State>().Steps.ManagementSteps.First().Info;
+            var managementInfo2 = fixture.Freeze<State>().Steps.ManagementSteps.Last().Info;
+            var publishInfo1 = fixture.Freeze<State>().Steps.PublishSteps.First().Info;
+            var publishInfo2 = fixture.Freeze<State>().Steps.PublishSteps.Last().Info;
 
-            A.CallTo(() => firstManagementStep.Info.UpdateStatus(A<Result>.Ignored)).MustHaveHappenedOnceExactly();
-            A.CallTo(() => secondManagementStep.Info.UpdateStatus(A<Result>.Ignored)).MustHaveHappenedOnceExactly();
-            A.CallTo(() => firstPublishStep.Info.UpdateStatus(A<Result>.Ignored)).MustHaveHappenedTwiceExactly();
-            A.CallTo(() => secondPublishStep.Info.UpdateStatus(A<Result>.Ignored)).MustHaveHappenedTwiceExactly();
+            A.CallTo(() => managementInfo1.UpdateStatus(A<Result>.Ignored)).MustHaveHappenedOnceExactly();
+            A.CallTo(() => managementInfo2.UpdateStatus(A<Result>.Ignored)).MustHaveHappenedOnceExactly();
+            A.CallTo(() => publishInfo1.UpdateStatus(A<Result>.Ignored)).MustHaveHappenedTwiceExactly();
+            A.CallTo(() => publishInfo2.UpdateStatus(A<Result>.Ignored)).MustHaveHappenedTwiceExactly();
         }
 
         [Fact]
@@ -85,29 +85,29 @@ public class HandlerTests : UnitTest
         {
             await handler.ExecuteAsync(cancellationToken);
 
-            var firstManagementStep = fixture.Freeze<State>().Steps.ManagementSteps.First();
-            var secondManagementStep = fixture.Freeze<State>().Steps.ManagementSteps.Last();
-            var firstPublishStep = fixture.Freeze<State>().Steps.PublishSteps.First();
-            var secondPublishStep = fixture.Freeze<State>().Steps.PublishSteps.Last();
+            var (managementStep1, managementInfo1) = fixture.Freeze<State>().Steps.ManagementSteps.First();
+            var (managementStep2, managementInfo2) = fixture.Freeze<State>().Steps.ManagementSteps.Last();
+            var (publishStep1, publishInfo1) = fixture.Freeze<State>().Steps.PublishSteps.First();
+            var (publishStep2, publishInfo2) = fixture.Freeze<State>().Steps.PublishSteps.Last();
 
             A.CallTo(() => fixture.FreezeFake<DiscordPublisher>().UpdateTrackingMessageAsync(cancellationToken)).MustHaveHappened()
-                .Then(A.CallTo(() => firstManagementStep.Step.ExecuteAsync(cancellationToken)).MustHaveHappenedOnceExactly())
-                .Then(A.CallTo(() => firstManagementStep.Info.UpdateStatus(A<Result>.Ignored)).MustHaveHappenedOnceExactly())
+                .Then(A.CallTo(() => managementStep1.ExecuteAsync(cancellationToken)).MustHaveHappenedOnceExactly())
+                .Then(A.CallTo(() => managementInfo1.UpdateStatus(A<Result>.Ignored)).MustHaveHappenedOnceExactly())
                 .Then(A.CallTo(() => fixture.FreezeFake<DiscordPublisher>().UpdateTrackingMessageAsync(cancellationToken)).MustHaveHappened())
-                .Then(A.CallTo(() => secondManagementStep.Step.ExecuteAsync(cancellationToken)).MustHaveHappenedOnceExactly())
-                .Then(A.CallTo(() => secondManagementStep.Info.UpdateStatus(A<Result>.Ignored)).MustHaveHappenedOnceExactly())
+                .Then(A.CallTo(() => managementStep2.ExecuteAsync(cancellationToken)).MustHaveHappenedOnceExactly())
+                .Then(A.CallTo(() => managementInfo2.UpdateStatus(A<Result>.Ignored)).MustHaveHappenedOnceExactly())
                 .Then(A.CallTo(() => fixture.FreezeFake<DiscordPublisher>().UpdateTrackingMessageAsync(cancellationToken)).MustHaveHappened())
-                .Then(A.CallTo(() => firstPublishStep.Step.ValidateAsync(cancellationToken)).MustHaveHappenedOnceExactly())
-                .Then(A.CallTo(() => firstPublishStep.Info.UpdateStatus(A<Result>.Ignored)).MustHaveHappened())
+                .Then(A.CallTo(() => publishStep1.ValidateAsync(cancellationToken)).MustHaveHappenedOnceExactly())
+                .Then(A.CallTo(() => publishInfo1.UpdateStatus(A<Result>.Ignored)).MustHaveHappened())
                 .Then(A.CallTo(() => fixture.FreezeFake<DiscordPublisher>().UpdateTrackingMessageAsync(cancellationToken)).MustHaveHappened())
-                .Then(A.CallTo(() => secondPublishStep.Step.ValidateAsync(cancellationToken)).MustHaveHappenedOnceExactly())
-                .Then(A.CallTo(() => secondPublishStep.Info.UpdateStatus(A<Result>.Ignored)).MustHaveHappened())
+                .Then(A.CallTo(() => publishStep2.ValidateAsync(cancellationToken)).MustHaveHappenedOnceExactly())
+                .Then(A.CallTo(() => publishInfo2.UpdateStatus(A<Result>.Ignored)).MustHaveHappened())
                 .Then(A.CallTo(() => fixture.FreezeFake<DiscordPublisher>().UpdateTrackingMessageAsync(cancellationToken)).MustHaveHappened())
-                .Then(A.CallTo(() => firstPublishStep.Step.ExecuteAsync(cancellationToken)).MustHaveHappenedOnceExactly())
-                .Then(A.CallTo(() => firstPublishStep.Info.UpdateStatus(A<Result>.Ignored)).MustHaveHappened())
+                .Then(A.CallTo(() => publishStep1.ExecuteAsync(cancellationToken)).MustHaveHappenedOnceExactly())
+                .Then(A.CallTo(() => publishInfo1.UpdateStatus(A<Result>.Ignored)).MustHaveHappened())
                 .Then(A.CallTo(() => fixture.FreezeFake<DiscordPublisher>().UpdateTrackingMessageAsync(cancellationToken)).MustHaveHappened())
-                .Then(A.CallTo(() => secondPublishStep.Step.ExecuteAsync(cancellationToken)).MustHaveHappenedOnceExactly())
-                .Then(A.CallTo(() => secondPublishStep.Info.UpdateStatus(A<Result>.Ignored)).MustHaveHappened())
+                .Then(A.CallTo(() => publishStep2.ExecuteAsync(cancellationToken)).MustHaveHappenedOnceExactly())
+                .Then(A.CallTo(() => publishInfo2.UpdateStatus(A<Result>.Ignored)).MustHaveHappened())
                 .Then(A.CallTo(() => fixture.FreezeFake<DiscordPublisher>().UpdateTrackingMessageAsync(cancellationToken)).MustHaveHappened());
         }
 
@@ -148,12 +148,12 @@ public class HandlerTests : UnitTest
         [Fact]
         public async Task GivenErrorExecutionShouldBreakChainCall()
         {
-            var firstManagementStep = fixture.Freeze<State>().Steps.ManagementSteps.First();
-            var secondManagementStep = fixture.Freeze<State>().Steps.ManagementSteps.Last();
-            var firstPublishStep = fixture.Freeze<State>().Steps.PublishSteps.First();
-            var secondPublishStep = fixture.Freeze<State>().Steps.PublishSteps.Last();
+            var (managementStep1, managementInfo1) = fixture.Freeze<State>().Steps.ManagementSteps.First();
+            var (managementStep2, managementInfo2) = fixture.Freeze<State>().Steps.ManagementSteps.Last();
+            var (publishStep1, publishInfo1) = fixture.Freeze<State>().Steps.PublishSteps.First();
+            var (publishStep2, publishInfo2) = fixture.Freeze<State>().Steps.PublishSteps.Last();
 
-            A.CallTo(() => firstPublishStep.Step
+            A.CallTo(() => publishStep1
                 .ValidateAsync(cancellationToken))
                 .Returns(Result.Fail("some error message"));
 
@@ -161,21 +161,21 @@ public class HandlerTests : UnitTest
 
             // Call chain
             A.CallTo(() => fixture.FreezeFake<DiscordPublisher>().UpdateTrackingMessageAsync(cancellationToken)).MustHaveHappened()
-                .Then(A.CallTo(() => firstManagementStep.Step.ExecuteAsync(cancellationToken)).MustHaveHappenedOnceExactly())
-                .Then(A.CallTo(() => firstManagementStep.Info.UpdateStatus(A<Result>.Ignored)).MustHaveHappenedOnceExactly())
+                .Then(A.CallTo(() => managementStep1.ExecuteAsync(cancellationToken)).MustHaveHappenedOnceExactly())
+                .Then(A.CallTo(() => managementInfo1.UpdateStatus(A<Result>.Ignored)).MustHaveHappenedOnceExactly())
                 .Then(A.CallTo(() => fixture.FreezeFake<DiscordPublisher>().UpdateTrackingMessageAsync(cancellationToken)).MustHaveHappened())
-                .Then(A.CallTo(() => secondManagementStep.Step.ExecuteAsync(cancellationToken)).MustHaveHappenedOnceExactly())
-                .Then(A.CallTo(() => secondManagementStep.Info.UpdateStatus(A<Result>.Ignored)).MustHaveHappenedOnceExactly())
+                .Then(A.CallTo(() => managementStep2.ExecuteAsync(cancellationToken)).MustHaveHappenedOnceExactly())
+                .Then(A.CallTo(() => managementInfo2.UpdateStatus(A<Result>.Ignored)).MustHaveHappenedOnceExactly())
                 .Then(A.CallTo(() => fixture.FreezeFake<DiscordPublisher>().UpdateTrackingMessageAsync(cancellationToken)).MustHaveHappened())
-                .Then(A.CallTo(() => firstPublishStep.Step.ValidateAsync(cancellationToken)).MustHaveHappenedOnceExactly())
-                .Then(A.CallTo(() => firstPublishStep.Info.UpdateStatus(A<Result>.Ignored)).MustHaveHappened())
+                .Then(A.CallTo(() => publishStep1.ValidateAsync(cancellationToken)).MustHaveHappenedOnceExactly())
+                .Then(A.CallTo(() => publishInfo1.UpdateStatus(A<Result>.Ignored)).MustHaveHappened())
                 .Then(A.CallTo(() => fixture.FreezeFake<DiscordPublisher>().UpdateTrackingMessageAsync(cancellationToken)).MustHaveHappened());
 
             // Not executed due error
-            A.CallTo(() => firstPublishStep.Step.ExecuteAsync(cancellationToken)).MustNotHaveHappened();
-            A.CallTo(() => secondPublishStep.Step.ValidateAsync(cancellationToken)).MustNotHaveHappened();
-            A.CallTo(() => secondPublishStep.Step.ExecuteAsync(cancellationToken)).MustNotHaveHappened();
-            A.CallTo(() => secondPublishStep.Info.UpdateStatus(A<Result>.Ignored)).MustNotHaveHappened();
+            A.CallTo(() => publishStep1.ExecuteAsync(cancellationToken)).MustNotHaveHappened();
+            A.CallTo(() => publishStep2.ValidateAsync(cancellationToken)).MustNotHaveHappened();
+            A.CallTo(() => publishStep2.ExecuteAsync(cancellationToken)).MustNotHaveHappened();
+            A.CallTo(() => publishInfo2.UpdateStatus(A<Result>.Ignored)).MustNotHaveHappened();
 
             // Update tracking error times
             A.CallTo(() => fixture
@@ -184,7 +184,7 @@ public class HandlerTests : UnitTest
                 .MustHaveHappened(4, Times.Exactly);
 
             // Publish step was interrupted in validation, so its UpdateStatus must be called once exactly
-            A.CallTo(() => firstPublishStep.Info
+            A.CallTo(() => publishInfo1
                 .UpdateStatus(A<Result>.Ignored))
                 .MustHaveHappenedOnceExactly();
         }
@@ -192,12 +192,12 @@ public class HandlerTests : UnitTest
         [Fact]
         public async Task GivenExceptionExecutionShouldBreakChainCall()
         {
-            var firstManagementStep = fixture.Freeze<State>().Steps.ManagementSteps.First();
-            var secondManagementStep = fixture.Freeze<State>().Steps.ManagementSteps.Last();
-            var firstPublishStep = fixture.Freeze<State>().Steps.PublishSteps.First();
-            var secondPublishStep = fixture.Freeze<State>().Steps.PublishSteps.Last();
+            var (managementStep1, managementInfo1) = fixture.Freeze<State>().Steps.ManagementSteps.First();
+            var (managementStep2, managementInfo2) = fixture.Freeze<State>().Steps.ManagementSteps.Last();
+            var (publishStep1, publishInfo1) = fixture.Freeze<State>().Steps.PublishSteps.First();
+            var (publishStep2, publishInfo2) = fixture.Freeze<State>().Steps.PublishSteps.Last();
 
-            A.CallTo(() => firstPublishStep.Step
+            A.CallTo(() => publishStep1
                 .ValidateAsync(cancellationToken))
                 .Throws(new Exception("some message."));
 
@@ -205,21 +205,21 @@ public class HandlerTests : UnitTest
 
             // Call chain
             A.CallTo(() => fixture.FreezeFake<DiscordPublisher>().UpdateTrackingMessageAsync(cancellationToken)).MustHaveHappened()
-                .Then(A.CallTo(() => firstManagementStep.Step.ExecuteAsync(cancellationToken)).MustHaveHappenedOnceExactly())
-                .Then(A.CallTo(() => firstManagementStep.Info.UpdateStatus(A<Result>.Ignored)).MustHaveHappenedOnceExactly())
+                .Then(A.CallTo(() => managementStep1.ExecuteAsync(cancellationToken)).MustHaveHappenedOnceExactly())
+                .Then(A.CallTo(() => managementInfo1.UpdateStatus(A<Result>.Ignored)).MustHaveHappenedOnceExactly())
                 .Then(A.CallTo(() => fixture.FreezeFake<DiscordPublisher>().UpdateTrackingMessageAsync(cancellationToken)).MustHaveHappened())
-                .Then(A.CallTo(() => secondManagementStep.Step.ExecuteAsync(cancellationToken)).MustHaveHappenedOnceExactly())
-                .Then(A.CallTo(() => secondManagementStep.Info.UpdateStatus(A<Result>.Ignored)).MustHaveHappenedOnceExactly())
+                .Then(A.CallTo(() => managementStep2.ExecuteAsync(cancellationToken)).MustHaveHappenedOnceExactly())
+                .Then(A.CallTo(() => managementInfo2.UpdateStatus(A<Result>.Ignored)).MustHaveHappenedOnceExactly())
                 .Then(A.CallTo(() => fixture.FreezeFake<DiscordPublisher>().UpdateTrackingMessageAsync(cancellationToken)).MustHaveHappened())
-                .Then(A.CallTo(() => firstPublishStep.Step.ValidateAsync(cancellationToken)).MustHaveHappenedOnceExactly())
-                .Then(A.CallTo(() => firstPublishStep.Info.UpdateStatus(A<Result>.Ignored)).MustHaveHappened())
+                .Then(A.CallTo(() => publishStep1.ValidateAsync(cancellationToken)).MustHaveHappenedOnceExactly())
+                .Then(A.CallTo(() => publishInfo1.UpdateStatus(A<Result>.Ignored)).MustHaveHappened())
                 .Then(A.CallTo(() => fixture.FreezeFake<DiscordPublisher>().UpdateTrackingMessageAsync(cancellationToken)).MustHaveHappened());
 
             // Not executed due error
-            A.CallTo(() => firstPublishStep.Step.ExecuteAsync(cancellationToken)).MustNotHaveHappened();
-            A.CallTo(() => secondPublishStep.Step.ValidateAsync(cancellationToken)).MustNotHaveHappened();
-            A.CallTo(() => secondPublishStep.Step.ExecuteAsync(cancellationToken)).MustNotHaveHappened();
-            A.CallTo(() => secondPublishStep.Info.UpdateStatus(A<Result>.Ignored)).MustNotHaveHappened();
+            A.CallTo(() => publishStep1.ExecuteAsync(cancellationToken)).MustNotHaveHappened();
+            A.CallTo(() => publishStep2.ValidateAsync(cancellationToken)).MustNotHaveHappened();
+            A.CallTo(() => publishStep2.ExecuteAsync(cancellationToken)).MustNotHaveHappened();
+            A.CallTo(() => publishInfo2.UpdateStatus(A<Result>.Ignored)).MustNotHaveHappened();
 
             // Update tracking error times
             A.CallTo(() => fixture
@@ -228,7 +228,7 @@ public class HandlerTests : UnitTest
                 .MustHaveHappened(4, Times.Exactly);
 
             // Publish step was interrupted in validation, so its UpdateStatus must be called once exactly
-            A.CallTo(() => firstPublishStep.Info
+            A.CallTo(() => publishInfo1
                 .UpdateStatus(A<Result>.Ignored))
                 .MustHaveHappenedOnceExactly();
         }
@@ -249,10 +249,10 @@ public class HandlerTests : UnitTest
         [Fact]
         public async Task GivenErrorUpdateTrackingMessageShouldBreakChainCall()
         {
-            var firstManagementStep = fixture.Freeze<State>().Steps.ManagementSteps.First();
-            var secondManagementStep = fixture.Freeze<State>().Steps.ManagementSteps.Last();
-            var firstPublishStep = fixture.Freeze<State>().Steps.PublishSteps.First();
-            var secondPublishStep = fixture.Freeze<State>().Steps.PublishSteps.Last();
+            var (managementStep1, managementInfo1) = fixture.Freeze<State>().Steps.ManagementSteps.First();
+            var (managementStep2, managementInfo2) = fixture.Freeze<State>().Steps.ManagementSteps.Last();
+            var (publishStep1, publishInfo1) = fixture.Freeze<State>().Steps.PublishSteps.First();
+            var (publishStep2, publishInfo2) = fixture.Freeze<State>().Steps.PublishSteps.Last();
 
             A.CallTo(() => fixture
                 .FreezeFake<DiscordPublisher>()
@@ -263,21 +263,21 @@ public class HandlerTests : UnitTest
 
             // Call chain
             A.CallTo(() => fixture.FreezeFake<DiscordPublisher>().UpdateTrackingMessageAsync(cancellationToken)).MustHaveHappened()
-                .Then(A.CallTo(() => firstManagementStep.Step.ExecuteAsync(cancellationToken)).MustHaveHappenedOnceExactly())
-                .Then(A.CallTo(() => firstManagementStep.Info.UpdateStatus(A<Result>.Ignored)).MustHaveHappenedOnceExactly())
+                .Then(A.CallTo(() => managementStep1.ExecuteAsync(cancellationToken)).MustHaveHappenedOnceExactly())
+                .Then(A.CallTo(() => managementInfo1.UpdateStatus(A<Result>.Ignored)).MustHaveHappenedOnceExactly())
                 .Then(A.CallTo(() => fixture.FreezeFake<DiscordPublisher>().UpdateTrackingMessageAsync(cancellationToken)).MustHaveHappened())
-                .Then(A.CallTo(() => secondManagementStep.Step.ExecuteAsync(cancellationToken)).MustHaveHappenedOnceExactly())
-                .Then(A.CallTo(() => secondManagementStep.Info.UpdateStatus(A<Result>.Ignored)).MustHaveHappenedOnceExactly())
+                .Then(A.CallTo(() => managementStep2.ExecuteAsync(cancellationToken)).MustHaveHappenedOnceExactly())
+                .Then(A.CallTo(() => managementInfo2.UpdateStatus(A<Result>.Ignored)).MustHaveHappenedOnceExactly())
                 .Then(A.CallTo(() => fixture.FreezeFake<DiscordPublisher>().UpdateTrackingMessageAsync(cancellationToken)).MustHaveHappened())
-                .Then(A.CallTo(() => firstPublishStep.Step.ValidateAsync(cancellationToken)).MustHaveHappenedOnceExactly())
-                .Then(A.CallTo(() => firstPublishStep.Info.UpdateStatus(A<Result>.Ignored)).MustHaveHappened())
+                .Then(A.CallTo(() => publishStep1.ValidateAsync(cancellationToken)).MustHaveHappenedOnceExactly())
+                .Then(A.CallTo(() => publishInfo1.UpdateStatus(A<Result>.Ignored)).MustHaveHappened())
                 .Then(A.CallTo(() => fixture.FreezeFake<DiscordPublisher>().UpdateTrackingMessageAsync(cancellationToken)).MustHaveHappened());
 
             // Not executed due error
-            A.CallTo(() => firstPublishStep.Step.ExecuteAsync(cancellationToken)).MustNotHaveHappened();
-            A.CallTo(() => secondPublishStep.Step.ValidateAsync(cancellationToken)).MustNotHaveHappened();
-            A.CallTo(() => secondPublishStep.Step.ExecuteAsync(cancellationToken)).MustNotHaveHappened();
-            A.CallTo(() => secondPublishStep.Info.UpdateStatus(A<Result>.Ignored)).MustNotHaveHappened();
+            A.CallTo(() => publishStep1.ExecuteAsync(cancellationToken)).MustNotHaveHappened();
+            A.CallTo(() => publishStep2.ValidateAsync(cancellationToken)).MustNotHaveHappened();
+            A.CallTo(() => publishStep2.ExecuteAsync(cancellationToken)).MustNotHaveHappened();
+            A.CallTo(() => publishInfo2.UpdateStatus(A<Result>.Ignored)).MustNotHaveHappened();
 
             // Update tracking error times
             A.CallTo(() => fixture
@@ -286,7 +286,7 @@ public class HandlerTests : UnitTest
                 .MustHaveHappened(4, Times.Exactly);
 
             // Publish step was interrupted in validation, so its UpdateStatus must be called once exactly
-            A.CallTo(() => firstPublishStep.Info
+            A.CallTo(() => publishInfo1
                 .UpdateStatus(A<Result>.Ignored))
                 .MustHaveHappenedOnceExactly();
         }
