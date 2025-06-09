@@ -1,4 +1,5 @@
 ﻿using BotDeScans.App.Services.Discord;
+using BotDeScans.App.Services.Discord.Cache;
 using Remora.Discord.API.Abstractions.Objects;
 using Remora.Discord.API.Abstractions.Rest;
 using Remora.Discord.API.Objects;
@@ -13,6 +14,7 @@ public class RolesServiceTests : UnitTest
     public RolesServiceTests()
     {
         fixture.FreezeFake<IDiscordRestGuildAPI>();
+        fixture.Inject<ScopedRoleCache>(new());
         fixture.Inject<IRole>(fixture.Create<Role>());
 
         fixture.FreezeFakeConfiguration(
@@ -29,6 +31,34 @@ public class RolesServiceTests : UnitTest
 
     public class GetRoleFromGuildAsync : RolesServiceTests
     {
+        [Fact]
+        public async Task GivenNeedsCacheTrueShouldCallApiAndUpdateCache()
+        {
+            var result = await service.GetRoleFromGuildAsync(
+                fixture.Freeze<IRole>().Name,
+                cancellationToken);
+
+            result.Should().BeSuccess().And.HaveValue(fixture.Freeze<IRole>());
+            fixture.Freeze<ScopedRoleCache>().Roles.Should().Contain(fixture.Freeze<IRole>());
+        }
+
+        [Fact]
+        public async Task GivenNeedsCacheFalseShouldNotCallApiAndUseCache()
+        {
+            fixture.Freeze<ScopedRoleCache>().Roles = [fixture.Freeze<IRole>()];
+
+            var result = await service.GetRoleFromGuildAsync(
+                fixture.Freeze<IRole>().Name,
+                cancellationToken);
+
+            result.Should().BeSuccess().And.HaveValue(fixture.Freeze<IRole>());
+
+            A.CallTo(() => fixture
+                .FreezeFake<IDiscordRestGuildAPI>()
+                .GetGuildRolesAsync(A<Snowflake>.Ignored, cancellationToken))
+                .MustNotHaveHappened();
+        }
+
         [Fact]
         public async Task GivenSuccessSearchByNameShouldReturnSuccessResultWithRoles()
         {
@@ -50,7 +80,7 @@ public class RolesServiceTests : UnitTest
         }
 
         [Fact]
-        public async Task GivenErroroGetGuildRolesFromApiShouldReturnFailResult()
+        public async Task GivenErrorToGetGuildRolesFromApiShouldReturnFailResult()
         {
             const string ERROR_MESSAGE = "error message";
 

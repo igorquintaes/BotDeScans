@@ -1,5 +1,6 @@
 ﻿using BotDeScans.App.Extensions;
 using BotDeScans.App.Services.Discord.Autocomplete;
+using BotDeScans.App.Services.Discord.Cache;
 using BotDeScans.App.Services.Discord.Conditions;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -18,6 +19,7 @@ internal static class AddDependencies
         .AddAutocompleteProvider<AutocompleteTitles>()
         .AddCondition<RoleAuthorizeCondition>()
         .AddScoped<RolesService>()
+        .AddScoped<ScopedRoleCache>()
         .AddScoped<ExtendedFeedbackService>();
 
     internal static IHostBuilder AddDiscordToHost(this IHostBuilder hostBuilder) => hostBuilder
