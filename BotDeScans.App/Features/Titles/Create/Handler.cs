@@ -4,7 +4,6 @@ using BotDeScans.App.Models.Entities;
 using BotDeScans.App.Services.Discord;
 using FluentResults;
 using FluentValidation;
-using Remora.Discord.API.Abstractions.Objects;
 
 namespace BotDeScans.App.Features.Titles.Create;
 
@@ -18,7 +17,7 @@ public class Handler(
         string role,
         CancellationToken cancellationToken)
     {
-        var roleResult = await GetDiscordRole(role, cancellationToken);
+        var roleResult = await rolesService.GetOptionalRoleAsync(role, cancellationToken);
         if (roleResult.IsFailed)
             return roleResult.ToResult();
 
@@ -31,19 +30,5 @@ public class Handler(
         await databaseContext.SaveChangesAsync(cancellationToken);
 
         return Result.Ok();
-    }
-
-    private async Task<Result<IRole?>> GetDiscordRole(
-        string roleRequest, 
-        CancellationToken cancellationToken)
-    {
-        if (string.IsNullOrWhiteSpace(roleRequest))
-            return Result.Ok<IRole?>(null);
-
-        var roleResult = await rolesService.GetRoleFromGuildAsync(roleRequest, cancellationToken);
-
-        return roleResult.IsSuccess 
-            ? Result.Ok<IRole?>(roleResult.Value) 
-            : roleResult.ToResult();
     }
 }

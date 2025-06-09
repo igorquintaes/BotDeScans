@@ -14,7 +14,18 @@ public class RolesService(
 {
     public const string DISCORD_SERVERID_KEY = "Discord:ServerId";
 
-    public virtual async Task<Result<IRole>> GetRoleFromGuildAsync(
+    public virtual async Task<Result<IRole?>> GetOptionalRoleAsync(
+        string? roleToGet,
+        CancellationToken cancellationToken = default)
+    {
+        if (string.IsNullOrWhiteSpace(roleToGet))
+            return Result.Ok<IRole?>(null);
+
+        var roleResult = await GetRoleAsync(roleToGet, cancellationToken);
+        return roleResult.ToResult<IRole?>(x => x);
+    }
+
+    public virtual async Task<Result<IRole>> GetRoleAsync(
         string roleToGet,
         CancellationToken cancellationToken = default)
     {

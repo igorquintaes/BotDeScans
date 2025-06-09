@@ -16,8 +16,8 @@ public class GlobalPing(
     public override async Task<string> GetPingAsTextAsync(CancellationToken cancellationToken)
     {
         var globalRoleName = configuration.GetRequiredValue<string>(GLOBAL_ROLE_KEY);
-        var globalRoleAsPingResult = await rolesService.GetRoleFromGuildAsync(globalRoleName, cancellationToken);
-        var titleRoleAsPingResult = await rolesService.GetRoleFromGuildAsync(state.Title.DiscordRoleId.ToString()!, cancellationToken);
+        var globalRoleAsPingResult = await rolesService.GetRoleAsync(globalRoleName, cancellationToken);
+        var titleRoleAsPingResult = await rolesService.GetRoleAsync(state.Title.DiscordRoleId.ToString()!, cancellationToken);
 
         return $"{globalRoleAsPingResult.Value.ToDiscordString()}, {titleRoleAsPingResult.Value.ToDiscordString()}";
     }

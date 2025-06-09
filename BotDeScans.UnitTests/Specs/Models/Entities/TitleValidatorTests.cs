@@ -3,6 +3,7 @@ using BotDeScans.App.Models.Entities;
 using BotDeScans.App.Services.Discord;
 using FluentResults;
 using FluentValidation.TestHelper;
+using Microsoft.Extensions.Configuration;
 using Remora.Discord.API.Abstractions.Objects;
 namespace BotDeScans.UnitTests.Specs.Models.Entities;
 
@@ -27,9 +28,28 @@ public class TitleValidatorTests : UnitTest
         result.ShouldNotHaveAnyValidationErrors();
 
         A.CallTo(() => fixture
-            .FreezeFake<RolesService>()
-            .GetRoleFromGuildAsync(A<string>.Ignored, cancellationToken))
-            .MustNotHaveHappened();
+              .FreezeFake<RolesService>()
+              .GetRoleAsync(A<string>.Ignored, cancellationToken))
+              .MustNotHaveHappened();
+    }
+
+    [Theory]
+    [InlineData(PingType.None, 11UL)]
+    [InlineData(PingType.Everyone, 1UL)]
+    public async Task GivenValidDataForNonRequiredPingRoleButFilledShouldReturnSuccess(PingType pingType, ulong roleId)
+    {
+        fixture.FreezeFakeConfiguration(Ping.PING_TYPE_KEY, pingType.ToString());
+        var title = fixture.Build<Title>().With(x => x.DiscordRoleId, roleId).Create();
+        var result = await fixture
+              .Create<TitleValidator>()
+              .TestValidateAsync(title, default, cancellationToken);
+
+        result.ShouldNotHaveAnyValidationErrors();
+
+        A.CallTo(() => fixture
+              .FreezeFake<RolesService>()
+              .GetRoleAsync(A<string>.Ignored, cancellationToken))
+              .MustNotHaveHappened();
     }
 
     [Theory]
@@ -39,9 +59,9 @@ public class TitleValidatorTests : UnitTest
     {
         fixture.FreezeFakeConfiguration(Ping.PING_TYPE_KEY, pingType.ToString());
         A.CallTo(() => fixture
-            .FreezeFake<RolesService>()
-            .GetRoleFromGuildAsync(roleId.ToString(), cancellationToken))
-            .Returns(Result.Ok(fixture.FreezeFake<IRole>()));
+              .FreezeFake<RolesService>()
+              .GetRoleAsync(roleId.ToString(), cancellationToken))
+              .Returns(Result.Ok(fixture.FreezeFake<IRole>()));
 
         var title = fixture.Build<Title>().With(x => x.DiscordRoleId, roleId).Create();
         var result = await fixture
@@ -61,8 +81,8 @@ public class TitleValidatorTests : UnitTest
         fixture.FreezeFakeConfiguration(Ping.PING_TYPE_KEY, pingType.ToString());
 
         var expectedErrorMessage =
-            $"Não foi definida uma role para o Discord nesta obra, obrigatória para o ping de tipo {pingType}. " +
-             "Defina, ou mude o tipo de ping para publicação no arquivo de configuração do Bot de Scans.";
+              $"Não foi definida uma role para o Discord nesta obra, obrigatória para o ping de tipo {pingType}. " +
+               "Defina, ou mude o tipo de ping para publicação no arquivo de configuração do Bot de Scans.";
 
         var title = fixture.Build<Title>().With(x => x.DiscordRoleId, roleId).Create();
         var result = await fixture
@@ -81,9 +101,9 @@ public class TitleValidatorTests : UnitTest
     {
         fixture.FreezeFakeConfiguration(Ping.PING_TYPE_KEY, pingType.ToString());
         A.CallTo(() => fixture
-            .FreezeFake<RolesService>()
-            .GetRoleFromGuildAsync(roleId.ToString(), cancellationToken))
-            .Returns(Result.Fail(["err-1", "err-2"]));
+              .FreezeFake<RolesService>()
+              .GetRoleAsync(roleId.ToString(), cancellationToken))
+              .Returns(Result.Fail(["err-1", "err-2"]));
 
 
         var title = fixture.Build<Title>().With(x => x.DiscordRoleId, roleId).Create();

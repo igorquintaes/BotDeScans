@@ -15,5 +15,8 @@ internal static class AddDependencies
             .WithCommandGroup<Update.Commands>()
             .Finish()
         .AddInteractionGroup<Create.Interactions>()
-        .AddInteractionGroup<Update.Interactions>();
+        .AddInteractionGroup<Update.Interactions>()
+        .AddScoped<Create.Handler>()
+        .AddScoped<Update.Handler>()
+        .AddScoped<Update.Persistence>();
 }

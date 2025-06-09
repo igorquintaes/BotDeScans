@@ -58,7 +58,7 @@ public class RoleTests : UnitTest
 
             A.CallTo(() => fixture
                 .FreezeFake<RolesService>()
-                .GetRoleFromGuildAsync(
+                .GetRoleAsync(
                     fixture.Freeze<State>().Title.DiscordRoleId!.Value.ToString(),
                     cancellationToken))
                 .Returns(Result.Ok(fixture.FreezeFake<IRole>()));

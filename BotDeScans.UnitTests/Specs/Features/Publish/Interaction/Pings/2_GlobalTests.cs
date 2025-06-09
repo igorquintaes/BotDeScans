@@ -64,12 +64,12 @@ public class GlobalTests : UnitTest
 
             A.CallTo(() => fixture
                 .FreezeFake<RolesService>()
-                .GetRoleFromGuildAsync(globalRoleName, cancellationToken))
+                .GetRoleAsync(globalRoleName, cancellationToken))
                 .Returns(Result.Ok(globalRole));
 
             A.CallTo(() => fixture
                 .FreezeFake<RolesService>()
-                .GetRoleFromGuildAsync(
+                .GetRoleAsync(
                     fixture.Freeze<State>().Title.DiscordRoleId!.Value.ToString(),
                     cancellationToken))
                 .Returns(Result.Ok(titleRole));

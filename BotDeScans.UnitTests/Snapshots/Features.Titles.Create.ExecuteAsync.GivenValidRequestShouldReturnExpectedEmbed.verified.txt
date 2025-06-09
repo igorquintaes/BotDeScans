@@ -1,0 +1,10 @@
+﻿{
+  Title: {
+    Value: Obra cadastrada com sucesso!,
+    HasValue: true
+  },
+  Colour: {
+    Value: Green,
+    HasValue: true
+  }
+}

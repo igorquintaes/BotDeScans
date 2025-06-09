@@ -65,7 +65,7 @@ public class StateValidator : AbstractValidator<State>
         ValidationContext<State> context,
         CancellationToken cancellationToken)
     {
-        var rolesResult = await rolesService.GetRoleFromGuildAsync(role, cancellationToken);
+        var rolesResult = await rolesService.GetRoleAsync(role, cancellationToken);
         if (rolesResult.IsSuccess)
             return true;
 

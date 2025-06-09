@@ -12,7 +12,7 @@ public class Interactions(
     State interactionState,
     Handler handler) : InteractionGroup
 {
-    public const string MODAL_NAME = "Features.Publish.Interaction";
+    public const string MODAL_NAME = "Features.Publish";
 
     [Modal(MODAL_NAME)]
     [Description("Publica novo lançamento")]

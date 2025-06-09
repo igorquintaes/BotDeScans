@@ -1,8 +1,6 @@
 ﻿using BotDeScans.App.Attributes;
 using BotDeScans.App.Builders;
-using BotDeScans.App.Infra;
 using BotDeScans.App.Services.Discord.Autocomplete;
-using Microsoft.EntityFrameworkCore;
 using Remora.Commands.Attributes;
 using Remora.Commands.Groups;
 using Remora.Discord.API.Abstractions.Objects;
@@ -20,7 +18,7 @@ public class Commands(
     IOperationContext context,
     IDiscordRestInteractionAPI interactionAPI,
     FeedbackService feedbackService,
-    DatabaseContext databaseContext) : CommandGroup
+    Persistence persistence) : CommandGroup
 {
     [Command("update")]
     [RoleAuthorize("Publisher")]
@@ -29,21 +27,21 @@ public class Commands(
     public async Task<IResult> Update(
         [AutocompleteProvider(AutocompleteTitles.Id)]
         [Description("Nome da obra")]
-        int titleId)
+        int title)
     {
         if (context is not InteractionContext interactionContext)
             return Result.FromSuccess();
 
-        var title = await databaseContext.Titles.FirstOrDefaultAsync(x => x.Id == titleId);
-        if (title is null)
+        var dbTitle = await persistence.GetTitleAsync(title, CancellationToken);
+        if (dbTitle is null)
             return await feedbackService.SendContextualWarningAsync(
                 "Obra não encontrada.",
                 ct: CancellationToken);
 
-        var modal = new ModalBuilder("UpdateAsync", "Atualizar Obra")
-            .AddField(fieldName: "name", value: title.Name, label: "Nome da obra")
-            .AddField(fieldName: "role", value: title.DiscordRoleId.ToString(), label: "Cargo do Discord (Nome ou ID)", isRequired: false)
-            .CreateWithState(title.Id.ToString());
+        var modal = new ModalBuilder(Interactions.MODAL_NAME, "Atualizar Obra")
+            .AddField(fieldName: "name", value: dbTitle.Name, label: "Nome da obra")
+            .AddField(fieldName: "role", value: dbTitle.DiscordRoleId.ToString(), label: "Cargo do Discord (Nome ou ID)", isRequired: false)
+            .CreateWithState(dbTitle.Id.ToString());
 
         var response = new InteractionResponse(InteractionCallbackType.Modal, modal);
         return await interactionAPI.CreateInteractionResponseAsync

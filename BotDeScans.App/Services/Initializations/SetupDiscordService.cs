@@ -73,7 +73,7 @@ public class SetupDiscordServiceValidator : AbstractValidator<SetupDiscordServic
         ValidationContext<SetupDiscordService> context,
         CancellationToken cancellationToken)
     {
-        var rolesResult = await rolesService.GetRoleFromGuildAsync(roleValue, cancellationToken);
+        var rolesResult = await rolesService.GetRoleAsync(roleValue, cancellationToken);
         if (rolesResult.IsSuccess)
             return true;
 

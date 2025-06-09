@@ -8,9 +8,9 @@ namespace BotDeScans.App.Features.Titles.Create;
 
 public class Interactions(
     Handler handler,
-    FeedbackService feedbackService) : InteractionGroup
+    IFeedbackService feedbackService) : InteractionGroup
 {
-    public const string MODAL_NAME = "Titles.Create.Interaction";
+    public const string MODAL_NAME = "Titles.Create";
 
     [Modal(MODAL_NAME)]
     [Description("Cadastra nova obra")]

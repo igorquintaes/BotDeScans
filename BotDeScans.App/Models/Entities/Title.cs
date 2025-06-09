@@ -35,17 +35,11 @@ public class TitleValidator : AbstractValidator<Title>
         RuleFor(model => model.DiscordRoleId)
             .Cascade(CascadeMode.Stop)
             .Must(prop => prop.HasValue && prop != default(ulong))
-            .When(prop => pingType is PingType.Global or PingType.Role)
+            .When(prop => pingType == PingType.Global || pingType == PingType.Role)
             .WithMessage($"Não foi definida uma role para o Discord nesta obra, obrigatória para o ping de tipo {pingType}. " +
                           "Defina, ou mude o tipo de ping para publicação no arquivo de configuração do Bot de Scans.")
-            .DependentRules(() =>
-            {
-                RuleFor(model => model.DiscordRoleId)
-                    .MustAsync(async (_, prop, context, ct) => await RoleMustExists(prop!.Value, rolesService, context, ct))
-                    .When(prop => prop.DiscordRoleId.HasValue &&
-                                  prop.DiscordRoleId != default(ulong) &&
-                                  pingType is PingType.Global or PingType.Role);
-            });
+            .MustAsync(async (_, prop, context, ct) => await RoleMustExists(prop!.Value, rolesService, context, ct))
+            .When(prop => pingType is PingType.Global or PingType.Role);
     }
 
     private static async Task<bool> RoleMustExists(
@@ -54,7 +48,7 @@ public class TitleValidator : AbstractValidator<Title>
         ValidationContext<Title> context,
         CancellationToken cancellationToken)
     {
-        var rolesResult = await rolesService.GetRoleFromGuildAsync(prop.ToString(), cancellationToken);
+        var rolesResult = await rolesService.GetRoleAsync(prop.ToString(), cancellationToken);
         if (rolesResult.IsSuccess)
             return true;
 
