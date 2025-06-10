@@ -1,0 +1,46 @@
+﻿[
+  {
+    CustomID: remora::interactivity::$!3 modal::Titles.Update,
+    Title: Atualizar Obra,
+    Components: [
+      {
+        Components: [
+          {
+            CustomID: name,
+            Style: Short,
+            Label: Nome da obra,
+            IsRequired: {
+              Value: true,
+              HasValue: true
+            },
+            Value: {
+              Value: test-name,
+              HasValue: true
+            },
+            Type: TextInput
+          }
+        ],
+        Type: ActionRow
+      },
+      {
+        Components: [
+          {
+            CustomID: role,
+            Style: Short,
+            Label: Cargo do Discord (Nome ou ID),
+            IsRequired: {
+              Value: false,
+              HasValue: true
+            },
+            Value: {
+              Value: 100,
+              HasValue: true
+            },
+            Type: TextInput
+          }
+        ],
+        Type: ActionRow
+      }
+    ]
+  }
+]

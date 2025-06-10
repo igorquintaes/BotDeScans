@@ -8,7 +8,7 @@ public class Handler(
     IValidator<Request> requestValidator,
     Persistence persistence)
 {
-    public async Task<Result> ExecuteAsync(Request request, CancellationToken cancellationToken)
+    public virtual async Task<Result> ExecuteAsync(Request request, CancellationToken cancellationToken)
     {
         var validationResult = requestValidator.Validate(request);
         if (validationResult.IsValid is false)

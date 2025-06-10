@@ -1,0 +1,10 @@
+﻿{
+  Title: {
+    Value: Referência atualizada!,
+    HasValue: true
+  },
+  Colour: {
+    Value: Green,
+    HasValue: true
+  }
+}

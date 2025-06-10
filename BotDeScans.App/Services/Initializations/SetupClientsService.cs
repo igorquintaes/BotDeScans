@@ -16,7 +16,7 @@ public class SetupClientsService(IServiceProvider serviceProvider)
         var aggregatedResult = Result.Ok();
         foreach (var (factory, factoryValidator) in GetEnabledFactoriesData())
         {
-            var validationResult = await factoryValidator.ValidateAsync(factory, cancellationToken);
+            var validationResult = await factoryValidator.ValidateAsync(factory, cancellationToken); 
             aggregatedResult = aggregatedResult.WithReasons(FluentResultExtensions.ToResult(validationResult).Reasons);
             if (aggregatedResult.IsFailed)
                 continue;
