@@ -1,4 +1,4 @@
-using BotDeScans.App.Features.Titles.Update;
+﻿using BotDeScans.App.Features.Titles.Update;
 using BotDeScans.App.Models.Entities;
 using BotDeScans.App.Services.Discord;
 using FluentResults;
@@ -160,7 +160,7 @@ public class HandlerTests : UnitTest
                 titleId,
                 cancellationToken);
 
-            result.Should().BeFailure().And.HaveError("Obra n�o encontrada."); 
+            result.Should().BeFailure().And.HaveError("Obra não encontrada."); 
 
             A.CallTo(() => fixture
                 .FreezeFake<Persistence>()
