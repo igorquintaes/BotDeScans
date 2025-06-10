@@ -33,26 +33,20 @@ public class TitleValidator : AbstractValidator<Title>
         var pingType = Enum.Parse<PingType>(pingTypeAsString);
 
         RuleFor(model => model.DiscordRoleId)
-            .Cascade(CascadeMode.Stop)
-            .Must(prop => prop.HasValue && prop != default(ulong))
-            .When(prop => pingType == PingType.Global || pingType == PingType.Role)
-            .WithMessage($"Não foi definida uma role para o Discord nesta obra, obrigatória para o ping de tipo {pingType}. " +
-                          "Defina, ou mude o tipo de ping para publicação no arquivo de configuração do Bot de Scans.")
-            .MustAsync(async (_, prop, context, ct) => await RoleMustExists(prop!.Value, rolesService, context, ct))
+            .MustAsync(async (_, prop, context, ct) =>
+            {
+                if (prop.HasValue is false || prop == default(ulong))
+                    context.AddFailure($"Não foi definida uma role para o Discord nesta obra, obrigatória para o ping de tipo {pingType}. " +
+                                        "Defina, ou mude o tipo de ping para publicação no arquivo de configuração do Bot de Scans.");
+                else
+                {
+                    var rolesResult = await rolesService.GetRoleAsync(prop.ToString()!, ct);
+                    if (rolesResult.IsFailed)
+                        context.AddFailure(rolesResult.ToValidationErrorMessage());
+                }
+
+                return true;
+            })
             .When(prop => pingType is PingType.Global or PingType.Role);
-    }
-
-    private static async Task<bool> RoleMustExists(
-        ulong prop,
-        RolesService rolesService,
-        ValidationContext<Title> context,
-        CancellationToken cancellationToken)
-    {
-        var rolesResult = await rolesService.GetRoleAsync(prop.ToString(), cancellationToken);
-        if (rolesResult.IsSuccess)
-            return true;
-
-        context.AddFailure(rolesResult.ToValidationErrorMessage());
-        return true;
     }
 }

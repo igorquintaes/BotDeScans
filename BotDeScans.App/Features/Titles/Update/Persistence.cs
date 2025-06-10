@@ -4,9 +4,9 @@ using Microsoft.EntityFrameworkCore;
 
 namespace BotDeScans.App.Features.Titles.Update;
 
-public class Persistence(DatabaseContext context) : SaveChanges(context)
+public class Persistence(DatabaseContext databaseContext) : SaveChanges(databaseContext)
 {
-    private readonly DatabaseContext context = context;
+    private readonly DatabaseContext context = databaseContext;
 
     public virtual Task<Title?> GetTitleAsync(int id, CancellationToken cancellationToken)
         => context.Titles
