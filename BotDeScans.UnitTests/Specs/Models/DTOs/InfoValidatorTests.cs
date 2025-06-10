@@ -23,15 +23,15 @@ public class InfoValidatorTests : UnitTest
     [Fact]
     public void GivenValidDataShouldReturnSuccess() =>
         fixture.Create<InfoValidator>()
-                .TestValidate(data)
-                .ShouldNotHaveAnyValidationErrors();
+               .TestValidate(data)
+               .ShouldNotHaveAnyValidationErrors();
 
     [Fact]
     public void GivenLongChapterNameValueShouldReturnError() =>
         fixture.Create<InfoValidator>()
-                .TestValidate(data with { ChapterName = fixture.StringOfLength(256) })
-                .ShouldHaveValidationErrorFor(x => x.ChapterName)
-                .WithErrorMessage("Nome de capítulo muito longo.");
+               .TestValidate(data with { ChapterName = fixture.StringOfLength(256) })
+               .ShouldHaveValidationErrorFor(x => x.ChapterName)
+               .WithErrorMessage("Nome de capítulo muito longo.");
 
     [Theory]
     [InlineData("invalid")]
@@ -43,17 +43,17 @@ public class InfoValidatorTests : UnitTest
     [InlineData("1,11")]
     public void GivenChapterNumberNotMatchingPatternShouldReturnError(string chapterNumber) =>
         fixture.Create<InfoValidator>()
-                .TestValidate(data with { ChapterNumber = chapterNumber })
-                .ShouldHaveValidationErrorFor(x => x.ChapterNumber)
-                .WithErrorMessage("Número do capítulo inválido.");
+               .TestValidate(data with { ChapterNumber = chapterNumber })
+               .ShouldHaveValidationErrorFor(x => x.ChapterNumber)
+               .WithErrorMessage("Número do capítulo inválido.");
 
     [Theory]
     [InlineData("invalid")]
     [InlineData("-1")]
     public void GivenChapterVolumeNotMatchingNaturalNumberShouldReturnError(string chapterVolume) =>
         fixture.Create<InfoValidator>()
-                .TestValidate(data with { ChapterVolume = chapterVolume })
-                .ShouldHaveValidationErrorFor(x => x.ChapterVolume)
-                .WithErrorMessage("Volume do capítulo inválido.");
+               .TestValidate(data with { ChapterVolume = chapterVolume })
+               .ShouldHaveValidationErrorFor(x => x.ChapterVolume)
+               .WithErrorMessage("Volume do capítulo inválido.");
 
 }

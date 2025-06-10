@@ -33,12 +33,12 @@ public class InteractionsTests : UnitTest
         interactions = fixture.CreateCommand<Interactions>(cancellationToken);
     }
 
-    public class PublishAsync : InteractionsTests
+    public class ExecuteAsync : InteractionsTests
     {
         [Fact]
         public async Task GivenSuccessfulExecutionShouldReturnSuccessResult()
         {
-            var result = await interactions.PublishAsync(default!, default!, default!, default!, default!, "1");
+            var result = await interactions.ExecuteAsync(default!, default!, default!, default!, default!, "1");
 
             result.IsSuccess.Should().BeTrue();
         }
@@ -53,7 +53,7 @@ public class InteractionsTests : UnitTest
                 .Returns(enabledSteps);
 
             var info = fixture.Create<Info>();
-            await interactions.PublishAsync(
+            await interactions.ExecuteAsync(
                 info.GoogleDriveUrl.Url,
                 info.ChapterName!,
                 info.ChapterNumber,
@@ -68,7 +68,7 @@ public class InteractionsTests : UnitTest
         [Fact]
         public async Task GivenSuccessfulExecutionShouldCallSuccessReleaseMessage()
         {
-            await interactions.PublishAsync(default!, default!, default!, default!, default!, "1");
+            await interactions.ExecuteAsync(default!, default!, default!, default!, default!, "1");
 
             A.CallTo(() => fixture
                 .FreezeFake<DiscordPublisher>()
@@ -91,7 +91,7 @@ public class InteractionsTests : UnitTest
                 .ErrorReleaseMessageAsync(stepsResult, cancellationToken))
                 .Returns(fixture.FreezeFake<Remora.Results.IResult<IMessage>>());
 
-            var result = await interactions.PublishAsync(default!, default!, default!, default!, default!, "1");
+            var result = await interactions.ExecuteAsync(default!, default!, default!, default!, default!, "1");
             result.IsSuccess.Should().BeTrue();
 
             A.CallTo(() => fixture
@@ -112,7 +112,7 @@ public class InteractionsTests : UnitTest
                 .SuccessReleaseMessageAsync(cancellationToken))
                 .Returns(fixture.FreezeFake<Remora.Results.IResult<IMessage>>());
 
-            var result = await interactions.PublishAsync(default!, default!, default!, default!, default!, "1");
+            var result = await interactions.ExecuteAsync(default!, default!, default!, default!, default!, "1");
 
             result.IsSuccess.Should().BeFalse();
         }
@@ -134,7 +134,7 @@ public class InteractionsTests : UnitTest
                 .ErrorReleaseMessageAsync(A<Result>.Ignored, cancellationToken))
                 .Returns(fixture.FreezeFake<Remora.Results.IResult<IMessage>>());
 
-            var result = await interactions.PublishAsync(default!, default!, default!, default!, default!, "1");
+            var result = await interactions.ExecuteAsync(default!, default!, default!, default!, default!, "1");
 
             result.IsSuccess.Should().BeFalse();
         }

@@ -13,7 +13,7 @@ public class RolePing(
 
     public override async Task<string> GetPingAsTextAsync(CancellationToken cancellationToken)
     {
-        var roleResult = await rolesService.GetRoleFromGuildAsync(publishState.Title.DiscordRoleId.ToString()!, cancellationToken);
+        var roleResult = await rolesService.GetRoleAsync(publishState.Title.DiscordRoleId.ToString()!, cancellationToken);
 
         return roleResult.Value.ToDiscordString();
     }

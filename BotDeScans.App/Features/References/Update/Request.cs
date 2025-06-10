@@ -28,14 +28,12 @@ public class RequestValidator : AbstractValidator<Request>
 
         RuleFor(request => request.ReferenceRawValue).NotEmpty();
 
-        When(request => request.ReferenceKey == ExternalReference.MangaDex
-                     && string.IsNullOrWhiteSpace(request.ReferenceRawValue) is false, () =>
-        {
-            RuleFor(request => request.ReferenceRawValue)
-                .Must(reference => IsMangaValidMangaDexReference(reference))
-                .WithMessage($"Valor de referência inválida para {ExternalReference.MangaDex}. " +
-                             $"É necessário o ID da obra ou o link da página da obra.");
-        });
+        RuleFor(request => request.ReferenceRawValue)
+            .Must(IsMangaValidMangaDexReference)
+            .When(request => request.ReferenceKey == ExternalReference.MangaDex
+                 && string.IsNullOrWhiteSpace(request.ReferenceRawValue) is false)
+            .WithMessage($"Valor de referência inválida para {ExternalReference.MangaDex}. " +
+                         $"É necessário o ID da obra ou o link da página da obra.");
     }
 
     private static bool IsMangaValidMangaDexReference(string url)

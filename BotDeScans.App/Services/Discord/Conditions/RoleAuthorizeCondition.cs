@@ -29,7 +29,7 @@ public class RoleAuthorizeCondition(
         if (!guildMemberResult.IsDefined(out var guildMember))
             return Result.FromError(guildMemberResult.Error!);
 
-        var expectedRoles = await rolesService.GetRoleFromGuildAsync(attribute.RoleName, ct);
+        var expectedRoles = await rolesService.GetRoleAsync(attribute.RoleName, ct);
         if (expectedRoles.IsFailed)
             return Result.FromError(expectedRoles.Errors.ToDiscordError());
 

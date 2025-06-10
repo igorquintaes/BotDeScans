@@ -10,13 +10,13 @@ public class RequestValidatorTests : UnitTest
 
     [Fact]
     public void GivenValidDataShouldNotHaveValidationErrors() =>
-        fixture.Create<RequestValidator>()
+        new RequestValidator()
                .TestValidate(request)
                .ShouldNotHaveAnyValidationErrors();
 
     [Fact]
     public void GivenEmptyTitleIdShouldHaveValidationErrors() =>
-        fixture.Create<RequestValidator>()
+        new RequestValidator()
                .TestValidate(request with { TitleId = default })
                .ShouldHaveValidationErrorFor(x => x.TitleId)
                .Only();
@@ -26,14 +26,28 @@ public class RequestValidatorTests : UnitTest
     [InlineData(" ")]
     [InlineData(null)]
     public void GivenEmptyReferenceRawValueShouldHaveValidationErrors(string? value) =>
-        fixture.Create<RequestValidator>()
+        new RequestValidator()
                .TestValidate(request with { ReferenceRawValue = value! })
                .ShouldHaveValidationErrorFor(x => x.ReferenceRawValue)
                .Only();
 
     [Fact]
+    public void GivenSomeReferenceRawValueWhenKeyIsNotMangaDexShouldHaveValidationErrors()
+    {
+        var validationResult = new RequestValidator().TestValidate(request with 
+        {
+            ReferenceRawValue = "any-value", 
+            ReferenceKey = (ExternalReference)999 
+        });
+
+        validationResult.ShouldNotHaveValidationErrorFor(x => x.ReferenceRawValue);
+        validationResult.ShouldHaveValidationErrorFor(x => x.ReferenceKey)
+                        .Only(); // because we have only mangadex atm, otherwise should be success.
+    }
+
+    [Fact]
     public void GivenUnexpectedExternalReferenceShouldHaveValidationErrors() =>
-        fixture.Create<RequestValidator>()
+        new RequestValidator()
                .TestValidate(request with { ReferenceKey = (ExternalReference)999 })
                .ShouldHaveValidationErrorFor(x => x.ReferenceKey)
                .Only();
@@ -43,7 +57,7 @@ public class RequestValidatorTests : UnitTest
     [InlineData("https://mangadex.org/title/4d6b898f-5f10-4cb3-a2e5-55e8c3ea8ba4")]
     [InlineData("https://mangadex.org/title/4d6b898f-5f10-4cb3-a2e5-55e8c3ea8ba4/extra-path")]
     public void GivenValidMangaDexReferencesShouldNotHaveValidationErrors(string url) =>
-        fixture.Create<RequestValidator>()
+        new RequestValidator()
                .TestValidate(request with { ReferenceRawValue = url })
                .ShouldNotHaveAnyValidationErrors();
 
@@ -54,7 +68,7 @@ public class RequestValidatorTests : UnitTest
     [InlineData("https://mangadex.org/title/invalid-guid-here")]
     [InlineData("https://mangadex.org/title/too-short")]
     public void Should_Return_False_For_Invalid_References(string url) =>
-        fixture.Create<RequestValidator>()
+        new RequestValidator()
                .TestValidate(request with { ReferenceRawValue = url })
                .ShouldHaveValidationErrorFor(x => x.ReferenceRawValue)
                .WithErrorMessage($"Valor de referência inválida para {ExternalReference.MangaDex}. " +

@@ -48,7 +48,7 @@ public class SetupClientsServiceValidatorTests : UnitTest
 
         A.CallTo(() => fixture
             .FreezeFake<RolesService>()
-            .GetRoleFromGuildAsync(A<string>.Ignored, cancellationToken))
+            .GetRoleAsync(A<string>.Ignored, cancellationToken))
             .MustNotHaveHappened();
     }
 
@@ -76,7 +76,7 @@ public class SetupClientsServiceValidatorTests : UnitTest
     {
         A.CallTo(() => fixture
             .FreezeFake<RolesService>()
-            .GetRoleFromGuildAsync(globalPing, cancellationToken))
+            .GetRoleAsync(globalPing, cancellationToken))
             .Returns(Result.Fail(["err-1", "err-2"]));
 
         var result = await fixture

@@ -1,4 +1,5 @@
 ﻿using BotDeScans.App.Services.Discord;
+using BotDeScans.App.Services.Discord.Cache;
 using Remora.Discord.API.Abstractions.Objects;
 using Remora.Discord.API.Abstractions.Rest;
 using Remora.Discord.API.Objects;
@@ -13,6 +14,7 @@ public class RolesServiceTests : UnitTest
     public RolesServiceTests()
     {
         fixture.FreezeFake<IDiscordRestGuildAPI>();
+        fixture.Inject<ScopedRoleCache>(new());
         fixture.Inject<IRole>(fixture.Create<Role>());
 
         fixture.FreezeFakeConfiguration(
@@ -27,12 +29,40 @@ public class RolesServiceTests : UnitTest
         service = fixture.Create<RolesService>();
     }
 
-    public class GetRoleFromGuildAsync : RolesServiceTests
+    public class GetRoleAsync : RolesServiceTests
     {
+        [Fact]
+        public async Task GivenNeedsCacheTrueShouldCallApiAndUpdateCache()
+        {
+            var result = await service.GetRoleAsync(
+                fixture.Freeze<IRole>().Name,
+                cancellationToken);
+
+            result.Should().BeSuccess().And.HaveValue(fixture.Freeze<IRole>());
+            fixture.Freeze<ScopedRoleCache>().Roles.Should().Contain(fixture.Freeze<IRole>());
+        }
+
+        [Fact]
+        public async Task GivenNeedsCacheFalseShouldNotCallApiAndUseCache()
+        {
+            fixture.Freeze<ScopedRoleCache>().Roles = [fixture.Freeze<IRole>()];
+
+            var result = await service.GetRoleAsync(
+                fixture.Freeze<IRole>().Name,
+                cancellationToken);
+
+            result.Should().BeSuccess().And.HaveValue(fixture.Freeze<IRole>());
+
+            A.CallTo(() => fixture
+                .FreezeFake<IDiscordRestGuildAPI>()
+                .GetGuildRolesAsync(A<Snowflake>.Ignored, cancellationToken))
+                .MustNotHaveHappened();
+        }
+
         [Fact]
         public async Task GivenSuccessSearchByNameShouldReturnSuccessResultWithRoles()
         {
-            var result = await service.GetRoleFromGuildAsync(
+            var result = await service.GetRoleAsync(
                 fixture.Freeze<IRole>().Name,
                 cancellationToken);
 
@@ -42,7 +72,7 @@ public class RolesServiceTests : UnitTest
         [Fact]
         public async Task GivenSuccessSearchByIdShouldReturnSuccessResultWithRoles()
         {
-            var result = await service.GetRoleFromGuildAsync(
+            var result = await service.GetRoleAsync(
                 fixture.Freeze<IRole>().ID.ToString(),
                 cancellationToken);
 
@@ -50,7 +80,7 @@ public class RolesServiceTests : UnitTest
         }
 
         [Fact]
-        public async Task GivenErroroGetGuildRolesFromApiShouldReturnFailResult()
+        public async Task GivenErrorToGetGuildRolesFromApiShouldReturnFailResult()
         {
             const string ERROR_MESSAGE = "error message";
 
@@ -59,7 +89,7 @@ public class RolesServiceTests : UnitTest
                 .GetGuildRolesAsync(A<Snowflake>.Ignored, cancellationToken))
                 .Returns(Result<IReadOnlyList<IRole>>.FromError(new InvalidOperationError(ERROR_MESSAGE)));
 
-            var result = await service.GetRoleFromGuildAsync(
+            var result = await service.GetRoleAsync(
                 fixture.Freeze<IRole>().Name,
                 cancellationToken);
 
@@ -70,7 +100,7 @@ public class RolesServiceTests : UnitTest
         public async Task GivenNotFoundRoleShouldReturnFailResult()
         {
             var roleToGet = fixture.Create<string>();
-            var result = await service.GetRoleFromGuildAsync(
+            var result = await service.GetRoleAsync(
                 roleToGet,
                 cancellationToken);
 

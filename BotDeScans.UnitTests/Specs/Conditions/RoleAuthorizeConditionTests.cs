@@ -39,7 +39,7 @@ public class RoleAuthorizeConditionTests : UnitTest
 
             A.CallTo(() => fixture
                 .FreezeFake<RolesService>()
-                .GetRoleFromGuildAsync(A<string>.Ignored, cancellationToken))
+                .GetRoleAsync(A<string>.Ignored, cancellationToken))
                 .Returns(FluentResults.Result.Ok(fixture.FreezeFake<IRole>()));
 
             A.CallTo(() => fixture
@@ -104,7 +104,7 @@ public class RoleAuthorizeConditionTests : UnitTest
 
             A.CallTo(() => fixture
                 .FreezeFake<RolesService>()
-                .GetRoleFromGuildAsync(
+                .GetRoleAsync(
                     A<string>.That.IsEqualTo(fixture.FreezeFake<IRole>().Name),
                     cancellationToken))
                 .Returns(FluentResults.Result.Fail<IRole>("error message"));
@@ -127,7 +127,7 @@ public class RoleAuthorizeConditionTests : UnitTest
 
             A.CallTo(() => fixture
                 .FreezeFake<RolesService>()
-                .GetRoleFromGuildAsync(
+                .GetRoleAsync(
                     A<string>.That.IsEqualTo(fixture.FreezeFake<IRole>().Name),
                     cancellationToken))
                 .Returns(FluentResults.Result.Ok<IRole>(guildRole));
@@ -163,7 +163,7 @@ public class RoleAuthorizeConditionTests : UnitTest
 
             A.CallTo(() => fixture
                 .FreezeFake<RolesService>()
-                .GetRoleFromGuildAsync(
+                .GetRoleAsync(
                     A<string>.That.IsEqualTo(fixture.FreezeFake<IRole>().Name),
                     cancellationToken))
                 .Returns(FluentResults.Result.Ok<IRole>(guildRole));
