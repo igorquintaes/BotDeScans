@@ -27,7 +27,7 @@ public class AutocompleteTitles(DatabaseContext databaseContext) : IAutocomplete
         return titles
             .Select(title => new ApplicationCommandOptionChoice(
                 Name: title.Name.Length > Consts.DISCORD_PARAM_MAX_LENGTH
-                    ? string.Concat(title.Name.AsSpan(0, 97), "...")
+                    ? string.Concat(title.Name.AsSpan(0, Consts.DISCORD_PARAM_MAX_LENGTH - 3), "...")
                     : title.Name,
                 Value: title.Id))
             .ToList();
