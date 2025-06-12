@@ -2,7 +2,7 @@
 
 public class Handler(Persistence persistence)
 {
-    public async Task<string[]> ExecuteAsync(int titleId, CancellationToken cancellationToken)
+    public virtual async Task<string[]> ExecuteAsync(int titleId, CancellationToken cancellationToken)
     {
         var references = await persistence.GetReferencesAsync(titleId, cancellationToken);
 

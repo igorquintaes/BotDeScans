@@ -1,0 +1,12 @@
+﻿{
+  Title: {
+    Value:
+ref 1
+ref 2,
+    HasValue: true
+  },
+  Colour: {
+    Value: Green,
+    HasValue: true
+  }
+}

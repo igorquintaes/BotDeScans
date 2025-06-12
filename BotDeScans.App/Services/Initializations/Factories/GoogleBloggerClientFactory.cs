@@ -27,7 +27,11 @@ public class GoogleBloggerClientFactory(
     {
         var saveAccessTokenPath = Path.Combine("config", "tokens");
 
-        await using var credentialStream = GetConfigFileAsStream(CREDENTIALS_FILE_NAME).Value;
+        var credentialStreamResult = GetConfigFileAsStream(CREDENTIALS_FILE_NAME);
+        if (credentialStreamResult.IsFailed)
+            return credentialStreamResult.ToResult();
+
+        await using var credentialStream = credentialStreamResult.Value;
         var clientSecrets = await GoogleClientSecrets.FromStreamAsync(credentialStream, cancellationToken);
 
         var credential = await GetUserCredential(clientSecrets, saveAccessTokenPath, cancellationToken);

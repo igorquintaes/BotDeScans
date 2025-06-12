@@ -18,8 +18,8 @@ public class Commands(
     [Command("list")]
     [RoleAuthorize("Staff")]
     [Description("Adiciona ou atualiza referências externas para a obra.")]
-    public async Task<IResult> ListAsync(
-        [AutocompleteProvider(AutocompleteTitles.Id)]
+    public async Task<IResult> ExecuteAsync(
+        [AutocompleteProvider(AutocompleteTitles.ID)]
         [Description("Nome da obra")]
         int title)
     {

@@ -1,7 +1,10 @@
 ﻿using BotDeScans.App.Services.Initializations.Factories.Base;
 using Microsoft.Extensions.DependencyInjection;
+using System.Diagnostics.CodeAnalysis;
+
 namespace BotDeScans.App.Extensions;
 
+[ExcludeFromCodeCoverage]
 public static class ServiceCollectionExtensions
 {
     public static IServiceCollection AddExternalClientAsSingleton<TClient, TFactory>(

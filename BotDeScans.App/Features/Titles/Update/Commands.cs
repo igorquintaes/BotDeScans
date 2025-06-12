@@ -25,7 +25,7 @@ public class Commands(
     [SuppressInteractionResponse(true)]
     [Description("Atualiza dados da obra")]
     public async Task<IResult> ExecuteAsync(
-        [AutocompleteProvider(AutocompleteTitles.Id)]
+        [AutocompleteProvider(AutocompleteTitles.ID)]
         [Description("Nome da obra")]
         int title)
     {
