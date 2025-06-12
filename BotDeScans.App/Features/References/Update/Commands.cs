@@ -19,8 +19,8 @@ public class Commands(
     [Command("update")]
     [RoleAuthorize("Publisher")]
     [Description("Adiciona ou atualiza referências externas para a obra.")]
-    public async Task<IResult> UpdateAsync(
-        [AutocompleteProvider(AutocompleteTitles.Id)]
+    public async Task<IResult> ExecuteAsync(
+        [AutocompleteProvider(AutocompleteTitles.ID)]
         [Description("Nome da obra")]
         int title,
         [Description("Nome da referência")]

@@ -23,7 +23,7 @@ public class Commands(
     [SuppressInteractionResponse(true)]
     [Description("Abre uma modal com as opções de publicação de um novo lançamento")]
     public async Task<IResult> ExecuteAsync(
-        [AutocompleteProvider(AutocompleteTitles.Id)]
+        [AutocompleteProvider(AutocompleteTitles.ID)]
         [Description("Nome da obra")]
         int title)
     {

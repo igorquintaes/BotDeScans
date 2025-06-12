@@ -104,6 +104,16 @@ public class GoogleBloggerClientFactoryTests : UnitTest
 
             result.ValueOrDefault.Should().NotBeNull();
         }
+
+        [Fact]
+        public async Task GivenMissingConfigFileShouldReturnFailResult()
+        {
+            File.Delete(credentialsPath);
+
+            var result = await factory.CreateAsync(cancellationToken);
+
+            result.Should().BeFailure().And.HaveError($"Unable to find BloggerService file: {credentialsPath}");
+        }
     }
 
     public class HealthCheckAsync : GoogleBloggerClientFactoryTests

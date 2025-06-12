@@ -4,12 +4,15 @@ using Microsoft.EntityFrameworkCore;
 using Remora.Discord.API.Abstractions.Objects;
 using Remora.Discord.API.Objects;
 using Remora.Discord.Commands.Autocomplete;
+
 namespace BotDeScans.App.Services.Discord.Autocomplete;
 
 public class AutocompleteTitles(DatabaseContext databaseContext) : IAutocompleteProvider
 {
-    public const string Id = "autocomplete::titles";
-    public string Identity => Id;
+    public const string ID = "autocomplete::titles";
+    public const int DISCORD_MAX_RESULTS = 25;
+
+    public string Identity => ID;
 
     public async ValueTask<IReadOnlyList<IApplicationCommandOptionChoice>> GetSuggestionsAsync(
         IReadOnlyList<IApplicationCommandInteractionDataOption> options,
@@ -18,13 +21,13 @@ public class AutocompleteTitles(DatabaseContext databaseContext) : IAutocomplete
     {
         var titles = await databaseContext.Titles
             .Where(x => EF.Functions.Like(x.Name, $"%{userInput}%"))
-            .Take(25)
+            .Take(DISCORD_MAX_RESULTS)
             .ToArrayAsync(ct);
 
         return titles
             .Select(title => new ApplicationCommandOptionChoice(
                 Name: title.Name.Length > Consts.DISCORD_PARAM_MAX_LENGTH
-                    ? string.Concat(title.Name.AsSpan(0, 96), "...")
+                    ? string.Concat(title.Name.AsSpan(0, Consts.DISCORD_PARAM_MAX_LENGTH - 3), "...")
                     : title.Name,
                 Value: title.Id))
             .ToList();

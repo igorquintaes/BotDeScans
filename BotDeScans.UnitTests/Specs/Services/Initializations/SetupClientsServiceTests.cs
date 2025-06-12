@@ -1,6 +1,7 @@
 ﻿using BotDeScans.App.Features.GoogleDrive.InternalServices;
 using BotDeScans.App.Services.Initializations;
 using BotDeScans.App.Services.Initializations.Factories.Base;
+using FluentAssertions.Execution;
 using FluentResults;
 using FluentValidation;
 using FluentValidation.Results;
@@ -76,6 +77,26 @@ public class SetupClientsServiceTests : UnitTest
             var result = await service.SetupAsync(cancellationToken);
 
             result.Should().BeFailure().And.HaveError(ERROR_MESSAGE);
+        }
+
+        [Fact]
+        public async Task GivenExceptionToCreateAsyncShouldReturnFailResult()
+        {
+            A.CallTo(() => fixture
+                .FreezeFake<FakeClientFactory>()
+                .CreateAsync(cancellationToken))
+                .ThrowsAsync(new InvalidOperationException("some erro message"));
+
+            var result = await service.SetupAsync(cancellationToken);
+
+            using var __ = new AssertionScope();
+            result.Should().BeFailure();
+            result.Errors.Should().HaveCount(1);
+            result.Errors.FirstOrDefault()?.Message.Should().Be($"Failed to create a client of type Object.");
+            result.Errors.FirstOrDefault()?.Reasons.Should().HaveCount(1);
+            result.Errors.FirstOrDefault()?.Reasons.FirstOrDefault()?.Should().BeOfType<ExceptionalError>();
+            result.Errors.FirstOrDefault()?.Reasons.FirstOrDefault()?.As<ExceptionalError?>()?.Exception.Should().BeOfType<InvalidOperationException>();
+            result.Errors.FirstOrDefault()?.Reasons.FirstOrDefault()?.As<ExceptionalError?>()?.Exception.Message.Should().Be("some erro message");
         }
 
         [Fact]

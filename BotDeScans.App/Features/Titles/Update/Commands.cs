@@ -17,15 +17,15 @@ namespace BotDeScans.App.Features.Titles.Update;
 public class Commands(
     IOperationContext context,
     IDiscordRestInteractionAPI interactionAPI,
-    FeedbackService feedbackService,
+    IFeedbackService feedbackService,
     Persistence persistence) : CommandGroup
 {
     [Command("update")]
     [RoleAuthorize("Publisher")]
     [SuppressInteractionResponse(true)]
     [Description("Atualiza dados da obra")]
-    public async Task<IResult> Update(
-        [AutocompleteProvider(AutocompleteTitles.Id)]
+    public async Task<IResult> ExecuteAsync(
+        [AutocompleteProvider(AutocompleteTitles.ID)]
         [Description("Nome da obra")]
         int title)
     {
@@ -43,13 +43,10 @@ public class Commands(
             .AddField(fieldName: "role", value: dbTitle.DiscordRoleId.ToString(), label: "Cargo do Discord (Nome ou ID)", isRequired: false)
             .CreateWithState(dbTitle.Id.ToString());
 
-        var response = new InteractionResponse(InteractionCallbackType.Modal, modal);
-        return await interactionAPI.CreateInteractionResponseAsync
-        (
+        return await interactionAPI.CreateInteractionResponseAsync(
             interactionContext.Interaction.ID,
             interactionContext.Interaction.Token,
-            response,
-            ct: CancellationToken
-        );
+            new InteractionResponse(InteractionCallbackType.Modal, modal),
+            ct: CancellationToken);
     }
 }
