@@ -7,17 +7,17 @@ namespace BotDeScans.UnitTests.Specs.Features.References.Update;
 
 public abstract class RequestValidatorTests : UnitTest
 {
-    protected abstract Request Request { get; set; }
+    protected abstract Request Request { get; }
 
     public class MangaDex : RequestValidatorTests
     {
-        protected override Request Request { get; set; } = 
+        protected override Request Request { get; } = 
             new (9, ExternalReference.MangaDex, Guid.NewGuid().ToString());
     }
 
     public class SakuraMangas : RequestValidatorTests
     {
-        protected override Request Request { get; set; } = 
+        protected override Request Request { get; } = 
             new(9, ExternalReference.SakuraMangas, Guid.NewGuid().ToString());
     }
 

@@ -113,13 +113,13 @@ public class StateValidatorTests : UnitTest
     [Fact]
     public async Task GivenMangadexStepShouldReturnInvalidWhenReferenceIsNotSet()
     {
-        var titleReferente = new TitleReference { Key = ExternalReference.SakuraMangas, Value = fixture.Create<string>(), Title = default! };
+        var titleReference = new TitleReference { Key = ExternalReference.SakuraMangas, Value = fixture.Create<string>(), Title = default! };
 
         var data = fixture
               .Build<State>()
               .With(x => x.Title, fixture
                   .Build<Title>()
-                  .With(x => x.References, [titleReferente])
+                  .With(x => x.References, [titleReference])
                   .Create())
               .With(x => x.Steps, new EnabledSteps(new Dictionary<IStep, StepInfo>
                   { { A.Fake<UploadMangaDexStep>(), A.Fake<StepInfo>() } }))
@@ -157,13 +157,13 @@ public class StateValidatorTests : UnitTest
     [Fact]
     public async Task GivenSakuraMangasStepShouldReturnInvalidWhenReferenceIsNotSet()
     {
-        var titleReferente = new TitleReference { Key = ExternalReference.MangaDex, Value = fixture.Create<string>(), Title = default! };
+        var titleReference = new TitleReference { Key = ExternalReference.MangaDex, Value = fixture.Create<string>(), Title = default! };
 
         var data = fixture
               .Build<State>()
               .With(x => x.Title, fixture
                   .Build<Title>()
-                  .With(x => x.References, [titleReferente])
+                  .With(x => x.References, [titleReference])
                   .Create())
               .With(x => x.Steps, new EnabledSteps(new Dictionary<IStep, StepInfo>()
                   { { A.Fake<UploadSakuraMangasStep>(), A.Fake<StepInfo>() } }))
