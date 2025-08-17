@@ -29,7 +29,7 @@ public class UploadSakuraMangasStep(
         var uploadResult = await sakuraMangasService.UploadAsync(
             state.ChapterInfo.ChapterNumber,
             state.ChapterInfo.ChapterName,
-            state.Title.References.Single(x => x.Key == ExternalReference.MangaDex).Value,
+            state.Title.References.Single(x => x.Key == ExternalReference.SakuraMangas).Value,
             state.InternalData.ZipFilePath!,
             cancellationToken);
 

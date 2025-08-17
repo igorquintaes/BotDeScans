@@ -1,4 +1,5 @@
-﻿using BotDeScans.App.Models.Entities;
+﻿using BotDeScans.App.Extensions;
+using BotDeScans.App.Models.Entities;
 using FluentValidation;
 
 namespace BotDeScans.App.Features.References.Update;
@@ -30,10 +31,11 @@ public class RequestValidator : AbstractValidator<Request>
 
         RuleFor(request => request.ReferenceRawValue)
             .Must(IsMangaValidMangaDexReference)
-            .When(request => request.ReferenceKey == ExternalReference.MangaDex
-                 && string.IsNullOrWhiteSpace(request.ReferenceRawValue) is false)
-            .WithMessage($"Valor de referência inválida para {ExternalReference.MangaDex}. " +
-                         $"É necessário o ID da obra ou o link da página da obra.");
+            .When(request => (request.ReferenceKey is ExternalReference.MangaDex or ExternalReference.SakuraMangas)
+                          && string.IsNullOrWhiteSpace(request.ReferenceRawValue) is false)
+            .WithMessage(request => 
+                          $"Valor de referência inválida para {request.ReferenceKey.GetDescription()}. " +
+                          $"É necessário o ID da obra ou o link da página da obra.");
     }
 
     private static bool IsMangaValidMangaDexReference(string url)
