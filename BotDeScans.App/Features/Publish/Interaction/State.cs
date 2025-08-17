@@ -38,9 +38,9 @@ public class StateValidator : AbstractValidator<State>
             .WithMessage("Não foi definida uma referência para a publicação da obra na MangaDex.");
 
         RuleFor(model => model.Title)
-            .Must(prop => prop.References.Any(reference => reference.Key == ExternalReference.MangaDex))
+            .Must(prop => prop.References.Any(reference => reference.Key == ExternalReference.SakuraMangas))
             .When(prop => prop.Steps.Any(step => step.Key is UploadSakuraMangasStep))
-            .WithMessage("Não foi definida uma referência para a publicação da obra na Sakura Mangás. (Use a mesma da MangaDex)");
+            .WithMessage("Não foi definida uma referência para a publicação da obra na Sakura Mangás.");
 
         var globalPingValue = configuration.GetValue<string?>(GlobalPing.GLOBAL_ROLE_KEY, null);
         var pingTypeAsString = configuration.GetValue<string?>(Ping.PING_TYPE_KEY, null);

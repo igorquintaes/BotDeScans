@@ -1,23 +1,36 @@
-﻿using BotDeScans.App.Features.References.Update;
+﻿using BotDeScans.App.Extensions;
+using BotDeScans.App.Features.References.Update;
 using BotDeScans.App.Models.Entities;
 using FluentValidation.TestHelper;
 
 namespace BotDeScans.UnitTests.Specs.Features.References.Update;
 
-public class RequestValidatorTests : UnitTest
+public abstract class RequestValidatorTests : UnitTest
 {
-    private static readonly Request request = new(9, ExternalReference.MangaDex, Guid.NewGuid().ToString());
+    protected abstract Request Request { get; set; }
+
+    public class MangaDex : RequestValidatorTests
+    {
+        protected override Request Request { get; set; } = 
+            new (9, ExternalReference.MangaDex, Guid.NewGuid().ToString());
+    }
+
+    public class SakuraMangas : RequestValidatorTests
+    {
+        protected override Request Request { get; set; } = 
+            new(9, ExternalReference.SakuraMangas, Guid.NewGuid().ToString());
+    }
 
     [Fact]
     public void GivenValidDataShouldNotHaveValidationErrors() =>
         new RequestValidator()
-               .TestValidate(request)
+               .TestValidate(Request)
                .ShouldNotHaveAnyValidationErrors();
 
     [Fact]
     public void GivenEmptyTitleIdShouldHaveValidationErrors() =>
         new RequestValidator()
-               .TestValidate(request with { TitleId = default })
+               .TestValidate(Request with { TitleId = default })
                .ShouldHaveValidationErrorFor(x => x.TitleId)
                .Only();
 
@@ -27,30 +40,16 @@ public class RequestValidatorTests : UnitTest
     [InlineData(null)]
     public void GivenEmptyReferenceRawValueShouldHaveValidationErrors(string? value) =>
         new RequestValidator()
-               .TestValidate(request with { ReferenceRawValue = value! })
+               .TestValidate(Request with { ReferenceRawValue = value! })
                .ShouldHaveValidationErrorFor(x => x.ReferenceRawValue)
                .Only();
 
     [Fact]
-    public void GivenSomeReferenceRawValueWhenKeyIsNotMangaDexShouldHaveValidationErrors()
-    {
-        var validationResult = new RequestValidator().TestValidate(request with 
-        {
-            ReferenceRawValue = "any-value", 
-            ReferenceKey = (ExternalReference)999 
-        });
-
-        validationResult.ShouldNotHaveValidationErrorFor(x => x.ReferenceRawValue);
-        validationResult.ShouldHaveValidationErrorFor(x => x.ReferenceKey)
-                        .Only(); // because we have only mangadex atm, otherwise should be success.
-    }
-
-    [Fact]
-    public void GivenUnexpectedExternalReferenceShouldHaveValidationErrors() =>
+    public void GivenUnexpectedReferenceKeyShouldHaveValidationErrors() =>
         new RequestValidator()
-               .TestValidate(request with { ReferenceKey = (ExternalReference)999 })
-               .ShouldHaveValidationErrorFor(x => x.ReferenceKey)
-               .Only();
+                .TestValidate(Request with { ReferenceKey = (ExternalReference)999 })
+                .ShouldHaveValidationErrorFor(x => x.ReferenceKey)
+                .Only();
 
     [Theory]
     [InlineData("4d6b898f-5f10-4cb3-a2e5-55e8c3ea8ba4")]
@@ -58,7 +57,7 @@ public class RequestValidatorTests : UnitTest
     [InlineData("https://mangadex.org/title/4d6b898f-5f10-4cb3-a2e5-55e8c3ea8ba4/extra-path")]
     public void GivenValidMangaDexReferencesShouldNotHaveValidationErrors(string url) =>
         new RequestValidator()
-               .TestValidate(request with { ReferenceRawValue = url })
+               .TestValidate(Request with { ReferenceRawValue = url })
                .ShouldNotHaveAnyValidationErrors();
 
     [Theory]
@@ -69,9 +68,9 @@ public class RequestValidatorTests : UnitTest
     [InlineData("https://mangadex.org/title/too-short")]
     public void Should_Return_False_For_Invalid_References(string url) =>
         new RequestValidator()
-               .TestValidate(request with { ReferenceRawValue = url })
+               .TestValidate(Request with { ReferenceRawValue = url })
                .ShouldHaveValidationErrorFor(x => x.ReferenceRawValue)
-               .WithErrorMessage($"Valor de referência inválida para {ExternalReference.MangaDex}. " +
+               .WithErrorMessage($"Valor de referência inválida para {Request.ReferenceKey.GetDescription()}. " +
                                  $"É necessário o ID da obra ou o link da página da obra.")
                .Only();
 }

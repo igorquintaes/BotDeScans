@@ -55,7 +55,7 @@ public class UploadSakuraMangasStepTests : UnitTest
             state.Title.References.Clear();
             state.Title.References.Add(new TitleReference
             {
-                Key = ExternalReference.MangaDex,
+                Key = ExternalReference.SakuraMangas,
                 Value = fixture.Create<string>(),
                 Title = state.Title
             });

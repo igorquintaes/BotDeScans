@@ -14,5 +14,7 @@ public class TitleReference
 public enum ExternalReference
 {
     [Description("MangaDex")]
-    MangaDex
+    MangaDex,
+    [Description("Sakura Mangás")]
+    SakuraMangas,
 }
