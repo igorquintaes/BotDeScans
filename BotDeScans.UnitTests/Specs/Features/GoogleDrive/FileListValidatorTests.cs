@@ -13,7 +13,7 @@ public class FileListValidatorTests : UnitTest
         new File { Kind = "drive#file", Name = "02.png" },
         new File { Kind = "drive#file", Name = "03-04.png" },
         new File { Kind = "drive#file", Name = "05.png" },
-        new File { Kind = "drive#file", Name = "capa.png" },
+        new File { Kind = "drive#file", Name = "capa.png", Size = 8 * 1024 * 1024 },
         new File { Kind = "drive#file", Name = "creditos.png" }
     ];
 
@@ -37,6 +37,24 @@ public class FileListValidatorTests : UnitTest
         validator.TestValidate(data)
             .ShouldHaveAnyValidationError()
             .WithErrorMessage("O diretório precisa conter apenas uma única página de capa. (ex: capa.extensão)");
+    }
+
+    [Fact]
+    public void ShouldBeInvalidIfCoverFileIsAnEmptyFile()
+    {
+        data[4].Size = null;
+        validator.TestValidate(data)
+            .ShouldHaveAnyValidationError()
+            .WithErrorMessage("A página de capa precisa ser uma imagem válida menor que 8Mb.");
+    }
+
+    [Fact]
+    public void ShouldBeInvalidIfCoverFileLargerThan8Mb()
+    {
+        data[4].Size = (8 * 1024 * 1024) + 1;
+        validator.TestValidate(data)
+            .ShouldHaveAnyValidationError()
+            .WithErrorMessage("A página de capa precisa ser uma imagem válida menor que 8Mb.");
     }
 
     [Fact]

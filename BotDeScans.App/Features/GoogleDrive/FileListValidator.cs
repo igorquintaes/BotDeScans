@@ -19,6 +19,10 @@ public class FileListValidator : AbstractValidator<IList<File>>
             .WithMessage("O diretório precisa conter apenas uma única página de capa. (ex: capa.extensão)");
 
         RuleFor(model => model)
+            .Must(ShouldExpectedSizeCoverFile)
+            .WithMessage("A página de capa precisa ser uma imagem válida menor que 8Mb.");
+
+        RuleFor(model => model)
             .Must(ShouldHaveExactlyOneCreditsFile)
             .WithMessage("O diretório precisa conter apenas uma única página de créditos. (ex: creditos.extensão)");
 
@@ -54,6 +58,12 @@ public class FileListValidator : AbstractValidator<IList<File>>
         files.Where(x => x.Kind == "drive#file")
              .Count(x => FileReleaseService.ValidCoverFiles.Contains(x.Name, StringComparer.InvariantCulture))
               == 1;
+
+    private static bool ShouldExpectedSizeCoverFile(IList<File> files) =>
+        files.Where(x => x.Kind == "drive#file")
+             .Where(x => FileReleaseService.ValidCoverFiles.Contains(x.Name, StringComparer.InvariantCulture))
+             .All(x => x.Size is not null 
+                    && x.Size <= 8 * 1024 * 1024);
 
     private static bool ShouldHaveExactlyOneCreditsFile(IList<File> files) =>
         files.Where(x => x.Kind == "drive#file")
