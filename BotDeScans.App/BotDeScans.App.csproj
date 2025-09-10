@@ -71,4 +71,9 @@
     </None>
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="Features\Titles\SkipSteps\Add\" />
+    <Folder Include="Features\Titles\SkipSteps\Remove\" />
+  </ItemGroup>
+
 </Project>

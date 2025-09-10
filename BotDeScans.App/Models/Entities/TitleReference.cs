@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel;
+
 namespace BotDeScans.App.Models.Entities;
 
 public class TitleReference

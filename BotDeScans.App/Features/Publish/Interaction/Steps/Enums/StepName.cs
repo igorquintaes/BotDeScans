@@ -28,7 +28,7 @@ public enum StepName
     UploadPdfGoogleDrive,
     [Description("Publicar na Mangadex")]
     UploadMangadex,
-    [Description("Publicar no Sakura Mangás")]
+    [Description("Publicar na Sakura Mangás")]
     UploadSakuraMangas,
     [Description("Publicar na Blogspot")]
     PublishBlogspot

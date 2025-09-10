@@ -1,8 +1,10 @@
 ﻿using BotDeScans.App.Extensions;
 using BotDeScans.App.Features.Publish.Interaction.Pings;
+using BotDeScans.App.Features.Publish.Interaction.Steps.Enums;
 using BotDeScans.App.Services.Discord;
 using FluentValidation;
 using Microsoft.Extensions.Configuration;
+
 namespace BotDeScans.App.Models.Entities;
 
 public class Title
@@ -11,6 +13,7 @@ public class Title
     public required string Name { get; set; }
     public required ulong? DiscordRoleId { get; set; }
     public List<TitleReference> References { get; init; } = [];
+    public List<SkipStep> SkipSteps { get; init; } = [];
 
     public void AddOrUpdateReference(ExternalReference key, string value)
     {
@@ -20,6 +23,21 @@ public class Title
             References.Add(new TitleReference { Key = key, Value = value });
         else
             reference.Value = value;
+    }
+
+    public void AddSkipStep(StepName step)
+    {
+        if (SkipSteps.Any(s => s.Step == step))
+            return;
+
+        SkipSteps.Add(new SkipStep { Step = step });
+    }
+
+    public void RemoveSkipStep(StepName step)
+    {
+        var stepToRemove = SkipSteps.SingleOrDefault(s => s.Step == step);
+        if (stepToRemove is not null)
+            SkipSteps.Remove(stepToRemove);
     }
 }
 
