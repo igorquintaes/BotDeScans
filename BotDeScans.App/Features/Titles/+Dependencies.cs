@@ -26,4 +26,5 @@ internal static class AddDependencies
         .AddScoped<SkipSteps.Add.Persistence>()
         .AddScoped<SkipSteps.Remove.Persistence>()
         .AddScoped<SkipSteps.List.Persistence>();
+        // todo: organizar melhor em arquivos separados 
 }

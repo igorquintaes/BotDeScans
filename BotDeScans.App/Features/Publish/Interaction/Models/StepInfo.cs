@@ -16,4 +16,7 @@ public class StepInfo(IStep step)
             : Status == StepStatus.QueuedForValidation
                 ? StepStatus.QueuedForExecution
                 : StepStatus.Success;
+
+    public virtual void SetToSkip() =>
+        Status = StepStatus.Skip;
 }

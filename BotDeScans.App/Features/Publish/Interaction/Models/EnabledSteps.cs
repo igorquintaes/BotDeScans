@@ -31,7 +31,7 @@ public class EnabledSteps(Dictionary<IStep, StepInfo> steps) : ReadOnlyDictionar
         this.Select(task => $"{task.Value.Status.GetEmoji()} - {task.Key.Name.GetDescription()}"));
 
     private PublishStatus Status =>
-        this.All(x => x.Value.Status == StepStatus.Success)
+        this.All(x => x.Value.Status is StepStatus.Success or StepStatus.Skip)
             ? PublishStatus.Success
             : this.Any(x => x.Value.Status == StepStatus.Error)
                 ? PublishStatus.Error

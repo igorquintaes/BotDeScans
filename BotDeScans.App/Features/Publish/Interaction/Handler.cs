@@ -34,6 +34,12 @@ public class Handler(
         (IPublishStep Step, StepInfo Info) data,
         CancellationToken cancellationToken)
     {
+        if (ShouldSkip(data.Step))
+        {
+            data.Info.SetToSkip();
+            return await discordPublisher.UpdateTrackingMessageAsync(cancellationToken);
+        }
+
         var result = await data.Step.SafeCallAsync(x => x.ValidateAsync(cancellationToken));
         return await HandleResult(result, data.Info, cancellationToken);
     }
@@ -42,9 +48,15 @@ public class Handler(
         (IStep Step, StepInfo Info) data,
         CancellationToken cancellationToken)
     {
+        if (ShouldSkip(data.Step))
+            return Result.Ok();
+
         var result = await data.Step.SafeCallAsync(x => x.ExecuteAsync(cancellationToken));
         return await HandleResult(result, data.Info, cancellationToken);
     }
+
+    private bool ShouldSkip(IStep step) => 
+        state.Title.SkipSteps.Any(x => x.Step == step.Name);
 
     private async Task<Result> HandleResult(
         Result result,

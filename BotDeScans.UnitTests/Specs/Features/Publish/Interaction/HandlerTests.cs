@@ -1,6 +1,8 @@
 ﻿using BotDeScans.App.Features.Publish.Interaction;
 using BotDeScans.App.Features.Publish.Interaction.Models;
 using BotDeScans.App.Features.Publish.Interaction.Steps;
+using BotDeScans.App.Features.Publish.Interaction.Steps.Enums;
+using BotDeScans.App.Models.Entities;
 using FluentResults;
 namespace BotDeScans.UnitTests.Specs.Features.Publish.Interaction;
 
@@ -10,7 +12,7 @@ public class HandlerTests : UnitTest
 
     public HandlerTests()
     {
-        fixture.Freeze<State>();
+        fixture.Freeze<State>().Title.SkipSteps.Clear();
         fixture.FreezeFake<DiscordPublisher>();
         handler = fixture.Create<Handler>();
     }
@@ -26,6 +28,12 @@ public class HandlerTests : UnitTest
                 { A.Fake<IPublishStep>(), A.Fake<StepInfo>() },
                 { A.Fake<IPublishStep>(), A.Fake<StepInfo>() },
             });
+
+            A.CallTo(() => fixture.Freeze<State>().Steps.PublishSteps.First().Step.Name)
+                .Returns(StepName.UploadZipGoogleDrive);
+
+            A.CallTo(() => fixture.Freeze<State>().Steps.PublishSteps.Last().Step.Name)
+                .Returns(StepName.UploadMangadex);
         }
 
         [Fact]
@@ -289,6 +297,41 @@ public class HandlerTests : UnitTest
             A.CallTo(() => publishInfo1
                 .UpdateStatus(A<Result>.Ignored))
                 .MustHaveHappenedOnceExactly();
+        }
+
+        [Fact]
+        public async Task GivenStepToBeSkippedShouldNotCallItsValidatorNeitherItsPublisher()
+        {
+            fixture.Freeze<State>().Title.SkipSteps.Add(new SkipStep { Step = fixture.Freeze<State>().Steps.PublishSteps.First().Step.Name });
+            await handler.ExecuteAsync(cancellationToken);
+
+            var (managementStep1, managementInfo1) = fixture.Freeze<State>().Steps.ManagementSteps.First();
+            var (managementStep2, managementInfo2) = fixture.Freeze<State>().Steps.ManagementSteps.Last();
+            var (publishStep1, publishInfo1) = fixture.Freeze<State>().Steps.PublishSteps.First();
+            var (publishStep2, publishInfo2) = fixture.Freeze<State>().Steps.PublishSteps.Last();
+
+            var a = fixture.Freeze<State>().Steps.PublishSteps;
+
+            A.CallTo(() => fixture.FreezeFake<DiscordPublisher>().UpdateTrackingMessageAsync(cancellationToken)).MustHaveHappened()
+                .Then(A.CallTo(() => managementStep1.ExecuteAsync(cancellationToken)).MustHaveHappenedOnceExactly())
+                .Then(A.CallTo(() => managementInfo1.UpdateStatus(A<Result>.Ignored)).MustHaveHappenedOnceExactly())
+                .Then(A.CallTo(() => fixture.FreezeFake<DiscordPublisher>().UpdateTrackingMessageAsync(cancellationToken)).MustHaveHappened())
+                .Then(A.CallTo(() => managementStep2.ExecuteAsync(cancellationToken)).MustHaveHappenedOnceExactly())
+                .Then(A.CallTo(() => managementInfo2.UpdateStatus(A<Result>.Ignored)).MustHaveHappenedOnceExactly())
+                .Then(A.CallTo(() => fixture.FreezeFake<DiscordPublisher>().UpdateTrackingMessageAsync(cancellationToken)).MustHaveHappened())
+                .Then(A.CallTo(() => publishInfo1.SetToSkip()).MustHaveHappened())
+                .Then(A.CallTo(() => fixture.FreezeFake<DiscordPublisher>().UpdateTrackingMessageAsync(cancellationToken)).MustHaveHappened())
+                .Then(A.CallTo(() => publishStep2.ValidateAsync(cancellationToken)).MustHaveHappenedOnceExactly())
+                .Then(A.CallTo(() => publishInfo2.UpdateStatus(A<Result>.Ignored)).MustHaveHappened())
+                .Then(A.CallTo(() => fixture.FreezeFake<DiscordPublisher>().UpdateTrackingMessageAsync(cancellationToken)).MustHaveHappened())
+                .Then(A.CallTo(() => publishStep2.ExecuteAsync(cancellationToken)).MustHaveHappenedOnceExactly())
+                .Then(A.CallTo(() => publishInfo2.UpdateStatus(A<Result>.Ignored)).MustHaveHappened())
+                .Then(A.CallTo(() => fixture.FreezeFake<DiscordPublisher>().UpdateTrackingMessageAsync(cancellationToken)).MustHaveHappened());
+
+
+            A.CallTo(() => publishStep1.ValidateAsync(cancellationToken)).MustNotHaveHappened();
+            A.CallTo(() => publishStep1.ExecuteAsync(cancellationToken)).MustNotHaveHappened();
+            A.CallTo(() => publishInfo1.UpdateStatus(A<Result>.Ignored)).MustNotHaveHappened();
         }
     }
 }
