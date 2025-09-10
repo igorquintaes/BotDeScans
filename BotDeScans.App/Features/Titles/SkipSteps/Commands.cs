@@ -30,12 +30,14 @@ public class Commands()
             [AutocompleteProvider(AutocompleteTitles.ID)]
             [Description("Nome da obra")]
             int title,
-            [Description("Procedimento a ser ignorado")]
-            StepName step)
+            [AutocompleteProvider(AutocompleteStepNames.ID)]
+            [Description("Procedimento a ser considerado")]
+            string step)
         {
             // todo: remover enums obrigatórios em novo AutoCompleteProvider
-            await addHandler.ExecuteAsync(title, step, CancellationToken);
-            var embed = EmbedBuilder.CreateSuccessEmbed($"O procedimento '{step.GetDescription()}' será ignorado na publicação da obra desejada.");
+            var stepAsEnum = Enum.Parse<StepName>(step);
+            await addHandler.ExecuteAsync(title, stepAsEnum, CancellationToken);
+            var embed = EmbedBuilder.CreateSuccessEmbed($"O procedimento '{stepAsEnum.GetDescription()}' será ignorado na publicação da obra desejada.");
 
             return await feedbackService.SendContextualEmbedAsync(embed, ct: CancellationToken);
         }
@@ -47,12 +49,14 @@ public class Commands()
             [AutocompleteProvider(AutocompleteTitles.ID)]
             [Description("Nome da obra")]
             int title,
+            [AutocompleteProvider(AutocompleteStepNames.ID)]
             [Description("Procedimento a ser considerado")]
-            StepName step)
+            string step)
         {
             // todo: remover enums obrigatórios em novo AutoCompleteProvider
-            await removeHandler.ExecuteAsync(title, step, CancellationToken);
-            var embed = EmbedBuilder.CreateSuccessEmbed($"O procedimento '{step.GetDescription()}' não será mais ignorado na publicação da obra desejada.");
+            var stepAsEnum = Enum.Parse<StepName>(step);
+            await removeHandler.ExecuteAsync(title, stepAsEnum, CancellationToken);
+            var embed = EmbedBuilder.CreateSuccessEmbed($"O procedimento '{stepAsEnum.GetDescription()}' não será mais ignorado na publicação da obra desejada.");
 
             return await feedbackService.SendContextualEmbedAsync(embed, ct: CancellationToken);
         }
