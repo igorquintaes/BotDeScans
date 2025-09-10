@@ -56,6 +56,7 @@ public class Handler(
     }
 
     private bool ShouldSkip(IStep step) => 
+        state.Title is not null && 
         state.Title.SkipSteps.Any(x => x.Step == step.Name);
 
     private async Task<Result> HandleResult(
