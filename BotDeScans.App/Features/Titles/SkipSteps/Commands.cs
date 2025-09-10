@@ -17,7 +17,7 @@ public class Commands()
     : CommandGroup
 {
     [Group("skip-steps")]
-    public partial class ChildCommands(
+    public class ChildCommands(
     IFeedbackService feedbackService,
     Add.Handler addHandler,
     Remove.Handler removeHandler,
@@ -43,7 +43,7 @@ public class Commands()
         }
 
         [Command("remove")]
-        [RoleAuthorize("Staff")]
+        [RoleAuthorize("Publisher")]
         [Description("Remove procedimento de publicação da lista de ignorados")]
         public async Task<IResult> ExecuteRemoveAsync(
             [AutocompleteProvider(AutocompleteTitles.ID)]
@@ -62,7 +62,7 @@ public class Commands()
         }
 
         [Command("list")]
-        [RoleAuthorize("Publisher")]
+        [RoleAuthorize("Staff")]
         [Description("Obtém uma lista com todos procedimentos de publicação a serem ignorados")]
         public async Task<IResult> ExecuteAsync(
     [       AutocompleteProvider(AutocompleteTitles.ID)]
