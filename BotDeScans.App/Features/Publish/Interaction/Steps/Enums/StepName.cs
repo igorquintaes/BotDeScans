@@ -2,6 +2,10 @@
 
 namespace BotDeScans.App.Features.Publish.Interaction.Steps.Enums;
 
+/// <summary>
+/// Step names used in the publishing process.
+/// DO NOT CHANGE THE VALUES, they are stored in the database!
+/// </summary>
 public enum StepName
 {
     [Description("Inicializar")]
