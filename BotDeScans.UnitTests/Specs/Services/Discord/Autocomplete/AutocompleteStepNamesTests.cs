@@ -25,7 +25,7 @@ public class AutocompleteStepNamesTests : UnitTest
         {
             var expectedStepNames = Enum
                 .GetValues<StepName>()
-                .Where(x => (int)x > AutocompleteStepNames.LAST_SETPS_MANAGEMENT_VALUE_IN_ENUM)
+                .Where(x => (int)x > AutocompleteStepNames.LAST_STEPS_MANAGEMENT_VALUE_IN_ENUM)
                 .ToArray();
 
             var result = await autocomplete.GetSuggestionsAsync(default!, string.Empty, cancellationToken);

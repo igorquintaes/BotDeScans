@@ -10,7 +10,7 @@ public class AutocompleteStepNames() : IAutocompleteProvider
 {
     public const string ID = "autocomplete::stepnames";
     public const int DISCORD_MAX_RESULTS = 25;
-    public const int LAST_SETPS_MANAGEMENT_VALUE_IN_ENUM = 5;
+    public const int LAST_STEPS_MANAGEMENT_VALUE_IN_ENUM = 5;
 
     public string Identity => ID;
 
@@ -20,7 +20,7 @@ public class AutocompleteStepNames() : IAutocompleteProvider
         CancellationToken ct = default)
     {
         var stepNames = Enum.GetValues<StepName>()
-            .Where(x => (int)x > LAST_SETPS_MANAGEMENT_VALUE_IN_ENUM)
+            .Where(x => (int)x > LAST_STEPS_MANAGEMENT_VALUE_IN_ENUM)
             .Select(x => (Name: x, Description: x.GetDescription()))
             .Take(DISCORD_MAX_RESULTS)
             .ToArray();
