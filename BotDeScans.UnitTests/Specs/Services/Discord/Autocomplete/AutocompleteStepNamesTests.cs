@@ -14,10 +14,8 @@ public class AutocompleteStepNamesTests : UnitTest
     public class Identity : AutocompleteStepNamesTests
     {
         [Fact]
-        public void GivenValidIdentityShouldReturnExpectedType()
-        {
+        public void GivenValidIdentityShouldReturnExpectedType() => 
             autocomplete.Identity.Should().Be("autocomplete::stepnames");
-        }
     }
 
     public class GetSuggestionsAsync : AutocompleteStepNamesTests
@@ -25,7 +23,11 @@ public class AutocompleteStepNamesTests : UnitTest
         [Fact]
         public async Task GivenEmptyRequestShouldReturnAllStepNames()
         {
-            var expectedStepNames = Enum.GetValues<StepName>().Where(x => (int)x > 5).ToArray();
+            var expectedStepNames = Enum
+                .GetValues<StepName>()
+                .Where(x => (int)x > AutocompleteStepNames.LAST_SETPS_MANAGEMENT_VALUE_IN_ENUM)
+                .ToArray();
+
             var result = await autocomplete.GetSuggestionsAsync(default!, string.Empty, cancellationToken);
 
             result.Count.Should().Be(expectedStepNames.Length);

@@ -13,15 +13,15 @@ using System.ComponentModel;
 namespace BotDeScans.App.Features.Titles.SkipSteps;
 
 [Group("title")]
-public class Commands()
-    : CommandGroup
+public class Commands() : CommandGroup
 {
     [Group("skip-steps")]
     public class ChildCommands(
-    IFeedbackService feedbackService,
-    Add.Handler addHandler,
-    Remove.Handler removeHandler,
-    List.Handler listHandler) : CommandGroup
+        IFeedbackService feedbackService,
+        Add.Handler addHandler,
+        Remove.Handler removeHandler,
+        List.Handler listHandler) 
+        : CommandGroup
     {
         [Command("add")]
         [RoleAuthorize("Publisher")]

@@ -16,10 +16,8 @@ public class AutocompleteTitlesTests : UnitPersistenceTest
     public class Identity : AutocompleteTitlesTests
     {
         [Fact]
-        public void GivenValidIdentityShouldReturnExpectedType()
-        {
+        public void GivenValidIdentityShouldReturnExpectedType() => 
             autocomplete.Identity.Should().Be("autocomplete::titles");
-        }
     }
 
     public class GetSuggestionsAsync : AutocompleteTitlesTests

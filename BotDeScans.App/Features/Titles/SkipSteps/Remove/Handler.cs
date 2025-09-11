@@ -12,7 +12,7 @@ public class Handler(
         StepName stepName,
         CancellationToken cancellationToken)
     {
-        var title = await persistence.GetTitleAsync(titleId ,cancellationToken);
+        var title = await persistence.GetTitleAsync(titleId, cancellationToken);
         title.RemoveSkipStep(stepName);
 
         await databaseContext.SaveChangesAsync(cancellationToken);
