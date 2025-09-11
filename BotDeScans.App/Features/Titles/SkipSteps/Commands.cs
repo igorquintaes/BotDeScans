@@ -24,7 +24,7 @@ public class Commands()
     List.Handler listHandler) : CommandGroup
     {
         [Command("add")]
-        [RoleAuthorize("Staff")]
+        [RoleAuthorize("Publisher")]
         [Description("Adiciona novo procedimento de publicação para ser ignorado")]
         public async Task<IResult> ExecuteAddAsync(
             [AutocompleteProvider(AutocompleteTitles.ID)]
@@ -34,7 +34,6 @@ public class Commands()
             [Description("Procedimento a ser considerado")]
             string step)
         {
-            // todo: remover enums obrigatórios em novo AutoCompleteProvider
             var stepAsEnum = Enum.Parse<StepName>(step);
             await addHandler.ExecuteAsync(title, stepAsEnum, CancellationToken);
             var embed = EmbedBuilder.CreateSuccessEmbed($"O procedimento '{stepAsEnum.GetDescription()}' será ignorado na publicação da obra desejada.");
@@ -53,7 +52,6 @@ public class Commands()
             [Description("Procedimento a ser considerado")]
             string step)
         {
-            // todo: remover enums obrigatórios em novo AutoCompleteProvider
             var stepAsEnum = Enum.Parse<StepName>(step);
             await removeHandler.ExecuteAsync(title, stepAsEnum, CancellationToken);
             var embed = EmbedBuilder.CreateSuccessEmbed($"O procedimento '{stepAsEnum.GetDescription()}' não será mais ignorado na publicação da obra desejada.");

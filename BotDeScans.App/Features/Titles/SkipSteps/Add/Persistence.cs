@@ -8,7 +8,7 @@ public class Persistence(DatabaseContext context)
 {
     private readonly DatabaseContext context = context;
 
-    public virtual Task<Title> GetTitle(int titleId, CancellationToken cancellationToken) =>
+    public virtual Task<Title> GetTitleAsync(int titleId, CancellationToken cancellationToken) =>
         context.Titles
             .Include(x => x.SkipSteps)
             .Where(x => x.Id == titleId)

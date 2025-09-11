@@ -3,6 +3,7 @@ using BotDeScans.App.Infra;
 using BotDeScans.App.Models.Entities;
 
 namespace BotDeScans.UnitTests.Specs.Features.References.List;
+
 public class PersistenceTests : UnitPersistenceTest
 {
     private readonly Persistence persistence;
@@ -10,10 +11,10 @@ public class PersistenceTests : UnitPersistenceTest
     public PersistenceTests() =>
         persistence = fixture.Create<Persistence>();
 
-    public class GetTitleAsync : PersistenceTests
+    public class GetReferencesAsync : PersistenceTests
     {
         [Fact]
-        public async Task GivenExpectedIdShouldReturnTitle()
+        public async Task GivenExpectedIdShouldReturnReferences()
         {
             var expectedTitle = fixture.Build<Title>().With(x => x.Id, 1).With(x => x.References, []).Create();
             var unexpectedTitle = fixture.Build<Title>().With(x => x.Id, 2).With(x => x.References, []).Create();
