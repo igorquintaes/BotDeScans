@@ -62,8 +62,8 @@ public class Commands()
         [Command("list")]
         [RoleAuthorize("Staff")]
         [Description("Obtém uma lista com todos procedimentos de publicação a serem ignorados")]
-        public async Task<IResult> ExecuteAsync(
-    [       AutocompleteProvider(AutocompleteTitles.ID)]
+        public async Task<IResult> ExecuteListAsync(
+            [AutocompleteProvider(AutocompleteTitles.ID)]
             [Description("Nome da obra")]
             int title)
         {

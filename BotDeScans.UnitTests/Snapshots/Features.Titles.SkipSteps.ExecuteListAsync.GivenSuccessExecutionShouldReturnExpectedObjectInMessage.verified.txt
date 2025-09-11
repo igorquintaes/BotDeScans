@@ -1,0 +1,12 @@
+﻿{
+  Title: {
+    Value:
+item1
+item2,
+    HasValue: true
+  },
+  Colour: {
+    Value: Green,
+    HasValue: true
+  }
+}
