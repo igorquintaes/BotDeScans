@@ -1,4 +1,5 @@
-﻿using BotDeScans.App.Models.Entities;
+﻿using BotDeScans.App.Features.Publish.Interaction.Steps.Enums;
+using BotDeScans.App.Models.Entities;
 
 namespace BotDeScans.UnitTests.Specs.Models.Entities;
 
@@ -48,6 +49,76 @@ public class TitleTests : UnitTest
             title.AddOrUpdateReference(newReference.Key, newReference.Value);
 
             title.References.Should().BeEquivalentTo([newReference]);
+        }
+    }
+
+    public class AddSkipStep : TitleTests
+    {
+        [Fact]
+        public void GivenNoneSkipStepsShouldAdd()
+        {
+            var stepName = StepName.UploadMangadex;
+            var title = fixture
+                .Build<Title>()
+                .With(x => x.SkipSteps, [])
+                .Create();
+
+            title.AddSkipStep(stepName);
+
+            title.SkipSteps.Should().ContainSingle()
+                 .Which.Step.Should().Be(stepName);
+        }
+
+        [Fact]
+        public void GivenExistingSkipStepShouldNotAddDuplicate()
+        {
+            var stepName = StepName.UploadMangadex;
+            var title = fixture
+                .Build<Title>()
+                .With(x => x.SkipSteps, [new() { Step = stepName }])
+                .Create();
+
+            title.AddSkipStep(stepName);
+
+            title.SkipSteps.Should().ContainSingle()
+                 .Which.Step.Should().Be(stepName);
+        }
+    }
+
+    public class RemoveSkipStep : TitleTests
+    {
+        [Fact]
+        public void GivenExistingSkipStepShouldRemove()
+        {
+            var stepName = StepName.UploadMangadex;
+            var title = fixture
+                .Build<Title>()
+                .With(x => x.SkipSteps,
+                [
+                    new() { Step = stepName },
+                    new() { Step = (StepName)999 }
+                ])
+                .Create();
+
+            title.RemoveSkipStep(stepName);
+            title.SkipSteps.Should().ContainSingle()
+                 .Which.Step.Should().Be((StepName)999);
+        }
+
+        [Fact]
+        public void GivenNonExistingSkipStepShouldDoNothing()
+        {
+            var stepName = StepName.UploadMangadex;
+            var title = fixture
+                .Build<Title>()
+                .With(x => x.SkipSteps,
+                [
+                    new() { Step = (StepName)998 },
+                    new() { Step = (StepName)999 }
+                ])
+                .Create();
+            title.RemoveSkipStep(stepName);
+            title.SkipSteps.Should().HaveCount(2);
         }
     }
 }
