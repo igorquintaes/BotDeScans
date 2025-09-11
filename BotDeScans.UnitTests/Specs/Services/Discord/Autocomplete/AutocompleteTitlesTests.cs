@@ -8,17 +8,17 @@ namespace BotDeScans.UnitTests.Specs.Services.Discord.Autocomplete;
 
 public class AutocompleteTitlesTests : UnitPersistenceTest
 {
-    private readonly AutocompleteTitles autocompleteTitles;
+    private readonly AutocompleteTitles autocomplete;
 
     public AutocompleteTitlesTests() => 
-        autocompleteTitles = fixture.Create<AutocompleteTitles>();
+        autocomplete = fixture.Create<AutocompleteTitles>();
 
     public class Identity : AutocompleteTitlesTests
     {
         [Fact]
         public void GivenValidIdentityShouldReturnExpectedType()
         {
-            autocompleteTitles.Identity.Should().Be("autocomplete::titles");
+            autocomplete.Identity.Should().Be("autocomplete::titles");
         }
     }
 
@@ -50,7 +50,7 @@ public class AutocompleteTitlesTests : UnitPersistenceTest
             var expectedNames = databaseTitles.Take(25).Select(x => x.Name);
             var expectedIds = databaseTitles.Take(25).Select(x => $"System.Int32: {x.Id}");
 
-            var result = await autocompleteTitles.GetSuggestionsAsync(default!, string.Empty, cancellationToken);
+            var result = await autocomplete.GetSuggestionsAsync(default!, string.Empty, cancellationToken);
 
             result.Count.Should().Be(AutocompleteTitles.DISCORD_MAX_RESULTS);
             result.Select(s => s.Name).Should().BeEquivalentTo(expectedNames);
@@ -68,7 +68,7 @@ public class AutocompleteTitlesTests : UnitPersistenceTest
                 .Where(x => x.Id == 1 || (x.Id >= 10 && x.Id <= 19))
                 .Select(x => $"System.Int32: {x.Id}");
 
-            var result = await autocompleteTitles.GetSuggestionsAsync(default!, query, cancellationToken);
+            var result = await autocomplete.GetSuggestionsAsync(default!, query, cancellationToken);
 
             result.Count.Should().Be(11);
             result.Select(s => s.Name).Should().BeEquivalentTo(expectedNames);
@@ -86,7 +86,7 @@ public class AutocompleteTitlesTests : UnitPersistenceTest
                 .Where(x => x.Id == 1 || (x.Id >= 10 && x.Id <= 19))
                 .Select(x => $"System.Int32: {x.Id}");
 
-            var result = await autocompleteTitles.GetSuggestionsAsync(default!, query, cancellationToken);
+            var result = await autocomplete.GetSuggestionsAsync(default!, query, cancellationToken);
 
             result.Count.Should().Be(11);
             result.Select(s => s.Name).Should().BeEquivalentTo(expectedNames);
@@ -97,7 +97,7 @@ public class AutocompleteTitlesTests : UnitPersistenceTest
         public async Task GivenNoneMatchingRequestShouldReturnEmpty()
         {
             var query = "non-matching-title";
-            var result = await autocompleteTitles.GetSuggestionsAsync(default!, query, cancellationToken);
+            var result = await autocomplete.GetSuggestionsAsync(default!, query, cancellationToken);
 
             result.Should().BeEmpty();
         }
@@ -117,7 +117,7 @@ public class AutocompleteTitlesTests : UnitPersistenceTest
 
             fixture.Freeze<DatabaseContext>().SaveChanges();
 
-            var result = await autocompleteTitles.GetSuggestionsAsync(default!, maxLenghtTitle, cancellationToken);
+            var result = await autocomplete.GetSuggestionsAsync(default!, maxLenghtTitle, cancellationToken);
 
             using var _ = new AssertionScope();
             result.Count.Should().Be(1);
@@ -141,7 +141,7 @@ public class AutocompleteTitlesTests : UnitPersistenceTest
 
             fixture.Freeze<DatabaseContext>().SaveChanges();
 
-            var result = await autocompleteTitles.GetSuggestionsAsync(default!, aboveMaxTitleLenght, cancellationToken);
+            var result = await autocomplete.GetSuggestionsAsync(default!, aboveMaxTitleLenght, cancellationToken);
 
             using var _ = new AssertionScope();
             result.Count.Should().Be(1);

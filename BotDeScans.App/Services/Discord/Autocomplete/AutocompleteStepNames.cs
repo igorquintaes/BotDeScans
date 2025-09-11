@@ -6,7 +6,7 @@ using Remora.Discord.Commands.Autocomplete;
 
 namespace BotDeScans.App.Services.Discord.Autocomplete;
 
-internal class AutocompleteStepNames() : IAutocompleteProvider
+public class AutocompleteStepNames() : IAutocompleteProvider
 {
     public const string ID = "autocomplete::stepnames";
     public const int DISCORD_MAX_RESULTS = 25;
@@ -25,7 +25,7 @@ internal class AutocompleteStepNames() : IAutocompleteProvider
             .ToArray();
 
         var result = stepNames
-            .Where(stepName => stepName.Description.Contains(userInput))
+            .Where(stepName => stepName.Description.Contains(userInput, StringComparison.InvariantCultureIgnoreCase))
             .Select(stepName => new ApplicationCommandOptionChoice(stepName.Description, stepName.Name.ToString()))
             .ToList();
 
