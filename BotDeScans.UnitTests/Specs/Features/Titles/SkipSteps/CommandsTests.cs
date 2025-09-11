@@ -23,6 +23,17 @@ public abstract class CommandsTests : UnitTest
         commands = fixture.CreateCommand<ChildCommands>(cancellationToken);
     }
 
+    public class Base : CommandsTests
+    {
+        [Fact]
+        public void GivenCommandsBaseItMustBeInstanciable()
+        {
+            Action action = () => { _ = new App.Features.Titles.SkipSteps.Commands(); };
+
+            action.Should().NotThrow();
+        }
+    }
+
     public class ExecuteAddAsync : CommandsTests
     {
         [Fact]
