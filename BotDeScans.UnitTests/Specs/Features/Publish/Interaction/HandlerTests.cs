@@ -4,6 +4,8 @@ using BotDeScans.App.Features.Publish.Interaction.Steps;
 using BotDeScans.App.Features.Publish.Interaction.Steps.Enums;
 using BotDeScans.App.Models.Entities;
 using FluentResults;
+using System.ComponentModel;
+
 namespace BotDeScans.UnitTests.Specs.Features.Publish.Interaction;
 
 public class HandlerTests : UnitTest
@@ -332,6 +334,32 @@ public class HandlerTests : UnitTest
             A.CallTo(() => publishStep1.ValidateAsync(cancellationToken)).MustNotHaveHappened();
             A.CallTo(() => publishStep1.ExecuteAsync(cancellationToken)).MustNotHaveHappened();
             A.CallTo(() => publishInfo1.UpdateStatus(A<Result>.Ignored)).MustNotHaveHappened();
+        }
+
+        [Fact]
+        [Description("Occurs into SetupStep, when it queries database to find title.")]
+        public async Task GivenNullTitleShouldNotSkipStep()
+        {
+            fixture.Freeze<State>().Title = null!;
+            fixture.Freeze<State>().Steps = new EnabledSteps(new Dictionary<IStep, StepInfo>
+            {
+                { A.Fake<IManagementStep>(), A.Fake<StepInfo>() }
+            });
+
+            await handler.ExecuteAsync(cancellationToken);
+
+            A.CallTo(() => fixture
+                .FreezeFake<DiscordPublisher>()
+                .UpdateTrackingMessageAsync(cancellationToken))
+                .MustHaveHappened(2, Times.Exactly);
+
+            A.CallTo(() => fixture.Freeze<State>().Steps.ManagementSteps.Single().Step
+                .ExecuteAsync(cancellationToken))
+                .MustHaveHappenedOnceExactly();
+
+            A.CallTo(() => fixture.Freeze<State>().Steps.ManagementSteps.Single().Info
+                .UpdateStatus(A<Result>.Ignored))
+                .MustHaveHappenedOnceExactly();
         }
     }
 }

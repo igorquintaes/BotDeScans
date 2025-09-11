@@ -1,7 +1,8 @@
-﻿using BotDeScans.App.Features.References.List;
-using BotDeScans.App.Models.Entities;
+﻿using BotDeScans.App.Extensions;
+using BotDeScans.App.Features.Publish.Interaction.Steps.Enums;
+using BotDeScans.App.Features.Titles.SkipSteps.List;
 
-namespace BotDeScans.UnitTests.Specs.Features.References.List;
+namespace BotDeScans.UnitTests.Specs.Features.Titles.SkipSteps.List;
 
 public class HandlerTests : UnitTest
 {
@@ -24,23 +25,23 @@ public class HandlerTests : UnitTest
 
             A.CallTo(() => fixture
                 .FreezeFake<Persistence>()
-                .GetReferencesAsync(titleId, cancellationToken))
+                .GetStepNamesAsync(titleId, cancellationToken))
                 .Returns(
                 [
-                    new() { Key = ExternalReference.MangaDex, Value = "manga-dex-value" },
-                    new() { Key = (ExternalReference)999, Value = "random-value" },
+                    StepName.UploadMangadex,
+                    StepName.UploadSakuraMangas,
                 ]);
         }
 
         [Fact]
-        public async Task GivenReferencesFoundShouldReturnExpectedStringList()
+        public async Task GivenStepNamesFoundShouldReturnExpectedStringList()
         {
             var result = await handler.ExecuteAsync(titleId, cancellationToken);
 
             var expectedStrings = new[]
             {
-                $"1. MangaDex{Environment.NewLine}manga-dex-value{Environment.NewLine}",
-                $"2. 999{Environment.NewLine}random-value{Environment.NewLine}"
+                $"1. {StepName.UploadMangadex.GetDescription()}",
+                $"2. {StepName.UploadSakuraMangas.GetDescription()}"
             };
 
             result.Should().BeEquivalentTo(expectedStrings);
@@ -51,12 +52,12 @@ public class HandlerTests : UnitTest
         {
             A.CallTo(() => fixture
                 .FreezeFake<Persistence>()
-                .GetReferencesAsync(titleId, cancellationToken))
+                .GetStepNamesAsync(titleId, cancellationToken))
                 .Returns([]);
 
             var result = await handler.ExecuteAsync(titleId, cancellationToken);
 
-            var expectedStrings = new[] { "A obra não contém referências." };
+            var expectedStrings = new[] { "A obra não contém procedimentos de publicação a serem ignorados." };
 
             result.Should().BeEquivalentTo(expectedStrings);
         }
