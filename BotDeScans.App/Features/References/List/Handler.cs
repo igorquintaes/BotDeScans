@@ -1,15 +1,21 @@
-﻿namespace BotDeScans.App.Features.References.List;
+﻿using BotDeScans.App.Infra.Repositories;
+using FluentResults;
 
-public class Handler(Persistence persistence)
+namespace BotDeScans.App.Features.References.List;
+
+public class Handler(TitleRepository titleRepository)
 {
-    public virtual async Task<string[]> ExecuteAsync(int titleId, CancellationToken cancellationToken)
+    public virtual async Task<Result<string[]>> ExecuteAsync(int titleId, CancellationToken cancellationToken)
     {
-        var references = await persistence.GetReferencesAsync(titleId, cancellationToken);
+        var title = await titleRepository.GetTitleAsync(titleId, cancellationToken);
+        if (title is null)
+            return Result.Fail("Obra não encontrada.");
 
-        return references.Count == 0
+        return title.References.Count == 0
             ? ["A obra não contém referências."]
-            : references.Select((x, index) => new { Number = index + 1, x.Key, x.Value })
-                        .Select(x => string.Format("{0}. {1}{2}{3}{2}", x.Number, x.Key.ToString(), Environment.NewLine, x.Value))
-                        .ToArray();
+            : title.References
+                   .Select((x, index) => new { Number = index + 1, x.Key, x.Value })
+                   .Select(x => string.Format("{0}. {1}{2}{3}{2}", x.Number, x.Key.ToString(), Environment.NewLine, x.Value))
+                   .ToArray();
     }
 }

@@ -1,4 +1,5 @@
-﻿using Microsoft.Extensions.DependencyInjection;
+﻿using BotDeScans.App.Infra.Repositories;
+using Microsoft.Extensions.DependencyInjection;
 using System.Diagnostics.CodeAnalysis;
 
 namespace BotDeScans.App.Infra;
@@ -7,5 +8,6 @@ namespace BotDeScans.App.Infra;
 internal static class AddDependencies
 {
     internal static IServiceCollection AddInfraDependencies(this IServiceCollection services)
-        => services.AddDbContext<DatabaseContext>();
+        => services.AddDbContext<DatabaseContext>()
+                   .AddRepositories();
 }

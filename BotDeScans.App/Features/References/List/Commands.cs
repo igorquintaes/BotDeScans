@@ -24,7 +24,9 @@ public class Commands(
         int title)
     {
         var result = await handler.ExecuteAsync(title, CancellationToken);
-        var embed = EmbedBuilder.CreateSuccessEmbed(string.Join(Environment.NewLine, result));
+        var embed = result.IsSuccess
+            ? EmbedBuilder.CreateSuccessEmbed(string.Join(Environment.NewLine, result.Value))
+            : EmbedBuilder.CreateErrorEmbed(result);
 
         return await feedbackService.SendContextualEmbedAsync(embed, ct: CancellationToken);
     }

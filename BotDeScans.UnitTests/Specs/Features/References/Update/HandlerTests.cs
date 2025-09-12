@@ -1,4 +1,5 @@
 ﻿using BotDeScans.App.Features.References.Update;
+using BotDeScans.App.Infra.Repositories;
 using BotDeScans.App.Models.Entities;
 using FluentValidation;
 using FluentValidation.Results;
@@ -12,7 +13,7 @@ public class HandlerTests : UnitTest
     public HandlerTests()
     {
         fixture.FreezeFake<IValidator<Request>>();
-        fixture.FreezeFake<Persistence>();
+        fixture.FreezeFake<TitleRepository>();
 
         handler = fixture.Create<Handler>();
     }
@@ -37,7 +38,7 @@ public class HandlerTests : UnitTest
                 .Returns(new ValidationResult());
 
             A.CallTo(() => fixture
-                .FreezeFake<Persistence>()
+                .FreezeFake<TitleRepository>()
                 .GetTitleAsync(request.TitleId, cancellationToken))
                 .Returns(title);
         }
@@ -67,7 +68,7 @@ public class HandlerTests : UnitTest
             await handler.ExecuteAsync(request, cancellationToken);
 
             A.CallTo(() => fixture
-                .FreezeFake<Persistence>()
+                .FreezeFake<TitleRepository>()
                 .SaveAsync(cancellationToken))
                 .MustHaveHappenedOnceExactly();
         }

@@ -1,5 +1,7 @@
 ﻿using BotDeScans.App.Features.References.List;
+using BotDeScans.App.Infra.Repositories;
 using BotDeScans.App.Models.Entities;
+using FluentAssertions.Execution;
 
 namespace BotDeScans.UnitTests.Specs.Features.References.List;
 
@@ -9,7 +11,7 @@ public class HandlerTests : UnitTest
 
     public HandlerTests()
     {
-        fixture.FreezeFake<Persistence>();
+        fixture.FreezeFake<TitleRepository>();
 
         handler = fixture.Create<Handler>();
     }
@@ -23,17 +25,19 @@ public class HandlerTests : UnitTest
             titleId = fixture.Create<int>();
 
             A.CallTo(() => fixture
-                .FreezeFake<Persistence>()
-                .GetReferencesAsync(titleId, cancellationToken))
-                .Returns(
-                [
-                    new() { Key = ExternalReference.MangaDex, Value = "manga-dex-value" },
-                    new() { Key = (ExternalReference)999, Value = "random-value" },
-                ]);
+                .FreezeFake<TitleRepository>()
+                .GetTitleAsync(titleId, cancellationToken))
+                .Returns(fixture.Build<Title>()
+                                .With(x => x.References,
+                                [
+                                    new() { Key = ExternalReference.MangaDex, Value = "manga-dex-value" },
+                                    new() { Key = (ExternalReference)999, Value = "random-value" }
+                                ])
+                                .Create());
         }
 
         [Fact]
-        public async Task GivenReferencesFoundShouldReturnExpectedStringList()
+        public async Task GivenReferencesFoundShouldReturnSuccessWithExpectedStringList()
         {
             var result = await handler.ExecuteAsync(titleId, cancellationToken);
 
@@ -43,22 +47,26 @@ public class HandlerTests : UnitTest
                 $"2. 999{Environment.NewLine}random-value{Environment.NewLine}"
             };
 
-            result.Should().BeEquivalentTo(expectedStrings);
+            using var _ = new AssertionScope();
+            result.Should().BeSuccess();
+            result.ValueOrDefault?.Should().BeEquivalentTo(expectedStrings);
         }
 
         [Fact]
-        public async Task GivenNoReferencesFoundShouldReturnExpectedStringList()
+        public async Task GivenNoneReferencesFoundShouldReturnSuccessWithExpectedStringList()
         {
             A.CallTo(() => fixture
-                .FreezeFake<Persistence>()
-                .GetReferencesAsync(titleId, cancellationToken))
-                .Returns([]);
+                .FreezeFake<TitleRepository>()
+                .GetTitleAsync(titleId, cancellationToken))
+                .Returns(fixture.Build<Title>()
+                                .With(x => x.References, [])
+                                .Create());
 
             var result = await handler.ExecuteAsync(titleId, cancellationToken);
 
-            var expectedStrings = new[] { "A obra não contém referências." };
-
-            result.Should().BeEquivalentTo(expectedStrings);
+            using var _ = new AssertionScope();
+            result.Should().BeSuccess();
+            result.ValueOrDefault?.Should().BeEquivalentTo(["A obra não contém referências."]);
         }
     }
 }
