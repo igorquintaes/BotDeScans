@@ -5,7 +5,7 @@ using FluentAssertions.Execution;
 
 namespace BotDeScans.UnitTests.Specs.Features.References.List;
 
-public class HandlerTests : UnitTest
+public abstract class HandlerTests : UnitTest
 {
     private readonly Handler handler;
 
@@ -27,14 +27,15 @@ public class HandlerTests : UnitTest
             A.CallTo(() => fixture
                 .FreezeFake<TitleRepository>()
                 .GetTitleAsync(titleId, cancellationToken))
-                .Returns(fixture.Build<Title>()
-                                .With(x => x.References,
-                                [
-                                    new() { Key = ExternalReference.MangaDex, Value = "manga-dex-value" },
-                                    new() { Key = (ExternalReference)999, Value = "random-value" }
-                                ])
-                                .Create());
-        }
+                .Returns(fixture
+                    .Build<Title>()
+                    .With(x => x.References,
+                    [
+                        new() { Key = ExternalReference.MangaDex, Value = "manga-dex-value" },
+                        new() { Key = (ExternalReference)999, Value = "random-value" }
+                    ])
+                    .Create());
+}
 
         [Fact]
         public async Task GivenReferencesFoundShouldReturnSuccessWithExpectedStringList()
@@ -67,6 +68,19 @@ public class HandlerTests : UnitTest
             using var _ = new AssertionScope();
             result.Should().BeSuccess();
             result.ValueOrDefault?.Should().BeEquivalentTo(["A obra não contém referências."]);
+        }
+
+        [Fact]
+        public async Task GivenNullTitleShouldReturnErrorResult()
+        {
+            A.CallTo(() => fixture
+                .FreezeFake<TitleRepository>()
+                .GetTitleAsync(titleId, cancellationToken))
+                .Returns(null as Title);
+
+            var result = await handler.ExecuteAsync(titleId, cancellationToken);
+
+            result.Should().BeFailure().And.HaveError("Obra não encontrada.");
         }
     }
 }

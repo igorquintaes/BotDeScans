@@ -74,6 +74,19 @@ public class HandlerTests : UnitTest
         }
 
         [Fact]
+        public async Task GivenNullTitleShouldReturnErrorResult()
+        {
+            A.CallTo(() => fixture
+                .FreezeFake<TitleRepository>()
+                .GetTitleAsync(request.TitleId, cancellationToken))
+                .Returns(null as Title);
+
+            var result = await handler.ExecuteAsync(request, cancellationToken);
+
+            result.Should().BeFailure().And.HaveError("Obra não encontrada.");
+        }
+
+        [Fact]
         public async Task GivenValidationErrorShouldReturnFailResult()
         {
             A.CallTo(() => fixture

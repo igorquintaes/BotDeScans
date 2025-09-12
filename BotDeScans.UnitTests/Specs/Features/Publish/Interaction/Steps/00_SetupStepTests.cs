@@ -94,6 +94,19 @@ public class SetupStepTests : UnitTest
         }
 
         [Fact]
+        public async Task GivenNullTitleShouldReturnErrorResult()
+        {
+            A.CallTo(() => fixture
+                .FreezeFake<TitleRepository>()
+                .GetTitleAsync(A<int>.Ignored, cancellationToken))
+                .Returns(null as Title);
+
+            var result = await step.ExecuteAsync(cancellationToken);
+
+            result.Should().BeFailure().And.HaveError("Obra não encontrada.");
+        }
+
+        [Fact]
         public async Task GivenValidationErrorShouldReturnFailResult()
         {
             const string ERROR_MESSAGE = "some error.";
