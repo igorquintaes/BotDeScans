@@ -1,6 +1,7 @@
 ﻿using BotDeScans.App.Features.Publish.Interaction;
 using BotDeScans.App.Features.Publish.Interaction.Steps;
 using BotDeScans.App.Features.Publish.Interaction.Steps.Enums;
+using BotDeScans.App.Models.Entities.Enums;
 using BotDeScans.App.Services;
 using Box.V2.Models;
 

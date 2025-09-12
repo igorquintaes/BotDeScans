@@ -11,5 +11,7 @@ public enum StepStatus
     [Emoji("white_check_mark")]
     Success,
     [Emoji("warning")]
-    Error
+    Error,
+    [Emoji("track_next")]
+    Skip
 }

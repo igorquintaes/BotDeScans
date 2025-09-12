@@ -3,6 +3,7 @@ using BotDeScans.App.Features.Publish.Interaction.Steps;
 using BotDeScans.App.Features.Publish.Interaction.Steps.Enums;
 using BotDeScans.App.Models.DTOs;
 using BotDeScans.App.Models.Entities;
+using BotDeScans.App.Models.Entities.Enums;
 using BotDeScans.App.Services.MangaDex;
 using FluentResults;
 using MangaDexSharp;

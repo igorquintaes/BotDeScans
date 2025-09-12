@@ -1,4 +1,5 @@
-﻿using Microsoft.Extensions.DependencyInjection;
+﻿using BotDeScans.App.Features.Titles.SkipSteps;
+using Microsoft.Extensions.DependencyInjection;
 using Remora.Commands.Extensions;
 using Remora.Discord.Interactivity.Extensions;
 using System.Diagnostics.CodeAnalysis;
@@ -18,5 +19,6 @@ internal static class AddDependencies
         .AddInteractionGroup<Update.Interactions>()
         .AddScoped<Create.Handler>()
         .AddScoped<Update.Handler>()
-        .AddScoped<Update.Persistence>();
+        .AddScoped<Update.Persistence>()
+        .AddSkipSteps();
 }

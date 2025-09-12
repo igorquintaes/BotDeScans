@@ -1,6 +1,6 @@
 ﻿using BotDeScans.App.Extensions;
 using BotDeScans.App.Features.Publish.Interaction.Models;
-using BotDeScans.App.Features.Publish.Interaction.Steps.Enums;
+using BotDeScans.App.Models.Entities.Enums;
 using Microsoft.Extensions.Configuration;
 
 namespace BotDeScans.App.Features.Publish.Interaction.Steps;

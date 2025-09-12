@@ -17,6 +17,7 @@ internal static class AddDependencies
     internal static IServiceCollection AddDiscordServices(this IServiceCollection services) => services
         .AddDiscordCommands(true)
         .AddAutocompleteProvider<AutocompleteTitles>()
+        .AddAutocompleteProvider<AutocompleteStepNames>()
         .AddCondition<RoleAuthorizeCondition>()
         .AddScoped<RolesService>()
         .AddScoped<ScopedRoleCache>()

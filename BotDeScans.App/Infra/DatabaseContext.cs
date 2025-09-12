@@ -1,11 +1,14 @@
 ﻿using BotDeScans.App.Models.Entities;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Diagnostics;
+
 namespace BotDeScans.App.Infra;
 
 public class DatabaseContext : DbContext
 {
     public DbSet<Title> Titles { get; protected init; } = default!;
     public DbSet<TitleReference> TitleReferences { get; protected init; } = default!;
+    public DbSet<SkipStep> SkipSteps { get; protected init; } = default!;
 
     public static string DbPath => Path.Join(AppDomain.CurrentDomain.BaseDirectory, "database.db");
 
@@ -15,8 +18,9 @@ public class DatabaseContext : DbContext
     public DatabaseContext(DbContextOptions options)
         : base(options) { }
 
-    protected override void OnConfiguring(DbContextOptionsBuilder options)
-        => options.UseSqlite($"Data Source={DbPath}");
+    protected override void OnConfiguring(DbContextOptionsBuilder options) => 
+        options.UseSqlite($"Data Source={DbPath}")
+               .ConfigureWarnings(w => w.Ignore(RelationalEventId.PendingModelChangesWarning));
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

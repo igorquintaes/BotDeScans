@@ -1,6 +1,7 @@
 ﻿using BotDeScans.App.Features.Mega;
 using BotDeScans.App.Features.Mega.InternalServices;
 using BotDeScans.App.Features.Publish.Interaction.Steps.Enums;
+using BotDeScans.App.Models.Entities.Enums;
 using FluentResults;
 
 namespace BotDeScans.App.Features.Publish.Interaction.Steps;

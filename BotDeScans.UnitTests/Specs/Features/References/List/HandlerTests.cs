@@ -5,7 +5,7 @@ namespace BotDeScans.UnitTests.Specs.Features.References.List;
 
 public class HandlerTests : UnitTest
 {
-    public readonly Handler handler;
+    private readonly Handler handler;
 
     public HandlerTests()
     {

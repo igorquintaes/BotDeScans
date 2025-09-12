@@ -17,7 +17,7 @@ public class Commands(
 {
     [Command("list")]
     [RoleAuthorize("Staff")]
-    [Description("Adiciona ou atualiza referências externas para a obra.")]
+    [Description("Obtém uma lista com todas referências de uma obra.")]
     public async Task<IResult> ExecuteAsync(
         [AutocompleteProvider(AutocompleteTitles.ID)]
         [Description("Nome da obra")]

@@ -1,0 +1,10 @@
+﻿{
+  Title: {
+    Value: O procedimento 'Publicar na Mangadex' será ignorado na publicação da obra desejada.,
+    HasValue: true
+  },
+  Colour: {
+    Value: Green,
+    HasValue: true
+  }
+}

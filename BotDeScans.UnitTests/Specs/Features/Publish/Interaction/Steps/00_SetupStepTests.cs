@@ -3,6 +3,7 @@ using BotDeScans.App.Features.Publish.Interaction.Pings;
 using BotDeScans.App.Features.Publish.Interaction.Steps;
 using BotDeScans.App.Features.Publish.Interaction.Steps.Enums;
 using BotDeScans.App.Models.Entities;
+using BotDeScans.App.Models.Entities.Enums;
 using FluentValidation;
 using FluentValidation.Results;
 namespace BotDeScans.UnitTests.Specs.Features.Publish.Interaction.Steps;

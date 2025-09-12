@@ -76,4 +76,25 @@ public class StepInfoTests : UnitTest
             stepInfo.Status.Should().Be(StepStatus.Error);
         }
     }
+
+    public class SetToSkip : StepInfoTests
+    {
+        [Fact]
+        public void GivenManagementStepTypeShouldChangeStatusToSkipped()
+        {
+            var stepInfo = new StepInfo(A.Fake<IManagementStep>());
+            stepInfo.SetToSkip();
+
+            stepInfo.Status.Should().Be(StepStatus.Skip);
+        }
+
+        [Fact]
+        public void GivenPublishStepTypeShouldChangeStatusToSkipped()
+        {
+            var stepInfo = new StepInfo(A.Fake<IPublishStep>());
+            stepInfo.SetToSkip();
+
+            stepInfo.Status.Should().Be(StepStatus.Skip);
+        }
+    }
 }
