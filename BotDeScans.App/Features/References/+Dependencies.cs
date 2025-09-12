@@ -12,7 +12,5 @@ internal static class AddDependencies
             .WithCommandGroup<Update.Commands>()
             .Finish()
         .AddScoped<List.Handler>()
-        .AddScoped<List.Persistence>()
-        .AddScoped<Update.Handler>()
-        .AddScoped<Update.Persistence>();
+        .AddScoped<Update.Handler>();
 }

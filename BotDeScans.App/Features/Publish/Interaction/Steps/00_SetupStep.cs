@@ -1,6 +1,7 @@
 ﻿using BotDeScans.App.Extensions;
 using BotDeScans.App.Features.Publish.Interaction.Pings;
 using BotDeScans.App.Features.Publish.Interaction.Steps.Enums;
+using BotDeScans.App.Infra.Repositories;
 using BotDeScans.App.Models.Entities.Enums;
 using FluentResults;
 using FluentValidation;
@@ -9,7 +10,7 @@ namespace BotDeScans.App.Features.Publish.Interaction.Steps;
 
 public class SetupStep(
     State state,
-    Persistence persistence,
+    TitleRepository titleRepository,
     IEnumerable<Ping> pings,
     IValidator<State> stateValidator) : IManagementStep
 {
@@ -19,7 +20,11 @@ public class SetupStep(
 
     public async Task<Result> ExecuteAsync(CancellationToken cancellationToken)
     {
-        state.Title = await persistence.GetTitleAsync(state.ChapterInfo.TitleId, cancellationToken);
+        var title = await titleRepository.GetTitleAsync(state.ChapterInfo.TitleId, cancellationToken);
+        if (title is null)
+            return Result.Fail("Obra não encontrada.");
+
+        state.Title = title;
 
         var initialValidation = await stateValidator.ValidateAsync(state, cancellationToken);
         if (initialValidation.IsValid is false)

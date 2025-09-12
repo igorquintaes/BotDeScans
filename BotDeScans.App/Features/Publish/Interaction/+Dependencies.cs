@@ -16,7 +16,6 @@ internal static class AddDependencies
             .AddPublishSteps()
             .AddPings()
             .AddScoped<Handler>()
-            .AddScoped<Persistence>()
             .AddScoped<TextReplacer>()
             .AddScoped<DiscordPublisher>()
             .AddScoped<State>();

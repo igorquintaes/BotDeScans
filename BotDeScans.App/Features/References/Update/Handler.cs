@@ -1,4 +1,5 @@
 ﻿using BotDeScans.App.Extensions;
+using BotDeScans.App.Infra.Repositories;
 using FluentResults;
 using FluentValidation;
 
@@ -6,7 +7,7 @@ namespace BotDeScans.App.Features.References.Update;
 
 public class Handler(
     IValidator<Request> requestValidator,
-    Persistence persistence)
+    TitleRepository titleRepository)
 {
     public virtual async Task<Result> ExecuteAsync(Request request, CancellationToken cancellationToken)
     {
@@ -14,11 +15,13 @@ public class Handler(
         if (validationResult.IsValid is false)
             return validationResult.ToResult();
 
-        var title = await persistence.GetTitleAsync(request.TitleId, cancellationToken);
+        var title = await titleRepository.GetTitleAsync(request.TitleId, cancellationToken);
+        if (title is null)
+            return Result.Fail("Obra não encontrada.");
 
         title.AddOrUpdateReference(request.ReferenceKey, request.ReferenceValue);
 
-        await persistence.SaveAsync(cancellationToken);
+        await titleRepository.SaveAsync(cancellationToken);
 
         return Result.Ok();
     }
