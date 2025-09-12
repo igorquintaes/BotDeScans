@@ -1,4 +1,5 @@
 ﻿using BotDeScans.App.Extensions;
+using BotDeScans.App.Infra.Repositories;
 using BotDeScans.App.Models.Entities;
 using BotDeScans.App.Services.Discord;
 using FluentResults;
@@ -7,7 +8,7 @@ using FluentValidation;
 namespace BotDeScans.App.Features.Titles.Update;
 
 public class Handler(
-    Persistence persistence,
+    TitleRepository titleRepository,
     RolesService rolesService,
     IValidator<Title> validator)
 {
@@ -17,7 +18,7 @@ public class Handler(
         int titleId,
         CancellationToken cancellationToken)
     {
-        var title = await persistence.GetTitleAsync(titleId, cancellationToken);
+        var title = await titleRepository.GetTitleAsync(titleId, cancellationToken);
         if (title is null)
             return Result.Fail("Obra não encontrada.");
 
@@ -32,7 +33,7 @@ public class Handler(
         if (validatioResult.IsValid is false)
             return validatioResult.ToResult();
 
-        await persistence.SaveAsync(cancellationToken);
+        await titleRepository.SaveAsync(cancellationToken);
 
         return Result.Ok();
     }

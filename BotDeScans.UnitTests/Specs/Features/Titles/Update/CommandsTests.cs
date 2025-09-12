@@ -1,14 +1,13 @@
 ﻿using BotDeScans.App.Features.Titles.Update;
+using BotDeScans.App.Infra.Repositories;
 using BotDeScans.App.Models.Entities;
 using BotDeScans.UnitTests.FakeObjects;
-using OneOf;
 using Remora.Discord.API.Abstractions.Objects;
 using Remora.Discord.API.Abstractions.Rest;
 using Remora.Discord.API.Objects;
 using Remora.Discord.Commands.Contexts;
 using Remora.Discord.Commands.Feedback.Messages;
 using Remora.Discord.Commands.Feedback.Services;
-using Remora.Rest.Core;
 using Remora.Results;
 
 namespace BotDeScans.UnitTests.Specs.Features.Titles.Update;
@@ -19,7 +18,7 @@ public class CommandsTests : UnitTest
 
     public CommandsTests()
     {
-        fixture.FreezeFake<Persistence>();
+        fixture.FreezeFake<TitleRepository>();
         fixture.FreezeFake<IFeedbackService>();
         fixture.FreezeFake<IDiscordRestInteractionAPI>();
         fixture.Inject<IOperationContext>(new FakeInteractionContext(fixture));
@@ -41,7 +40,7 @@ public class CommandsTests : UnitTest
                 .Create();
 
             A.CallTo(() => fixture
-                .FreezeFake<Persistence>()
+                .FreezeFake<TitleRepository>()
                 .GetTitleAsync(title.Id, cancellationToken))
                 .Returns(title);
 
@@ -89,7 +88,7 @@ public class CommandsTests : UnitTest
         public async Task GivenNullTitleErrorShouldReturnSuccess()
         {
             A.CallTo(() => fixture
-                .FreezeFake<Persistence>()
+                .FreezeFake<TitleRepository>()
                 .GetTitleAsync(title.Id, cancellationToken))
                 .Returns(null as Title);
 
@@ -97,7 +96,7 @@ public class CommandsTests : UnitTest
             result.IsSuccess.Should().BeTrue();
 
             A.CallTo(() => fixture
-                .FreezeFake<Persistence>()
+                .FreezeFake<TitleRepository>()
                 .GetTitleAsync(title.Id, cancellationToken))
                 .MustHaveHappenedOnceExactly();
         }
@@ -106,7 +105,7 @@ public class CommandsTests : UnitTest
         public async Task GivenHandlerErrorShouldReturnExpectedEmbed()
         {
             A.CallTo(() => fixture
-                .FreezeFake<Persistence>()
+                .FreezeFake<TitleRepository>()
                 .GetTitleAsync(title.Id, cancellationToken))
                 .Returns(null as Title);
 

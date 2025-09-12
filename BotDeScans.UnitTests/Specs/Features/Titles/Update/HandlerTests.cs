@@ -1,4 +1,5 @@
 ﻿using BotDeScans.App.Features.Titles.Update;
+using BotDeScans.App.Infra.Repositories;
 using BotDeScans.App.Models.Entities;
 using BotDeScans.App.Services.Discord;
 using FluentResults;
@@ -15,7 +16,7 @@ public class HandlerTests : UnitTest
 
     public HandlerTests()
     {
-        fixture.FreezeFake<Persistence>();
+        fixture.FreezeFake<TitleRepository>();
         fixture.FreezeFake<RolesService>();
         fixture.FreezeFake<IValidator<Title>>();
 
@@ -31,7 +32,7 @@ public class HandlerTests : UnitTest
             titleId = fixture.Create<int>();
 
             A.CallTo(() => fixture
-                .FreezeFake<Persistence>()
+                .FreezeFake<TitleRepository>()
                 .GetTitleAsync(titleId, cancellationToken))
                 .Returns(fixture.Freeze<Title>());
 
@@ -74,7 +75,7 @@ public class HandlerTests : UnitTest
             fixture.Freeze<Title>().DiscordRoleId.Should().Be(fixture.Freeze<Snowflake>().Value);
 
             A.CallTo(() => fixture
-                .FreezeFake<Persistence>()
+                .FreezeFake<TitleRepository>()
                 .SaveAsync(cancellationToken))
                 .MustHaveHappenedOnceExactly();
         }
@@ -96,7 +97,7 @@ public class HandlerTests : UnitTest
             fixture.Freeze<Title>().DiscordRoleId.Should().BeNull();
 
             A.CallTo(() => fixture
-                .FreezeFake<Persistence>()
+                .FreezeFake<TitleRepository>()
                 .SaveAsync(cancellationToken))
                 .MustHaveHappenedOnceExactly();
         }
@@ -119,7 +120,7 @@ public class HandlerTests : UnitTest
             result.Should().BeFailure().And.HaveError("some error.");
 
             A.CallTo(() => fixture
-                .FreezeFake<Persistence>()
+                .FreezeFake<TitleRepository>()
                 .SaveAsync(cancellationToken))
                 .MustNotHaveHappened();
         }
@@ -141,7 +142,7 @@ public class HandlerTests : UnitTest
             result.Should().BeFailure().And.HaveError("some error.");
 
             A.CallTo(() => fixture
-                .FreezeFake<Persistence>()
+                .FreezeFake<TitleRepository>()
                 .SaveAsync(cancellationToken))
                 .MustNotHaveHappened();
         }
@@ -150,7 +151,7 @@ public class HandlerTests : UnitTest
         public async Task GivenTitleNotFoundShouldReturnFailResult()
         {
             A.CallTo(() => fixture
-                .FreezeFake<Persistence>()
+                .FreezeFake<TitleRepository>()
                 .GetTitleAsync(titleId, cancellationToken))
                 .Returns((Title?)null);
 
@@ -163,7 +164,7 @@ public class HandlerTests : UnitTest
             result.Should().BeFailure().And.HaveError("Obra não encontrada."); 
 
             A.CallTo(() => fixture
-                .FreezeFake<Persistence>()
+                .FreezeFake<TitleRepository>()
                 .SaveAsync(cancellationToken))
                 .MustNotHaveHappened();
         }

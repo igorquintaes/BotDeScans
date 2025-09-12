@@ -19,6 +19,5 @@ internal static class AddDependencies
         .AddInteractionGroup<Update.Interactions>()
         .AddScoped<Create.Handler>()
         .AddScoped<Update.Handler>()
-        .AddScoped<Update.Persistence>()
         .AddSkipSteps();
 }

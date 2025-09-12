@@ -50,6 +50,7 @@ public class TitleValidator : AbstractValidator<Title>
         var pingTypeAsString = configuration.GetRequiredValue<string>(Ping.PING_TYPE_KEY);
         var pingType = Enum.Parse<PingType>(pingTypeAsString);
 
+        // todo: validar que título não exista em criação
         RuleFor(model => model.DiscordRoleId)
             .MustAsync(async (_, prop, context, ct) =>
             {
