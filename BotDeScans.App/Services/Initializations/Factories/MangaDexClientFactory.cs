@@ -1,5 +1,5 @@
 ﻿using BotDeScans.App.Extensions;
-using BotDeScans.App.Features.Publish.Interaction.Steps.Enums;
+using BotDeScans.App.Models.Entities.Enums;
 using BotDeScans.App.Services.Initializations.Factories.Base;
 using FluentResults;
 using MangaDexSharp;

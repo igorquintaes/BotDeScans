@@ -1,5 +1,5 @@
-﻿using BotDeScans.App.Features.Publish.Interaction.Steps.Enums;
-using BotDeScans.App.Infra;
+﻿using BotDeScans.App.Infra;
+using BotDeScans.App.Models.Entities.Enums;
 using Microsoft.EntityFrameworkCore;
 
 namespace BotDeScans.App.Features.Titles.SkipSteps.List;

@@ -1,6 +1,6 @@
 ﻿using BotDeScans.App.Extensions;
-using BotDeScans.App.Features.Publish.Interaction.Steps.Enums;
 using BotDeScans.App.Features.Titles.SkipSteps.List;
+using BotDeScans.App.Models.Entities.Enums;
 
 namespace BotDeScans.UnitTests.Specs.Features.Titles.SkipSteps.List;
 

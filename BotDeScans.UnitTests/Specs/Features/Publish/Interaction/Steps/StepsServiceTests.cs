@@ -1,5 +1,6 @@
 ﻿using BotDeScans.App.Features.Publish.Interaction.Steps;
 using BotDeScans.App.Features.Publish.Interaction.Steps.Enums;
+using BotDeScans.App.Models.Entities.Enums;
 using FluentAssertions.Execution;
 using System.Reflection;
 using System.Runtime.CompilerServices;

@@ -3,6 +3,7 @@ using BotDeScans.App.Features.Mega.InternalServices;
 using BotDeScans.App.Features.Publish.Interaction;
 using BotDeScans.App.Features.Publish.Interaction.Steps;
 using BotDeScans.App.Features.Publish.Interaction.Steps.Enums;
+using BotDeScans.App.Models.Entities.Enums;
 using CG.Web.MegaApiClient;
 using FluentResults;
 

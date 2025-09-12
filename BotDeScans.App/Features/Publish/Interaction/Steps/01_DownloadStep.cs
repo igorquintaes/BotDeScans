@@ -1,5 +1,6 @@
 ﻿using BotDeScans.App.Features.GoogleDrive;
 using BotDeScans.App.Features.Publish.Interaction.Steps.Enums;
+using BotDeScans.App.Models.Entities.Enums;
 using BotDeScans.App.Services;
 using FluentResults;
 

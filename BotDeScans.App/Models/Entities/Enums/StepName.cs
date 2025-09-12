@@ -1,6 +1,6 @@
 ﻿using System.ComponentModel;
 
-namespace BotDeScans.App.Features.Publish.Interaction.Steps.Enums;
+namespace BotDeScans.App.Models.Entities.Enums;
 
 /// <summary>
 /// Step names used in the publishing process.

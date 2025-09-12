@@ -1,7 +1,7 @@
 ﻿using BotDeScans.App.Attributes;
 using BotDeScans.App.Builders;
 using BotDeScans.App.Extensions;
-using BotDeScans.App.Features.Publish.Interaction.Steps.Enums;
+using BotDeScans.App.Models.Entities.Enums;
 using BotDeScans.App.Services.Discord.Autocomplete;
 using Remora.Commands.Attributes;
 using Remora.Commands.Groups;

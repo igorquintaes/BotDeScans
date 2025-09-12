@@ -1,6 +1,7 @@
 ﻿using BotDeScans.App.Extensions;
 using BotDeScans.App.Features.Publish.Interaction.Steps;
 using BotDeScans.App.Features.Publish.Interaction.Steps.Enums;
+using BotDeScans.App.Models.Entities.Enums;
 using FluentResults;
 using Microsoft.Extensions.Configuration;
 namespace BotDeScans.App.Services.Initializations;

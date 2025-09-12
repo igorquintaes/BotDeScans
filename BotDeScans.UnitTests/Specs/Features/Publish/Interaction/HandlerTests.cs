@@ -1,8 +1,8 @@
 ﻿using BotDeScans.App.Features.Publish.Interaction;
 using BotDeScans.App.Features.Publish.Interaction.Models;
 using BotDeScans.App.Features.Publish.Interaction.Steps;
-using BotDeScans.App.Features.Publish.Interaction.Steps.Enums;
 using BotDeScans.App.Models.Entities;
+using BotDeScans.App.Models.Entities.Enums;
 using FluentResults;
 using System.ComponentModel;
 

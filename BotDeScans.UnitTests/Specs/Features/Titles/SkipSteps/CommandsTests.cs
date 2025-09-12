@@ -1,4 +1,4 @@
-﻿using BotDeScans.App.Features.Publish.Interaction.Steps.Enums;
+﻿using BotDeScans.App.Models.Entities.Enums;
 using Remora.Discord.API.Abstractions.Objects;
 using Remora.Discord.API.Objects;
 using Remora.Discord.Commands.Feedback.Messages;
