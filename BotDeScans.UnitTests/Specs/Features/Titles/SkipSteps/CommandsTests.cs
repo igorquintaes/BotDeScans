@@ -79,6 +79,24 @@ public abstract class CommandsTests : UnitTest
         }
 
         [Fact]
+        public async Task GivenHandlerErrorShouldReturnExpectedObjectInMessage()
+        {
+            A.CallTo(() => fixture
+                .FreezeFake<App.Features.Titles.SkipSteps.Add.Handler>()
+                .ExecuteAsync(A<int>.Ignored, A<StepName>.Ignored, cancellationToken))
+                .Returns(FluentResults.Result.Fail("some error message."));
+
+            Embed embedResult = null!;
+            A.CallTo(() => fixture
+                .FreezeFake<IFeedbackService>()
+                .SendContextualEmbedAsync(A<Embed>.Ignored, A<FeedbackMessageOptions>.Ignored, cancellationToken))
+                .Invokes((Embed embed, FeedbackMessageOptions _, CancellationToken _) => embedResult = embed);
+
+            await commands.ExecuteAddAsync(fixture.Create<int>(), StepName.UploadMangadex.ToString());
+            await Verify(embedResult);
+        }
+
+        [Fact]
         public async Task GivenErrorToSendFeedbackMessageShouldReturnError()
         {
             A.CallTo(() => fixture
@@ -139,6 +157,24 @@ public abstract class CommandsTests : UnitTest
         }
 
         [Fact]
+        public async Task GivenHandlerErrorShouldReturnExpectedObjectInMessage()
+        {
+            A.CallTo(() => fixture
+                .FreezeFake<App.Features.Titles.SkipSteps.Remove.Handler>()
+                .ExecuteAsync(A<int>.Ignored, A<StepName>.Ignored, cancellationToken))
+                .Returns(FluentResults.Result.Fail("some error message."));
+
+            Embed embedResult = null!;
+            A.CallTo(() => fixture
+                .FreezeFake<IFeedbackService>()
+                .SendContextualEmbedAsync(A<Embed>.Ignored, A<FeedbackMessageOptions>.Ignored, cancellationToken))
+                .Invokes((Embed embed, FeedbackMessageOptions _, CancellationToken _) => embedResult = embed);
+
+            await commands.ExecuteRemoveAsync(fixture.Create<int>(), StepName.UploadMangadex.ToString());
+            await Verify(embedResult);
+        }
+
+        [Fact]
         public async Task GivenErrorToSendFeedbackMessageShouldReturnError()
         {
             A.CallTo(() => fixture
@@ -156,6 +192,14 @@ public abstract class CommandsTests : UnitTest
 
     public class ExecuteListAsync : CommandsTests
     {
+        public ExecuteListAsync()
+        {
+            A.CallTo(() => fixture
+                .FreezeFake<App.Features.Titles.SkipSteps.List.Handler>()
+                .ExecuteAsync(A<int>.Ignored, cancellationToken))
+                .Returns(FluentResults.Result.Ok<string[]>(["item1", "item2"]));
+        }
+
         [Fact]
         public async Task GivenSuccessExecutionShouldReturnSuccess()
         {
@@ -186,17 +230,30 @@ public abstract class CommandsTests : UnitTest
             Embed embedResult = null!;
 
             A.CallTo(() => fixture
-                .FreezeFake<App.Features.Titles.SkipSteps.List.Handler>()
-                .ExecuteAsync(titleId, A<CancellationToken>.Ignored))
-                .Returns(["item1", "item2"]);
-
-            A.CallTo(() => fixture
                 .FreezeFake<IFeedbackService>()
                 .SendContextualEmbedAsync(A<Embed>.Ignored, A<FeedbackMessageOptions>.Ignored, cancellationToken))
                 .Invokes((Embed embed, FeedbackMessageOptions _, CancellationToken _) => embedResult = embed);
 
             await commands.ExecuteListAsync(titleId);
 
+            await Verify(embedResult);
+        }
+
+        [Fact]
+        public async Task GivenHandlerErrorShouldReturnExpectedObjectInMessage()
+        {
+            A.CallTo(() => fixture
+                .FreezeFake<App.Features.Titles.SkipSteps.List.Handler>()
+                .ExecuteAsync(A<int>.Ignored, cancellationToken))
+                .Returns(FluentResults.Result.Fail("some error message."));
+
+            Embed embedResult = null!;
+            A.CallTo(() => fixture
+                .FreezeFake<IFeedbackService>()
+                .SendContextualEmbedAsync(A<Embed>.Ignored, A<FeedbackMessageOptions>.Ignored, cancellationToken))
+                .Invokes((Embed embed, FeedbackMessageOptions _, CancellationToken _) => embedResult = embed);
+
+            await commands.ExecuteListAsync(fixture.Create<int>());
             await Verify(embedResult);
         }
 

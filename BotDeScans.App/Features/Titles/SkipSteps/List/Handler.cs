@@ -1,16 +1,20 @@
 ﻿using BotDeScans.App.Extensions;
+using BotDeScans.App.Infra.Repositories;
+using FluentResults;
 
 namespace BotDeScans.App.Features.Titles.SkipSteps.List;
 
-public class Handler(Persistence persistence)
+public class Handler(TitleRepository titleRepository)
 {
-    public virtual async Task<string[]> ExecuteAsync(int titleId, CancellationToken cancellationToken)
+    public virtual async Task<Result<string[]>> ExecuteAsync(int titleId, CancellationToken cancellationToken)
     {
-        var stepNames = await persistence.GetStepNamesAsync(titleId, cancellationToken);
+        var title = await titleRepository.GetTitleAsync(titleId, cancellationToken);
+        if (title is null)
+            return Result.Fail("Obra não encontrada.");
 
-        return stepNames.Count == 0
+        return title.SkipSteps.Count == 0
             ? ["A obra não contém procedimentos de publicação a serem ignorados."]
-            : stepNames.Select((x, index) => $"{index + 1}. {x.GetDescription()}")
-                       .ToArray();
+            : title.SkipSteps.Select((x, index) => $"{index + 1}. {x.Step.GetDescription()}")
+                             .ToArray();
     }
 }

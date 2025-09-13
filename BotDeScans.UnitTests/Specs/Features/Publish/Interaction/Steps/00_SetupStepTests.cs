@@ -2,6 +2,7 @@
 using BotDeScans.App.Features.Publish.Interaction.Pings;
 using BotDeScans.App.Features.Publish.Interaction.Steps;
 using BotDeScans.App.Features.Publish.Interaction.Steps.Enums;
+using BotDeScans.App.Infra.Repositories;
 using BotDeScans.App.Models.Entities;
 using BotDeScans.App.Models.Entities.Enums;
 using FluentValidation;
@@ -15,7 +16,7 @@ public class SetupStepTests : UnitTest
     public SetupStepTests()
     {
         fixture.Freeze<State>();
-        fixture.FreezeFake<Persistence>();
+        fixture.FreezeFake<TitleRepository>();
         fixture.FreezeFake<IValidator<State>>();
         fixture.Inject<IEnumerable<Ping>>([fixture.FreezeFake<Ping>()]);
 
@@ -68,7 +69,7 @@ public class SetupStepTests : UnitTest
                 .Create();
 
             A.CallTo(() => fixture
-                .FreezeFake<Persistence>()
+                .FreezeFake<TitleRepository>()
                 .GetTitleAsync(title.Id, cancellationToken))
                 .Returns(title);
 
@@ -90,6 +91,19 @@ public class SetupStepTests : UnitTest
             await step.ExecuteAsync(cancellationToken);
 
             fixture.Freeze<State>().InternalData.Pings.Should().Be(ping);
+        }
+
+        [Fact]
+        public async Task GivenNullTitleShouldReturnErrorResult()
+        {
+            A.CallTo(() => fixture
+                .FreezeFake<TitleRepository>()
+                .GetTitleAsync(A<int>.Ignored, cancellationToken))
+                .Returns(null as Title);
+
+            var result = await step.ExecuteAsync(cancellationToken);
+
+            result.Should().BeFailure().And.HaveError("Obra não encontrada.");
         }
 
         [Fact]

@@ -1,5 +1,6 @@
 ﻿using BotDeScans.App.Attributes;
 using BotDeScans.App.Builders;
+using BotDeScans.App.Infra.Repositories;
 using BotDeScans.App.Services.Discord.Autocomplete;
 using Remora.Commands.Attributes;
 using Remora.Commands.Groups;
@@ -18,7 +19,7 @@ public class Commands(
     IOperationContext context,
     IDiscordRestInteractionAPI interactionAPI,
     IFeedbackService feedbackService,
-    Persistence persistence) : CommandGroup
+    TitleRepository titleRepository) : CommandGroup
 {
     [Command("update")]
     [RoleAuthorize("Publisher")]
@@ -32,7 +33,7 @@ public class Commands(
         if (context is not InteractionContext interactionContext)
             return Result.FromSuccess();
 
-        var dbTitle = await persistence.GetTitleAsync(title, CancellationToken);
+        var dbTitle = await titleRepository.GetTitleAsync(title, CancellationToken);
         if (dbTitle is null)
             return await feedbackService.SendContextualWarningAsync(
                 "Obra não encontrada.",

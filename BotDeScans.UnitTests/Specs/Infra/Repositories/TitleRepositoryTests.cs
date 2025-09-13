@@ -1,35 +1,28 @@
-﻿using BotDeScans.App.Features.Publish.Interaction;
-using BotDeScans.App.Infra;
+﻿using BotDeScans.App.Infra;
+using BotDeScans.App.Infra.Repositories;
 using BotDeScans.App.Models.Entities;
+using FluentAssertions.Execution;
 
-namespace BotDeScans.UnitTests.Specs.Features.Publish.Interaction;
+namespace BotDeScans.UnitTests.Specs.Infra.Repositories;
 
-public class PersistenceTests : UnitPersistenceTest, IDisposable
+public class TitleRepositoryTests : UnitPersistenceTest
 {
-    private readonly Persistence queries;
+    private readonly TitleRepository repository;
 
-    public PersistenceTests() =>
-        queries = fixture.Create<Persistence>();
+    public TitleRepositoryTests() =>
+        repository = fixture.Create<TitleRepository>();
 
-    public class GetTitleAsync : PersistenceTests
+    public class GetTitleAsync : TitleRepositoryTests
     {
         [Fact]
         public async Task GivenExpectedIdShouldReturnTitle()
         {
             var expectedTitle = fixture.Build<Title>().With(x => x.Id, 1).With(x => x.References, []).With(x => x.SkipSteps, []).Create();
             var unexpectedTitle = fixture.Build<Title>().With(x => x.Id, 2).With(x => x.References, []).With(x => x.SkipSteps, []).Create();
-            var expectedReference = fixture.Build<TitleReference>().With(x => x.Id, 1).With(x => x.Title, expectedTitle).Create();
-            var unexpectedReference = fixture.Build<TitleReference>().With(x => x.Id, 2).With(x => x.Title, unexpectedTitle).Create();
             var expectedSkipSteps = fixture.Build<SkipStep>().With(x => x.Id, 1).With(x => x.Title, expectedTitle).Create();
             var unexpectedSkipSteps = fixture.Build<SkipStep>().With(x => x.Id, 2).With(x => x.Title, unexpectedTitle).Create();
-            var expectedResult = new Title
-            {
-                Id = expectedTitle.Id,
-                Name = expectedTitle.Name,
-                References = [expectedReference],
-                SkipSteps = [expectedSkipSteps],
-                DiscordRoleId = expectedTitle.DiscordRoleId
-            };
+            var expectedReference = fixture.Build<TitleReference>().With(x => x.Id, 1).With(x => x.Title, expectedTitle).Create();
+            var unexpectedReference = fixture.Build<TitleReference>().With(x => x.Id, 2).With(x => x.Title, unexpectedTitle).Create();
 
             await fixture.Freeze<DatabaseContext>().AddAsync(expectedTitle, cancellationToken);
             await fixture.Freeze<DatabaseContext>().AddAsync(unexpectedTitle, cancellationToken);
@@ -39,9 +32,13 @@ public class PersistenceTests : UnitPersistenceTest, IDisposable
             await fixture.Freeze<DatabaseContext>().AddAsync(unexpectedSkipSteps, cancellationToken);
             await fixture.Freeze<DatabaseContext>().SaveChangesAsync(cancellationToken);
 
-            var result = await queries.GetTitleAsync(expectedTitle.Id, cancellationToken);
+            var result = await repository.GetTitleAsync(expectedTitle.Id, cancellationToken);
 
-            result.Should().BeEquivalentTo(expectedResult);
+            using var _ = new AssertionScope();
+            result.Should().NotBeNull();
+            result?.Should().BeEquivalentTo(expectedTitle);
+            result?.SkipSteps.Should().BeEquivalentTo([expectedSkipSteps]);
+            result?.References.Should().BeEquivalentTo([expectedReference]);
         }
     }
 }
