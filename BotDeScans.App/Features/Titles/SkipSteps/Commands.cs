@@ -19,8 +19,8 @@ public class Commands() : CommandGroup
     public class ChildCommands(
         IFeedbackService feedbackService,
         Add.Handler addHandler,
-        Remove.Handler removeHandler,
-        List.Handler listHandler) 
+        List.Handler listHandler,
+        Remove.Handler removeHandler) 
         : CommandGroup
     {
         [Command("add")]
@@ -35,8 +35,10 @@ public class Commands() : CommandGroup
             string step)
         {
             var stepAsEnum = Enum.Parse<StepName>(step);
-            await addHandler.ExecuteAsync(title, stepAsEnum, CancellationToken);
-            var embed = EmbedBuilder.CreateSuccessEmbed($"O procedimento '{stepAsEnum.GetDescription()}' será ignorado na publicação da obra desejada.");
+            var result = await addHandler.ExecuteAsync(title, stepAsEnum, CancellationToken);
+            var embed = result.IsSuccess
+                ? EmbedBuilder.CreateSuccessEmbed($"O procedimento '{stepAsEnum.GetDescription()}' será ignorado na publicação da obra desejada.")
+                : EmbedBuilder.CreateErrorEmbed(result);
 
             return await feedbackService.SendContextualEmbedAsync(embed, ct: CancellationToken);
         }
@@ -53,8 +55,10 @@ public class Commands() : CommandGroup
             string step)
         {
             var stepAsEnum = Enum.Parse<StepName>(step);
-            await removeHandler.ExecuteAsync(title, stepAsEnum, CancellationToken);
-            var embed = EmbedBuilder.CreateSuccessEmbed($"O procedimento '{stepAsEnum.GetDescription()}' não será mais ignorado na publicação da obra desejada.");
+            var result = await removeHandler.ExecuteAsync(title, stepAsEnum, CancellationToken);
+            var embed = result.IsSuccess
+                ? EmbedBuilder.CreateSuccessEmbed($"O procedimento '{stepAsEnum.GetDescription()}' não será mais ignorado na publicação da obra desejada.")
+                : EmbedBuilder.CreateErrorEmbed(result);
 
             return await feedbackService.SendContextualEmbedAsync(embed, ct: CancellationToken);
         }
@@ -68,7 +72,9 @@ public class Commands() : CommandGroup
             int title)
         {
             var result = await listHandler.ExecuteAsync(title, CancellationToken);
-            var embed = EmbedBuilder.CreateSuccessEmbed(string.Join(Environment.NewLine, result));
+            var embed = result.IsSuccess
+                ? EmbedBuilder.CreateSuccessEmbed(string.Join(Environment.NewLine, result.Value))
+                : EmbedBuilder.CreateErrorEmbed(result);
 
             return await feedbackService.SendContextualEmbedAsync(embed, ct: CancellationToken);
         }

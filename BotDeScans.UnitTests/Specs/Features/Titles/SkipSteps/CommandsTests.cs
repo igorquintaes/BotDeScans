@@ -156,6 +156,14 @@ public abstract class CommandsTests : UnitTest
 
     public class ExecuteListAsync : CommandsTests
     {
+        public ExecuteListAsync()
+        {
+            A.CallTo(() => fixture
+                .FreezeFake<App.Features.Titles.SkipSteps.List.Handler>()
+                .ExecuteAsync(A<int>.Ignored, cancellationToken))
+                .Returns(FluentResults.Result.Ok<string[]>(["item1", "item2"]));
+        }
+
         [Fact]
         public async Task GivenSuccessExecutionShouldReturnSuccess()
         {
@@ -184,11 +192,6 @@ public abstract class CommandsTests : UnitTest
         {
             const int titleId = 4;
             Embed embedResult = null!;
-
-            A.CallTo(() => fixture
-                .FreezeFake<App.Features.Titles.SkipSteps.List.Handler>()
-                .ExecuteAsync(titleId, A<CancellationToken>.Ignored))
-                .Returns(["item1", "item2"]);
 
             A.CallTo(() => fixture
                 .FreezeFake<IFeedbackService>()
