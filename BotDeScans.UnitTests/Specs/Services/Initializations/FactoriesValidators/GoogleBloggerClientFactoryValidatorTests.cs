@@ -21,6 +21,8 @@ public class GoogleBloggerClientFactoryValidatorTests : UnitTest
     {
         fixture.FreezeFakeConfiguration("Blogger:Id", fixture.Create<string>());
         fixture.FreezeFakeConfiguration("Blogger:Url", "http://www.escoladescans.com");
+        fixture.FreezeFakeConfiguration("Blogger:Cover:Width", "1");
+        fixture.FreezeFakeConfiguration("Blogger:Cover:Height", "1");
 
         if (File.Exists(credentialPath) is false)
             File.Create(credentialPath).Dispose();
@@ -39,6 +41,8 @@ public class GoogleBloggerClientFactoryValidatorTests : UnitTest
     [Theory]
     [InlineData("Blogger:Id")]
     [InlineData("Blogger:Url")]
+    [InlineData("Blogger:Cover:Width")]
+    [InlineData("Blogger:Cover:Height")]
     public void GivenMissingKeyShouldReturnError(string key)
     {
         fixture.FreezeFakeConfiguration(key, default(string));
@@ -82,7 +86,37 @@ public class GoogleBloggerClientFactoryValidatorTests : UnitTest
         fixture.Create<GoogleBloggerClientFactoryValidator>()
                .TestValidate(fixture.Freeze<GoogleBloggerClientFactory>())
                .ShouldHaveValidationErrorFor(service => service)
-               .WithErrorMessage($"Não foi possível identificar o link do Blogger como válido.")
+               .WithErrorMessage("Não foi possível identificar o link do Blogger como válido.")
+               .Only();
+    }
+
+    [Theory]
+    [InlineData("0")]
+    [InlineData("-1")]
+    [InlineData("not-a-number")]
+    public void GivenInvalidBloggerCoverWidthValueShouldReturnError(string width)
+    {
+        fixture.FreezeFakeConfiguration("Blogger:Cover:Width", width);
+
+        fixture.Create<GoogleBloggerClientFactoryValidator>()
+               .TestValidate(fixture.Freeze<GoogleBloggerClientFactory>())
+               .ShouldHaveValidationErrorFor(service => service)
+               .WithErrorMessage("A capa precisa ter um número válido de largura e superior a 0.")
+               .Only();
+    }
+
+    [Theory]
+    [InlineData("0")]
+    [InlineData("-1")]
+    [InlineData("not-a-number")]
+    public void GivenInvalidBloggerCoverHeightValueShouldReturnError(string height)
+    {
+        fixture.FreezeFakeConfiguration("Blogger:Cover:Height", height);
+
+        fixture.Create<GoogleBloggerClientFactoryValidator>()
+               .TestValidate(fixture.Freeze<GoogleBloggerClientFactory>())
+               .ShouldHaveValidationErrorFor(service => service)
+               .WithErrorMessage("A capa precisa ter um número válido de altura e superior a 0.")
                .Only();
     }
 }

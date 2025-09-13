@@ -31,7 +31,10 @@ public class PublishBloggerStep(
             chapterNumber: state.ChapterInfo.ChapterNumber,
             cancellationToken);
 
-        state.ReleaseLinks.Blogger = post.Url;
+        if (post.IsFailed)
+            return post.ToResult();
+
+        state.ReleaseLinks.Blogger = post.Value.Url;
         return Result.Ok();
     }
 }

@@ -11,6 +11,8 @@ public class GoogleBloggerClientFactoryValidator : AbstractValidator<GoogleBlogg
     {
         var bloggerIdResult = configuration.GetRequiredValueAsResult<string>("Blogger:Id");
         var bloggerUrlResult = configuration.GetRequiredValueAsResult<string>("Blogger:Url");
+        var bloggerCoverWidthResult = configuration.GetRequiredValueAsResult<string>("Blogger:Cover:Width");
+        var bloggerCoverHeightResult = configuration.GetRequiredValueAsResult<string>("Blogger:Cover:Height");
 
         RuleFor(factory => factory)
             .Must(_ => bloggerIdResult.IsSuccess)
@@ -19,6 +21,24 @@ public class GoogleBloggerClientFactoryValidator : AbstractValidator<GoogleBlogg
         RuleFor(factory => factory)
             .Must(_ => bloggerUrlResult.IsSuccess)
             .WithMessage(bloggerUrlResult.ToValidationErrorMessage());
+
+        RuleFor(factory => factory)
+            .Must(_ => bloggerCoverWidthResult.IsSuccess)
+            .WithMessage(bloggerCoverWidthResult.ToValidationErrorMessage());
+
+        RuleFor(factory => factory)
+            .Must(_ => bloggerCoverHeightResult.IsSuccess)
+            .WithMessage(bloggerCoverHeightResult.ToValidationErrorMessage());
+
+        RuleFor(factory => factory)
+            .Must(_ => int.TryParse(bloggerCoverWidthResult.Value, out var width) && width > 0)
+            .When(_ => bloggerCoverWidthResult.IsSuccess)
+            .WithMessage("A capa precisa ter um número válido de largura e superior a 0.");
+
+        RuleFor(factory => factory)
+            .Must(_ => int.TryParse(bloggerCoverHeightResult.Value, out var height) && height > 0)
+            .When(_ => bloggerCoverHeightResult.IsSuccess)
+            .WithMessage("A capa precisa ter um número válido de altura e superior a 0.");
 
         RuleFor(factory => factory)
             .Must(_ => Uri.TryCreate(bloggerUrlResult.Value, UriKind.Absolute, out var _))

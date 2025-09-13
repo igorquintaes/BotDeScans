@@ -12,9 +12,9 @@ Maybe we should consider integration testing with real Google API.
 public class GoogleWrapper
 {
     public virtual Task<Result<TResponse>> ExecuteAsync<TResponse>(
-        IClientServiceRequest<TResponse> listRequest,
+        IClientServiceRequest<TResponse> request,
         CancellationToken cancellationToken)
-            => Result.Try(() => listRequest.ExecuteAsync(cancellationToken),
+            => Result.Try(() => request.ExecuteAsync(cancellationToken),
                           ex => new Error("Não foi possível realizar a operação com o GoogleDrive.")
                                    .CausedBy(ex));
 
