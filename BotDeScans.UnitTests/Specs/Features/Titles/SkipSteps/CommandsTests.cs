@@ -79,6 +79,24 @@ public abstract class CommandsTests : UnitTest
         }
 
         [Fact]
+        public async Task GivenHandlerErrorShouldReturnExpectedObjectInMessage()
+        {
+            A.CallTo(() => fixture
+                .FreezeFake<App.Features.Titles.SkipSteps.Add.Handler>()
+                .ExecuteAsync(A<int>.Ignored, A<StepName>.Ignored, cancellationToken))
+                .Returns(FluentResults.Result.Fail("some error message."));
+
+            Embed embedResult = null!;
+            A.CallTo(() => fixture
+                .FreezeFake<IFeedbackService>()
+                .SendContextualEmbedAsync(A<Embed>.Ignored, A<FeedbackMessageOptions>.Ignored, cancellationToken))
+                .Invokes((Embed embed, FeedbackMessageOptions _, CancellationToken _) => embedResult = embed);
+
+            await commands.ExecuteAddAsync(fixture.Create<int>(), StepName.UploadMangadex.ToString());
+            await Verify(embedResult);
+        }
+
+        [Fact]
         public async Task GivenErrorToSendFeedbackMessageShouldReturnError()
         {
             A.CallTo(() => fixture
@@ -135,6 +153,24 @@ public abstract class CommandsTests : UnitTest
 
             await commands.ExecuteRemoveAsync(titleId, step.ToString());
 
+            await Verify(embedResult);
+        }
+
+        [Fact]
+        public async Task GivenHandlerErrorShouldReturnExpectedObjectInMessage()
+        {
+            A.CallTo(() => fixture
+                .FreezeFake<App.Features.Titles.SkipSteps.Remove.Handler>()
+                .ExecuteAsync(A<int>.Ignored, A<StepName>.Ignored, cancellationToken))
+                .Returns(FluentResults.Result.Fail("some error message."));
+
+            Embed embedResult = null!;
+            A.CallTo(() => fixture
+                .FreezeFake<IFeedbackService>()
+                .SendContextualEmbedAsync(A<Embed>.Ignored, A<FeedbackMessageOptions>.Ignored, cancellationToken))
+                .Invokes((Embed embed, FeedbackMessageOptions _, CancellationToken _) => embedResult = embed);
+
+            await commands.ExecuteRemoveAsync(fixture.Create<int>(), StepName.UploadMangadex.ToString());
             await Verify(embedResult);
         }
 
@@ -200,6 +236,24 @@ public abstract class CommandsTests : UnitTest
 
             await commands.ExecuteListAsync(titleId);
 
+            await Verify(embedResult);
+        }
+
+        [Fact]
+        public async Task GivenHandlerErrorShouldReturnExpectedObjectInMessage()
+        {
+            A.CallTo(() => fixture
+                .FreezeFake<App.Features.Titles.SkipSteps.List.Handler>()
+                .ExecuteAsync(A<int>.Ignored, cancellationToken))
+                .Returns(FluentResults.Result.Fail("some error message."));
+
+            Embed embedResult = null!;
+            A.CallTo(() => fixture
+                .FreezeFake<IFeedbackService>()
+                .SendContextualEmbedAsync(A<Embed>.Ignored, A<FeedbackMessageOptions>.Ignored, cancellationToken))
+                .Invokes((Embed embed, FeedbackMessageOptions _, CancellationToken _) => embedResult = embed);
+
+            await commands.ExecuteListAsync(fixture.Create<int>());
             await Verify(embedResult);
         }
 
