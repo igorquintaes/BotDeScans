@@ -3,6 +3,7 @@ using BotDeScans.App.Features.Publish.Interaction.Steps;
 using BotDeScans.App.Features.Publish.Interaction.Steps.Enums;
 using BotDeScans.App.Models.Entities.Enums;
 using BotDeScans.App.Services;
+using FluentResults;
 using Google.Apis.Blogger.v3.Data;
 
 namespace BotDeScans.UnitTests.Specs.Features.Publish.Interaction.Steps;
@@ -122,6 +123,19 @@ public class PublishBloggerStepTests : UnitTest
             await step.ExecuteAsync(cancellationToken);
 
             fixture.Freeze<State>().ReleaseLinks.Blogger.Should().Be(url);
+        }
+
+        [Fact]
+        public async Task GivenErrorToPostInBloggerShouldReturnErrorResult()
+        {
+            A.CallTo(() => fixture
+                .FreezeFake<GoogleBloggerService>()
+                .PostAsync(A<string>._, A<string>._, A<string>._, A<string>._, cancellationToken))
+                .Returns(Result.Fail("some error."));
+
+            var result = await step.ExecuteAsync(cancellationToken);
+
+            result.Should().BeFailure().And.HaveError("some error.");
         }
     }
 }
