@@ -63,7 +63,7 @@ public class PublishBloggerStepTests : UnitTest
 
             A.CallTo(() => fixture
                 .FreezeFake<GoogleBloggerService>()
-                .GetPostTemplateAsync(cancellationToken))
+                .GetPostTemplate())
                 .Returns(template);
 
             A.CallTo(() => fixture

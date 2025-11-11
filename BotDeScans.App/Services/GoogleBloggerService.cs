@@ -13,6 +13,7 @@ public class GoogleBloggerService(
     ImageService imageService,
     BloggerService bloggerService,
     GoogleWrapper googleWrapper,
+    FileService fileService,
     IConfiguration configuration)
 {
     public const string TEMPLATE_FILE_NAME = "blogger-template.html";
@@ -40,15 +41,14 @@ public class GoogleBloggerService(
         return googleWrapper.ExecuteAsync(insertRequest, cancellationToken);
     }
 
-    public virtual async Task<string> GetPostTemplateAsync(CancellationToken cancellationToken)
+    public virtual string GetPostTemplate()
     {
         var templatePath = Path.Combine(
             AppDomain.CurrentDomain.BaseDirectory,
             "config",
             TEMPLATE_FILE_NAME);
 
-        using var streamReader = new StreamReader(templatePath);
-        return await streamReader.ReadToEndAsync(cancellationToken);
+        return fileService.ReadTextFile(templatePath);
     }
 
     public virtual async Task<string> CreatePostCoverAsync(CancellationToken cancellationToken)

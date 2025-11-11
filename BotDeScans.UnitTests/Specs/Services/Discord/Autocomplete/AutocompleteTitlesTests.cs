@@ -3,6 +3,7 @@ using BotDeScans.App.Models;
 using BotDeScans.App.Models.Entities;
 using BotDeScans.App.Services.Discord.Autocomplete;
 using FluentAssertions.Execution;
+using Microsoft.EntityFrameworkCore.Scaffolding.Metadata;
 
 namespace BotDeScans.UnitTests.Specs.Services.Discord.Autocomplete;
 
@@ -27,7 +28,7 @@ public class AutocompleteTitlesTests : UnitPersistenceTest
         public GetSuggestionsAsync()
         {
             databaseTitles = Enumerable.Range(1, 30)
-                .Select(i => ($"title-{i}", i))
+                .Select(i => ($"title-{i.ToString().PadLeft(2, '0')}", i))
                 .ToArray();
 
             fixture.Freeze<DatabaseContext>()
@@ -55,38 +56,21 @@ public class AutocompleteTitlesTests : UnitPersistenceTest
             result.Select(s => s.Value.ToString()).Should().BeEquivalentTo(expectedIds);
         }
 
-        [Fact]
-        public async Task GivenMatchingRequestShouldReturnExpectedTitles()
+        [Theory]
+        [InlineData("title-1")]
+        [InlineData("TITLE-1")]
+        public async Task GivenMatchingRequestShouldReturnExpectedTitles(string query)
         {
-            var query = "title-1";
             var expectedNames = databaseTitles
-                .Where(x => x.Id == 1 || (x.Id >= 10 && x.Id <= 19))
+                .Where(x => x.Id >= 10 && x.Id <= 19)
                 .Select(x => x.Name);
             var expectedIds = databaseTitles
-                .Where(x => x.Id == 1 || (x.Id >= 10 && x.Id <= 19))
+                .Where(x => x.Id >= 10 && x.Id <= 19)
                 .Select(x => $"System.Int32: {x.Id}");
 
             var result = await autocomplete.GetSuggestionsAsync(default!, query, cancellationToken);
 
-            result.Count.Should().Be(11);
-            result.Select(s => s.Name).Should().BeEquivalentTo(expectedNames);
-            result.Select(s => s.Value.ToString()).Should().BeEquivalentTo(expectedIds);
-        }
-
-        [Fact]
-        public async Task GivenMatchingInsensitiveRequestShouldReturnExpectedTitles()
-        {
-            var query = "TITLE-1";
-            var expectedNames = databaseTitles
-                .Where(x => x.Id == 1 || (x.Id >= 10 && x.Id <= 19))
-                .Select(x => x.Name);
-            var expectedIds = databaseTitles
-                .Where(x => x.Id == 1 || (x.Id >= 10 && x.Id <= 19))
-                .Select(x => $"System.Int32: {x.Id}");
-
-            var result = await autocomplete.GetSuggestionsAsync(default!, query, cancellationToken);
-
-            result.Count.Should().Be(11);
+            result.Count.Should().Be(10);
             result.Select(s => s.Name).Should().BeEquivalentTo(expectedNames);
             result.Select(s => s.Value.ToString()).Should().BeEquivalentTo(expectedIds);
         }
@@ -145,6 +129,26 @@ public class AutocompleteTitlesTests : UnitPersistenceTest
             result.Count.Should().Be(1);
             result.Select(s => s.Name).Should().BeEquivalentTo([expectedTitleReturn]);
             result.Select(s => s.Value.ToString()).Should().BeEquivalentTo([$"System.Int32: {aboveMaxTitleId}"]);
+        }
+
+        [Fact]
+        public async Task GivenDataShouldReturnOrderedResult()
+        {
+            var newTitle = new Title
+            {
+                Id = 999,
+                Name = "000" + databaseTitles[0].Name,
+                DiscordRoleId = default
+            };
+
+            await fixture.Freeze<DatabaseContext>().Titles.AddAsync(newTitle, cancellationToken);
+            fixture.Freeze<DatabaseContext>().SaveChanges();
+
+            var result = await autocomplete.GetSuggestionsAsync(default!, string.Empty, cancellationToken);
+
+            using var _ = new AssertionScope();
+            result[0].Name.Should().Be(newTitle.Name);
+            result[1].Name.Should().Be(databaseTitles[0].Name);
         }
     }
 }

@@ -18,6 +18,7 @@ public class GoogleBloggerServiceTests : UnitTest
         fixture.FreezeFake<ImageService>();
         fixture.FreezeFake<BloggerService>();
         fixture.FreezeFake<GoogleWrapper>();
+        fixture.FreezeFake<FileService>();
         fixture.FreezeFake<IConfiguration>();
 
         service = fixture.Create<GoogleBloggerService>();
@@ -78,14 +79,61 @@ public class GoogleBloggerServiceTests : UnitTest
             A.CallTo(() => fixture
                 .FreezeFake<PostsResource>()
                 .Insert(
-                    A<Post>.That.Matches(post => 
+                    A<Post>.That.Matches(post =>
                         post.Content == htmlContent &&
                         post.Title == title &&
                         post.Labels.Count == 1 &&
                         post.Labels.Single() == label &&
-                        post.Url == "www.escoladescans.com/ttl3-numb3r"), 
+                        post.Url == "www.escoladescans.com/ttl3-numb3r"),
                     A<string>.Ignored))
                 .MustHaveHappenedOnceExactly();
+        }
+    }
+
+    public class GetPostTemplateAsync : GoogleBloggerServiceTests
+    {
+        [Fact]
+        public void GivenExecutionShouldReturnExpectedFileContent()
+        {
+            var expectedContent = "some content";
+
+            A.CallTo(() => fixture
+                .FreezeFake<FileService>()
+                .ReadTextFile(A<string>.Ignored))
+                .Returns(expectedContent);
+
+            var result = service.GetPostTemplate();
+
+            result.Should().Be(expectedContent);
+        }
+    }
+
+    public class CreatePostCoverAsync : GoogleBloggerServiceTests
+    {
+        [Fact]
+        public async Task GivenExecutionShouldReturnExpectedString()
+        {
+            const string base64String = "base64-string";
+            fixture.FreezeFakeConfiguration("Blogger:Cover:Width", "700");
+            fixture.FreezeFakeConfiguration("Blogger:Cover:Height", "1200");
+
+            A.CallTo(() => fixture
+                .FreezeFake<ImageService>()
+                .IsGrayscale(fixture.Freeze<State>().InternalData.CoverFilePath, 20))
+                .Returns(true);
+
+            A.CallTo(() => fixture
+                .FreezeFake<ImageService>()
+                .CreateBase64StringAsync(
+                    fixture.Freeze<State>().InternalData.CoverFilePath,
+                    700,
+                    1200,
+                    true,
+                    cancellationToken))
+                .Returns(base64String);
+
+            var result = await service.CreatePostCoverAsync(cancellationToken);
+            result.Should().Be($"data:image/png;base64,{base64String}");
         }
     }
 }

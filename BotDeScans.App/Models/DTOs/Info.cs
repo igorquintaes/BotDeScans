@@ -64,6 +64,6 @@ public partial class InfoValidator : AbstractValidator<Info>
             .SetValidator(googleDriveUrlValidator);
     }
 
-    [GeneratedRegex("^(?:0|[1-9]\\d+|)?(?:.?\\d{1})?$")]
+    [GeneratedRegex("^((0|[1-9]\\d*)(\\.[1-9])?){1}$")]
     private static partial Regex ChapterNumberPattern();
 }

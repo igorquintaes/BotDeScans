@@ -21,6 +21,7 @@ public class AutocompleteTitles(DatabaseContext databaseContext) : IAutocomplete
     {
         var titles = await databaseContext.Titles
             .Where(x => EF.Functions.Like(x.Name, $"%{userInput}%"))
+            .OrderBy(x => x.Name)
             .Take(DISCORD_MAX_RESULTS)
             .ToArrayAsync(ct);
 

@@ -222,4 +222,35 @@ public class FileServiceTests : UnitTest
             GC.SuppressFinalize(this);
         }
     }
+
+    public class ReadTextFile : FileServiceTests, IDisposable
+    {
+        private static readonly string filePath =
+            Path.Combine(
+                Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)!,
+                nameof(ReadTextFile) + "-test.txt");
+
+        public ReadTextFile()
+        {
+            if (File.Exists(filePath))
+                File.Delete(filePath);
+        }
+
+        [Fact]
+        public void ShouldReadExpectedTextFromFile()
+        {
+            var expectedText = fixture.Create<string>();
+            File.WriteAllText(filePath, expectedText);
+
+            var result = service.ReadTextFile(filePath);
+
+            result.Should().Be(expectedText);
+        }
+
+        public void Dispose()
+        {
+            File.Delete(filePath);
+            GC.SuppressFinalize(this);
+        }
+    }
 }
