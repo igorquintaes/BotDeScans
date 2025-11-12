@@ -84,7 +84,7 @@ public class CommandsTests : UnitTest
             var url = fixture.Create<string>();
             var result = await commands.VerifyUrl(url);
 
-                result.IsSuccess.Should().BeTrue();
+            result.IsSuccess.Should().BeTrue();
 
             A.CallTo(() => fixture
                 .FreezeFake<IValidator<GoogleDriveUrl>>()
@@ -131,7 +131,7 @@ public class CommandsTests : UnitTest
         }
 
         [Fact]
-        public async Task GiveFailedExecutionShouldCreateErrorEmbed()
+        public async Task GivenFailedExecutionShouldCreateErrorEmbed()
         {
             A.CallTo(() => fixture
                 .FreezeFake<GoogleDriveService>()
@@ -203,7 +203,7 @@ public class CommandsTests : UnitTest
         }
 
         [Fact]
-        public async Task GiveFailedExecutionShouldCreateErrorEmbed()
+        public async Task GivenFailedExecutionShouldCreateErrorEmbed()
         {
             A.CallTo(() => fixture
                 .FreezeFake<GoogleDriveService>()
@@ -274,7 +274,7 @@ public class CommandsTests : UnitTest
         }
 
         [Fact]
-        public async Task GiveFailedExecutionShouldCreateErrorEmbed()
+        public async Task GivenFailedExecutionShouldCreateErrorEmbed()
         {
             A.CallTo(() => fixture
                 .FreezeFake<GoogleDriveService>()
@@ -350,7 +350,7 @@ public class CommandsTests : UnitTest
         }
 
         [Fact]
-        public async Task GiveFailedExecutionShouldCreateErrorEmbed()
+        public async Task GivenFailedExecutionShouldCreateErrorEmbed()
         {
             A.CallTo(() => fixture
                 .FreezeFake<GoogleDriveSettingsService>()
