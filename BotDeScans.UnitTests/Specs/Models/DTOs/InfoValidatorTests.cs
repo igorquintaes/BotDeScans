@@ -34,12 +34,27 @@ public class InfoValidatorTests : UnitTest
                .WithErrorMessage("Nome de capítulo muito longo.");
 
     [Theory]
-    [InlineData("invalid")]
-    [InlineData("10invalid")]
-    [InlineData("invalid10")]
+    [InlineData("0")]
+    [InlineData("1")]
+    [InlineData("10")]
+    [InlineData("1.1")]
+    [InlineData("10.1")]
+    public void GivenChapterNumberMatchingPatternShouldReturnSuccess(string chapterNumber) =>
+        fixture.Create<InfoValidator>()
+               .TestValidate(data with { ChapterNumber = chapterNumber })
+               .ShouldNotHaveAnyValidationErrors();
+
+    [Theory]
+    [InlineData("")]
+    [InlineData("A")]
+    [InlineData("-1")]
+    [InlineData("01")]
     [InlineData("1A")]
+    [InlineData("A1")]
+    [InlineData("1.0")]
     [InlineData("1.11")]
     [InlineData("1-1")]
+    [InlineData("1,1")]
     [InlineData("1,11")]
     public void GivenChapterNumberNotMatchingPatternShouldReturnError(string chapterNumber) =>
         fixture.Create<InfoValidator>()

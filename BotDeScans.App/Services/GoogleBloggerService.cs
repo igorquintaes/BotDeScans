@@ -1,19 +1,24 @@
 ﻿using BotDeScans.App.Extensions;
 using BotDeScans.App.Features.Publish.Interaction;
+using BotDeScans.App.Services.Wrappers;
+using FluentResults;
 using Google.Apis.Blogger.v3;
 using Google.Apis.Blogger.v3.Data;
 using Microsoft.Extensions.Configuration;
+
 namespace BotDeScans.App.Services;
 
 public class GoogleBloggerService(
     State state,
     ImageService imageService,
     BloggerService bloggerService,
+    GoogleWrapper googleWrapper,
+    FileService fileService,
     IConfiguration configuration)
 {
     public const string TEMPLATE_FILE_NAME = "blogger-template.html";
 
-    public virtual async Task<Post> PostAsync(
+    public virtual Task<Result<Post>> PostAsync(
         string title,
         string htmlContent,
         string label,
@@ -29,22 +34,21 @@ public class GoogleBloggerService(
             Content = htmlContent,
             Title = title,
             Labels = [label],
-            Url = $"{uri.Host}{title.Slugfy()}-{chapterNumber.Slugfy()}"
+            Url = $"{uri.Host}/{title.Slugfy()}-{chapterNumber.Slugfy()}"
         };
 
         var insertRequest = bloggerService.Posts.Insert(post, bloggerId);
-        return await insertRequest.ExecuteAsync(cancellationToken);
+        return googleWrapper.ExecuteAsync(insertRequest, cancellationToken);
     }
 
-    public virtual async Task<string> GetPostTemplateAsync(CancellationToken cancellationToken)
+    public virtual string GetPostTemplate()
     {
         var templatePath = Path.Combine(
             AppDomain.CurrentDomain.BaseDirectory,
             "config",
             TEMPLATE_FILE_NAME);
 
-        using var streamReader = new StreamReader(templatePath);
-        return await streamReader.ReadToEndAsync(cancellationToken);
+        return fileService.ReadTextFile(templatePath);
     }
 
     public virtual async Task<string> CreatePostCoverAsync(CancellationToken cancellationToken)

@@ -20,7 +20,7 @@ public class PublishBloggerStep(
     public async Task<Result> ExecuteAsync(CancellationToken cancellationToken)
     {
         state.InternalData.BloggerImageAsBase64 = await googleBloggerService.CreatePostCoverAsync(cancellationToken);
-        var template = await googleBloggerService.GetPostTemplateAsync(cancellationToken);
+        var template = googleBloggerService.GetPostTemplate();
         var htmlContent = textReplacer.Replace(template);
 
         // todo: parametrizar valores de title abaixo no futuro
@@ -31,7 +31,10 @@ public class PublishBloggerStep(
             chapterNumber: state.ChapterInfo.ChapterNumber,
             cancellationToken);
 
-        state.ReleaseLinks.Blogger = post.Url;
+        if (post.IsFailed)
+            return post.ToResult();
+
+        state.ReleaseLinks.Blogger = post.Value.Url;
         return Result.Ok();
     }
 }
