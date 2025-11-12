@@ -1,5 +1,4 @@
-﻿using BotDeScans.App.Features.GoogleDrive.Discord;
-using BotDeScans.App.Features.GoogleDrive.InternalServices;
+﻿using BotDeScans.App.Features.GoogleDrive.InternalServices;
 using BotDeScans.App.Services.Initializations.Factories;
 using Microsoft.Extensions.DependencyInjection;
 using Remora.Commands.Extensions;
@@ -11,7 +10,7 @@ internal static class AddDependencies
 {
     internal static IServiceCollection AddGoogleDrive(this IServiceCollection services) => services
         .AddCommandTree()
-            .WithCommandGroup<GoogleDriveCommands>()
+            .WithCommandGroup<Commands>()
             .Finish()
         .AddScoped<GoogleDriveService>()
         .AddScoped<GoogleDriveFilesService>()

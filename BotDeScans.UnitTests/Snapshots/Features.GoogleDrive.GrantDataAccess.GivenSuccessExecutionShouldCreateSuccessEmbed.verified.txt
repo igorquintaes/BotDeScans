@@ -1,0 +1,10 @@
+﻿{
+  Title: {
+    Value: Acesso concedido!,
+    HasValue: true
+  },
+  Colour: {
+    Value: Green,
+    HasValue: true
+  }
+}
