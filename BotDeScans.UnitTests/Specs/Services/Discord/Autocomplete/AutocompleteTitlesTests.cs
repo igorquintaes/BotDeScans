@@ -3,7 +3,6 @@ using BotDeScans.App.Models;
 using BotDeScans.App.Models.Entities;
 using BotDeScans.App.Services.Discord.Autocomplete;
 using FluentAssertions.Execution;
-using Microsoft.EntityFrameworkCore.Scaffolding.Metadata;
 
 namespace BotDeScans.UnitTests.Specs.Services.Discord.Autocomplete;
 
