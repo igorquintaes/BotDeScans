@@ -1,0 +1,10 @@
+﻿{
+  Title: {
+    Value: Acesso revogado!,
+    HasValue: true
+  },
+  Colour: {
+    Value: Green,
+    HasValue: true
+  }
+}

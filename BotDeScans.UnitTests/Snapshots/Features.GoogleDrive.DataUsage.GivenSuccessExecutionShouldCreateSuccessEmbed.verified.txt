@@ -1,0 +1,16 @@
+﻿{
+  Title: {
+    Value: Uso de dados do Google Drive:,
+    HasValue: true
+  },
+  Colour: {
+    Value: Green,
+    HasValue: true
+  },
+  Image: {
+    Value: {
+      Url: attachment://DataUsage.png
+    },
+    HasValue: true
+  }
+}

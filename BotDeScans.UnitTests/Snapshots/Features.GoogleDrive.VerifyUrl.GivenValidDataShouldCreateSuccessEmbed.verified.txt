@@ -1,0 +1,10 @@
+﻿{
+  Title: {
+    Value: Arquivos válidos para publicação!,
+    HasValue: true
+  },
+  Colour: {
+    Value: Green,
+    HasValue: true
+  }
+}

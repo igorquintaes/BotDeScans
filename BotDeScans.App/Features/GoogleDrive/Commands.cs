@@ -9,16 +9,18 @@ using FluentValidation;
 using Remora.Commands.Attributes;
 using Remora.Commands.Groups;
 using Remora.Discord.API.Objects;
+using Remora.Discord.Commands.Feedback.Services;
 using Remora.Results;
 using System.ComponentModel;
 using System.Diagnostics.CodeAnalysis;
-namespace BotDeScans.App.Features.GoogleDrive.Discord;
+
+namespace BotDeScans.App.Features.GoogleDrive;
 
 [Group("googledrive")]
-public class GoogleDriveCommands(
+public class Commands(
     GoogleDriveService googleDriveService,
     GoogleDriveSettingsService googleDriveSettingsService,
-    ExtendedFeedbackService feedbackService,
+    IFeedbackService feedbackService,
     ChartService chartService,
     IValidator<GoogleDriveUrl> googleDriveUrlValidator) : CommandGroup
 {
@@ -102,7 +104,7 @@ public class GoogleDriveCommands(
 #if DEBUG
     [Group("debug")]
     [ExcludeFromCodeCoverage(Justification = "Live Discord testing and debug.")]
-    public class GoogleDriveDebugCommands(
+    public class DebugCommands(
         GoogleDriveService googleDriveService,
         ExtendedFeedbackService feedbackService) : CommandGroup
     {
