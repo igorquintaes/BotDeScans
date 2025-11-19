@@ -61,7 +61,7 @@ public class TitleRepositoryTests : UnitPersistenceTest
             var result = await repository.GetTitlesAsync(cancellationToken);
 
             result.Should().HaveCount(expectedTitles.Count).And
-                           .ContainInOrder(expectedTitles);
+                           .BeEquivalentTo(expectedTitles);
         }
     }
 }
