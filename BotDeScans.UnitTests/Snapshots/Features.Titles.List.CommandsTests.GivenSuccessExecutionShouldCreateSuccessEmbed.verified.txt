@@ -1,0 +1,17 @@
+﻿{
+  Title: {
+    Value: Lista de obras,
+    HasValue: true
+  },
+  Description: {
+    Value:
+1. AAA
+2. BBB
+3. CCC,
+    HasValue: true
+  },
+  Colour: {
+    Value: Green,
+    HasValue: true
+  }
+}

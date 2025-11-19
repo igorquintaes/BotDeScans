@@ -10,12 +10,11 @@ public record Request(int TitleId, ExternalReference ReferenceKey, string Refere
     public const string MANGADEX_ID_URL_PREFIX = "/title/";
 
     // We can use a switch here when references get more complex (non guid)
-    public string ReferenceValue =>
-        Guid.TryParse(ReferenceRawValue, out var guidResult)
-            ? guidResult.ToString()
-            : ReferenceRawValue.Substring(
-                ReferenceRawValue.IndexOf(MANGADEX_ID_URL_PREFIX) + MANGADEX_ID_URL_PREFIX.Length,
-                GUID_CHAR_LENGHT);
+    public string ReferenceValue => Guid.TryParse(ReferenceRawValue, out var guidResult)
+        ? guidResult.ToString()
+        : ReferenceRawValue.Substring(
+            ReferenceRawValue.IndexOf(MANGADEX_ID_URL_PREFIX) + MANGADEX_ID_URL_PREFIX.Length,
+            GUID_CHAR_LENGHT);
 }
 
 public class RequestValidator : AbstractValidator<Request>

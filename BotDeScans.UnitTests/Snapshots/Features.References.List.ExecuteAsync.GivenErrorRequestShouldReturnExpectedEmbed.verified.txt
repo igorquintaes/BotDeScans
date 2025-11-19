@@ -1,0 +1,19 @@
+﻿{
+  Title: {
+    Value: :no_entry: Erro!,
+    HasValue: true
+  },
+  Colour: {
+    Value: Red,
+    HasValue: true
+  },
+  Fields: {
+    Value: [
+      {
+        Name: Erro 1,
+        Value: some error
+      }
+    ],
+    HasValue: true
+  }
+}
