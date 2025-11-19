@@ -5,6 +5,7 @@ using Remora.Discord.API.Objects;
 using Remora.Rest.Core;
 using Serilog;
 using System.Drawing;
+
 namespace BotDeScans.App.Builders;
 
 public static class EmbedBuilder
@@ -12,7 +13,7 @@ public static class EmbedBuilder
     public static Embed CreateErrorEmbed(ResultBase result)
     {
         if (result.IsSuccess)
-            throw new InvalidOperationException("error embed must be called with an error result state");
+            throw new InvalidOperationException("Error embed must be called with an error result state");
 
         var errorsInfos = result.Errors.GetErrorsInfo();
         var embedFields = errorsInfos.Select(errorInfo =>

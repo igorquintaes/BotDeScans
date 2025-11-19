@@ -53,10 +53,11 @@ public static class FluentResultExtensions
         {
             var error = errors[index];
             var errorNumber = index + 1;
-            yield return new(error.Message, errorNumber, depth, ErrorType.Regular);
 
             if (error.TryGetExceptionMessageFromError(out var exceptionMessage))
                 yield return new(exceptionMessage, errorNumber, depth, ErrorType.Exception);
+            else
+                yield return new(error.Message, errorNumber, depth, ErrorType.Regular);
 
             foreach (var innerError in GetErrorsInfo(error.Reasons, depth + 1))
                 yield return innerError;
@@ -72,7 +73,7 @@ public static class FluentResultExtensions
             {
                 var code = googleException.HttpStatusCode;
                 var intCode = (int)code;
-                exceptionMessage = $"O Google retornou o HTTP Status Code[{code} ({intCode})](https://http.cat/{intCode})";
+                exceptionMessage = $"O Google retornou o HTTP Status Code [{code} ({intCode})](https://http.cat/{intCode})";
             }
             else
                 exceptionMessage = exceptionalError.Exception.Message;
