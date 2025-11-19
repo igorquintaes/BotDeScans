@@ -62,6 +62,40 @@ public class CommandsTests : UnitTest
         }
 
         [Fact]
+        public async Task GivenErrorRequestShouldReturnSuccess()
+        {
+            A.CallTo(() => fixture
+                .FreezeFake<Handler>()
+                .ExecuteAsync(A<int>.Ignored, cancellationToken))
+                .Returns(FluentResults.Result.Fail("some error"));
+
+            var result = await commands.ExecuteAsync(fixture.Create<int>());
+
+            result.IsSuccess.Should().BeTrue();
+        }
+
+        [Fact]
+        public async Task GivenErrorRequestShouldReturnExpectedEmbed()
+        {
+            Embed embedResult = null!;
+
+            A.CallTo(() => fixture
+                .FreezeFake<Handler>()
+                .ExecuteAsync(A<int>.Ignored, cancellationToken))
+                .Returns(FluentResults.Result.Fail("some error"));
+
+            A.CallTo(() => fixture
+                .FreezeFake<IFeedbackService>()
+                .SendContextualEmbedAsync(A<Embed>.Ignored, A<FeedbackMessageOptions>.Ignored, cancellationToken))
+                .Invokes((Embed embed, FeedbackMessageOptions _, CancellationToken _) => embedResult = embed);
+
+            await commands.ExecuteAsync(fixture.Create<int>());
+
+            embedResult.Should().NotBeNull();
+            await Verify(embedResult);
+        }
+
+        [Fact]
         public async Task GivenErrorToSendFeedbackMessageShouldReturnError()
         {
             A.CallTo(() => fixture

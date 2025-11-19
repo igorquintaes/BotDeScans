@@ -41,4 +41,27 @@ public class TitleRepositoryTests : UnitPersistenceTest
             result?.References.Should().BeEquivalentTo([expectedReference]);
         }
     }
+
+    public class GetTitlesAsync : TitleRepositoryTests
+    {
+        [Fact]
+        public async Task GivenTitlesInDatabaseShouldReturnAllTitles()
+        {
+            var expectedTitles = Enumerable.Range(1, 5)
+                .Select(i => fixture.Build<Title>()
+                    .With(x => x.Id, i)
+                    .With(x => x.References, [])
+                    .With(x => x.SkipSteps, [])
+                    .Create())
+                .ToList();
+
+            await fixture.Freeze<DatabaseContext>().AddRangeAsync(expectedTitles, cancellationToken);
+            await fixture.Freeze<DatabaseContext>().SaveChangesAsync(cancellationToken);
+
+            var result = await repository.GetTitlesAsync(cancellationToken);
+
+            result.Should().HaveCount(expectedTitles.Count).And
+                           .ContainInOrder(expectedTitles);
+        }
+    }
 }
