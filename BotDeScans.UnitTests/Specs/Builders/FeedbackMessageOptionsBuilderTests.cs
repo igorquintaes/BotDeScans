@@ -50,7 +50,7 @@ public class FeedbackMessageOptionsBuilderTests : UnitTest
 
             var options = builder.Build();
 
-            options.Attachments.HasValue.Should().BeFalse();
+            options.Attachments.Value.Should().BeNull();
         }
 
         [Fact]

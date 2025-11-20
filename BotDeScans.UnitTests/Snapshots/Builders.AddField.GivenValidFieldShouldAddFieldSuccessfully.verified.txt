@@ -1,0 +1,97 @@
+﻿[
+  {
+    Components: [
+      {
+        CustomID: field_1,
+        Style: Short,
+        Label: Test Field 1,
+        IsRequired: {
+          Value: true,
+          HasValue: true
+        },
+        Value: {
+          Value: Default Value 1,
+          HasValue: true
+        },
+        Type: TextInput
+      }
+    ],
+    Type: ActionRow
+  },
+  {
+    Components: [
+      {
+        CustomID: field_2,
+        Style: Paragraph,
+        Label: Test Field 2,
+        IsRequired: {
+          Value: true,
+          HasValue: true
+        },
+        Value: {
+          Value: Default Value 2,
+          HasValue: true
+        },
+        Type: TextInput
+      }
+    ],
+    Type: ActionRow
+  },
+  {
+    Components: [
+      {
+        CustomID: field_3,
+        Style: Short,
+        Label: Test Field 3,
+        IsRequired: {
+          Value: false,
+          HasValue: true
+        },
+        Value: {
+          Value: ,
+          HasValue: true
+        },
+        Type: TextInput
+      }
+    ],
+    Type: ActionRow
+  },
+  {
+    Components: [
+      {
+        CustomID: field_4,
+        Style: Paragraph,
+        Label: Test Field 4,
+        IsRequired: {
+          Value: false,
+          HasValue: true
+        },
+        Value: {
+          Value: ,
+          HasValue: true
+        },
+        Type: TextInput
+      }
+    ],
+    Type: ActionRow
+  },
+  {
+    Components: [
+      {
+        CustomID: field_5,
+        Style: Short,
+        Label: Test Field 5,
+        IsRequired: {
+          Value: true,
+          HasValue: true
+        },
+        Value: {
+          Value: ,
+          HasValue: true
+        },
+        Type: TextInput
+      }
+    ],
+    Type: ActionRow
+  }
+]
