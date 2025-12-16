@@ -5,12 +5,13 @@ using CG.Web.MegaApiClient;
 using FluentResults;
 using Microsoft.Extensions.Configuration;
 using System.Diagnostics.CodeAnalysis;
+
 namespace BotDeScans.App.Services.Initializations.Factories;
 
 public class MegaClientFactory(IConfiguration configuration) : ClientFactory<IMegaApiClient>
 {
     public override bool Enabled => configuration
-        .GetRequiredValues<StepName>("Settings:Publish:Steps", value => Enum.Parse(typeof(StepName), value))
+        .GetValues<StepName>("Settings:Publish:Steps", value => Enum.Parse(typeof(StepName), value))
         .Any(x => x is StepName.UploadPdfMega or StepName.UploadZipMega);
 
     public override async Task<Result<IMegaApiClient>> CreateAsync(CancellationToken cancellationToken)

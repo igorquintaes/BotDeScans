@@ -9,6 +9,7 @@ using Google.Apis.Services;
 using Google.Apis.Util.Store;
 using Microsoft.Extensions.Configuration;
 using System.Diagnostics.CodeAnalysis;
+
 namespace BotDeScans.App.Services.Initializations.Factories;
 
 public class GoogleBloggerClientFactory(
@@ -19,7 +20,7 @@ public class GoogleBloggerClientFactory(
     public const string CREDENTIALS_FILE_NAME = "blogger.json";
 
     public override bool Enabled => configuration
-        .GetRequiredValues<StepName>("Settings:Publish:Steps", value => Enum.Parse(typeof(StepName), value))
+        .GetValues<StepName>("Settings:Publish:Steps", value => Enum.Parse(typeof(StepName), value))
         .Any(x => x == StepName.PublishBlogspot);
 
     public override async Task<Result<BloggerService>> CreateAsync(

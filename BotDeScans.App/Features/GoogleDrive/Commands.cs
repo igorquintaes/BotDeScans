@@ -29,7 +29,7 @@ public class Commands(
     [Description("Verifica se a url contém ou não erros para publicação")]
     public async Task<IResult> VerifyUrl(string url)
     {
-        var validationResult = googleDriveUrlValidator.Validate(new GoogleDriveUrl(url));
+        var validationResult = await googleDriveUrlValidator.ValidateAsync(new GoogleDriveUrl(url), CancellationToken);
         var responseEmbed = validationResult.IsValid
             ? EmbedBuilder.CreateSuccessEmbed("Arquivos válidos para publicação!")
             : EmbedBuilder.CreateErrorEmbed(validationResult.ToResult());

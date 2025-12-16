@@ -1,6 +1,7 @@
 ﻿using FluentResults;
 using Microsoft.Extensions.Configuration;
 using System.ComponentModel;
+
 namespace BotDeScans.App.Extensions;
 
 public static class ConfigurationExtensions
@@ -27,15 +28,6 @@ public static class ConfigurationExtensions
             return Result.Fail($"'{key}' config value contains a not supported value.");
         }
     }
-
-    public static T[] GetRequiredValues<T>(this IConfiguration configuration, string key, Func<string, object> parser) =>
-        configuration
-            .GetRequiredSection(key)
-            .Get<List<string>>()!
-            .Where(x => x is not null)
-            .Select(x => (T)parser(x))
-            .Distinct()
-            .ToArray();
 
     public static T[] GetValues<T>(this IConfiguration configuration, string key, Func<string, object> parser)
     {
