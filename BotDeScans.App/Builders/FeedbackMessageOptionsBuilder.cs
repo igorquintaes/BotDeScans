@@ -15,7 +15,7 @@ public class FeedbackMessageOptionsBuilder
     {
         attachments ??= [];
 
-        if (attachments.Count > MAX_ATTACHMENTS_ALLOWED)
+        if (attachments.Count >= MAX_ATTACHMENTS_ALLOWED)
             throw new ArgumentOutOfRangeException(nameof(name), $"Discord allows only {MAX_ATTACHMENTS_ALLOWED} attachments for each message.");
 
         attachments.Add(OneOf<FileData, IPartialAttachment>.FromT0(new FileData(name, stream)));
