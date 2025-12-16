@@ -40,7 +40,7 @@ public class CommandsTests : UnitTest
 
             A.CallTo(() => fixture
                 .FreezeFake<IValidator<GoogleDriveUrl>>()
-                .Validate(A<GoogleDriveUrl>.Ignored))
+                .ValidateAsync(A<GoogleDriveUrl>.Ignored, cancellationToken))
                 .Returns(validationResult);
         }
 
@@ -63,7 +63,7 @@ public class CommandsTests : UnitTest
         {
             A.CallTo(() => fixture
                 .FreezeFake<IValidator<GoogleDriveUrl>>()
-                .Validate(A<GoogleDriveUrl>.Ignored))
+                .ValidateAsync(A<GoogleDriveUrl>.Ignored, cancellationToken))
                 .Returns(new ValidationResult(
                     [new ValidationFailure("prop", "reason")]));
 
@@ -88,7 +88,7 @@ public class CommandsTests : UnitTest
 
             A.CallTo(() => fixture
                 .FreezeFake<IValidator<GoogleDriveUrl>>()
-                .Validate(A<GoogleDriveUrl>.That.Matches(x => x.Url == url)))
+                .ValidateAsync(A<GoogleDriveUrl>.That.Matches(x => x.Url == url), cancellationToken))
                 .MustHaveHappenedOnceExactly();
         }
 

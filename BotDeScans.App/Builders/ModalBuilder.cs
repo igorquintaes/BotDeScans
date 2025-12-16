@@ -15,7 +15,7 @@ public class ModalBuilder(string ModalId, string Title) : List<ActionRowComponen
         string? value = null)
     {
         if (Count == 5)
-            throw new ArgumentOutOfRangeException(nameof(fieldName), "Cannot build a modal with more than 5 fields (Discord API validation).");
+            throw new InvalidOperationException("A modal can have at most 5 fields.");
 
         Add(new ActionRowComponent([
             new TextInputComponent(

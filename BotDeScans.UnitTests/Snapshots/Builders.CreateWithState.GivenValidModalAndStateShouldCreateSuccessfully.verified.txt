@@ -1,0 +1,25 @@
+﻿{
+  CustomID: remora::interactivity::$!some_state_value modal::some_modal_id,
+  Title: Some Modal Title,
+  Components: [
+    {
+      Components: [
+        {
+          CustomID: field_name,
+          Style: Short,
+          Label: Test Label,
+          IsRequired: {
+            Value: true,
+            HasValue: true
+          },
+          Value: {
+            Value: ,
+            HasValue: true
+          },
+          Type: TextInput
+        }
+      ],
+      Type: ActionRow
+    }
+  ]
+}
