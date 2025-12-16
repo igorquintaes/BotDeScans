@@ -7,10 +7,12 @@ public class FeedbackMessageOptionsBuilderTests : UnitTest
     public class WithAttachment : FeedbackMessageOptionsBuilderTests
     {
         [Fact]
-        public void GivenMoreThan10AttachmentsShouldThrowException()
+        public void GivenMoreThanMaxAttachmentsAllowedShouldThrowException()
         {
+            const int ATTACHMENTS_QUANTITY = FeedbackMessageOptionsBuilder.MAX_ATTACHMENTS_ALLOWED + 1;
+
             var builder = new FeedbackMessageOptionsBuilder();
-            for (int i = 0; i < 11; i++)
+            for (int i = 0; i < ATTACHMENTS_QUANTITY; i++)
             {
                 builder.WithAttachment($"file{i}.txt", new MemoryStream());
             }
@@ -18,7 +20,7 @@ public class FeedbackMessageOptionsBuilderTests : UnitTest
             Action act = () => builder.WithAttachment("file11.txt", new MemoryStream());
            
             act.Should().Throw<ArgumentOutOfRangeException>()
-                .WithMessage("Discord allows only 10 attachments for each message. (Parameter 'name')");
+                .WithMessage($"Discord allows only {FeedbackMessageOptionsBuilder.MAX_ATTACHMENTS_ALLOWED} attachments for each message. (Parameter 'name')");
         }
 
         [Fact]
