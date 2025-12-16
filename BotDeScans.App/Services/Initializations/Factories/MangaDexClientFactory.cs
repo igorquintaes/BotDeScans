@@ -14,7 +14,7 @@ public class MangaDexClientFactory(
     : ClientFactory<MangaDexAccessToken>
 {
     public override bool Enabled => configuration
-        .GetValues<StepName>("Settings:Publish:Steps", value => Enum.Parse(typeof(StepName), value))
+        .GetValues<StepName>("Settings:Publish:Steps")
         .Any(x => x == StepName.UploadMangadex);
 
     public override async Task<Result<MangaDexAccessToken>> CreateAsync(CancellationToken cancellationToken)

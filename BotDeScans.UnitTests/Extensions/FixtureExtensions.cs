@@ -63,7 +63,7 @@ public static class FixtureExtensions
         return fixture.Freeze<T[]>();
     }
 
-    public static void FreezeFakeConfiguration(this IFixture fixture, string key, string? value)
+    public static IConfiguration FreezeFakeConfiguration(this IFixture fixture, string key, string? value)
     {
         fixture.FreezeFake<IConfiguration>();
 
@@ -74,9 +74,11 @@ public static class FixtureExtensions
             .FreezeFake<IConfiguration>()
             .GetSection(key))
             .Returns(fakeSection);
+
+        return fixture.FreezeFake<IConfiguration>();
     }
 
-    public static void FreezeFakeConfiguration(this IFixture fixture, string key, IEnumerable<string> values)
+    public static IConfiguration FreezeFakeConfiguration(this IFixture fixture, string key, IEnumerable<string> values)
     {
         fixture.FreezeFake<IConfiguration>();
 
@@ -96,6 +98,8 @@ public static class FixtureExtensions
 
         A.CallTo(() => baseFakeSection.GetChildren())
             .Returns(innerFakeSections);
+
+        return fixture.FreezeFake<IConfiguration>();
     }
 
     public static T CreateCommand<T>(this IFixture fixture, CancellationToken cancellationToken)

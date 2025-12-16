@@ -11,7 +11,7 @@ namespace BotDeScans.App.Services.Initializations.Factories;
 public class MegaClientFactory(IConfiguration configuration) : ClientFactory<IMegaApiClient>
 {
     public override bool Enabled => configuration
-        .GetValues<StepName>("Settings:Publish:Steps", value => Enum.Parse(typeof(StepName), value))
+        .GetValues<StepName>("Settings:Publish:Steps")
         .Any(x => x is StepName.UploadPdfMega or StepName.UploadZipMega);
 
     public override async Task<Result<IMegaApiClient>> CreateAsync(CancellationToken cancellationToken)
