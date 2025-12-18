@@ -55,7 +55,7 @@ public abstract class ConfigurationExtensionsTests : UnitTest
         public void GivenInvalidValueForATypeShouldReturnFailResult()
         {
             const string KEY = "SomeKey";
-            const string ERROR = $"'{KEY}' config value contains a not supported value.";
+            const string ERROR = $"'{KEY}' config value contains an unsupported value.";
 
             fixture.FreezeFakeConfiguration(KEY, "invalid-value")
                    .GetRequiredValueAsResult<int>(KEY)
