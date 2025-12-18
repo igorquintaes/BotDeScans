@@ -3,6 +3,7 @@ using FakeItEasy.Creation;
 using Microsoft.Extensions.Configuration;
 using Remora.Commands.Groups;
 using System.Reflection;
+
 namespace BotDeScans.UnitTests.Extensions;
 
 public static class FixtureExtensions
@@ -65,8 +66,6 @@ public static class FixtureExtensions
 
     public static IConfiguration FreezeFakeConfiguration(this IFixture fixture, string key, string? value)
     {
-        fixture.FreezeFake<IConfiguration>();
-
         var fakeSection = A.Fake<IConfigurationSection>();
         A.CallTo(() => fakeSection.Value).Returns(value);
 
@@ -80,8 +79,6 @@ public static class FixtureExtensions
 
     public static IConfiguration FreezeFakeConfiguration(this IFixture fixture, string key, IEnumerable<string> values)
     {
-        fixture.FreezeFake<IConfiguration>();
-
         var innerFakeSections = values.Select(value =>
         {
             var innerFakeSection = A.Fake<IConfigurationSection>();
