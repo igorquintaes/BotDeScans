@@ -20,7 +20,7 @@ public class GoogleBloggerClientFactory(
     public const string CREDENTIALS_FILE_NAME = "blogger.json";
 
     public override bool Enabled => configuration
-        .GetValues<StepName>("Settings:Publish:Steps", value => Enum.Parse(typeof(StepName), value))
+        .GetValues<StepName>("Settings:Publish:Steps")
         .Any(x => x == StepName.PublishBlogspot);
 
     public override async Task<Result<BloggerService>> CreateAsync(

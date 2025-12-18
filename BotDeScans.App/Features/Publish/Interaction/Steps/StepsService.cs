@@ -32,9 +32,7 @@ public class StepsService(IConfiguration configuration, IEnumerable<IStep> allSt
     /// </summary>
     private static List<IStep> GetConfigurationSteps(IConfiguration configuration, IEnumerable<IStep> allSteps)
     {
-        var stepNames = configuration.GetValues<StepName>(
-            key: STEPS_KEY,
-            value => Enum.Parse(typeof(StepName), value));
+        var stepNames = configuration.GetValues<StepName>(key: STEPS_KEY);
 
         return allSteps
             .Where(step => stepNames.Contains(step.Name))

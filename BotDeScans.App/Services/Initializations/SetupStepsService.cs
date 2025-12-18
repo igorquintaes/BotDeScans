@@ -4,6 +4,7 @@ using BotDeScans.App.Features.Publish.Interaction.Steps.Enums;
 using BotDeScans.App.Models.Entities.Enums;
 using FluentResults;
 using Microsoft.Extensions.Configuration;
+
 namespace BotDeScans.App.Services.Initializations;
 
 public class SetupStepsService(
@@ -16,7 +17,7 @@ public class SetupStepsService(
     {
         Console.WriteLine("Validating Publish Steps...");
 
-        var expectedStepsAsString = configuration.GetValues<string>(STEPS_KEY, value => value);
+        var expectedStepsAsString = configuration.GetValues<string>(STEPS_KEY);
         if (expectedStepsAsString.Length == 0)
             return Result.Fail($"Não foi encontrado nenhum passo de publicação em '{STEPS_KEY}'.");
 

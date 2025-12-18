@@ -12,37 +12,28 @@ public static class ConfigurationExtensions
 
     public static Result<T> GetRequiredValueAsResult<T>(this IConfiguration configuration, string key)
     {
-        var value = configuration.GetValue<string?>(key, null);
+        var value = configuration.GetValue<string?>(key);
+
         if (string.IsNullOrWhiteSpace(value))
             return Result.Fail($"'{key}' config value not found.");
 
         try
         {
-            var typedValue = (T)TypeDescriptor.GetConverter(typeof(T)).ConvertFrom(value)!;
-            return EqualityComparer<T>.Default.Equals(typedValue, default)
-                ? Result.Fail($"'{key}' config should not be filled with a valid value.")
-                : Result.Ok(typedValue);
+            var converter = TypeDescriptor.GetConverter(typeof(T));
+            var convertedValue = (T)converter.ConvertFromInvariantString(value)!;
+            return Result.Ok(convertedValue);
         }
-        catch (NotSupportedException)
+        catch (Exception)
         {
-            return Result.Fail($"'{key}' config value contains a not supported value.");
+            var errorMessage = $"'{key}' config value contains an unsupported value.";
+            return Result.Fail(errorMessage);
         }
     }
 
-    public static T[] GetValues<T>(this IConfiguration configuration, string key, Func<string, object> parser)
-    {
-        var section = configuration.GetSection(key);
-        if (section is null)
-            return [];
-
-        var items = section.Get<List<string>>();
-        if (items is null)
-            return [];
-
-        return items
-            .Where(x => x is not null)
-            .Select(x => (T)parser(x))
-            .Distinct()
-            .ToArray();
-    }
+    public static T[] GetValues<T>(this IConfiguration configuration, string key) =>
+        configuration.GetSection(key)
+                    ?.Get<List<T>>()
+                    ?.Distinct()
+                     .ToArray()
+                    ?? [];
 }
