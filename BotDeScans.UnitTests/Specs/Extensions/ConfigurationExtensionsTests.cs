@@ -88,8 +88,7 @@ public abstract class ConfigurationExtensionsTests : UnitTest
                    .GetSection(SECTION))
                    .Returns(null);
 
-            var result = fixture
-                   .FreezeFake<IConfiguration>()
+            fixture.FreezeFake<IConfiguration>()
                    .GetValues<string>(SECTION)
                    .Should().BeEmpty();
         }
@@ -147,6 +146,31 @@ public abstract class ConfigurationExtensionsTests : UnitTest
             fixture.FreezeFakeConfiguration(SECTION, values)
                    .GetValues<StepName>(SECTION)
                    .Should().BeEquivalentTo(expectedResult);
+        }
+
+        [Fact]
+        public void GivenSomeInvalidValueShouldIgnoreThem()
+        {
+            const string SECTION = "SomeSection";
+
+            var values = new string[] { "1", "invalid", "2", "invalid" };
+            var expectedResult = new int[] { 1, 2 };
+
+            fixture.FreezeFakeConfiguration(SECTION, values)
+                   .GetValues<int>(SECTION)
+                   .Should().BeEquivalentTo(expectedResult);
+        }
+
+        [Fact]
+        public void GivenOnlyInvalidValueShouldReturnEmpty()
+        {
+            const string SECTION = "SomeSection";
+
+            var values = new string[] { "invalid", "invalid" };
+
+            fixture.FreezeFakeConfiguration(SECTION, values)
+                   .GetValues<int>(SECTION)
+                   .Should().BeEmpty();
         }
     }
 }
