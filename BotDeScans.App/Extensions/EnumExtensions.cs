@@ -1,6 +1,7 @@
 ﻿using BotDeScans.App.Attributes;
 using System.ComponentModel;
 using System.Reflection;
+
 namespace BotDeScans.App.Extensions;
 
 public static class EnumExtensions

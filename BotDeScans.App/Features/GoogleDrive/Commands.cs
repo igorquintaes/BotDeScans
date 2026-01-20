@@ -6,6 +6,7 @@ using BotDeScans.App.Features.GoogleDrive.Models;
 using BotDeScans.App.Services;
 using BotDeScans.App.Services.Discord;
 using FluentValidation;
+using Microsoft.EntityFrameworkCore.Query.Internal;
 using Remora.Commands.Attributes;
 using Remora.Commands.Groups;
 using Remora.Discord.API.Objects;
@@ -102,6 +103,7 @@ public class Commands(
     }
 
 #if DEBUG
+
     [Group("debug")]
     [ExcludeFromCodeCoverage(Justification = "Live Discord testing and debug.")]
     public class DebugCommands(
@@ -118,12 +120,11 @@ public class Commands(
         {
             var googleDriveUrl = new GoogleDriveUrl(url);
             var downloadResult = await googleDriveService.SaveFilesAsync(googleDriveUrl.Id, Directory.GetCurrentDirectory(), CancellationToken);
-            if (downloadResult.IsFailed)
-                return await downloadResult.PostErrorOnDiscord(feedbackService, CancellationToken);
+            var embed = downloadResult.IsSuccess
+                ? EmbedBuilder.CreateSuccessEmbed($"Success.")
+                : EmbedBuilder.CreateErrorEmbed(downloadResult);
 
-            return await feedbackService.SendContextualEmbedAsync(
-                EmbedBuilder.CreateSuccessEmbed($"Funcionando."),
-                ct: CancellationToken);
+            return await feedbackService.SendContextualEmbedAsync(embed, ct: CancellationToken);
         }
 
         [Command("upload-files")]
@@ -135,15 +136,17 @@ public class Commands(
             const string DEBUG_NAME_FILE = "debug.zip";
             var createFolderResult = await googleDriveService.GetOrCreateFolderAsync(DEBUG_NAME_FOLDER, default, CancellationToken);
             if (createFolderResult.IsFailed)
-                return await feedbackService.SendContextualEmbedAsync(EmbedBuilder.CreateErrorEmbed(createFolderResult), ct: CancellationToken);
+                return await feedbackService.SendContextualEmbedAsync(
+                    embed: EmbedBuilder.CreateErrorEmbed(createFolderResult), 
+                    ct: CancellationToken);
 
             var parentId = createFolderResult.Value.Id;
             var filePath = Path.Combine(Directory.GetCurrentDirectory(), DEBUG_NAME_FILE);
             var createFileResult = await googleDriveService.CreateFileAsync(filePath, parentId, false, CancellationToken);
 
-            var embed = createFileResult.IsFailed
-                 ? EmbedBuilder.CreateErrorEmbed(createFileResult)
-                 : EmbedBuilder.CreateSuccessEmbed($"Working.");
+            var embed = createFileResult.IsSuccess
+                ? EmbedBuilder.CreateSuccessEmbed($"Success.")
+                : EmbedBuilder.CreateErrorEmbed(createFileResult);
 
             return await feedbackService.SendContextualEmbedAsync(embed, ct: CancellationToken);
         }
