@@ -12,7 +12,7 @@ public static class ObjectExtensions
             () => expression.Compile().Invoke(obj),
             ex =>
             {
-                const string ERROR_MESSAGE = "Fatal error ocurred. More information inside log file.";
+                const string ERROR_MESSAGE = "Fatal error occurred. More information inside log file.";
                 Log.Error(ex, ERROR_MESSAGE);
                 return new Error(ERROR_MESSAGE).CausedBy(ex);
             });

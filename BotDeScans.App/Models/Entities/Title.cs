@@ -56,13 +56,11 @@ public class TitleValidator : AbstractValidator<Title>
             .Must(x => x.HasValue && x.Value > 0UL)
             .WithMessage($"Não foi definida uma role para o Discord nesta obra, obrigatória para o ping de tipo {pingType}. " +
                           "Defina, ou mude o tipo de ping para publicação no arquivo de configuração do Bot de Scans.")
-            .MustAsync(async (_, prop, context, ct) =>
+            .CustomAsync(async (roleId, context, ct) =>
             {
-                var rolesResult = await rolesService.GetRoleAsync(prop.ToString()!, ct);
+                var rolesResult = await rolesService.GetRoleAsync(roleId.ToString()!, ct);
                 if (rolesResult.IsFailed)
                     context.AddFailure(rolesResult.ToValidationErrorMessage());
-
-                return true;
             })
             .When(prop => pingType is PingType.Global or PingType.Role);
     }

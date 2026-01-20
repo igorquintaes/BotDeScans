@@ -38,7 +38,7 @@ public class EnumExtensionsTests
             EmojiEnum.Valid.GetEmoji().Should().Be(":emoji-value:");
 
         [Fact]
-        public void ShouldThrowErrorWhenAttributeDoesNxotExists()
+        public void ShouldThrowErrorWhenAttributeDoesNotExists()
         {
             var error = $"Attribute not found. Attr Type: {typeof(EmojiEnum)}, object value: Invalid";
 

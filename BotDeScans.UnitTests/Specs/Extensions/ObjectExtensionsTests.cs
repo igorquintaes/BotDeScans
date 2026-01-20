@@ -58,7 +58,7 @@ public abstract class ObjectExtensionsTests : UnitTest
         [Fact]
         public async Task GivenExceptionShouldReturnFailureResultWithExpectedError()
         {
-            const string ERROR_MESSAGE = "Fatal error ocurred. More information inside log file.";
+            const string ERROR_MESSAGE = "Fatal error occurred. More information inside log file.";
 
             Expression<Func<TestObject, Task<Result>>> expression = obj => TestObject.ThrowExceptionMethodAsync();
 
@@ -70,7 +70,7 @@ public abstract class ObjectExtensionsTests : UnitTest
         [Fact]
         public async Task GivenExceptionShouldLogError()
         {
-            const string ERROR_MESSAGE = "Fatal error ocurred. More information inside log file.";
+            const string ERROR_MESSAGE = "Fatal error occurred. More information inside log file.";
             const string EXCEPTION_MESSAGE = "Test exception";
 
             Expression<Func<TestObject, Task<Result>>> expression = obj => TestObject.ThrowExceptionMethodAsync();

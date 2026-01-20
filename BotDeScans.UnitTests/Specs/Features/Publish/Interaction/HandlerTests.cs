@@ -138,7 +138,7 @@ public class HandlerTests : UnitTest
         [Fact]
         public async Task GivenExceptionExecutionShouldReturnFailResult()
         {
-            const string ERROR_MESSAGE = "Fatal error ocurred. More information inside log file.";
+            const string ERROR_MESSAGE = "Fatal error occurred. More information inside log file.";
             A.CallTo(() => fixture
                 .Freeze<State>()
                 .Steps.PublishSteps.First().Step

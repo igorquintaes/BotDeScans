@@ -67,7 +67,7 @@ public abstract class StringExtensionsTests : UnitTest
         {
             string? text = null;
 
-            var result = text.Slugify();
+            var result = text!.Slugify();
 
             result.Should().BeNull();
         }

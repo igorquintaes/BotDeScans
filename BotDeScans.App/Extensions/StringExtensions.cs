@@ -23,8 +23,8 @@ public static class StringExtensions
 
         var lowercase = withoutDiacritics.ToLowerInvariant();
         var asciiOnly = Regex.Replace(lowercase, @"[^a-z0-9\s-]", "");
-        var normalized2 = Regex.Replace(asciiOnly, @"\s+", "-").Trim();
-        var normalized3 = Regex.Replace(normalized2, @"-+", "-").Trim('-');
-        return normalized3;
+        var spacesReplaced = Regex.Replace(asciiOnly, @"\s+", "-").Trim();
+        var duplicateHyphensRemoved = Regex.Replace(spacesReplaced, @"-+", "-").Trim('-');
+        return duplicateHyphensRemoved;
     }
 }
