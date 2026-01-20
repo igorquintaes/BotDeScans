@@ -27,12 +27,12 @@ public class RoleAuthorizeCondition(
         var guildId = interactionContext.Interaction.GuildID.Value;
         var memberId = interactionContext.Interaction.Member.Value.User.Value.ID;
         var guildMemberResult = await discordRestGuildAPI.GetGuildMemberAsync(guildId, memberId, ct);
-        if (!guildMemberResult.IsDefined(out var guildMember))
+        if (guildMemberResult.IsDefined(out var guildMember) is false)
             return Result.FromError(guildMemberResult.Error!);
 
         var expectedRoles = await rolesService.GetRoleAsync(attribute.RoleName, ct);
         if (expectedRoles.IsFailed)
-            return Result.FromError(expectedRoles.Errors.ToDiscordError());
+            return expectedRoles.ToDiscordResult();
 
         if (guildMember.Roles.Any(expectedRoles.Value.ID.Equals))
             return Result.FromSuccess();

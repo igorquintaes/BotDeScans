@@ -60,15 +60,15 @@ public class GoogleDriveService(
     {
         var folderResult = await googleDriveFoldersService.GetAsync(parentFolderName, GoogleDriveSettingsService.BaseFolderId, cancellationToken);
         if (folderResult.IsFailed || folderResult.Value is null)
-            return folderResult.ToResult().WithConditionalError(
-                conditionToAddError: () => folderResult.IsSuccess,
-                error: "Não foi encontrada uma pasta com o nome especificado.");
+            return folderResult.ToResult().FailIf(
+                condition: () => folderResult.IsSuccess,
+                message: "Não foi encontrada uma pasta com o nome especificado.");
 
         var fileResult = await googleDriveFilesService.GetAsync(fileName, folderResult.Value.Id, cancellationToken);
         if (fileResult.IsFailed || fileResult.Value is null)
-            return fileResult.ToResult().WithConditionalError(
-                conditionToAddError: () => fileResult.IsSuccess,
-                error: "Não foi encontrado um arquivo com o nome especificado.");
+            return fileResult.ToResult().FailIf(
+                condition: () => fileResult.IsSuccess,
+                message: "Não foi encontrado um arquivo com o nome especificado.");
 
         var deleteResult = await googleDriveResourcesService.DeleteResource(fileResult.Value.Id, cancellationToken);
         return deleteResult.ToResult();

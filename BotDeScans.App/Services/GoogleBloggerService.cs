@@ -34,7 +34,7 @@ public class GoogleBloggerService(
             Content = htmlContent,
             Title = title,
             Labels = [label],
-            Url = $"{uri.Host}/{title.Slugfy()}-{chapterNumber.Slugfy()}"
+            Url = $"{uri.Host}/{title.Slugify()}-{chapterNumber.Slugify()}"
         };
 
         var insertRequest = bloggerService.Posts.Insert(post, bloggerId);

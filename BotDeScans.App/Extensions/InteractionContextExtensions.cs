@@ -15,12 +15,12 @@ public static class InteractionContextExtensions
             : new Optional<string>();
     }
 
-    public static Snowflake GetUserId(this InteractionContext interactionContext) =>
+    public static string GetUserName(this InteractionContext interactionContext) =>
+        interactionContext.Interaction.Member.Value!.User.Value!.Username;
+
+    private static Snowflake GetUserId(this InteractionContext interactionContext) =>
         interactionContext.Interaction.Member.Value!.User.Value!.ID;
 
-    public static string GetUserName(this InteractionContext interactionContext) =>
-        interactionContext.Interaction.Member.Value!.User.Value!.Username ?? "Desconhecido";
-
-    public static string? GetUserAvatar(this InteractionContext interactionContext) =>
+    private static string? GetUserAvatar(this InteractionContext interactionContext) =>
         interactionContext.Interaction.Member.Value!.User.Value!.Avatar?.Value;
 }

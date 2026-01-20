@@ -52,19 +52,15 @@ public class TitleValidator : AbstractValidator<Title>
 
         // todo: validar que título não exista em criação
         RuleFor(model => model.DiscordRoleId)
-            .MustAsync(async (_, prop, context, ct) =>
+            .Cascade(CascadeMode.Stop)
+            .Must(x => x.HasValue && x.Value > 0UL)
+            .WithMessage($"Não foi definida uma role para o Discord nesta obra, obrigatória para o ping de tipo {pingType}. " +
+                          "Defina, ou mude o tipo de ping para publicação no arquivo de configuração do Bot de Scans.")
+            .CustomAsync(async (roleId, context, ct) =>
             {
-                if (prop.HasValue is false || prop == default(ulong))
-                    context.AddFailure($"Não foi definida uma role para o Discord nesta obra, obrigatória para o ping de tipo {pingType}. " +
-                                        "Defina, ou mude o tipo de ping para publicação no arquivo de configuração do Bot de Scans.");
-                else
-                {
-                    var rolesResult = await rolesService.GetRoleAsync(prop.ToString()!, ct);
-                    if (rolesResult.IsFailed)
-                        context.AddFailure(rolesResult.ToValidationErrorMessage());
-                }
-
-                return true;
+                var rolesResult = await rolesService.GetRoleAsync(roleId.ToString()!, ct);
+                if (rolesResult.IsFailed)
+                    context.AddFailure(rolesResult.ToValidationErrorMessage());
             })
             .When(prop => pingType is PingType.Global or PingType.Role);
     }

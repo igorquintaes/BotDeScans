@@ -1,6 +1,8 @@
 ﻿using BotDeScans.App.Attributes;
 using BotDeScans.App.Extensions;
 using System.ComponentModel;
+using static FluentAssertions.FluentActions;
+
 namespace BotDeScans.UnitTests.Specs.Extensions;
 
 public class EnumExtensionsTests
@@ -14,9 +16,11 @@ public class EnumExtensionsTests
         [Fact]
         public void ShouldThrowErrorWhenAttributeDoesNotExists()
         {
-            Action action = () => DescriptionEnum.Invalid.GetDescription();
-            action.Should().ThrowExactly<InvalidOperationException>().WithMessage(
-                $"Attribute not found. Attr Type: {typeof(DescriptionEnum)}, object value: {DescriptionEnum.Invalid}");
+            var error = $"Attribute not found. Attr Type: {typeof(DescriptionEnum)}, object value: Invalid";
+
+            Invoking(() => DescriptionEnum.Invalid.GetDescription())
+                .Should().Throw<InvalidOperationException>()
+                .WithMessage(error);
         }
 
         private enum DescriptionEnum
@@ -34,11 +38,13 @@ public class EnumExtensionsTests
             EmojiEnum.Valid.GetEmoji().Should().Be(":emoji-value:");
 
         [Fact]
-        public void ShouldThrowErrorWhenAttributeDoesNxotExists()
+        public void ShouldThrowErrorWhenAttributeDoesNotExists()
         {
-            Action action = () => EmojiEnum.Invalid.GetEmoji();
-            action.Should().ThrowExactly<InvalidOperationException>().WithMessage(
-                $"Attribute not found. Attr Type: {typeof(EmojiEnum)}, object value: {EmojiEnum.Invalid}");
+            var error = $"Attribute not found. Attr Type: {typeof(EmojiEnum)}, object value: Invalid";
+
+            Invoking(() => EmojiEnum.Invalid.GetEmoji())
+                .Should().Throw<InvalidOperationException>()
+                .WithMessage(error);
         }
 
         private enum EmojiEnum
