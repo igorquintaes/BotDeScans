@@ -22,14 +22,12 @@ public class CompressFilesStep(
             MaxDegreeOfParallelism = maxDegreeOfParallelism
         };
 
-        await Parallel.ForEachAsync(
-            Directory.GetFiles(state.InternalData.OriginContentFolder),
-            parallelOptions,
-            async (filePath, ct) =>
-            {
-                var isGrayScale = imageService.IsGrayscale(filePath);
-                await imageService.CompressImageAsync(filePath, isGrayScale, ct);
-            });
+        var files = Directory.GetFiles(state.InternalData.OriginContentFolder);
+        await Parallel.ForEachAsync(files, parallelOptions, async (filePath, ct) =>
+        {
+            var isGrayScale = imageService.IsGrayscale(filePath);
+            await imageService.CompressImageAsync(filePath, isGrayScale, ct);
+        });
 
         return Result.Ok();
     }

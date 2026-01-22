@@ -6,7 +6,6 @@ using BotDeScans.App.Features.GoogleDrive.Models;
 using BotDeScans.App.Services;
 using BotDeScans.App.Services.Discord;
 using FluentValidation;
-using Microsoft.EntityFrameworkCore.Query.Internal;
 using Remora.Commands.Attributes;
 using Remora.Commands.Groups;
 using Remora.Discord.API.Objects;

@@ -3,6 +3,7 @@ using Microsoft.Extensions.Configuration;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.Advanced;
 using SixLabors.ImageSharp.PixelFormats;
+
 namespace BotDeScans.App.Services;
 
 public class ImageService(IConfiguration configuration)
@@ -13,12 +14,12 @@ public class ImageService(IConfiguration configuration)
         CancellationToken cancellationToken)
     {
         var (quality, minQuality) = GetImageQuality(isGrayscale);
-        var imageBytes = await TryCompressAsync(filePath, quality, minQuality);
+        var imageBytes = await CompressAsync(filePath, quality, minQuality);
 
-        using var stream = File.Create(Path.ChangeExtension(filePath, ".png"));
-        await stream.WriteAsync(imageBytes, cancellationToken);
+        var newPath = Path.ChangeExtension(filePath, ".png");
+        await File.WriteAllBytesAsync(newPath, [.. imageBytes], cancellationToken);
 
-        if (Path.GetExtension(filePath) != ".png")
+        if (!filePath.Equals(newPath, StringComparison.OrdinalIgnoreCase))
             File.Delete(filePath);
     }
 
@@ -31,7 +32,7 @@ public class ImageService(IConfiguration configuration)
     {
         var command = $"width={maxWidth}&height={maxHeight}&mode=max&scale=both";
         var (quality, minQuality) = GetImageQuality(isGrayscale);
-        var imageBytes = await TryCompressAsync(filePath, quality, minQuality, command);
+        var imageBytes = await CompressAsync(filePath, quality, minQuality, command);
 
         return Convert.ToBase64String(imageBytes);
     }
@@ -45,9 +46,8 @@ public class ImageService(IConfiguration configuration)
     /// <returns></returns>
     public virtual bool IsGrayscale(string filePath, int threshold = 20)
     {
-        //Load image
-        using var fileStream = File.OpenRead(filePath);
-        using var image = Image.Load<Rgba32>(fileStream);
+        // Load image
+        using var image = Image.Load<Rgba32>(filePath);
         foreach (var row in image.GetPixelMemoryGroup())
             foreach (var pixel in row.Span)
             {
@@ -63,7 +63,7 @@ public class ImageService(IConfiguration configuration)
                Math.Abs(b - r);
     }
 
-    private static async Task<ArraySegment<byte>> TryCompressAsync(
+    private static async Task<ArraySegment<byte>> CompressAsync(
         string filePath,
         int quality,
         int minQuality,

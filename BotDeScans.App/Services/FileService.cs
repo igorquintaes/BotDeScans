@@ -6,6 +6,7 @@ using iText.Layout;
 using iText.Layout.Element;
 using System.IO.Compression;
 using Path = System.IO.Path;
+
 namespace BotDeScans.App.Services;
 
 public class FileService
@@ -32,14 +33,16 @@ public class FileService
         if (resourcesDirectory.Equals(destinationDirectory, StringComparison.InvariantCultureIgnoreCase))
             return Result.Fail("Source and destination directories should not be the same.");
 
-        var pages = Directory.GetFiles(resourcesDirectory).OrderBy(x => x).ToArray();
-        var pagesQuantity = Math.Floor(Math.Log10(pages.Length) + 1);
+        var pages = Directory.EnumerateFiles(resourcesDirectory).OrderBy(x => x, StringComparer.OrdinalIgnoreCase).ToArray();
+        var pagesQuantity = (int)Math.Floor(Math.Log10(pages.Length) + 1);
         var filePath = Path.Combine(destinationDirectory, $"{fileName}.zip");
+
         using var newFile = ZipFile.Open(filePath, ZipArchiveMode.Create);
         for (var i = 0; i < pages.Length; i++)
         {
-            var pageNumber = (i + 1).ToString("D" + pagesQuantity);
-            newFile.CreateEntryFromFile(pages[i], pageNumber + Path.GetExtension(pages[i]), CompressionLevel.SmallestSize);
+            var pageNumber = (i + 1).ToString($"D{pagesQuantity}");
+            var entryName = $"{pageNumber}{Path.GetExtension(pages[i])}";
+            newFile.CreateEntryFromFile(pages[i], entryName, CompressionLevel.SmallestSize);
         }
 
         return filePath;
