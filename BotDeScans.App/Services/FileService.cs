@@ -6,6 +6,7 @@ using iText.Layout;
 using iText.Layout.Element;
 using System.IO.Compression;
 using Path = System.IO.Path;
+
 namespace BotDeScans.App.Services;
 
 public class FileService
@@ -24,6 +25,7 @@ public class FileService
         MimeTypes[Path.GetExtension(fileName)];
 
     // Limitação assíncrona: https://github.com/dotnet/runtime/issues/1541
+    // Todo: foi resolvido no .NET 10, verificar quando migrar
     public virtual Result<string> CreateZipFile(
         string fileName,
         string resourcesDirectory,
@@ -32,14 +34,22 @@ public class FileService
         if (resourcesDirectory.Equals(destinationDirectory, StringComparison.InvariantCultureIgnoreCase))
             return Result.Fail("Source and destination directories should not be the same.");
 
-        var pages = Directory.GetFiles(resourcesDirectory).OrderBy(x => x).ToArray();
-        var pagesQuantity = Math.Floor(Math.Log10(pages.Length) + 1);
+        var pages = Directory.EnumerateFiles(resourcesDirectory)
+            .OrderBy(x => x, StringComparer.OrdinalIgnoreCase)
+            .ToArray();
+
+        if (pages.Length == 0)
+            return Result.Fail("No files found in the source directory.");
+
+        var pagesQuantity = (int)Math.Floor(Math.Log10(pages.Length) + 1);
         var filePath = Path.Combine(destinationDirectory, $"{fileName}.zip");
+
         using var newFile = ZipFile.Open(filePath, ZipArchiveMode.Create);
         for (var i = 0; i < pages.Length; i++)
         {
-            var pageNumber = (i + 1).ToString("D" + pagesQuantity);
-            newFile.CreateEntryFromFile(pages[i], pageNumber + Path.GetExtension(pages[i]), CompressionLevel.SmallestSize);
+            var pageNumber = (i + 1).ToString($"D{pagesQuantity}");
+            var entryName = $"{pageNumber}{Path.GetExtension(pages[i])}";
+            newFile.CreateEntryFromFile(pages[i], entryName, CompressionLevel.SmallestSize);
         }
 
         return filePath;

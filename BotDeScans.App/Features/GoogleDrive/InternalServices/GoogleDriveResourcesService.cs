@@ -2,21 +2,13 @@
 using FluentResults;
 using Google.Apis.Drive.v3;
 using File = Google.Apis.Drive.v3.Data.File;
+
 namespace BotDeScans.App.Features.GoogleDrive.InternalServices;
 
 public class GoogleDriveResourcesService(
     DriveService driveService,
     GoogleWrapper googleWrapper)
 {
-    /// <summary>
-    /// Get resource (file or folder) based on its name, mimetype and, optionally, parentId folder.
-    /// It returns an error if more than one file is found based on matching criteria.
-    /// </summary>
-    /// <param name="mimeType">resource mimeType</param>
-    /// <param name="name">mimeType name</param>
-    /// <param name="parentId">parent folder id. If null, it will look at bot root folder.</param>
-    /// <param name="cancellationToken">cancellationToken</param>
-    /// <returns>Resource, if exists. Otherwise null</returns>
     public virtual async Task<Result<IList<File>>> GetResourcesAsync(
         string? mimeType,
         string? forbiddenMimeType,
@@ -26,12 +18,12 @@ public class GoogleDriveResourcesService(
         int? maxResult,
         CancellationToken cancellationToken = default)
     {
-        // todo: move it to a queryBuilder
-        var mimeTypeCondition = mimeType is null ? "" : $" and mimeType = '{mimeType}'";
-        var forbiddenMimeTypeCondition = forbiddenMimeType is null ? "" : $" and mimeType != '{forbiddenMimeType}'";
-        var nameCondition = name is null ? "" : $" and name = '{name}'";
-        var parentCondition = $" and '{parentId ?? GoogleDriveSettingsService.BaseFolderId}' in parents";
-        var query = @$"trashed = false{mimeTypeCondition}{forbiddenMimeTypeCondition}{nameCondition}{parentCondition}";
+        var query = new GoogleDriveQueryBuilder()
+            .WithMimeType(mimeType)
+            .WithoutMimeType(forbiddenMimeType)
+            .WithName(name)
+            .WithParent(parentId)
+            .Build();
 
         var listRequest = driveService.Files.List();
         listRequest.Q = query;
@@ -42,13 +34,22 @@ public class GoogleDriveResourcesService(
         if (requestResult.IsFailed)
             return requestResult.ToResult();
 
-        if (minResult is not null && requestResult.Value.Files.Count < minResult)
-            return Result.Fail($"Foi encontrado mais de um recurso para os dados mencionados, quando era esperado no mínimo {minResult}.");
-
-        if (maxResult is not null && requestResult.Value.Files.Count > maxResult)
-            return Result.Fail($"Foi encontrado mais de um recurso para os dados mencionados, quando era esperado no máximo {maxResult}.");
+        var validationResult = ValidateResultCount(requestResult.Value.Files.Count, minResult, maxResult);
+        if (validationResult.IsFailed)
+            return validationResult;
 
         return Result.Ok(requestResult.Value.Files);
+    }
+
+    private static Result ValidateResultCount(int count, int? minResult, int? maxResult)
+    {
+        if (minResult is not null && count < minResult)
+            return Result.Fail($"Foi encontrado menos resultados para os dados mencionados, quando era esperado no mínimo {minResult}.");
+
+        if (maxResult is not null && count > maxResult)
+            return Result.Fail($"Foi encontrado mais resultados para os dados mencionados, quando era esperado no máximo {maxResult}.");
+
+        return Result.Ok();
     }
 
     public virtual File CreateResourceObject(

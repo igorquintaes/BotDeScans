@@ -3,6 +3,7 @@ using Serilog;
 using System.Net.Http.Headers;
 using System.Text.Json;
 using System.Text.Json.Serialization;
+
 namespace BotDeScans.App.Services;
 
 public class SakuraMangasService(
@@ -31,7 +32,6 @@ public class SakuraMangasService(
 
         if (string.IsNullOrWhiteSpace(chapterName) is false)
             form.Add(new StringContent(chapterName), "titulochapter");
-
 
         using var fileStream = File.OpenRead(zipPath);
         using var fileContent = new StreamContent(fileStream);

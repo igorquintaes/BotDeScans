@@ -1,7 +1,14 @@
 ﻿using FluentResults;
 namespace BotDeScans.App.Services.Initializations.Factories.Base;
 
-public abstract class ClientFactory<TClient>
+public interface IClientFactory
+{
+    bool Enabled { get; }
+    Task<Result<object>> SafeCreateObjectAsync(CancellationToken cancellationToken);
+    Task<Result> HealthCheckAsync(object client, CancellationToken cancellationToken);
+}
+
+public abstract class ClientFactory<TClient> : IClientFactory
 {
     public abstract bool Enabled { get; }
     public abstract Task<Result<TClient>> CreateAsync(CancellationToken cancellationToken);
@@ -36,4 +43,15 @@ public abstract class ClientFactory<TClient>
 
         return Result.Fail($"Unable to find {typeof(TClient).Name} file: {filePath}");
     }
+
+    async Task<Result<object>> IClientFactory.SafeCreateObjectAsync(CancellationToken cancellationToken)
+    {
+        var result = await SafeCreateAsync(cancellationToken);
+        return result.IsFailed
+            ? Result.Fail<object>(result.Errors)
+            : Result.Ok<object>(result.Value!);
+    }
+
+    Task<Result> IClientFactory.HealthCheckAsync(object client, CancellationToken cancellationToken)
+        => HealthCheckAsync((TClient)client, cancellationToken);
 }

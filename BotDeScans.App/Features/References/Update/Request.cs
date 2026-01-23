@@ -45,15 +45,10 @@ public class RequestValidator : AbstractValidator<Request>
             return false;
 
         var index = url.IndexOf(Request.MANGADEX_ID_URL_PREFIX, StringComparison.Ordinal);
-        if (index == -1)
+        if (index == -1 || url.Length < index + Request.MANGADEX_ID_URL_PREFIX.Length + Request.GUID_CHAR_LENGHT)
             return false;
 
-        index += Request.MANGADEX_ID_URL_PREFIX.Length;
-
-        if (url.Length < index + Request.GUID_CHAR_LENGHT)
-            return false;
-
-        var span = url.AsSpan(index, Request.GUID_CHAR_LENGHT);
-        return Guid.TryParse(span, out _);
+        var guidSpan = url.AsSpan(index + Request.MANGADEX_ID_URL_PREFIX.Length, Request.GUID_CHAR_LENGHT);
+        return Guid.TryParse(guidSpan, out _);
     }
 }

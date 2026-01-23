@@ -5,6 +5,7 @@ using FluentAssertions.Execution;
 using FluentResults;
 using FluentValidation;
 using FluentValidation.Results;
+
 namespace BotDeScans.UnitTests.Specs.Services.Initializations;
 
 public class SetupClientsServiceTests : UnitTest
@@ -57,7 +58,9 @@ public class SetupClientsServiceTests : UnitTest
             const string ERROR_MESSAGE = "some-error";
             A.CallTo(() => fixture
                 .FreezeFake<IValidator<FakeClientFactory>>()
-                .ValidateAsync(fixture.FreezeFake<FakeClientFactory>(), cancellationToken))
+                .ValidateAsync(A<ValidationContext<IClientFactory>>.That.Matches(x => 
+                    x.InstanceToValidate == fixture.FreezeFake<FakeClientFactory>()), 
+                    cancellationToken))
                 .Returns(new ValidationResult([new ValidationFailure("prop", ERROR_MESSAGE)]));
 
             var result = await service.SetupAsync(cancellationToken);

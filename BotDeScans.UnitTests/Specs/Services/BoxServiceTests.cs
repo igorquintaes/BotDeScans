@@ -3,180 +3,349 @@ using BotDeScans.App.Services.Wrappers;
 using Box.V2;
 using Box.V2.Managers;
 using Box.V2.Models;
+
 namespace BotDeScans.UnitTests.Specs.Services;
 
 public class BoxServiceTests : UnitTest
 {
-    private const string rootFolderId = "0";
     private readonly BoxService service;
-    private readonly IBoxClient boxClient;
-    private readonly StreamWrapper streamWrapper;
 
     public BoxServiceTests()
     {
-        boxClient = A.Fake<IBoxClient>();
-        streamWrapper = A.Fake<StreamWrapper>();
+        fixture.FreezeFake<IBoxClient>();
+        fixture.FreezeFake<StreamWrapper>();
 
-        service = new(streamWrapper, boxClient);
-
+        service = fixture.Create<BoxService>();
     }
 
     public class GetOrCreateFolderAsync : BoxServiceTests
     {
-        private const string folderType = "folder";
-        private const int maxItemsQuery = 1000;
-        private readonly IBoxFoldersManager boxFoldersManager;
-        private readonly BoxCollection<BoxItem> boxCollection;
+        private const string FOLDER_TYPE = "folder";
+        private const int MAX_ITEMS_QUERY = 1000;
+        private readonly string folderName;
+        private readonly string parentFolderId;
 
         public GetOrCreateFolderAsync()
         {
-            boxFoldersManager = A.Fake<IBoxFoldersManager>();
-            boxCollection = new BoxCollection<BoxItem>
+            folderName = fixture.Create<string>();
+            parentFolderId = fixture.Create<string>();
+
+            fixture.FreezeFake<IBoxFoldersManager>();
+
+            A.CallTo(() => fixture
+                .FreezeFake<IBoxClient>()
+                .FoldersManager)
+                .Returns(fixture.FreezeFake<IBoxFoldersManager>());
+        }
+
+        [Fact]
+        public async Task GivenSuccessfulExecutionForExistingFolderShouldReturnExistingFolder()
+        {
+            var existingFolder = fixture.FreezeFake<BoxFolder>();
+            var boxCollection = new BoxCollection<BoxItem>
             {
-                Entries = new List<BoxItem>(
+                Entries =
                 [
-                    A.Fake<BoxFolder>(),
-                    A.Fake<BoxFolder>(),
-                    A.Fake<BoxFolder>()
+                    fixture.Create<BoxFolder>(),
+                    existingFolder
                 ]
-            )
             };
 
-            A.CallTo(() => boxCollection.Entries[0].Name).Returns(fixture.Create<string>());
-            A.CallTo(() => boxCollection.Entries[0].Type).Returns(folderType);
-            A.CallTo(() => boxCollection.Entries[1].Name).Returns(fixture.Create<string>());
-            A.CallTo(() => boxCollection.Entries[1].Type).Returns(folderType);
-
-            A.CallTo(() => boxClient
-                .FoldersManager)
-                .Returns(boxFoldersManager);
-
-            A.CallTo(() => boxFoldersManager
-                .GetFolderItemsAsync(rootFolderId, maxItemsQuery, default, default, default, default, default, default, default))
-                .Returns(boxCollection);
-        }
-
-        [Fact]
-        public async Task ShouldGetFolderWhenItExists()
-        {
-            var boxItem = await service.GetOrCreateFolderAsync(boxCollection.Entries[1].Name);
-            boxItem.Should().Be(boxCollection.Entries[1]);
-        }
-
-        [Fact]
-        public async Task ShouldGetFolderWhenItExists_WithParentFolder()
-        {
-            var folderId = fixture.Create<string>();
-
-            A.CallTo(() => boxFoldersManager
-                .GetFolderItemsAsync(rootFolderId, maxItemsQuery, default, default, default, default, default, default, default))
-                .Throws<Exception>();
-
-            A.CallTo(() => boxFoldersManager
-                .GetFolderItemsAsync(folderId, maxItemsQuery, default, default, default, default, default, default, default))
+            A.CallTo(() => existingFolder.Name).Returns(folderName);
+            A.CallTo(() => existingFolder.Type).Returns(FOLDER_TYPE);
+            A.CallTo(() => fixture
+                .FreezeFake<IBoxFoldersManager>()
+                .GetFolderItemsAsync(
+                    parentFolderId,
+                    MAX_ITEMS_QUERY,
+                    default, default, default, default,
+                    default, default, default))
                 .Returns(boxCollection);
 
-            var boxItem = await service.GetOrCreateFolderAsync(boxCollection.Entries[1].Name, folderId);
-            boxItem.Should().Be(boxCollection.Entries[1]);
+            var result = await service.GetOrCreateFolderAsync(folderName, parentFolderId);
+
+            result.Should().Be(existingFolder);
+
+            A.CallTo(() => fixture
+                .FreezeFake<IBoxFoldersManager>()
+                .CreateAsync(A<BoxFolderRequest>.Ignored, null))
+                .MustNotHaveHappened();
         }
 
         [Fact]
-        public async Task ShouldCreateFolderWhenItDoesNotExists()
+        public async Task GivenSuccessfulExecutionForNewFolderShouldReturnCreatedFolder()
         {
-            var name = fixture.Create<string>();
-            var newBoxItem = A.Fake<BoxFolder>();
-            A.CallTo(() => newBoxItem.Name).Returns(name);
-            A.CallTo(() => boxFoldersManager
-                .CreateAsync(A<BoxFolderRequest>.That.Matches(x =>
-                    x.Name == name &&
-                    x.Parent.Id == rootFolderId), null))
-                .Returns(newBoxItem);
+            var newFolder = fixture.Create<BoxFolder>();
+            var boxCollection = new BoxCollection<BoxItem>
+            {
+                Entries =
+                [
+                    fixture.Create<BoxFolder>(),
+                    fixture.Create<BoxFolder>()
+                ]
+            };
 
-            var boxItem = await service.GetOrCreateFolderAsync(name);
-            boxItem.Should().Be(newBoxItem);
-        }
+            A.CallTo(() => fixture
+                .FreezeFake<IBoxFoldersManager>()
+                .GetFolderItemsAsync(
+                    parentFolderId,
+                    MAX_ITEMS_QUERY,
+                    default, default, default,
+                    default, default, default, default))
+                .Returns(boxCollection);
 
-        [Fact]
-        public async Task ShouldCreateFolderWhenItDoesNotExists_WithParentFolder()
-        {
-            var folderId = fixture.Create<string>();
-            var newBoxItem = A.Fake<BoxFolder>();
-            A.CallTo(() => newBoxItem.Name).Returns(fixture.Create<string>());
-            A.CallTo(() => boxFoldersManager
+            A.CallTo(() => fixture
+                .FreezeFake<IBoxFoldersManager>()
                 .CreateAsync(
                     A<BoxFolderRequest>.That.Matches(x =>
-                        x.Name == newBoxItem.Name &&
-                        x.Parent.Id == folderId),
+                        x.Name == folderName &&
+                        x.Parent.Id == parentFolderId),
                     null))
-                .Returns(newBoxItem);
+                .Returns(newFolder);
 
-            var boxItem = await service.GetOrCreateFolderAsync(newBoxItem.Name, folderId);
-            boxItem.Should().Be(newBoxItem);
+            var result = await service.GetOrCreateFolderAsync(folderName, parentFolderId);
+
+            result.Should().Be(newFolder);
+        }
+
+        [Fact]
+        public async Task GivenDefaultParentFolderIdShouldUseRootId()
+        {
+            A.CallTo(() => fixture
+                .FreezeFake<IBoxFoldersManager>()
+                .CreateAsync(
+                    A<BoxFolderRequest>.That.Matches(x => x.Parent.Id == BoxService.ROOT_ID),
+                    null))
+                .Returns(fixture.Create<BoxFolder>());
+
+            await service.GetOrCreateFolderAsync(folderName);
+
+            A.CallTo(() => fixture
+                .FreezeFake<IBoxFoldersManager>()
+                .GetFolderItemsAsync(
+                    BoxService.ROOT_ID,
+                    MAX_ITEMS_QUERY,
+                    default, default, default,
+                    default, default, default, default))
+                .MustHaveHappenedOnceExactly();
+        }
+
+        [Fact]
+        public async Task GivenMultipleFoldersWithSameNameShouldReturnFirstMatch()
+        {
+            var firstMatch = fixture.FreezeFake<BoxFolder>();
+            var secondMatch = fixture.Create<BoxFolder>();
+            var boxCollection = new BoxCollection<BoxItem>
+            {
+                Entries =
+                [
+                    firstMatch,
+                    secondMatch
+                ]
+            };
+
+            A.CallTo(() => firstMatch.Name).Returns(folderName);
+            A.CallTo(() => firstMatch.Type).Returns(FOLDER_TYPE);
+            A.CallTo(() => secondMatch.Name).Returns(folderName);
+            A.CallTo(() => secondMatch.Type).Returns(FOLDER_TYPE);
+
+            A.CallTo(() => fixture
+                .FreezeFake<IBoxFoldersManager>()
+                .GetFolderItemsAsync(
+                    parentFolderId,
+                    MAX_ITEMS_QUERY,
+                    default, default, default,
+                    default, default, default, default))
+                .Returns(boxCollection);
+
+            var result = await service.GetOrCreateFolderAsync(folderName, parentFolderId);
+
+            result.Should().Be(firstMatch);
+        }
+
+        [Fact]
+        public async Task GivenFolderWithSameNameButDifferentTypeShouldCreateNewFolder()
+        {
+            var fileWithSameName = A.Fake<BoxFile>();
+            A.CallTo(() => fileWithSameName.Name).Returns(folderName);
+            A.CallTo(() => fileWithSameName.Type).Returns("file");
+
+            var newFolder = fixture.Create<BoxFolder>();
+            var boxCollection = new BoxCollection<BoxItem>
+            {
+                Entries = [fileWithSameName]
+            };
+
+            A.CallTo(() => fixture
+                .FreezeFake<IBoxFoldersManager>()
+                .GetFolderItemsAsync(
+                    parentFolderId,
+                    MAX_ITEMS_QUERY,
+                    default, default, default,
+                    default, default, default, default))
+                .Returns(boxCollection);
+
+            A.CallTo(() => fixture
+                .FreezeFake<IBoxFoldersManager>()
+                .CreateAsync(A<BoxFolderRequest>.Ignored, null))
+                .Returns(newFolder);
+
+            var result = await service.GetOrCreateFolderAsync(folderName, parentFolderId);
+
+            result.Should().Be(newFolder);
         }
     }
 
-    public class CreateFileAsync : BoxServiceTests, IDisposable
+    public class CreateFileAsync : BoxServiceTests
     {
         private readonly string filePath;
-        private readonly string downloadUrl;
+        private readonly string fileName;
+        private readonly string parentFolderId;
         private readonly Stream stream;
-        private readonly IBoxFilesManager boxFilesManager;
-        private readonly BoxFile boxFile;
 
         public CreateFileAsync()
         {
-            downloadUrl = fixture.Create<string>();
-            filePath = Path.Combine("C:", "some-path", "some-file.jpg");
-            stream = A.Fake<Stream>();
-            boxFilesManager = A.Fake<IBoxFilesManager>();
-            boxFile = A.Fake<BoxFile>();
-            var boxFileWithSharedLink = A.Fake<BoxFile>();
-            var boxSharedLink = A.Fake<BoxSharedLink>();
+            fileName = "test-file.zip";
+            filePath = Path.Combine("directory", fileName);
+            parentFolderId = fixture.Create<string>();
+            stream = fixture.FreezeFake<Stream>();
 
-            A.CallTo(() => boxClient
-                .FilesManager)
-                .Returns(boxFilesManager);
+            fixture.FreezeFake<IBoxFilesManager>();
 
-            A.CallTo(() => boxFile
-                .Id)
-                .Returns(fixture.Create<string>());
+            A.CallTo(() => fixture
+                .FreezeFake<IBoxClient>().FilesManager)
+                .Returns(fixture.FreezeFake<IBoxFilesManager>());
 
-            A.CallTo(() => streamWrapper
+            A.CallTo(() => fixture
+                .FreezeFake<StreamWrapper>()
                 .CreateFileStream(filePath, FileMode.Open))
                 .Returns(stream);
 
-            A.CallTo(() => boxFilesManager
+            A.CallTo(() => fixture
+                .FreezeFake<IBoxFilesManager>()
+                .UploadAsync(
+                    A<BoxFileRequest>.Ignored,
+                    stream,
+                    default, default, default,
+                    true,
+                    default))
+                .Returns(fixture.FreezeFake<BoxFile>());
+
+            A.CallTo(() => fixture
+                .FreezeFake<BoxFile>().Id)
+                .Returns(fixture.Create<string>());
+
+            A.CallTo(() => fixture
+                .FreezeFake<IBoxFilesManager>()
+                .CreateSharedLinkAsync(
+                    A<string>.Ignored,
+                    A<BoxSharedLinkRequest>.Ignored,
+                    null))
+                .Returns(fixture.Create<BoxFile>());
+        }
+
+        [Fact]
+        public async Task GivenSuccessfulExecutionShouldReturnBoxFileWithSharedLink()
+        {
+            var sharedFile = fixture.Create<BoxFile>();
+
+            A.CallTo(() => fixture
+                .FreezeFake<IBoxFilesManager>()
+                .CreateSharedLinkAsync(
+                    A<string>.Ignored,
+                    A<BoxSharedLinkRequest>.Ignored,
+                    null))
+                .Returns(sharedFile);
+
+            var result = await service.CreateFileAsync(filePath, parentFolderId);
+
+            result.Should().Be(sharedFile);
+        }
+
+        [Fact]
+        public async Task GivenSuccessfulExecutionShouldUploadFileWithCorrectRequest()
+        {
+            await service.CreateFileAsync(filePath, parentFolderId);
+
+            A.CallTo(() => fixture
+                .FreezeFake<IBoxFilesManager>()
                 .UploadAsync(
                     A<BoxFileRequest>.That.Matches(x =>
-                        x.Name == "some-file.jpg" &&
-                        x.Parent.Id == rootFolderId),
+                        x.Name == fileName &&
+                        x.Parent.Id == parentFolderId),
                     stream,
-                    default, default, default, true, default))
-                .Returns(boxFile);
+                    default, default, default,
+                    true,
+                    default))
+                .MustHaveHappenedOnceExactly();
+        }
 
-            A.CallTo(() => boxFilesManager
+        [Fact]
+        public async Task GivenSuccessfulExecutionShouldCreateSharedLinkWithCorrectPermissions()
+        {
+            await service.CreateFileAsync(filePath, parentFolderId);
+
+            A.CallTo(() => fixture
+                .FreezeFake<IBoxFilesManager>()
                 .CreateSharedLinkAsync(
-                    boxFile.Id,
+                    fixture.FreezeFake<BoxFile>().Id,
                     A<BoxSharedLinkRequest>.That.Matches(x =>
                         x.Access == BoxSharedLinkAccessType.open &&
                         x.Permissions.Download == true &&
                         x.UnsharedAt == null),
                     null))
-                .Returns(boxFileWithSharedLink);
-
-            A.CallTo(() => boxFileWithSharedLink
-                .SharedLink)
-                .Returns(boxSharedLink);
-
-            A.CallTo(() => boxSharedLink
-                .DownloadUrl)
-                .Returns(downloadUrl);
+                .MustHaveHappenedOnceExactly();
         }
 
-        public void Dispose()
+        [Fact]
+        public async Task GivenDefaultParentFolderIdShouldUseRootId()
         {
-            stream?.Dispose();
-            GC.SuppressFinalize(this);
+            await service.CreateFileAsync(filePath);
+
+            A.CallTo(() => fixture
+                .FreezeFake<IBoxFilesManager>()
+                .UploadAsync(
+                    A<BoxFileRequest>.That.Matches(x => x.Parent.Id == BoxService.ROOT_ID),
+                    stream,
+                    default, default, default,
+                    true,
+                    default))
+                .MustHaveHappenedOnceExactly();
+        }
+
+        [Fact]
+        public async Task GivenSuccessfulExecutionShouldOpenFileStreamCorrectly()
+        {
+            await service.CreateFileAsync(filePath, parentFolderId);
+
+            A.CallTo(() => fixture
+                .FreezeFake<StreamWrapper>()
+                .CreateFileStream(filePath, FileMode.Open))
+                .MustHaveHappenedOnceExactly();
+        }
+
+        [Fact]
+        public async Task GivenFilePathShouldExtractCorrectFileName()
+        {
+            var complexPath = Path.Combine("C:", "Users", "Test", "Documents", "my-file.pdf");
+            var expectedFileName = "my-file.pdf";
+
+            A.CallTo(() => fixture
+                .FreezeFake<StreamWrapper>()
+                .CreateFileStream(complexPath, FileMode.Open))
+                .Returns(stream);
+
+            await service.CreateFileAsync(complexPath, parentFolderId);
+
+            A.CallTo(() => fixture
+                .FreezeFake<IBoxFilesManager>()
+                .UploadAsync(
+                    A<BoxFileRequest>.That.Matches(x => x.Name == expectedFileName),
+                    stream,
+                    default, default, default,
+                    true,
+                    default))
+                .MustHaveHappenedOnceExactly();
         }
     }
 }

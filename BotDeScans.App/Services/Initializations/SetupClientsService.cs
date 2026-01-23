@@ -5,6 +5,7 @@ using FluentResults;
 using FluentValidation;
 using Microsoft.Extensions.DependencyInjection;
 using System.Reflection;
+
 namespace BotDeScans.App.Services.Initializations;
 
 public class SetupClientsService(IServiceProvider serviceProvider)
@@ -16,12 +17,12 @@ public class SetupClientsService(IServiceProvider serviceProvider)
         var aggregatedResult = Result.Ok();
         foreach (var (factory, factoryValidator) in GetEnabledFactoriesData())
         {
-            var validationResult = await factoryValidator.ValidateAsync(factory, cancellationToken); 
+            var validationResult = await factoryValidator.ValidateAsync(new ValidationContext<IClientFactory>(factory), cancellationToken); 
             aggregatedResult = aggregatedResult.WithReasons(FluentValidationExtensions.ToResult(validationResult).Reasons);
             if (aggregatedResult.IsFailed)
                 continue;
 
-            var clientResult = await factory.SafeCreateAsync(cancellationToken);
+            var clientResult = await factory.SafeCreateObjectAsync(cancellationToken);
             aggregatedResult = aggregatedResult.WithReasons(clientResult.Reasons);
             if (aggregatedResult.IsFailed)
                 continue;
@@ -42,7 +43,7 @@ public class SetupClientsService(IServiceProvider serviceProvider)
             .SetUpBaseFolderAsync(cancellationToken);
     }
 
-    private IEnumerable<(dynamic factory, dynamic validator)> GetEnabledFactoriesData()
+    private IEnumerable<(IClientFactory factory, IValidator validator)> GetEnabledFactoriesData()
     {
         var factoryTypes = Assembly
             .GetEntryAssembly()!
@@ -53,12 +54,12 @@ public class SetupClientsService(IServiceProvider serviceProvider)
 
         foreach (var factoryType in factoryTypes)
         {
-            dynamic factory = serviceProvider.GetRequiredService(factoryType);
-            if ((bool)factory.Enabled is false)
+            var factory = (IClientFactory)serviceProvider.GetRequiredService(factoryType);
+            if (!factory.Enabled)
                 continue;
 
             var factoryValidatorType = typeof(IValidator<>).MakeGenericType(factoryType);
-            dynamic factoryValidator = serviceProvider.GetRequiredService(factoryValidatorType);
+            var factoryValidator = (IValidator)serviceProvider.GetRequiredService(factoryValidatorType);
 
             yield return (factory, factoryValidator);
         }
