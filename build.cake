@@ -34,7 +34,7 @@ Task("Test")
 			CoverletOutputFormat = CoverletOutputFormat.cobertura,
 			CoverletOutputDirectory = Directory(testResultsDir),
 			CoverletOutputName = "coverage",
-			ExcludeByAttribute = ["GeneratedCodeAttribute"],
+			ExcludeByAttribute = ["GeneratedCodeAttribute", "ExcludeFromCodeCoverageAttribute"],
 			ExcludeByFile = ["**/Migrations/**/*"]
 		};
 		
