@@ -25,6 +25,7 @@ public class FileService
         MimeTypes[Path.GetExtension(fileName)];
 
     // Limitação assíncrona: https://github.com/dotnet/runtime/issues/1541
+    // Todo: foi resolvido no .NET 10, verificar quando migrar
     public virtual Result<string> CreateZipFile(
         string fileName,
         string resourcesDirectory,
@@ -33,7 +34,13 @@ public class FileService
         if (resourcesDirectory.Equals(destinationDirectory, StringComparison.InvariantCultureIgnoreCase))
             return Result.Fail("Source and destination directories should not be the same.");
 
-        var pages = Directory.EnumerateFiles(resourcesDirectory).OrderBy(x => x, StringComparer.OrdinalIgnoreCase).ToArray();
+        var pages = Directory.EnumerateFiles(resourcesDirectory)
+            .OrderBy(x => x, StringComparer.OrdinalIgnoreCase)
+            .ToArray();
+
+        if (pages.Length == 0)
+            return Result.Fail("No files found in the source directory.");
+
         var pagesQuantity = (int)Math.Floor(Math.Log10(pages.Length) + 1);
         var filePath = Path.Combine(destinationDirectory, $"{fileName}.zip");
 

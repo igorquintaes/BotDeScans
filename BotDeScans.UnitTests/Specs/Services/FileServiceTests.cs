@@ -49,6 +49,10 @@ public class FileServiceTests : UnitTest
 
             Directory.CreateDirectory(resourcesDirectory);
             Directory.CreateDirectory(destinationDirectory);
+
+            File.Create(Path.Combine(resourcesDirectory, "credits.png")).Dispose();
+            File.Create(Path.Combine(resourcesDirectory, "01.png")).Dispose();
+            File.Create(Path.Combine(resourcesDirectory, "02.png")).Dispose();
         }
 
         [Fact]
@@ -89,13 +93,22 @@ public class FileServiceTests : UnitTest
         }
 
         [Fact]
+        public void ShouldResutlFailResultIfNoFilesFoundInSourceDirectory()
+        {
+            Directory.Delete(resourcesDirectory, true);
+            Directory.CreateDirectory(resourcesDirectory);
+
+            var result = service.CreateZipFile(
+                "fileName",
+                resourcesDirectory,
+                destinationDirectory);
+
+            result.Should().BeFailure().And.HaveError("No files found in the source directory.");
+        }
+
+        [Fact]
         public void ShouldContainsExpectedFilesInsideZipFile()
         {
-            File.Create(Path.Combine(resourcesDirectory, "cover.png")).Dispose();
-            File.Create(Path.Combine(resourcesDirectory, "credits.png")).Dispose();
-            File.Create(Path.Combine(resourcesDirectory, "01.png")).Dispose();
-            File.Create(Path.Combine(resourcesDirectory, "02.png")).Dispose();
-
             var result = service.CreateZipFile(
                 "fileName",
                 resourcesDirectory,
@@ -107,14 +120,13 @@ public class FileServiceTests : UnitTest
                 .Select(x => x.Name)
                 .OrderBy(x => x)
                 .Should().BeEquivalentTo(
-                    ["1.png", "2.png", "3.png", "4.png"],
+                    [ "1.png", "2.png", "3.png" ],
                     options => options.WithStrictOrdering());
         }
 
         [Fact]
         public void ShouldContainsExpectedFilesInsideZipFileCreatingPadingLeftZeroes()
         {
-            File.Create(Path.Combine(resourcesDirectory, "cover.png")).Dispose();
             File.Create(Path.Combine(resourcesDirectory, "credits.png")).Dispose();
             File.Create(Path.Combine(resourcesDirectory, "01.png")).Dispose();
             File.Create(Path.Combine(resourcesDirectory, "02.png")).Dispose();
@@ -124,6 +136,7 @@ public class FileServiceTests : UnitTest
             File.Create(Path.Combine(resourcesDirectory, "06.png")).Dispose();
             File.Create(Path.Combine(resourcesDirectory, "07.png")).Dispose();
             File.Create(Path.Combine(resourcesDirectory, "08.png")).Dispose();
+            File.Create(Path.Combine(resourcesDirectory, "09.png")).Dispose();
 
             var result = service.CreateZipFile(
                 "fileName",
@@ -136,7 +149,7 @@ public class FileServiceTests : UnitTest
                 .Select(x => x.Name)
                 .OrderBy(x => x)
                 .Should().BeEquivalentTo(
-                    ["01.png", "02.png", "03.png", "04.png", "05.png", "06.png", "07.png", "08.png", "09.png", "10.png"],
+                    [ "01.png", "02.png", "03.png", "04.png", "05.png", "06.png", "07.png", "08.png", "09.png", "10.png" ],
                     options => options.WithStrictOrdering());
         }
 

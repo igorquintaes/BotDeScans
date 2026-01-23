@@ -244,6 +244,21 @@ public class GoogleDriveQueryBuilderTests : UnitTest, IDisposable
         }
 
         [Fact]
+        public void GivenSpecialCharactersShouldUseEscapedValue()
+        {
+            var value = "quinn's paper\\essay";
+            var escapedValue = "quinn\\'s paper\\\\essay";
+            var expectedQuery = $"trashed = false and mimeType = '{escapedValue}' and '{GoogleDriveSettingsService.BaseFolderId}' in parents";
+            var builder = new GoogleDriveQueryBuilder();
+
+            var result = builder
+                .WithMimeType(value)
+                .Build();
+
+            result.Should().Be(expectedQuery);
+        }
+
+        [Fact]
         public void GivenMultipleCallsShouldUseLastValue()
         {
             var mimeType1 = "type1";
@@ -280,6 +295,21 @@ public class GoogleDriveQueryBuilderTests : UnitTest, IDisposable
             var result = builder.WithoutMimeType(null);
 
             result.Should().BeSameAs(builder);
+        }
+
+        [Fact]
+        public void GivenSpecialCharactersShouldUseEscapedValue()
+        {
+            var value = "quinn's paper\\essay";
+            var escapedValue = "quinn\\'s paper\\\\essay";
+            var expectedQuery = $"trashed = false and mimeType != '{escapedValue}' and '{GoogleDriveSettingsService.BaseFolderId}' in parents";
+            var builder = new GoogleDriveQueryBuilder();
+
+            var result = builder
+                .WithoutMimeType(value)
+                .Build();
+
+            result.Should().Be(expectedQuery);
         }
 
         [Fact]
@@ -322,6 +352,21 @@ public class GoogleDriveQueryBuilderTests : UnitTest, IDisposable
         }
 
         [Fact]
+        public void GivenSpecialCharactersShouldUseEscapedValue()
+        {
+            var value = "quinn's paper\\essay";
+            var escapedValue = "quinn\\'s paper\\\\essay";
+            var expectedQuery = $"trashed = false and name = '{escapedValue}' and '{GoogleDriveSettingsService.BaseFolderId}' in parents";
+            var builder = new GoogleDriveQueryBuilder();
+
+            var result = builder
+                .WithName(value)
+                .Build();
+
+            result.Should().Be(expectedQuery);
+        }
+
+        [Fact]
         public void GivenMultipleCallsShouldUseLastValue()
         {
             var name1 = "name1";
@@ -358,6 +403,21 @@ public class GoogleDriveQueryBuilderTests : UnitTest, IDisposable
             var result = builder.WithParent(null);
 
             result.Should().BeSameAs(builder);
+        }
+
+        [Fact]
+        public void GivenSpecialCharactersShouldUseEscapedValue()
+        {
+            var value = "quinn's paper\\essay";
+            var escapedValue = "quinn\\'s paper\\\\essay";
+            var expectedQuery = $"trashed = false and '{escapedValue}' in parents";
+            var builder = new GoogleDriveQueryBuilder();
+
+            var result = builder
+                .WithParent(value)
+                .Build();
+
+            result.Should().Be(expectedQuery);
         }
 
         [Fact]

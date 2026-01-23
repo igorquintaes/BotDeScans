@@ -111,11 +111,6 @@ public class BoxServiceTests : UnitTest
         [Fact]
         public async Task GivenDefaultParentFolderIdShouldUseRootId()
         {
-            var boxCollection = new BoxCollection<BoxItem>
-            {
-                Entries = []
-            };
-
             A.CallTo(() => fixture
                 .FreezeFake<IBoxFoldersManager>()
                 .CreateAsync(

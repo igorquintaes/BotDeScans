@@ -16,8 +16,9 @@ public class ImageService(IConfiguration configuration)
         var (quality, minQuality) = GetImageQuality(isGrayscale);
         var imageBytes = await CompressAsync(filePath, quality, minQuality);
 
-        var newPath = Path.ChangeExtension(filePath, ".png");
-        await File.WriteAllBytesAsync(newPath, [.. imageBytes], cancellationToken);
+        var newPath = Path.ChangeExtension(filePath, ".png"); 
+        await using var newFileStream = File.Create(newPath);
+        await newFileStream.WriteAsync(imageBytes.AsMemory(), cancellationToken);
 
         if (!filePath.Equals(newPath, StringComparison.OrdinalIgnoreCase))
             File.Delete(filePath);

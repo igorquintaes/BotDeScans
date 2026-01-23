@@ -132,7 +132,7 @@ public class GoogleDriveResourcesServiceTests : UnitTest, IDisposable
                 maxResult: maxResult,
                 cancellationToken);
 
-            result.Should().BeFailure().And.HaveError($"Foi encontrado mais de um recurso para os dados mencionados, quando era esperado no máximo {maxResult}.");
+            result.Should().BeFailure().And.HaveError($"Foi encontrado mais resultados para os dados mencionados, quando era esperado no máximo {maxResult}.");
         }
 
         [Fact]
@@ -153,7 +153,7 @@ public class GoogleDriveResourcesServiceTests : UnitTest, IDisposable
                 maxResult: default,
                 cancellationToken);
 
-            result.Should().BeFailure().And.HaveError($"Foi encontrado mais de um recurso para os dados mencionados, quando era esperado no mínimo {minResult}.");
+            result.Should().BeFailure().And.HaveError($"Foi encontrado menos resultados para os dados mencionados, quando era esperado no mínimo {minResult}.");
         }
 
         [Fact]

@@ -9,25 +9,25 @@ public class GoogleDriveQueryBuilder
 
     public GoogleDriveQueryBuilder WithMimeType(string? mimeType)
     {
-        _mimeType = mimeType;
+        _mimeType = EscapeSpecialCharacters(mimeType);
         return this;
     }
 
     public GoogleDriveQueryBuilder WithoutMimeType(string? forbiddenMimeType)
     {
-        _forbiddenMimeType = forbiddenMimeType;
+        _forbiddenMimeType = EscapeSpecialCharacters(forbiddenMimeType);
         return this;
     }
 
     public GoogleDriveQueryBuilder WithName(string? name)
     {
-        _name = name;
+        _name = EscapeSpecialCharacters(name);
         return this;
     }
 
     public GoogleDriveQueryBuilder WithParent(string? parentId)
     {
-        _parentId = parentId;
+        _parentId = EscapeSpecialCharacters(parentId);
         return this;
     }
 
@@ -48,4 +48,14 @@ public class GoogleDriveQueryBuilder
 
         return string.Join(" and ", conditions);
     }
+
+    /// <summary>
+    /// Escapes single quotes and backslashes in the input string.
+    /// https://developers.google.com/workspace/drive/api/guides/search-files
+    /// </summary>
+    /// <param name="input">The string to process for escaping special characters.</param>
+    /// <returns>A new string with single quotes and backslashes escaped, or null if the input is null.</returns>
+    private static string? EscapeSpecialCharacters(string? input)
+        => input?.Replace("\\", "\\\\")
+                 .Replace("'", "\\'");
 }

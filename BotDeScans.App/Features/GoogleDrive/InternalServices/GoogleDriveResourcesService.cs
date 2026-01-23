@@ -44,10 +44,10 @@ public class GoogleDriveResourcesService(
     private static Result ValidateResultCount(int count, int? minResult, int? maxResult)
     {
         if (minResult is not null && count < minResult)
-            return Result.Fail($"Foi encontrado mais de um recurso para os dados mencionados, quando era esperado no mínimo {minResult}.");
+            return Result.Fail($"Foi encontrado menos resultados para os dados mencionados, quando era esperado no mínimo {minResult}.");
 
         if (maxResult is not null && count > maxResult)
-            return Result.Fail($"Foi encontrado mais de um recurso para os dados mencionados, quando era esperado no máximo {maxResult}.");
+            return Result.Fail($"Foi encontrado mais resultados para os dados mencionados, quando era esperado no máximo {maxResult}.");
 
         return Result.Ok();
     }
