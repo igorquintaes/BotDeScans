@@ -53,7 +53,7 @@ public class ChartServiceTests : UnitTest
 
             var differencePercentage = (double)differentPixels / totalPixels;
             differencePercentage.Should().BeLessThan(maxDifferencePercentage,
-                because: $"{differentPixels} pixels diferentes de {totalPixels} totais ({differencePercentage:P2})");
+                because: $"{differentPixels} pixels are different a total of {totalPixels} pixels ({differencePercentage:P2})");
         }
 
         private static bool ArePixelsSimilar(Rgba32 pixel1, Rgba32 pixel2, int tolerance)
