@@ -28,32 +28,40 @@ public class ChartServiceTests : UnitTest
 
             using var expectedChartImage = Image.Load<Rgba32>(expectedImagePath);
 
-            var equalImages =
-                resultChartImage.Width == expectedChartImage.Width &&
-                resultChartImage.Height == expectedChartImage.Height;
+            resultChartImage.Width.Should().Be(expectedChartImage.Width);
+            resultChartImage.Height.Should().Be(expectedChartImage.Height);
 
-            if (equalImages)
+            // OS can render slightly different charts, so we allow a small tolerance
+            var totalPixels = resultChartImage.Width * resultChartImage.Height;
+            var differentPixels = 0;
+            const int colorTolerance = 5; // Tolerante by color channel
+            const double maxDifferencePercentage = 0.05; // 5% of pixels
+
+            for (int x = 0; x < resultChartImage.Width; x++)
             {
-                for (int i = 0; i < resultChartImage.Width; i++)
+                for (int y = 0; y < resultChartImage.Height; y++)
                 {
-                    for (int j = 0; j < resultChartImage.Height; j++)
+                    var resultPixel = resultChartImage[x, y];
+                    var expectedPixel = expectedChartImage[x, y];
+
+                    if (!ArePixelsSimilar(resultPixel, expectedPixel, colorTolerance))
                     {
-                        var resultPixel = resultChartImage[i, j];
-                        var expectedPixel = expectedChartImage[i, j];
-
-                        if (resultPixel != expectedPixel)
-                        {
-                            equalImages = false;
-                            break;
-                        }
+                        differentPixels++;
                     }
-
-                    if (!equalImages)
-                        break;
                 }
             }
 
-            equalImages.Should().BeTrue();
+            var differencePercentage = (double)differentPixels / totalPixels;
+            differencePercentage.Should().BeLessThan(maxDifferencePercentage,
+                because: $"{differentPixels} pixels diferentes de {totalPixels} totais ({differencePercentage:P2})");
+        }
+
+        private static bool ArePixelsSimilar(Rgba32 pixel1, Rgba32 pixel2, int tolerance)
+        {
+            return Math.Abs(pixel1.R - pixel2.R) <= tolerance &&
+                   Math.Abs(pixel1.G - pixel2.G) <= tolerance &&
+                   Math.Abs(pixel1.B - pixel2.B) <= tolerance &&
+                   Math.Abs(pixel1.A - pixel2.A) <= tolerance;
         }
     }
 }
