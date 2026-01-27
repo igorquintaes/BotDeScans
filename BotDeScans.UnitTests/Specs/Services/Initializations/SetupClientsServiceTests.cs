@@ -1,7 +1,6 @@
 ﻿using BotDeScans.App.Features.GoogleDrive.InternalServices;
 using BotDeScans.App.Services.Initializations;
 using BotDeScans.App.Services.Initializations.Factories.Base;
-using FluentAssertions.Execution;
 using FluentResults;
 using FluentValidation;
 using FluentValidation.Results;
@@ -39,8 +38,14 @@ public class SetupClientsServiceTests : UnitTest
                 .Returns(fixture.FreezeFake<IValidator<FakeClientFactory>>());
 
             A.CallTo(() => fixture
-                .FreezeFake<FakeClientFactory>()
-                .Enabled)
+                .FreezeFake<IValidator<FakeClientFactory>>()
+                .ValidateAsync(A<ValidationContext<IClientFactory>>.That.Matches(x =>
+                    x.InstanceToValidate == fixture.FreezeFake<FakeClientFactory>()),
+                    cancellationToken))
+                .Returns(new ValidationResult());
+
+            A.CallTo(() => fixture
+                .FreezeFake<FakeClientFactory>().Enabled)
                 .Returns(true);
         }
 
@@ -92,14 +97,12 @@ public class SetupClientsServiceTests : UnitTest
 
             var result = await service.SetupAsync(cancellationToken);
 
-            using var __ = new AssertionScope();
-            result.Should().BeFailure();
+            result.Should().BeFailure().And.HaveError($"Failed to create a client of type Object.");
             result.Errors.Should().HaveCount(1);
-            result.Errors.FirstOrDefault()?.Message.Should().Be($"Failed to create a client of type Object.");
-            result.Errors.FirstOrDefault()?.Reasons.Should().HaveCount(1);
-            result.Errors.FirstOrDefault()?.Reasons.FirstOrDefault()?.Should().BeOfType<ExceptionalError>();
-            result.Errors.FirstOrDefault()?.Reasons.FirstOrDefault()?.As<ExceptionalError?>()?.Exception.Should().BeOfType<InvalidOperationException>();
-            result.Errors.FirstOrDefault()?.Reasons.FirstOrDefault()?.As<ExceptionalError?>()?.Exception.Message.Should().Be("some erro message");
+            result.Errors[0].Reasons.Should().HaveCount(1);
+            result.Errors[0].Reasons.FirstOrDefault()?.Should().BeOfType<ExceptionalError>();
+            result.Errors[0].Reasons.FirstOrDefault()?.As<ExceptionalError?>()?.Exception.Should().BeOfType<InvalidOperationException>();
+            result.Errors[0].Reasons.FirstOrDefault()?.As<ExceptionalError?>()?.Exception.Message.Should().Be("some erro message");
         }
 
         [Fact]

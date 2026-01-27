@@ -6,16 +6,10 @@ namespace BotDeScans.UnitTests.Specs.Services.Initializations.FactoriesValidator
 
 public class BoxClientFactoryValidatorTests : UnitTest
 {
-    private static readonly string credentialPath = Path.Combine(
-            AppDomain.CurrentDomain.BaseDirectory,
-            "config",
-            BoxClientFactory.CREDENTIALS_FILE_NAME);
-
     public BoxClientFactoryValidatorTests()
     {
-        if (File.Exists(credentialPath) is false)
-            File.Create(credentialPath).Dispose();
-
+        fixture.FreezeFakeConfiguration("Box:ClientId", fixture.Create<string>());
+        fixture.FreezeFakeConfiguration("Box:ClientSecret", fixture.Create<string>());
     }
 
     [Fact]
@@ -24,15 +18,17 @@ public class BoxClientFactoryValidatorTests : UnitTest
                .TestValidate(fixture.FreezeFake<BoxClientFactory>())
                .ShouldNotHaveAnyValidationErrors();
 
-    [Fact]
-    public void GivenMissingCredentialFileShouldReturnError()
+    [Theory]
+    [InlineData("Box:ClientId")]
+    [InlineData("Box:ClientSecret")]
+    public void GivenMissingKeyShouldReturnError(string key)
     {
-        File.Delete(credentialPath);
+        fixture.FreezeFakeConfiguration(key, default(string));
 
         fixture.Create<BoxClientFactoryValidator>()
-               .TestValidate(fixture.FreezeFake<BoxClientFactory>())
-               .ShouldHaveValidationErrorFor(x => x)
-               .WithErrorMessage($"Unable to find IBoxClient file: {credentialPath}")
+               .TestValidate(fixture.Freeze<BoxClientFactory>())
+               .ShouldHaveValidationErrorFor(service => service)
+               .WithErrorMessage($"'{key}' config value not found.")
                .Only();
     }
 }

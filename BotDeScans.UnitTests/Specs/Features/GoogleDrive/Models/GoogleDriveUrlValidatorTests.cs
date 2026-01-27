@@ -4,6 +4,7 @@ using FluentResults;
 using FluentValidation;
 using FluentValidation.TestHelper;
 using File = Google.Apis.Drive.v3.Data.File;
+
 namespace BotDeScans.UnitTests.Specs.Features.GoogleDrive.Models;
 
 public class GoogleDriveUrlValidatorTests : UnitTest
@@ -47,7 +48,7 @@ public class GoogleDriveUrlValidatorTests : UnitTest
               .Create<GoogleDriveUrlValidator>()
               .TestValidateAsync(new GoogleDriveUrl(url), default, cancellationToken);
 
-        result.ShouldHaveAnyValidationError()
+        result.ShouldHaveValidationErrors()
               .WithErrorMessage("O link informado é inválido.");
     }
 
@@ -65,7 +66,7 @@ public class GoogleDriveUrlValidatorTests : UnitTest
               .Create<GoogleDriveUrlValidator>()
               .TestValidateAsync(data, default, cancellationToken);
 
-        result.ShouldHaveAnyValidationError()
+        result.ShouldHaveValidationErrors()
               .WithErrorMessage("err-1; err-2");
 
         A.CallTo(() => fixture

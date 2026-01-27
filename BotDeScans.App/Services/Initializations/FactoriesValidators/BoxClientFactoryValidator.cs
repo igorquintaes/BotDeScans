@@ -1,17 +1,23 @@
 ﻿using BotDeScans.App.Extensions;
 using BotDeScans.App.Services.Initializations.Factories;
 using FluentValidation;
+using Microsoft.Extensions.Configuration;
 
 namespace BotDeScans.App.Services.Initializations.FactoriesValidators;
 
 public class BoxClientFactoryValidator : AbstractValidator<BoxClientFactory>
 {
-    public BoxClientFactoryValidator()
+    public BoxClientFactoryValidator(IConfiguration configuration)
     {
-        var credentialResult = BoxClientFactory.ConfigFileExists(BoxClientFactory.CREDENTIALS_FILE_NAME);
+        var clientId = configuration.GetRequiredValueAsResult<string>("Box:ClientId");
+        var clientSecret = configuration.GetRequiredValueAsResult<string>("Box:ClientSecret");
 
         RuleFor(factory => factory)
-            .Must(_ => credentialResult.IsSuccess)
-            .WithMessage(credentialResult.ToValidationErrorMessage());
+            .Must(_ => clientId.IsSuccess)
+            .WithMessage(clientId.ToValidationErrorMessage());
+
+        RuleFor(factory => factory)
+            .Must(_ => clientSecret.IsSuccess)
+            .WithMessage(clientSecret.ToValidationErrorMessage());
     }
 }

@@ -1,5 +1,5 @@
 ﻿using BotDeScans.App.Extensions;
-using Box.V2;
+using Box.Sdk.Gen;
 using CG.Web.MegaApiClient;
 using Google.Apis.Blogger.v3;
 using Google.Apis.Drive.v3;

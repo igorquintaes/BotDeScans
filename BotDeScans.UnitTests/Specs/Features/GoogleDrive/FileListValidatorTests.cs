@@ -26,7 +26,7 @@ public class FileListValidatorTests : UnitTest
     {
         data[0].Kind = "drive#folder";
         validator.TestValidate(data)
-            .ShouldHaveAnyValidationError()
+            .ShouldHaveValidationErrors()
             .WithErrorMessage("O diretório precisa conter apenas arquivos.");
     }
 
@@ -35,7 +35,7 @@ public class FileListValidatorTests : UnitTest
     {
         data[0].Name = "capa.png";
         validator.TestValidate(data)
-            .ShouldHaveAnyValidationError()
+            .ShouldHaveValidationErrors()
             .WithErrorMessage("O diretório precisa conter apenas uma única página de capa. (ex: capa.extensão)");
     }
 
@@ -44,7 +44,7 @@ public class FileListValidatorTests : UnitTest
     {
         data[4].Size = null;
         validator.TestValidate(data)
-            .ShouldHaveAnyValidationError()
+            .ShouldHaveValidationErrors()
             .WithErrorMessage("A página de capa precisa ser uma imagem válida menor que 8Mb.");
     }
 
@@ -53,7 +53,7 @@ public class FileListValidatorTests : UnitTest
     {
         data[4].Size = (8 * 1024 * 1024) + 1;
         validator.TestValidate(data)
-            .ShouldHaveAnyValidationError()
+            .ShouldHaveValidationErrors()
             .WithErrorMessage("A página de capa precisa ser uma imagem válida menor que 8Mb.");
     }
 
@@ -62,7 +62,7 @@ public class FileListValidatorTests : UnitTest
     {
         data[0].Name = "creditos.png";
         validator.TestValidate(data)
-            .ShouldHaveAnyValidationError()
+            .ShouldHaveValidationErrors()
             .WithErrorMessage("O diretório precisa conter apenas uma única página de créditos. (ex: creditos.extensão)");
     }
 
@@ -77,7 +77,7 @@ public class FileListValidatorTests : UnitTest
     {
         data[0].Name = $"01.{unsupportedExtension}";
         validator.TestValidate(data)
-            .ShouldHaveAnyValidationError()
+            .ShouldHaveValidationErrors()
             .WithErrorMessage($"O diretório precisa conter apenas arquivos com as extensões esperadas: {string.Join("", FileReleaseService.ValidCoverFiles)}.");
     }
 
@@ -90,7 +90,7 @@ public class FileListValidatorTests : UnitTest
     {
         data[3].Name = pageName;
         validator.TestValidate(data)
-            .ShouldHaveAnyValidationError()
+            .ShouldHaveValidationErrors()
             .WithErrorMessage("Não deve conter outras páginas senão numerais, créditos e capa.");
     }
 
@@ -99,7 +99,7 @@ public class FileListValidatorTests : UnitTest
     {
         data[0].Name = "06.png";
         validator.TestValidate(data)
-            .ShouldHaveAnyValidationError()
+            .ShouldHaveValidationErrors()
             .WithErrorMessage("A primeira página deve começar com o número 1 (1, 01, 001...). Isso também vale para página dupla (1-2, 01-02, 001-002...).");
     }
 
@@ -110,7 +110,7 @@ public class FileListValidatorTests : UnitTest
     {
         data[3].Name = pageName;
         validator.TestValidate(data)
-            .ShouldHaveAnyValidationError()
+            .ShouldHaveValidationErrors()
             .WithErrorMessage("As páginas duplas precisam estar numeradas em ordem e sequencialmente.");
     }
 
@@ -119,7 +119,7 @@ public class FileListValidatorTests : UnitTest
     {
         data[3].Name = "06.png";
         validator.TestValidate(data)
-            .ShouldHaveAnyValidationError()
+            .ShouldHaveValidationErrors()
             .WithErrorMessage("As páginas precisam ter números sequenciais, sem pular números.");
     }
 
@@ -128,7 +128,7 @@ public class FileListValidatorTests : UnitTest
     {
         data[0].Name = "001.png";
         validator.TestValidate(data)
-            .ShouldHaveAnyValidationError()
+            .ShouldHaveValidationErrors()
             .WithErrorMessage("O nome dos arquivos das páginas precisa ser escrito de modo que todos tenham o mesmo tamanho (dica: use zero à esqueda).");
     }
 }

@@ -3,7 +3,9 @@ using BotDeScans.App.Features.Publish.Interaction.Steps;
 using BotDeScans.App.Features.Publish.Interaction.Steps.Enums;
 using BotDeScans.App.Models.Entities.Enums;
 using BotDeScans.App.Services;
-using Box.V2.Models;
+using Box.Sdk.Gen.Schemas;
+using File = Box.Sdk.Gen.Schemas.File;
+using Task = System.Threading.Tasks.Task;
 
 namespace BotDeScans.UnitTests.Specs.Features.Publish.Interaction.Steps;
 
@@ -47,25 +49,33 @@ public class UploadZipBoxStepTests : UnitTest
     public class ExecuteAsync : UploadZipBoxStepTests
     {
         private const string FILE_LINK = "http://www.escoladescans.com/sample";
+        private readonly FolderMini titleFolder;
+        private readonly File titleFile;
 
         public ExecuteAsync()
         {
-            var titleFolder = A.Fake<BoxFolder>();
-            var titleFile = A.Fake<BoxFile>();
+            var folderId = fixture.Create<string>();
 
-            A.CallTo(() => titleFolder.Id).Returns(nameof(titleFolder));
-            A.CallTo(() => titleFile.SharedLink.DownloadUrl).Returns(FILE_LINK);
+            var sharedLink = fixture.CreateCustom<FileSharedLinkField>(f => f
+                .With(x => x.DownloadUrl, FILE_LINK));
+
+            titleFolder = fixture.CreateCustom<FolderMini>(f => f
+                .With(x => x.Id, folderId));
+
+            titleFile = fixture.CreateCustom<File>(f => f
+                .With(x => x.SharedLink, sharedLink));
 
             A.CallTo(() => fixture
                 .FreezeFake<BoxService>()
-                .GetOrCreateFolderAsync(fixture.Freeze<State>().Title.Name, "0"))
+                .GetOrCreateFolderAsync(fixture.Freeze<State>().Title.Name, cancellationToken))
                 .Returns(titleFolder);
 
             A.CallTo(() => fixture
                 .FreezeFake<BoxService>()
                 .CreateFileAsync(
                     fixture.Freeze<State>().InternalData.ZipFilePath!,
-                    titleFolder.Id))
+                    titleFolder.Id,
+                    cancellationToken))
                 .Returns(titleFile);
         }
 
