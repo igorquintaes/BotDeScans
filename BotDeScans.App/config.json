@@ -40,6 +40,10 @@
     "Pass": "",
     "RewriteExistingFile": true
   },
+  "Box": {
+    "ClientId": "",
+    "ClientSecret": ""
+  },
   "Blogger": {
     "Id": "",
     "Url": "",

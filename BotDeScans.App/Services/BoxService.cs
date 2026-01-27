@@ -23,9 +23,7 @@ public class BoxService(
     public virtual async Task<FolderMini> GetOrCreateFolderAsync(string folderName, CancellationToken cancellationToken = default)
     {
         var folderItems = await boxClient.Folders.GetFolderItemsAsync(ROOT_ID, cancellationToken: cancellationToken);
-        var folder = folderItems.Entries?.FirstOrDefault(x =>
-            x.FolderMini?.Name == folderName &&
-            x.FolderMini?.Type.Value == FolderBaseTypeField.Folder);
+        var folder = folderItems.Entries?.FirstOrDefault(x => x.FolderMini!.Name == folderName);
 
         if (folder is not null)
             return folder.FolderMini!;

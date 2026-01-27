@@ -22,6 +22,7 @@ public class BoxServiceTests : UnitTest
     public class GetOrCreateFolderAsync : BoxServiceTests
     {
         private readonly string folderName;
+        private readonly Item folderItem;
 
         public GetOrCreateFolderAsync()
         {
@@ -32,20 +33,31 @@ public class BoxServiceTests : UnitTest
             A.CallTo(() => fixture
                 .FreezeFake<IBoxClient>().Folders)
                 .Returns(fixture.FreezeFake<IFoldersManager>());
+
+            var existingFolder = fixture.CreateCustom<FolderMini>(f => f
+                .With(x => x.Name, folderName));
+
+            folderItem = new Item(existingFolder);
+
+            var folderItems = fixture.CreateCustom<Items>(f => f
+                .With(x => x.Entries, [folderItem]));
+
+            A.CallTo(() => fixture
+                .FreezeFake<IFoldersManager>()
+                .GetFolderItemsAsync(
+                    BoxService.ROOT_ID,
+                    A<GetFolderItemsQueryParams?>.Ignored,
+                    A<GetFolderItemsHeaders?>.Ignored,
+                    cancellationToken))
+                .Returns(folderItems);
         }
 
         [Fact]
         public async Task GivenExistingFolderShouldReturnIt()
         {
-            var existingFolder = fixture.CreateCustom<FolderMini>(f => f
-                .With(x => x.Name, folderName)
-                .With(x => x.Type, new StringEnum<FolderBaseTypeField>(FolderBaseTypeField.Folder)));
 
             var otherFolder = fixture.CreateCustom<FolderMini>(f => f
-                .With(x => x.Name, fixture.Create<string>())
-                .With(x => x.Type, new StringEnum<FolderBaseTypeField>(FolderBaseTypeField.Folder)));
-
-            var folderItem = new Item(existingFolder);
+                .With(x => x.Name, fixture.Create<string>()));
 
             var otherFolderItem = new Item(otherFolder);
 
@@ -63,7 +75,7 @@ public class BoxServiceTests : UnitTest
 
             var result = await service.GetOrCreateFolderAsync(folderName, cancellationToken);
 
-            result.Should().BeEquivalentTo(existingFolder);
+            result.Should().BeEquivalentTo(folderItem.FolderMini);
 
             A.CallTo(() => fixture
                 .FreezeFake<IFoldersManager>()
@@ -79,13 +91,12 @@ public class BoxServiceTests : UnitTest
         public async Task GivenNonExistingFolderShouldCreateAndReturnIt()
         {
             var otherFolder = fixture.CreateCustom<FolderMini>(f => f
-                .With(x => x.Name, fixture.Create<string>())
-                .With(x => x.Type, new StringEnum<FolderBaseTypeField>(FolderBaseTypeField.Folder)));
+                .With(x => x.Name, fixture.Create<string>()));
 
             var otherFolderItem = new Item(otherFolder);
 
             var items = fixture.CreateCustom<Items>(f => f
-                .With(x => x.Entries, [otherFolderItem]));
+                .With(x => x.Entries, [otherFolderItem, folderItem]));
 
             var newFolder = fixture.CreateCustom<FolderFull>(f => f
                 .With(x => x.Name, folderName));
@@ -116,67 +127,15 @@ public class BoxServiceTests : UnitTest
         }
 
         [Fact]
-        public async Task GivenItemWithDifferentTypeShouldNotReturnIt()
-        {
-            var fileFull = fixture.CreateCustom<FileFull>(f => f
-                .With(x => x.Name, folderName)
-                .With(x => x.Type, new StringEnum<FileBaseTypeField>(FileBaseTypeField.File)));
-
-            var fileItem = new Item(fileFull);
-
-            var items = fixture.CreateCustom<Items>(f => f
-                .With(x => x.Entries, [fileItem]));
-
-            var newFolder = fixture.CreateCustom<FolderFull>(f => f
-                .With(x => x.Name, folderName));
-
-            A.CallTo(() => fixture
-                .FreezeFake<IFoldersManager>()
-                .GetFolderItemsAsync(
-                    BoxService.ROOT_ID,
-                    A<GetFolderItemsQueryParams?>.Ignored,
-                    A<GetFolderItemsHeaders?>.Ignored,
-                    cancellationToken))
-                .Returns(items);
-
-            A.CallTo(() => fixture
-                .FreezeFake<IFoldersManager>()
-                .CreateFolderAsync(
-                    A<CreateFolderRequestBody>.Ignored,
-                    A<CreateFolderQueryParams?>.Ignored,
-                    A<CreateFolderHeaders?>.Ignored,
-                    cancellationToken))
-                .Returns(newFolder);
-
-            var result = await service.GetOrCreateFolderAsync(folderName, cancellationToken);
-
-            result.Should().BeEquivalentTo(newFolder, options => options
-                .Including(x => x.Name));
-
-            A.CallTo(() => fixture
-                .FreezeFake<IFoldersManager>()
-                .CreateFolderAsync(
-                    A<CreateFolderRequestBody>.That.Matches(x =>
-                        x.Name == folderName &&
-                        x.Parent.Id == BoxService.ROOT_ID),
-                    A<CreateFolderQueryParams?>.Ignored,
-                    A<CreateFolderHeaders?>.Ignored,
-                    cancellationToken))
-                .MustHaveHappenedOnceExactly();
-        }
-
-        [Fact]
         public async Task GivenMultipleFoldersWithSameNameShouldReturnFirstMatch()
         {
             var firstMatch = fixture.CreateCustom<FolderMini>(f => f
                 .With(x => x.Name, folderName)
-                .With(x => x.Id, "first-id")
-                .With(x => x.Type, new StringEnum<FolderBaseTypeField>(FolderBaseTypeField.Folder)));
+                .With(x => x.Id, "first-id"));
 
             var secondMatch = fixture.CreateCustom<FolderMini>(f => f
                 .With(x => x.Name, folderName)
-                .With(x => x.Id, "second-id")
-                .With(x => x.Type, new StringEnum<FolderBaseTypeField>(FolderBaseTypeField.Folder)));
+                .With(x => x.Id, "second-id"));
 
             var firstFolderItem = new Item(firstMatch);
 
