@@ -1,10 +1,11 @@
 ﻿using BotDeScans.App.Models.Entities.Enums;
 using BotDeScans.App.Services;
 using BotDeScans.App.Services.Initializations.Factories;
-using Box.V2;
-using Box.V2.Managers;
-using Box.V2.Models;
+using Box.Sdk.Gen;
+using Box.Sdk.Gen.Managers;
+using Box.Sdk.Gen.Schemas;
 using Microsoft.Extensions.Configuration;
+using Task = System.Threading.Tasks.Task;
 
 namespace BotDeScans.UnitTests.Specs.Services.Initializations.Factories;
 
@@ -53,24 +54,32 @@ public class BoxClientFactoryTests : UnitTest
 
     public class HealthCheckAsync : BoxClientFactoryTests
     {
+        private readonly FolderFull folder;
+
         public HealthCheckAsync()
         {
-            A.CallTo(() => fixture
-                .FreezeFake<IBoxClient>().FoldersManager)
-                .Returns(fixture.FreezeFake<IBoxFoldersManager>());
+            fixture.FreezeFake<IBoxClient>();
+
+            var itemCollection = fixture.CreateCustom<Items>(f => f
+                .With(x => x.TotalCount, 1));
+
+            folder = fixture.CreateCustom<FolderFull>(f => f
+                .With(x => x.ItemCollection, itemCollection));
 
             A.CallTo(() => fixture
-                .FreezeFake<IBoxFoldersManager>()
-                .GetFolderItemsAsync(BoxService.ROOT_ID, 1, default, default, default, default, default, default, default))
-                .Returns(new BoxCollection<BoxItem>() { TotalCount = 1 });
+                .FreezeFake<IBoxClient>()
+                .Folders.GetFolderByIdAsync(
+                    BoxService.ROOT_ID,
+                    A<GetFolderByIdQueryParams?>.Ignored,
+                    A<GetFolderByIdHeaders?>.Ignored,
+                    cancellationToken))
+                .Returns(folder);
         }
 
         [Fact]
         public async Task GivenSuccessfulExecutionShouldReturnSuccessResult()
         {
-            var result = await factory.HealthCheckAsync(
-                fixture.FreezeFake<IBoxClient>(),
-                cancellationToken);
+            var result = await factory.HealthCheckAsync(fixture.FreezeFake<IBoxClient>(), cancellationToken);
 
             result.Should().BeSuccess();
         }
@@ -78,31 +87,76 @@ public class BoxClientFactoryTests : UnitTest
         [Fact]
         public async Task GivenUnexpectedCountValueShouldReturnFailResult()
         {
-            A.CallTo(() => fixture
-                .FreezeFake<IBoxFoldersManager>()
-                .GetFolderItemsAsync(BoxService.ROOT_ID, 1, default, default, default, default, default, default, default))
-                .Returns(new BoxCollection<BoxItem>() { TotalCount = 0 });
+            var invalidItemCollection = fixture.CreateCustom<Items>(f => f
+                .With(x => x.TotalCount, 0));
 
-            var result = await factory.HealthCheckAsync(
-                fixture.FreezeFake<IBoxClient>(),
-                cancellationToken);
+            var invalidFolder = fixture.CreateCustom<FolderFull>(f => f
+                .With(x => x.ItemCollection, invalidItemCollection));
+
+            A.CallTo(() => fixture
+                .FreezeFake<IBoxClient>()
+                .Folders.GetFolderByIdAsync(
+                    BoxService.ROOT_ID,
+                    A<GetFolderByIdQueryParams?>.Ignored,
+                    A<GetFolderByIdHeaders?>.Ignored,
+                    cancellationToken))
+                .Returns(invalidFolder);
+
+            var result = await factory.HealthCheckAsync(fixture.FreezeFake<IBoxClient>(), cancellationToken);
 
             result.Should().BeFailure().And.HaveError("Unknown error while trying to retrieve information from account.");
         }
 
         [Fact]
-        public async Task GivenNullFolderitemsShouldReturnFailResult()
+        public async Task GivenNullFolderShouldReturnFailResult()
         {
             A.CallTo(() => fixture
-                .FreezeFake<IBoxFoldersManager>()
-                .GetFolderItemsAsync(BoxService.ROOT_ID, 1, default, default, default, default, default, default, default))
-                .Returns(null as BoxCollection<BoxItem>);
+                .FreezeFake<IBoxClient>()
+                .Folders.GetFolderByIdAsync(
+                    BoxService.ROOT_ID,
+                    A<GetFolderByIdQueryParams?>.Ignored,
+                    A<GetFolderByIdHeaders?>.Ignored,
+                    cancellationToken))
+                .Returns(Task.FromResult<FolderFull>(null!));
 
-            var result = await factory.HealthCheckAsync(
-                fixture.FreezeFake<IBoxClient>(),
-                cancellationToken);
+            var result = await factory.HealthCheckAsync(fixture.FreezeFake<IBoxClient>(), cancellationToken);
 
             result.Should().BeFailure().And.HaveError("Unknown error while trying to retrieve information from account.");
+        }
+
+        [Fact]
+        public async Task GivenNullItemCollectionShouldReturnFailResult()
+        {
+            var folderWithoutCollection = fixture.CreateCustom<FolderFull>(f => f
+                .With(x => x.ItemCollection, null));
+
+            A.CallTo(() => fixture
+                .FreezeFake<IBoxClient>()
+                .Folders.GetFolderByIdAsync(
+                    BoxService.ROOT_ID,
+                    A<GetFolderByIdQueryParams?>.Ignored,
+                    A<GetFolderByIdHeaders?>.Ignored,
+                    cancellationToken))
+                .Returns(folderWithoutCollection);
+
+            var result = await factory.HealthCheckAsync(fixture.FreezeFake<IBoxClient>(), cancellationToken);
+
+            result.Should().BeFailure().And.HaveError("Unknown error while trying to retrieve information from account.");
+        }
+
+        [Fact]
+        public async Task GivenSuccessfulExecutionShouldCallGetFolderByIdWithCorrectParameters()
+        {
+            await factory.HealthCheckAsync(fixture.FreezeFake<IBoxClient>(), cancellationToken);
+
+            A.CallTo(() => fixture
+                .FreezeFake<IBoxClient>()
+                .Folders.GetFolderByIdAsync(
+                    BoxService.ROOT_ID,
+                    A<GetFolderByIdQueryParams?>.Ignored,
+                    A<GetFolderByIdHeaders?>.Ignored,
+                    cancellationToken))
+                .MustHaveHappenedOnceExactly();
         }
     }
 }

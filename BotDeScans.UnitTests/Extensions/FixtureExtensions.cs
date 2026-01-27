@@ -2,7 +2,10 @@
 using FakeItEasy.Creation;
 using Microsoft.Extensions.Configuration;
 using Remora.Commands.Groups;
+using System.Linq.Expressions;
 using System.Reflection;
+using System.Runtime.CompilerServices;
+using System.Runtime.Serialization;
 
 namespace BotDeScans.UnitTests.Extensions;
 
@@ -109,5 +112,85 @@ public static class FixtureExtensions
             .Invoke(command, [cancellationToken]);
 
         return command;
+    }
+
+    public static T CreateCustom<T>(
+        this IFixture _,
+        Dictionary<string, object?> propertyValues)
+    {
+        var instance = RuntimeHelpers.GetUninitializedObject(typeof(T));
+
+        foreach (var (propertyName, value) in propertyValues)
+            SetPropertyValue(instance, typeof(T), propertyName, value);
+
+        return (T)instance;
+    }
+
+    public static T CreateCustom<T>(
+        this IFixture fixture,
+        Action<PropertySetter<T>> propertySetters)
+    {
+        var setter = new PropertySetter<T>();
+        propertySetters(setter);
+
+        return fixture.CreateCustom<T>(setter.PropertyValues);
+    }
+
+    private static void SetPropertyValue(object instance, Type type, string propertyName, object? value)
+    {
+        var field = type.GetField(
+            $"<{propertyName}>k__BackingField",
+            BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
+
+        if (field is not null)
+        {
+            field.SetValue(instance, value);
+        }
+        else
+        {
+            var property = type.GetProperty(
+                propertyName,
+                BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
+
+            if (property?.CanWrite == true)
+            {
+                property.SetValue(instance, value);
+            }
+            else if (type.BaseType is not null)
+            {
+                SetPropertyValue(instance, type.BaseType, propertyName, value);
+            }
+            else
+            {
+                throw new InvalidOperationException(
+                    $"Property '{propertyName}' not found or is not settable on type '{type.Name}'.");
+            }
+        }
+    }
+}
+
+public class PropertySetter<T>
+{
+    internal Dictionary<string, object?> PropertyValues { get; } = [];
+
+    public PropertySetter<T> With<TProperty>(
+        Expression<Func<T, TProperty>> propertyExpression,
+        TProperty value)
+    {
+        var propertyName = GetPropertyName(propertyExpression);
+        PropertyValues[propertyName] = value;
+        return this;
+    }
+
+    private static string GetPropertyName<TProperty>(Expression<Func<T, TProperty>> propertyExpression)
+    {
+        return propertyExpression.Body switch
+        {
+            MemberExpression memberExpression => memberExpression.Member.Name,
+            UnaryExpression { Operand: MemberExpression memberExpression } => memberExpression.Member.Name,
+            _ => throw new ArgumentException(
+                "Expression must be a property accessor",
+                nameof(propertyExpression))
+        };
     }
 }

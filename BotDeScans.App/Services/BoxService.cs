@@ -1,6 +1,9 @@
 ﻿using BotDeScans.App.Services.Wrappers;
-using Box.V2;
-using Box.V2.Models;
+using Box.Sdk.Gen;
+using Box.Sdk.Gen.Managers;
+using Box.Sdk.Gen.Schemas;
+using File = Box.Sdk.Gen.Schemas.File;
+
 namespace BotDeScans.App.Services;
 
 public class BoxService(
@@ -9,46 +12,50 @@ public class BoxService(
 {
     public const string ROOT_ID = "0";
 
-    public virtual async Task<BoxFolder> GetOrCreateFolderAsync(string folderName, string parentFolderId = ROOT_ID)
+    /// <summary>
+    /// Todo: There is a limit of 1k folders that can be retrieved in a request.
+    /// Is not expected to reach this quantity in a single folder,
+    /// so pagination will be ignored for now to priorize other developments.
+    /// </summary>
+    /// <param name="folderName"></param>
+    /// <param name="cancellationToken"></param>
+    /// <returns></returns>
+    public virtual async Task<FolderMini> GetOrCreateFolderAsync(string folderName, CancellationToken cancellationToken = default)
     {
-        // Todo: There is a limit of 1k folders that can be retrieved in a request.
-        // Is not expected to reach this quantity in a single folder,
-        // so pagination will be ignored for now to priorize other developments.
-        const int maxItemsQuery = 1000;
-        const string folderType = "folder";
-        var folderItems = await boxClient.FoldersManager.GetFolderItemsAsync(parentFolderId, maxItemsQuery);
-        var folder = folderItems.Entries.FirstOrDefault(x =>
-            x.Name == folderName &&
-            x.Type == folderType);
+        var folderItems = await boxClient.Folders.GetFolderItemsAsync(ROOT_ID, cancellationToken: cancellationToken);
+        var folder = folderItems.Entries?.FirstOrDefault(x =>
+            x.FolderMini?.Name == folderName &&
+            x.FolderMini?.Type.Value == FolderBaseTypeField.Folder);
 
-        return folder as BoxFolder
-            ?? await boxClient.FoldersManager.CreateAsync(new BoxFolderRequest
-            {
-                Name = folderName,
-                Parent = new BoxRequestEntity() { Id = parentFolderId }
-            });
+        if (folder is not null)
+            return folder.FolderMini!;
+
+        return await boxClient.Folders.CreateFolderAsync(new(folderName, new(ROOT_ID)), cancellationToken: cancellationToken);
     }
 
-    public virtual async Task<BoxFile> CreateFileAsync(string filePath, string parentFolderId = ROOT_ID)
+    public virtual async Task<File> CreateFileAsync(string filePath, string parentFolderId, CancellationToken cancellationToken = default)
     {
         var fileName = Path.GetFileName(filePath);
-        var req = new BoxFileRequest()
+        await using var stream = streamWrapper.CreateFileStream(filePath, FileMode.Open);
+
+        var parentField = new UploadFileRequestBodyAttributesParentField(parentFolderId);
+        var attributes = new UploadFileRequestBodyAttributesField(fileName, parentField);
+        var request = new UploadFileRequestBody(attributes, stream);
+        var newFile = await boxClient.Uploads.UploadFileAsync(request, cancellationToken: cancellationToken);
+        var accessType = UpdateFileByIdRequestBodySharedLinkAccessField.Open;
+        var updateFile = new UpdateFileByIdRequestBody()
         {
-            Name = fileName,
-            Parent = new BoxRequestEntity() { Id = parentFolderId }
+            SharedLink = new()
+            {
+                Access = new StringEnum<UpdateFileByIdRequestBodySharedLinkAccessField>(accessType),
+                Permissions = new() { CanDownload = true },
+                UnsharedAt = null
+            }
         };
 
-        await using var stream = streamWrapper.CreateFileStream(filePath, FileMode.Open);
-        var newFile = await boxClient.FilesManager.UploadAsync(req, stream);
-        var boxResult = await boxClient.FilesManager.CreateSharedLinkAsync(
-            newFile.Id,
-            new BoxSharedLinkRequest()
-            {
-                Access = BoxSharedLinkAccessType.open,
-                Permissions = new BoxPermissionsRequest { Download = true },
-                UnsharedAt = null
-            });
-
-        return boxResult;
+        return await boxClient.Files.UpdateFileByIdAsync(
+            newFile.Entries!.Single().Id, 
+            updateFile, 
+            cancellationToken: cancellationToken);
     }
 }

@@ -18,12 +18,13 @@ public class UploadZipBoxStep(
 
     public async Task<Result> ExecuteAsync(CancellationToken cancellationToken)
     {
-        var titleFolder = await boxService.GetOrCreateFolderAsync(state.Title.Name);
+        var titleFolder = await boxService.GetOrCreateFolderAsync(state.Title.Name, cancellationToken);
         var file = await boxService.CreateFileAsync(
             filePath: state.InternalData.ZipFilePath!,
-            parentFolderId: titleFolder.Id);
+            parentFolderId: titleFolder.Id,
+            cancellationToken: cancellationToken);
 
-        state.ReleaseLinks.BoxZip = file.SharedLink.DownloadUrl;
+        state.ReleaseLinks.BoxZip = file.SharedLink!.DownloadUrl;
         return Result.Ok();
     }
 }

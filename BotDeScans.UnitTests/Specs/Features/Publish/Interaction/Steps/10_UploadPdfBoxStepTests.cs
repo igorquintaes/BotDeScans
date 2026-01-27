@@ -3,7 +3,9 @@ using BotDeScans.App.Features.Publish.Interaction.Steps;
 using BotDeScans.App.Features.Publish.Interaction.Steps.Enums;
 using BotDeScans.App.Models.Entities.Enums;
 using BotDeScans.App.Services;
-using Box.V2.Models;
+using Box.Sdk.Gen.Schemas;
+using File = Box.Sdk.Gen.Schemas.File;
+using Task = System.Threading.Tasks.Task;
 
 namespace BotDeScans.UnitTests.Specs.Features.Publish.Interaction.Steps;
 
@@ -46,30 +48,36 @@ public class UploadPdfBoxStepTests : UnitTest
 
     public class ExecuteAsync : UploadPdfBoxStepTests
     {
-        private const string FILE_LINK = "http://www.escoladescans.com/sample";
+        private const string FILE_LINK = "http://www.escoladescans.com/sample.pdf";
+        private readonly FolderMini titleFolder;
+        private readonly File titleFile;
 
         public ExecuteAsync()
         {
-            fixture.FreezeFake<BoxFolder>();
-            fixture.FreezeFake<BoxFile>();
+            var folderId = fixture.Create<string>();
+            var sharedLink = fixture.CreateCustom<FileSharedLinkField>(f => f
+                .With(x => x.DownloadUrl, FILE_LINK));
 
-            A.CallTo(() => fixture.FreezeFake<BoxFolder>().Id)
-                .Returns("box-folder-id");
+            titleFolder = fixture.CreateCustom<FolderMini>(f => f
+                .With(x => x.Id, folderId));
 
-            A.CallTo(() => fixture.FreezeFake<BoxFile>().SharedLink.DownloadUrl)
-                .Returns(FILE_LINK);
+            titleFile = fixture.CreateCustom<File>(f => f
+                .With(x => x.SharedLink, sharedLink));
 
             A.CallTo(() => fixture
                 .FreezeFake<BoxService>()
-                .GetOrCreateFolderAsync(fixture.Freeze<State>().Title.Name, "0"))
-                .Returns(fixture.FreezeFake<BoxFolder>());
+                .GetOrCreateFolderAsync(
+                    fixture.Freeze<State>().Title.Name,
+                    cancellationToken))
+                .Returns(titleFolder);
 
             A.CallTo(() => fixture
                 .FreezeFake<BoxService>()
                 .CreateFileAsync(
                     fixture.Freeze<State>().InternalData.PdfFilePath!,
-                    fixture.FreezeFake<BoxFolder>().Id))
-                .Returns(fixture.FreezeFake<BoxFile>());
+                    titleFolder.Id,
+                    cancellationToken))
+                .Returns(titleFile);
         }
 
         [Fact]
@@ -98,12 +106,42 @@ public class UploadPdfBoxStepTests : UnitTest
 
             fixture.Freeze<State>().InternalData.BoxPdfReaderKey = null!;
 
-            A.CallTo(() => fixture.FreezeFake<BoxFile>().SharedLink.DownloadUrl)
-                .Returns(LINK);
+            var sharedLink = fixture.CreateCustom<FileSharedLinkField>(f => f
+                .With(x => x.DownloadUrl, LINK));
+
+            var updatedFile = fixture.CreateCustom<File>(f => f
+                .With(x => x.SharedLink, sharedLink));
 
             await step.ExecuteAsync(cancellationToken);
 
             fixture.Freeze<State>().InternalData.BoxPdfReaderKey.Should().Be(EXPECTED_KEY);
+        }
+
+        [Fact]
+        public async Task GivenSuccessfulExecutionShouldCallGetOrCreateFolderWithCorrectParameters()
+        {
+            await step.ExecuteAsync(cancellationToken);
+
+            A.CallTo(() => fixture
+                .FreezeFake<BoxService>()
+                .GetOrCreateFolderAsync(
+                    fixture.Freeze<State>().Title.Name,
+                    cancellationToken))
+                .MustHaveHappenedOnceExactly();
+        }
+
+        [Fact]
+        public async Task GivenSuccessfulExecutionShouldCallCreateFileAsyncWithCorrectParameters()
+        {
+            await step.ExecuteAsync(cancellationToken);
+
+            A.CallTo(() => fixture
+                .FreezeFake<BoxService>()
+                .CreateFileAsync(
+                    fixture.Freeze<State>().InternalData.PdfFilePath!,
+                    titleFolder.Id,
+                    cancellationToken))
+                .MustHaveHappenedOnceExactly();
         }
     }
 }
