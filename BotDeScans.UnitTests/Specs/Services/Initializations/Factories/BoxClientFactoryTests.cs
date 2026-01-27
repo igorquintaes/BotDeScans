@@ -9,7 +9,7 @@ using Task = System.Threading.Tasks.Task;
 
 namespace BotDeScans.UnitTests.Specs.Services.Initializations.Factories;
 
-public class BoxClientFactoryTests : UnitTest
+public abstract class BoxClientFactoryTests : UnitTest
 {
     private readonly BoxClientFactory factory;
 
@@ -49,6 +49,20 @@ public class BoxClientFactoryTests : UnitTest
                     .Select(x => x.ToString()));
 
             factory.Enabled.Should().BeFalse();
+        }
+    }
+
+    public class CreateAsync : BoxClientFactoryTests
+    {
+        [Fact]
+        public async Task GivenExecutionShouldReturnExpectedResult()
+        {
+            fixture.FreezeFakeConfiguration("Box:ClientId", fixture.Create<string>());
+            fixture.FreezeFakeConfiguration("Box:ClientSecret", fixture.Create<string>());
+
+            var result = await factory.CreateAsync(cancellationToken);
+
+            result.Should().BeSuccess();
         }
     }
 

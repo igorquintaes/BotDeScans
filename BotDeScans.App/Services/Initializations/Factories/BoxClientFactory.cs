@@ -4,7 +4,6 @@ using BotDeScans.App.Services.Initializations.Factories.Base;
 using Box.Sdk.Gen;
 using FluentResults;
 using Microsoft.Extensions.Configuration;
-using System.Diagnostics.CodeAnalysis;
 
 namespace BotDeScans.App.Services.Initializations.Factories;
 
@@ -14,7 +13,6 @@ public class BoxClientFactory(IConfiguration configuration) : ClientFactory<IBox
         .GetValues<StepName>("Settings:Publish:Steps")
         .Any(x => x is StepName.UploadPdfBox or StepName.UploadZipBox);
 
-    [ExcludeFromCodeCoverage(Justification = "BoxJWTAuth is not mockable  - all code relies this class.")]
     public override Task<Result<IBoxClient>> CreateAsync(
         CancellationToken cancellationToken = default)
     {
