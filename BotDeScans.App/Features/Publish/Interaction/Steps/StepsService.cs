@@ -9,7 +9,7 @@ public class StepsService(IConfiguration configuration, IEnumerable<IStep> allSt
 {
     public const string STEPS_KEY = "Settings:Publish:Steps";
 
-    public virtual EnabledSteps GetEnabledSteps()
+    public virtual EnabledSteps GetEnabledSteps(IReadOnlyCollection<StepName> stepsToSkip)
     {
         var configurationSteps = GetConfigurationSteps(configuration, allSteps);
         var dependencySteps = GetDependencySteps(configurationSteps, allSteps);
@@ -24,7 +24,7 @@ public class StepsService(IConfiguration configuration, IEnumerable<IStep> allSt
 
         return new EnabledSteps(enabledSteps.ToDictionary(
             step => step,
-            step => new StepInfo(step)));
+            step => new StepInfo(step, stepsToSkip.Contains(step.Name))));
     }
 
     /// <summary>

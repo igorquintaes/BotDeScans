@@ -1,14 +1,17 @@
 ﻿using BotDeScans.App.Features.Publish.Interaction.Steps;
+using BotDeScans.App.Features.Publish.Interaction.Steps;
 using BotDeScans.App.Features.Publish.Interaction.Steps.Enums;
 using FluentResults;
 
 namespace BotDeScans.App.Features.Publish.Interaction.Models;
 
-public class StepInfo(IStep step)
+public class StepInfo(IStep step, bool skip = false)
 {
-    public StepStatus Status { get; private set; } = step is IManagementStep
-         ? StepStatus.QueuedForExecution
-         : StepStatus.QueuedForValidation;
+    public virtual StepStatus Status { get; private set; } = skip
+        ? StepStatus.Skip
+        : step is IManagementStep
+            ? StepStatus.QueuedForExecution
+            : StepStatus.QueuedForValidation;
 
     public virtual void UpdateStatus(Result result) =>
         Status = result.IsFailed
@@ -16,7 +19,4 @@ public class StepInfo(IStep step)
             : Status == StepStatus.QueuedForValidation
                 ? StepStatus.QueuedForExecution
                 : StepStatus.Success;
-
-    public virtual void SetToSkip() =>
-        Status = StepStatus.Skip;
 }

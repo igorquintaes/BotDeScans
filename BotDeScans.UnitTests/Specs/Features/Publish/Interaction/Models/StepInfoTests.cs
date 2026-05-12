@@ -77,24 +77,14 @@ public class StepInfoTests : UnitTest
         }
     }
 
-    public class SetToSkip : StepInfoTests
+    public class SkipConstructorParam : StepInfoTests
     {
         [Fact]
-        public void GivenManagementStepTypeShouldChangeStatusToSkipped()
-        {
-            var stepInfo = new StepInfo(A.Fake<IManagementStep>());
-            stepInfo.SetToSkip();
-
-            stepInfo.Status.Should().Be(StepStatus.Skip);
-        }
+        public void GivenSkipTrueShouldCreateStepInfoWithSkipStatus() =>
+            new StepInfo(A.Fake<IManagementStep>(), skip: true).Status.Should().Be(StepStatus.Skip);
 
         [Fact]
-        public void GivenPublishStepTypeShouldChangeStatusToSkipped()
-        {
-            var stepInfo = new StepInfo(A.Fake<IPublishStep>());
-            stepInfo.SetToSkip();
-
-            stepInfo.Status.Should().Be(StepStatus.Skip);
-        }
+        public void GivenSkipFalseShouldCreateStepInfoWithNormalStatus() =>
+            new StepInfo(A.Fake<IManagementStep>(), skip: false).Status.Should().Be(StepStatus.QueuedForExecution);
     }
 }

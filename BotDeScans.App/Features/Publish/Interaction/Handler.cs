@@ -1,6 +1,8 @@
 ﻿using BotDeScans.App.Extensions;
+using BotDeScans.App.Extensions;
 using BotDeScans.App.Features.Publish.Interaction.Models;
 using BotDeScans.App.Features.Publish.Interaction.Steps;
+using BotDeScans.App.Features.Publish.Interaction.Steps.Enums;
 using FluentResults;
 
 namespace BotDeScans.App.Features.Publish.Interaction;
@@ -27,18 +29,14 @@ public class Handler(
         }
 
         return result;
-
     }
 
     private async Task<Result> ValidateAsync(
         (IPublishStep Step, StepInfo Info) data,
         CancellationToken cancellationToken)
     {
-        if (ShouldSkip(data.Step))
-        {
-            data.Info.SetToSkip();
-            return await discordPublisher.UpdateTrackingMessageAsync(cancellationToken);
-        }
+        if (data.Info.Status == StepStatus.Skip)
+            return Result.Ok();
 
         var result = await data.Step.SafeCallAsync(x => x.ValidateAsync(cancellationToken));
         return await HandleResult(result, data.Info, cancellationToken);
@@ -48,16 +46,12 @@ public class Handler(
         (IStep Step, StepInfo Info) data,
         CancellationToken cancellationToken)
     {
-        if (ShouldSkip(data.Step))
+        if (data.Info.Status == StepStatus.Skip)
             return Result.Ok();
 
         var result = await data.Step.SafeCallAsync(x => x.ExecuteAsync(cancellationToken));
         return await HandleResult(result, data.Info, cancellationToken);
     }
-
-    private bool ShouldSkip(IStep step) => 
-        state.Title is not null && 
-        state.Title.SkipSteps.Any(x => x.Step == step.Name);
 
     private async Task<Result> HandleResult(
         Result result,
