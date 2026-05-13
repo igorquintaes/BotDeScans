@@ -34,6 +34,10 @@ public class UploadSakuraMangasStepTests : UnitTest
         [Fact]
         public void ShouldHaveExpectedDependency() =>
             step.Dependency.Should().Be(StepName.ZipFiles);
+
+        [Fact]
+        public void ShouldHaveExpectedContinueOnError() =>
+            step.ContinueOnError.Should().BeTrue();
     }
 
     public class ValidateAsync : UploadSakuraMangasStepTests

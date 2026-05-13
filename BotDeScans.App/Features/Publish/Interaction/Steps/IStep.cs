@@ -9,6 +9,7 @@ public interface IStep
     public Task<Result> ExecuteAsync(CancellationToken cancellationToken);
     public StepName Name { get; }
     public StepType Type { get; }
+    public bool ContinueOnError => false;
 }
 
 public interface IManagementStep : IStep

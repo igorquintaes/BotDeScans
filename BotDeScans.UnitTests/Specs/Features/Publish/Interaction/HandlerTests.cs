@@ -2,10 +2,8 @@
 using BotDeScans.App.Features.Publish.Interaction.Models;
 using BotDeScans.App.Features.Publish.Interaction.Steps;
 using BotDeScans.App.Features.Publish.Interaction.Steps.Enums;
-using BotDeScans.App.Models.Entities;
 using BotDeScans.App.Models.Entities.Enums;
 using FluentResults;
-using System.ComponentModel;
 
 namespace BotDeScans.UnitTests.Specs.Features.Publish.Interaction;
 
@@ -319,6 +317,28 @@ public class HandlerTests : UnitTest
             A.CallTo(() => publishInfo1.UpdateStatus(A<Result>.Ignored)).MustNotHaveHappened();
 
             A.CallTo(() => publishStep2.ValidateAsync(cancellationToken)).MustHaveHappenedOnceExactly();
+            A.CallTo(() => publishStep2.ExecuteAsync(cancellationToken)).MustHaveHappenedOnceExactly();
+        }
+
+        [Fact]
+        public async Task GivenErrorExecutionWhenStepAllowsContinueOnErrorShouldContinueChainCall()
+        {
+            var publishStep1 = fixture.Freeze<State>().Steps.PublishSteps.First().Step;
+            var publishStep2 = fixture.Freeze<State>().Steps.PublishSteps.Last().Step;
+
+            A.CallTo(() => publishStep1
+                .ValidateAsync(cancellationToken))
+                .Returns(Result.Fail("some error message"));
+
+            A.CallTo(() => publishStep1.ContinueOnError)
+                .Returns(true);
+
+            var result = await handler.ExecuteAsync(cancellationToken);
+
+            result.Should().BeFailure();
+
+            A.CallTo(() => publishStep2.ValidateAsync(cancellationToken)).MustHaveHappenedOnceExactly();
+            A.CallTo(() => publishStep1.ExecuteAsync(cancellationToken)).MustHaveHappenedOnceExactly();
             A.CallTo(() => publishStep2.ExecuteAsync(cancellationToken)).MustHaveHappenedOnceExactly();
         }
     }
