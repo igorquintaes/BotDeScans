@@ -8,7 +8,7 @@ namespace BotDeScans.App.Features.Publish.Interaction.Steps;
 public class ZipFilesStep(
     FileService fileService,
     FileReleaseService fileReleaseService,
-    State state) : IManagementStep
+    IPublishContext context) : IManagementStep
 {
     public StepType Type => StepType.Management;
     public StepName Name => StepName.ZipFiles;
@@ -17,14 +17,14 @@ public class ZipFilesStep(
     public Task<Result> ExecuteAsync(CancellationToken cancellationToken)
     {
         var zipFileResult = fileService.CreateZipFile(
-            fileName: state.ChapterInfo.ChapterNumber,
-            resourcesDirectory: state.InternalData.OriginContentFolder,
+            fileName: context.ChapterInfo.ChapterNumber,
+            resourcesDirectory: context.OriginContentFolder,
             destinationDirectory: fileReleaseService.CreateScopedDirectory());
 
         if (zipFileResult.IsFailed)
             return Task.FromResult(zipFileResult.ToResult());
 
-        state.InternalData.ZipFilePath = zipFileResult.Value;
+        context.SetZipPath(zipFileResult.Value);
         return Task.FromResult(Result.Ok());
     }
 }

@@ -1,6 +1,7 @@
-﻿using BotDeScans.App.Features.Publish.Interaction;
+using BotDeScans.App.Features.Publish.Interaction;
 using BotDeScans.App.Features.Publish.Interaction.Steps;
 using BotDeScans.App.Features.Publish.Interaction.Steps.Enums;
+using BotDeScans.App.Models.DTOs;
 using BotDeScans.App.Models.Entities;
 using BotDeScans.App.Models.Entities.Enums;
 using BotDeScans.App.Services;
@@ -14,7 +15,7 @@ public class UploadSakuraMangasStepTests : UnitTest
 
     public UploadSakuraMangasStepTests()
     {
-        fixture.Freeze<State>();
+        fixture.FreezeFake<IPublishContext>();
         fixture.FreezeFake<SakuraMangasService>();
 
         step = fixture.Create<UploadSakuraMangasStep>();
@@ -52,23 +53,40 @@ public class UploadSakuraMangasStepTests : UnitTest
 
         public ExecuteAsync()
         {
-            var state = fixture.Freeze<State>();
-            state.Title.References.Clear();
-            state.Title.References.Add(new TitleReference
+            sakuraMangasLink = fixture.Create<string>();
+
+            var titleReference = new TitleReference
             {
                 Key = ExternalReference.SakuraMangas,
-                Value = fixture.Create<string>(),
-                Title = state.Title
-            });
+                Value = fixture.Create<string>()
+            };
 
-            sakuraMangasLink = fixture.Create<string>();
+            var chapterInfo = fixture.Create<Info>();
+            var zipPath = fixture.Create<string>();
+            var title = fixture
+                .Build<Title>()
+                .With(x => x.References, [titleReference])
+                .Create();
+
+            A.CallTo(() => fixture
+                .FreezeFake<IPublishContext>().ChapterInfo)
+                .Returns(chapterInfo);
+
+            A.CallTo(() => fixture
+                .FreezeFake<IPublishContext>()
+                .ZipFilePath).Returns(zipPath);
+
+            A.CallTo(() => fixture
+                .FreezeFake<IPublishContext>().Title)
+                .Returns(title);
+
             A.CallTo(() => fixture
                 .FreezeFake<SakuraMangasService>()
                 .UploadAsync(
-                    state.ChapterInfo.ChapterNumber,
-                    state.ChapterInfo.ChapterName,
-                    state.Title.References.Single().Value,
-                    state.InternalData.ZipFilePath!,
+                    chapterInfo.ChapterNumber,
+                    chapterInfo.ChapterName,
+                    title.References.Single().Value,
+                    zipPath,
                     cancellationToken))
                 .Returns(Result.Ok(sakuraMangasLink));
         }
@@ -82,11 +100,14 @@ public class UploadSakuraMangasStepTests : UnitTest
         }
 
         [Fact]
-        public async Task GivenSuccessfulExecutionShouldSaveSakuraMangasLinkInState()
+        public async Task GivenSuccessfulExecutionShouldSaveSakuraMangasLinkInContext()
         {
             await step.ExecuteAsync(cancellationToken);
 
-            fixture.Freeze<State>().ReleaseLinks.SakuraMangas.Should().Be(sakuraMangasLink);
+            A.CallTo(() => fixture
+                .FreezeFake<IPublishContext>()
+                .SetSakuraMangasLink(sakuraMangasLink))
+                .MustHaveHappenedOnceExactly();
         }
 
         [Fact]

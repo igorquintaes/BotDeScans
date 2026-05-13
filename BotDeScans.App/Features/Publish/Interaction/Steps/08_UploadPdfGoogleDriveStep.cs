@@ -1,4 +1,5 @@
 ﻿using BotDeScans.App.Features.GoogleDrive;
+using BotDeScans.App.Features.Publish.Interaction;
 using BotDeScans.App.Features.Publish.Interaction.Steps.Enums;
 using BotDeScans.App.Models.Entities.Enums;
 using FluentResults;
@@ -7,7 +8,7 @@ namespace BotDeScans.App.Features.Publish.Interaction.Steps;
 
 public class UploadPdfGoogleDriveStep(
     GoogleDriveService googleDriveService,
-    State state) : IPublishStep
+    IPublishContext context) : IPublishStep
 {
     public StepType Type => StepType.Upload;
     public StepName Name => StepName.UploadPdfGoogleDrive;
@@ -19,12 +20,12 @@ public class UploadPdfGoogleDriveStep(
 
     public async Task<Result> ExecuteAsync(CancellationToken cancellationToken)
     {
-        var titleFolderResult = await googleDriveService.GetOrCreateFolderAsync(state.Title.Name, null, cancellationToken);
+        var titleFolderResult = await googleDriveService.GetOrCreateFolderAsync(context.Title.Name, null, cancellationToken);
         if (titleFolderResult.IsFailed)
             return titleFolderResult.ToResult();
 
         var fileResult = await googleDriveService.CreateFileAsync(
-            filePath: state.InternalData.PdfFilePath!,
+            filePath: context.PdfFilePath!,
             parentId: titleFolderResult.Value.Id,
             publicAccess: true,
             cancellationToken);
@@ -32,7 +33,7 @@ public class UploadPdfGoogleDriveStep(
         if (fileResult.IsFailed)
             return fileResult.ToResult();
 
-        state.ReleaseLinks.DrivePdf = fileResult.Value.WebViewLink;
+        context.SetDrivePdfLink(fileResult.Value.WebViewLink);
         return Result.Ok();
     }
 }

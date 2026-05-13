@@ -2,6 +2,7 @@
 using BotDeScans.App.Features.Publish.Interaction;
 using BotDeScans.App.Features.Publish.Interaction.Steps;
 using BotDeScans.App.Features.Publish.Interaction.Steps.Enums;
+using BotDeScans.App.Models.DTOs;
 using BotDeScans.App.Models.Entities.Enums;
 using BotDeScans.App.Services;
 using FluentResults;
@@ -14,7 +15,7 @@ public class DownloadStepTests : UnitTest
 
     public DownloadStepTests()
     {
-        fixture.Freeze<State>();
+        fixture.FreezeFake<IPublishContext>();
         fixture.FreezeFake<FileReleaseService>();
         fixture.FreezeFake<GoogleDriveService>();
 
@@ -38,9 +39,12 @@ public class DownloadStepTests : UnitTest
 
     public class ExecuteAsync : DownloadStepTests
     {
+        private readonly string[] scopedDirectories;
+
         public ExecuteAsync()
         {
-            var scopedDirectories = fixture.CreateMany<string>(2).ToArray();
+            scopedDirectories = [.. fixture.CreateMany<string>(2)];
+            var chapterInfo = fixture.Create<Info>();
 
             A.CallTo(() => fixture
                 .FreezeFake<FileReleaseService>()
@@ -48,9 +52,14 @@ public class DownloadStepTests : UnitTest
                 .ReturnsNextFromSequence(scopedDirectories);
 
             A.CallTo(() => fixture
+                .FreezeFake<IPublishContext>()
+                .ChapterInfo)
+                .Returns(chapterInfo);
+
+            A.CallTo(() => fixture
                 .FreezeFake<GoogleDriveService>()
                 .SaveFilesAsync(
-                    fixture.Freeze<State>().ChapterInfo.GoogleDriveUrl.Id,
+                    chapterInfo.GoogleDriveUrl.Id,
                     scopedDirectories[0],
                     cancellationToken))
                 .Returns(Result.Ok());
@@ -72,15 +81,19 @@ public class DownloadStepTests : UnitTest
         }
 
         [Fact]
-        public async Task GivenSuccessfulExecitionShouldSetStateData()
+        public async Task GivenSuccessfulExecitionShouldSetContextData()
         {
-            fixture.Freeze<State>().InternalData.OriginContentFolder = null!;
-            fixture.Freeze<State>().InternalData.CoverFilePath = null!;
-
             await step.ExecuteAsync(cancellationToken);
 
-            fixture.Freeze<State>().InternalData.OriginContentFolder.Should().NotBeNullOrEmpty();
-            fixture.Freeze<State>().InternalData.CoverFilePath.Should().NotBeNullOrEmpty();
+            A.CallTo(() => fixture
+                .FreezeFake<IPublishContext>()
+                .SetOriginContentFolder(scopedDirectories[0]))
+                .MustHaveHappenedOnceExactly();
+
+            A.CallTo(() => fixture
+                .FreezeFake<IPublishContext>()
+                .SetCoverFilePath(A<string>.Ignored))
+                .MustHaveHappenedOnceExactly();
         }
 
         [Fact]

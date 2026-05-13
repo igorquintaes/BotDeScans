@@ -16,7 +16,7 @@ public class CompressFilesStepTests : UnitTest
 
     public CompressFilesStepTests()
     {
-        fixture.Freeze<State>();
+        fixture.FreezeFake<IPublishContext>();
         fixture.FreezeFake<ImageService>();
         step = fixture.Create<CompressFilesStep>();
     }
@@ -51,7 +51,7 @@ public class CompressFilesStepTests : UnitTest
         }
 
         [Fact]
-        public async Task GivenStateFolderShouldProccessEachFileInside()
+        public async Task GivenContextFolderShouldProcessEachFileInside()
         {
             var firstFilePath = Path.Combine(resourcesDirectory, "01.png");
             var secondFilePath = Path.Combine(resourcesDirectory, "02.png");
@@ -62,7 +62,9 @@ public class CompressFilesStepTests : UnitTest
                 await image.SaveAsync(filePath, cancellationToken);
             }
 
-            fixture.Freeze<State>().InternalData.OriginContentFolder = resourcesDirectory;
+            A.CallTo(() => fixture
+                .FreezeFake<IPublishContext>().OriginContentFolder)
+                .Returns(resourcesDirectory);
 
             A.CallTo(() => fixture
                 .FreezeFake<ImageService>()

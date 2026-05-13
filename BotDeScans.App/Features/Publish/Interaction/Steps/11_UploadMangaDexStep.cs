@@ -1,4 +1,5 @@
-﻿using BotDeScans.App.Features.Publish.Interaction.Steps.Enums;
+﻿using BotDeScans.App.Features.Publish.Interaction;
+using BotDeScans.App.Features.Publish.Interaction.Steps.Enums;
 using BotDeScans.App.Models.Entities;
 using BotDeScans.App.Models.Entities.Enums;
 using BotDeScans.App.Services.MangaDex;
@@ -8,7 +9,7 @@ namespace BotDeScans.App.Features.Publish.Interaction.Steps;
 
 public class UploadMangaDexStep(
     MangaDexService mangaDexService,
-    State state) : IPublishStep
+    IPublishContext context) : IPublishStep
 {
     public StepType Type => StepType.Upload;
     public StepName Name => StepName.UploadMangadex;
@@ -23,17 +24,17 @@ public class UploadMangaDexStep(
 
     public async Task<Result> ExecuteAsync(CancellationToken cancellationToken)
     {
-        var mangaDexReference = state.Title.References.Single(x => x.Key == ExternalReference.MangaDex);
+        var mangaDexReference = context.Title.References.Single(x => x.Key == ExternalReference.MangaDex);
         var uploadResult = await mangaDexService.UploadAsync(
-            state.ChapterInfo,
+            context.ChapterInfo,
             mangaDexReference.Value,
-            state.InternalData.OriginContentFolder,
+            context.OriginContentFolder,
             cancellationToken);
 
         if (uploadResult.IsFailed)
             return uploadResult.ToResult();
 
-        state.ReleaseLinks.MangaDex = $"https://mangadex.org/chapter/{uploadResult.Value.Id}/1";
+        context.SetMangaDexLink($"https://mangadex.org/chapter/{uploadResult.Value.Id}/1");
         return Result.Ok();
     }
 }

@@ -11,11 +11,13 @@ public class StepInfoTests : UnitTest
     {
         [Fact]
         public void GivenManagementStepTypeShouldCreateStepInfoWithQueuedForExecutionStatus() =>
-            new StepInfo(A.Fake<IManagementStep>()).Status.Should().Be(StepStatus.QueuedForExecution);
+            new StepInfo(A.Fake<IManagementStep>()).Status
+               .Should().Be(StepStatus.QueuedForExecution);
 
         [Fact]
         public void GivenPublishStepTypeShouldCreateStepInfoWithQueuedForValidationStatus() =>
-            new StepInfo(A.Fake<IPublishStep>()).Status.Should().Be(StepStatus.QueuedForValidation);
+            new StepInfo(A.Fake<IPublishStep>()).Status
+               .Should().Be(StepStatus.QueuedForValidation);
     }
 
     public class UpdateStatus : StepInfoTests
@@ -81,10 +83,12 @@ public class StepInfoTests : UnitTest
     {
         [Fact]
         public void GivenSkipTrueShouldCreateStepInfoWithSkipStatus() =>
-            new StepInfo(A.Fake<IManagementStep>(), skip: true).Status.Should().Be(StepStatus.Skip);
+            new StepInfo(A.Fake<IManagementStep>(), skip: true).Status
+               .Should().Be(StepStatus.Skip);
 
         [Fact]
         public void GivenSkipFalseShouldCreateStepInfoWithNormalStatus() =>
-            new StepInfo(A.Fake<IManagementStep>(), skip: false).Status.Should().Be(StepStatus.QueuedForExecution);
+            new StepInfo(A.Fake<IManagementStep>(), skip: false).Status
+               .Should().Be(StepStatus.QueuedForExecution);
     }
 }

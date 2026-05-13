@@ -17,14 +17,14 @@ public class StepsService(IConfiguration configuration, IEnumerable<IStep> allSt
 
         var dependencyNames = allSteps
             .OfType<IPublishStep>()
-            .Where(step => configuredNames.Contains(step.Name) 
+            .Where(step => configuredNames.Contains(step.Name)
                         && step.Dependency.HasValue)
             .Select(step => step.Dependency.GetValueOrDefault())
             .ToHashSet();
 
         var enabledSteps = allSteps
-            .Where(step => configuredNames.Contains(step.Name) 
-                     || dependencyNames.Contains(step.Name) 
+            .Where(step => configuredNames.Contains(step.Name)
+                     || dependencyNames.Contains(step.Name)
                      || (step is IManagementStep m && m.IsMandatory))
             .OrderBy(step => step.Name)
             .ToList();

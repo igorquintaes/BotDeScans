@@ -19,5 +19,6 @@ internal static class AddDependencies
             .AddScoped<SetupService>()
             .AddScoped<TextReplacer>()
             .AddScoped<DiscordPublisher>()
-            .AddScoped<State>();
+            .AddScoped<State>()
+            .AddScoped<IPublishContext>(sp => sp.GetRequiredService<State>());
 }

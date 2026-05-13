@@ -1,6 +1,8 @@
-﻿using BotDeScans.App.Features.Publish.Interaction;
+using BotDeScans.App.Features.Publish.Interaction;
 using BotDeScans.App.Features.Publish.Interaction.Steps;
 using BotDeScans.App.Features.Publish.Interaction.Steps.Enums;
+using BotDeScans.App.Models.DTOs;
+using BotDeScans.App.Models.Entities;
 using BotDeScans.App.Models.Entities.Enums;
 using BotDeScans.App.Services;
 using FluentResults;
@@ -14,7 +16,7 @@ public class PublishBloggerStepTests : UnitTest
 
     public PublishBloggerStepTests()
     {
-        fixture.Freeze<State>();
+        fixture.FreezeFake<IPublishContext>();
         fixture.FreezeFake<GoogleBloggerService>();
         fixture.FreezeFake<TextReplacer>();
 
@@ -51,10 +53,18 @@ public class PublishBloggerStepTests : UnitTest
     {
         public ExecuteAsync()
         {
-            var state = fixture.Freeze<State>();
+            var title = fixture.Create<Title>();
+            var chapterInfo = fixture.Create<Info>();
             var template = fixture.Create<string>();
             var replacedTemplate = fixture.Create<string>();
 
+            A.CallTo(() => fixture
+                .FreezeFake<IPublishContext>().Title)
+                .Returns(title);
+
+            A.CallTo(() => fixture
+                .FreezeFake<IPublishContext>().ChapterInfo)
+                .Returns(chapterInfo);
 
             A.CallTo(() => fixture
                 .FreezeFake<GoogleBloggerService>()
@@ -74,10 +84,10 @@ public class PublishBloggerStepTests : UnitTest
             A.CallTo(() => fixture
                 .FreezeFake<GoogleBloggerService>()
                 .PostAsync(
-                    $"[{state.Title.Name}] Capítulo {state.ChapterInfo.ChapterNumber}",
+                    $"[{title.Name}] Cap�tulo {chapterInfo.ChapterNumber}",
                     replacedTemplate,
-                    state.Title.Name,
-                    state.ChapterInfo.ChapterNumber,
+                    title.Name,
+                    chapterInfo.ChapterNumber,
                     cancellationToken))
                 .Returns(new Post());
         }
@@ -91,7 +101,7 @@ public class PublishBloggerStepTests : UnitTest
         }
 
         [Fact]
-        public async Task GivenSuccessfulExecutionShouldSaveBloggerCoverInState()
+        public async Task GivenSuccessfulExecutionShouldSaveBloggerCoverInContext()
         {
             var cover = fixture.Create<string>();
 
@@ -102,11 +112,14 @@ public class PublishBloggerStepTests : UnitTest
 
             await step.ExecuteAsync(cancellationToken);
 
-            fixture.Freeze<State>().InternalData.BloggerImageAsBase64.Should().Be(cover);
+            A.CallTo(() => fixture
+                .FreezeFake<IPublishContext>()
+                .SetBloggerImageAsBase64(cover))
+                .MustHaveHappenedOnceExactly();
         }
 
         [Fact]
-        public async Task GivenSuccessfulExecutionShouldSavePostUrlInState()
+        public async Task GivenSuccessfulExecutionShouldSavePostUrlInContext()
         {
             var url = fixture.Create<string>();
 
@@ -122,20 +135,25 @@ public class PublishBloggerStepTests : UnitTest
 
             await step.ExecuteAsync(cancellationToken);
 
-            fixture.Freeze<State>().ReleaseLinks.Blogger.Should().Be(url);
+            A.CallTo(() => fixture
+                .FreezeFake<IPublishContext>()
+                .SetBloggerLink(url))
+                .MustHaveHappenedOnceExactly();
         }
 
         [Fact]
         public async Task GivenErrorToPostInBloggerShouldReturnErrorResult()
         {
+            const string ERROR_MESSAGE = "some error.";
+
             A.CallTo(() => fixture
                 .FreezeFake<GoogleBloggerService>()
                 .PostAsync(A<string>._, A<string>._, A<string>._, A<string>._, cancellationToken))
-                .Returns(Result.Fail("some error."));
+                .Returns(Result.Fail(ERROR_MESSAGE));
 
             var result = await step.ExecuteAsync(cancellationToken);
 
-            result.Should().BeFailure().And.HaveError("some error.");
+            result.Should().BeFailure().And.HaveError(ERROR_MESSAGE);
         }
     }
 }

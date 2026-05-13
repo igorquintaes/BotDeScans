@@ -1,4 +1,5 @@
-﻿using BotDeScans.App.Features.Publish.Interaction.Steps.Enums;
+﻿using BotDeScans.App.Features.Publish.Interaction;
+using BotDeScans.App.Features.Publish.Interaction.Steps.Enums;
 using BotDeScans.App.Models.Entities;
 using BotDeScans.App.Models.Entities.Enums;
 using BotDeScans.App.Services;
@@ -8,7 +9,7 @@ namespace BotDeScans.App.Features.Publish.Interaction.Steps;
 
 public class UploadSakuraMangasStep(
     SakuraMangasService sakuraMangasService,
-    State state) : IPublishStep
+    IPublishContext context) : IPublishStep
 {
     // todo: será necessário criar um campo com flag sobre continuar a execução em casos de erro;
     // por exemplo, não temos como validar ainda com a SakuraMangás erros como 
@@ -28,16 +29,16 @@ public class UploadSakuraMangasStep(
     public async Task<Result> ExecuteAsync(CancellationToken cancellationToken)
     {
         var uploadResult = await sakuraMangasService.UploadAsync(
-            state.ChapterInfo.ChapterNumber,
-            state.ChapterInfo.ChapterName,
-            state.Title.References.Single(x => x.Key == ExternalReference.SakuraMangas).Value,
-            state.InternalData.ZipFilePath!,
+            context.ChapterInfo.ChapterNumber,
+            context.ChapterInfo.ChapterName,
+            context.Title.References.Single(x => x.Key == ExternalReference.SakuraMangas).Value,
+            context.ZipFilePath!,
             cancellationToken);
 
         if (uploadResult.IsFailed)
             return uploadResult.ToResult();
 
-        state.ReleaseLinks.SakuraMangas = uploadResult.Value;
+        context.SetSakuraMangasLink(uploadResult.Value);
         return Result.Ok();
     }
 }

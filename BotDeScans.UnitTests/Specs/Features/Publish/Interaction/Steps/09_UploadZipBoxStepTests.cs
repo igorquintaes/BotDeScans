@@ -1,4 +1,4 @@
-﻿using BotDeScans.App.Features.Publish.Interaction;
+using BotDeScans.App.Features.Publish.Interaction;
 using BotDeScans.App.Features.Publish.Interaction.Steps;
 using BotDeScans.App.Features.Publish.Interaction.Steps.Enums;
 using BotDeScans.App.Models.Entities.Enums;
@@ -15,7 +15,7 @@ public class UploadZipBoxStepTests : UnitTest
 
     public UploadZipBoxStepTests()
     {
-        fixture.Freeze<State>();
+        fixture.FreezeFake<IPublishContext>();
         fixture.FreezeFake<BoxService>();
         step = fixture.Create<UploadZipBoxStep>();
     }
@@ -50,7 +50,6 @@ public class UploadZipBoxStepTests : UnitTest
     {
         private const string FILE_LINK = "http://www.escoladescans.com/sample";
         private readonly FolderMini titleFolder;
-        private readonly File titleFile;
 
         public ExecuteAsync()
         {
@@ -62,18 +61,24 @@ public class UploadZipBoxStepTests : UnitTest
             titleFolder = fixture.CreateCustom<FolderMini>(f => f
                 .With(x => x.Id, folderId));
 
-            titleFile = fixture.CreateCustom<File>(f => f
+            var titleFile = fixture.CreateCustom<File>(f => f
                 .With(x => x.SharedLink, sharedLink));
+
+            var title = fixture.Create<BotDeScans.App.Models.Entities.Title>();
+            var zipPath = fixture.Create<string>();
+
+            A.CallTo(() => fixture.FreezeFake<IPublishContext>().Title).Returns(title);
+            A.CallTo(() => fixture.FreezeFake<IPublishContext>().ZipFilePath).Returns(zipPath);
 
             A.CallTo(() => fixture
                 .FreezeFake<BoxService>()
-                .GetOrCreateFolderAsync(fixture.Freeze<State>().Title.Name, cancellationToken))
+                .GetOrCreateFolderAsync(title.Name, cancellationToken))
                 .Returns(titleFolder);
 
             A.CallTo(() => fixture
                 .FreezeFake<BoxService>()
                 .CreateFileAsync(
-                    fixture.Freeze<State>().InternalData.ZipFilePath!,
+                    zipPath,
                     titleFolder.Id,
                     cancellationToken))
                 .Returns(titleFile);
@@ -88,13 +93,13 @@ public class UploadZipBoxStepTests : UnitTest
         }
 
         [Fact]
-        public async Task GivenSuccessfulExecutionShouldSetBoxZipStateValue()
+        public async Task GivenSuccessfulExecutionShouldSetBoxZipContextValue()
         {
-            fixture.Freeze<State>().ReleaseLinks.BoxZip = null!;
-
             await step.ExecuteAsync(cancellationToken);
 
-            fixture.Freeze<State>().ReleaseLinks.BoxZip.Should().Be(FILE_LINK);
+            A.CallTo(() => fixture.FreezeFake<IPublishContext>()
+                .SetBoxZipLink(FILE_LINK))
+                .MustHaveHappenedOnceExactly();
         }
     }
 }

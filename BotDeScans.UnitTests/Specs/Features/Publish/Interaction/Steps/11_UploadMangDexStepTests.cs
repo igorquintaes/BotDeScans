@@ -1,4 +1,4 @@
-﻿using BotDeScans.App.Features.Publish.Interaction;
+using BotDeScans.App.Features.Publish.Interaction;
 using BotDeScans.App.Features.Publish.Interaction.Steps;
 using BotDeScans.App.Features.Publish.Interaction.Steps.Enums;
 using BotDeScans.App.Models.DTOs;
@@ -17,7 +17,7 @@ public class UploadMangDexStepTests : UnitTest
 
     public UploadMangDexStepTests()
     {
-        fixture.Freeze<State>();
+        fixture.FreezeFake<IPublishContext>();
         fixture.FreezeFake<IConfiguration>();
         fixture.FreezeFake<MangaDexService>();
 
@@ -56,21 +56,34 @@ public class UploadMangDexStepTests : UnitTest
 
         public ExecuteAsync()
         {
-            fixture.Freeze<State>().Title = fixture
+            var chapterInfo = fixture.Create<Info>();
+            var originFolder = fixture.Create<string>();
+            var title = fixture
                 .Build<Title>()
-                .With(x => x.References, fixture
+                .With(x => x.References, [.. fixture
                     .Build<TitleReference>()
                     .With(x => x.Key, ExternalReference.MangaDex)
-                    .CreateMany(1)
-                    .ToList())
+                    .CreateMany(1)])
                 .Create();
+
+            A.CallTo(() => fixture
+                .FreezeFake<IPublishContext>().ChapterInfo)
+                .Returns(chapterInfo);
+
+            A.CallTo(() => fixture
+                .FreezeFake<IPublishContext>().OriginContentFolder)
+                .Returns(originFolder);
+
+            A.CallTo(() => fixture
+                .FreezeFake<IPublishContext>().Title)
+                .Returns(title);
 
             A.CallTo(() => fixture
                 .FreezeFake<MangaDexService>()
                 .UploadAsync(
-                    fixture.Freeze<State>().ChapterInfo,
-                    fixture.Freeze<State>().Title.References.Single().Value,
-                    fixture.Freeze<State>().InternalData.OriginContentFolder,
+                    chapterInfo,
+                    title.References.Single().Value,
+                    originFolder,
                     cancellationToken))
                 .Returns(Result.Ok(new Chapter() { Id = CHAPTER_ID }));
         }
@@ -84,14 +97,16 @@ public class UploadMangDexStepTests : UnitTest
         }
 
         [Fact]
-        public async Task GivenSuccessfulExecutionShouldSetMangadexLinkStateValue()
+        public async Task GivenSuccessfulExecutionShouldSetMangadexLinkContextValue()
         {
             var expectedLink = $"https://mangadex.org/chapter/{CHAPTER_ID}/1";
-            fixture.Freeze<State>().ReleaseLinks.MangaDex = null!;
 
             await step.ExecuteAsync(cancellationToken);
 
-            fixture.Freeze<State>().ReleaseLinks.MangaDex.Should().Be(expectedLink);
+            A.CallTo(() => fixture
+                .FreezeFake<IPublishContext>()
+                .SetMangaDexLink(expectedLink))
+                .MustHaveHappenedOnceExactly();
         }
 
         [Fact]
@@ -110,7 +125,8 @@ public class UploadMangDexStepTests : UnitTest
 
             var result = await step.ExecuteAsync(cancellationToken);
 
-            result.Should().BeFailure().And.HaveError(ERROR_MESSAGE);
+            result.Should().BeFailure()
+                  .And.HaveError(ERROR_MESSAGE);
         }
     }
 }
