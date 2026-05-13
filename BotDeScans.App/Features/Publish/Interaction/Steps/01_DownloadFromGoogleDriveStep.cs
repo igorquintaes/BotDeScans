@@ -1,4 +1,4 @@
-﻿using BotDeScans.App.Features.GoogleDrive;
+using BotDeScans.App.Features.GoogleDrive;
 using BotDeScans.App.Features.Publish.Interaction;
 using BotDeScans.App.Features.Publish.Interaction.Steps.Enums;
 using BotDeScans.App.Models.Entities.Enums;
@@ -7,7 +7,7 @@ using FluentResults;
 
 namespace BotDeScans.App.Features.Publish.Interaction.Steps;
 
-public class DownloadStep(
+public class DownloadFromGoogleDriveStep(
     FileReleaseService fileReleaseService,
     GoogleDriveService googleDriveService,
     IPublishContext context) : IManagementStep

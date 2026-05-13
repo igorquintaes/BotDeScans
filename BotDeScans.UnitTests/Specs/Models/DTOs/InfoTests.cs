@@ -10,7 +10,7 @@ public class InfoTests : UnitTest
         public void GivenInfoDataShouldReturnExpectedText()
         {
             var info = new Info(
-                downloadUrl: "some-url",
+                googleDriveUrl: "some-url",
                 chapterName: "some-chapter-name",
                 chapterNumber: "some-chapter-number",
                 chapterVolume: "some-chapter-volume",
@@ -21,7 +21,7 @@ public class InfoTests : UnitTest
 
             result.Should().Be(@"
 =======================================================
-DownloadUrl: some-url
+GoogleDriveUrl: some-url
 ChapterName: some-chapter-name
 ChapterNumber: some-chapter-number
 ChapterVolume: some-chapter-volume

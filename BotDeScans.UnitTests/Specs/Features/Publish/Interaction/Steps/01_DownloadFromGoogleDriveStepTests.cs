@@ -1,4 +1,4 @@
-﻿using BotDeScans.App.Features.GoogleDrive;
+using BotDeScans.App.Features.GoogleDrive;
 using BotDeScans.App.Features.Publish.Interaction;
 using BotDeScans.App.Features.Publish.Interaction.Steps;
 using BotDeScans.App.Features.Publish.Interaction.Steps.Enums;
@@ -9,20 +9,20 @@ using FluentResults;
 
 namespace BotDeScans.UnitTests.Specs.Features.Publish.Interaction.Steps;
 
-public class DownloadStepTests : UnitTest
+public class DownloadFromGoogleDriveStepTests : UnitTest
 {
-    private readonly DownloadStep step;
+    private readonly DownloadFromGoogleDriveStep step;
 
-    public DownloadStepTests()
+    public DownloadFromGoogleDriveStepTests()
     {
         fixture.FreezeFake<IPublishContext>();
         fixture.FreezeFake<FileReleaseService>();
         fixture.FreezeFake<GoogleDriveService>();
 
-        step = fixture.Create<DownloadStep>();
+        step = fixture.Create<DownloadFromGoogleDriveStep>();
     }
 
-    public class Properties : DownloadStepTests
+    public class Properties : DownloadFromGoogleDriveStepTests
     {
         [Fact]
         public void ShouldHaveExpectedType() =>
@@ -37,7 +37,7 @@ public class DownloadStepTests : UnitTest
             step.IsMandatory.Should().Be(true);
     }
 
-    public class ExecuteAsync : DownloadStepTests
+    public class ExecuteAsync : DownloadFromGoogleDriveStepTests
     {
         private readonly string[] scopedDirectories;
 

@@ -19,6 +19,6 @@ internal static class AddDependencies
         .AddScoped<IStep, PdfFilesStep>()
         .AddScoped<IStep, ZipFilesStep>()
         .AddScoped<IStep, CompressFilesStep>()
-        .AddScoped<IStep, DownloadStep>()
+        .AddScoped<IStep, DownloadFromGoogleDriveStep>()
         .AddScoped<StepsService>();
 }
