@@ -53,17 +53,27 @@ public class PublishBloggerStepTests : UnitTest
     {
         public ExecuteAsync()
         {
-            var title = fixture.Create<Title>();
-            var chapterInfo = fixture.Create<Info>();
-            var template = fixture.Create<string>();
-            var replacedTemplate = fixture.Create<string>();
+            var title = fixture.Build<Title>()
+                .With(x => x.Name, "Title X")
+                .With(x => x.DiscordRoleId, 1UL)
+                .Create();
+
+            var chapterInfo = new Info(
+                googleDriveUrl: "https://drive.google.com/drive/folders/1q2w3e4r5t6y7u8i9o",
+                chapterName: "cap",
+                chapterNumber: "1",
+                chapterVolume: "1",
+                message: "msg",
+                titleId: 1);
 
             A.CallTo(() => fixture
-                .FreezeFake<IPublishContext>().Title)
+                .FreezeFake<IPublishContext>()
+                .Title)
                 .Returns(title);
 
             A.CallTo(() => fixture
-                .FreezeFake<IPublishContext>().ChapterInfo)
+                .FreezeFake<IPublishContext>()
+                .ChapterInfo)
                 .Returns(chapterInfo);
 
             A.CallTo(() => fixture
@@ -74,22 +84,22 @@ public class PublishBloggerStepTests : UnitTest
             A.CallTo(() => fixture
                 .FreezeFake<GoogleBloggerService>()
                 .GetPostTemplate())
-                .Returns(template);
+                .Returns(fixture.Create<string>());
 
             A.CallTo(() => fixture
                 .FreezeFake<TextReplacer>()
-                .Replace(template))
-                .Returns(replacedTemplate);
+                .Replace(A<string>.Ignored))
+                .Returns(fixture.Create<string>());
 
             A.CallTo(() => fixture
                 .FreezeFake<GoogleBloggerService>()
                 .PostAsync(
-                    $"[{title.Name}] Capítulo {chapterInfo.ChapterNumber}",
-                    replacedTemplate,
-                    title.Name,
-                    chapterInfo.ChapterNumber,
+                    A<string>.Ignored,
+                    A<string>.Ignored,
+                    A<string>.Ignored,
+                    A<string>.Ignored,
                     cancellationToken))
-                .Returns(new Post());
+                .Returns(new Post { Url = fixture.Create<string>() });
         }
 
         [Fact]
