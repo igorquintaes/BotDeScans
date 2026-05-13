@@ -11,14 +11,21 @@ public class StepsService(IConfiguration configuration, IEnumerable<IStep> allSt
 
     public virtual EnabledSteps GetEnabledSteps(IReadOnlyCollection<StepName> stepsToSkip)
     {
-        var configurationSteps = GetConfigurationSteps(configuration, allSteps);
-        var dependencySteps = GetDependencySteps(configurationSteps, allSteps);
-        var mandatorySteps = GetMandatorySteps(allSteps);
+        var configuredNames = configuration
+            .GetValues<StepName>(key: STEPS_KEY)
+            .ToHashSet();
 
-        var enabledSteps = configurationSteps
-            .Union(dependencySteps)
-            .Union(mandatorySteps)
-            .DistinctBy(step => step.Name)
+        var dependencyNames = allSteps
+            .OfType<IPublishStep>()
+            .Where(step => configuredNames.Contains(step.Name) 
+                        && step.Dependency.HasValue)
+            .Select(step => step.Dependency.GetValueOrDefault())
+            .ToHashSet();
+
+        var enabledSteps = allSteps
+            .Where(step => configuredNames.Contains(step.Name) 
+                     || dependencyNames.Contains(step.Name) 
+                     || (step is IManagementStep m && m.IsMandatory))
             .OrderBy(step => step.Name)
             .ToList();
 
@@ -26,41 +33,4 @@ public class StepsService(IConfiguration configuration, IEnumerable<IStep> allSt
             step => step,
             step => new StepInfo(step, stepsToSkip.Contains(step.Name))));
     }
-
-    /// <summary>
-    /// Steps from configuration File
-    /// </summary>
-    private static List<IStep> GetConfigurationSteps(IConfiguration configuration, IEnumerable<IStep> allSteps)
-    {
-        var stepNames = configuration.GetValues<StepName>(key: STEPS_KEY);
-
-        return allSteps
-            .Where(step => stepNames.Contains(step.Name))
-            .ToList();
-    }
-
-    /// <summary>
-    /// Steps that needs to be included due configuration's steps
-    /// </summary>
-    private static List<IStep> GetDependencySteps(IEnumerable<IStep> configurationSteps, IEnumerable<IStep> allSteps)
-    {
-        var dependencyNames = configurationSteps
-            .OfType<IPublishStep>()
-            .Where(p => p.Dependency is not null)
-            .Select(p => p.Dependency)
-            .ToList();
-
-        return allSteps
-            .Where(step => dependencyNames.Contains(step.Name))
-            .ToList();
-    }
-
-    /// <summary>
-    /// Steps that needs to be included
-    /// </summary>
-    private static List<IStep> GetMandatorySteps(IEnumerable<IStep> allSteps) => allSteps
-        .OfType<IManagementStep>()
-        .Where(step => step.IsMandatory)
-        .Select(step => (IStep)step)
-        .ToList();
 }
