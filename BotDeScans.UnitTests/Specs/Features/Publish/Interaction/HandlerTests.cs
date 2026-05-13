@@ -149,7 +149,7 @@ public class HandlerTests : UnitTest
                 .HaveError(ERROR_MESSAGE).And
                 .Match(result =>
                     result.Errors.Count == 1 &&
-                    result.Errors.First().Reasons
+                    result.Errors[0].Reasons
                         .Select(reason => reason.Message)
                         .Contains("some message."));
         }

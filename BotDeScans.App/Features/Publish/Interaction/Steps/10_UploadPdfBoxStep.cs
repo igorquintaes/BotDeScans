@@ -25,8 +25,8 @@ public class UploadPdfBoxStep(
             parentFolderId: titleFolder.Id,
             cancellationToken: cancellationToken);
 
-        context.SetBoxPdfLink(file.SharedLink!.DownloadUrl);
-        context.SetBoxPdfReaderKey(file.SharedLink.DownloadUrl!
+        context.SetBoxPdfLink(file.SharedLink!.DownloadUrl!);
+        context.SetBoxPdfReaderKey(file.SharedLink.DownloadUrl
             .Split("/")
             .Last()
             .Replace(".pdf", "", StringComparison.InvariantCultureIgnoreCase));

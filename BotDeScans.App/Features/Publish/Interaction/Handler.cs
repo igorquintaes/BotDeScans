@@ -1,9 +1,10 @@
 ﻿using BotDeScans.App.Extensions;
-using BotDeScans.App.Extensions;
 using BotDeScans.App.Features.Publish.Interaction.Models;
 using BotDeScans.App.Features.Publish.Interaction.Steps;
 using BotDeScans.App.Features.Publish.Interaction.Steps.Enums;
 using FluentResults;
+using Serilog;
+using System.Diagnostics;
 
 namespace BotDeScans.App.Features.Publish.Interaction;
 
@@ -78,7 +79,16 @@ public class Handler(
         if (data.Info.Status == StepStatus.Skip)
             return Result.Ok();
 
+        var stopwatch = Stopwatch.StartNew();
         var result = await data.Step.SafeCallAsync(x => x.ExecuteAsync(cancellationToken));
+        stopwatch.Stop();
+
+        Log.Information(
+            "Publish step '{StepName}' ExecuteAsync finished in {ElapsedMilliseconds} ms with status {Status}.",
+            data.Step.Name,
+            stopwatch.ElapsedMilliseconds,
+            result.IsSuccess ? "Success" : "Failure");
+
         return await HandleResult(result, data.Info, cancellationToken);
     }
 
