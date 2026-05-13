@@ -11,13 +11,11 @@ using Remora.Discord.Commands.Feedback.Services;
 using Remora.Rest.Core;
 using Remora.Results;
 using System.ComponentModel;
-using System.Diagnostics.CodeAnalysis;
 using System.Drawing;
 using System.Reflection;
 
 namespace BotDeScans.App.Features.Publish.Interaction;
 
-[ExcludeFromCodeCoverage]
 public class DiscordPublisher(
     IOperationContext context,
     State state,
