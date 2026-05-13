@@ -4,6 +4,7 @@ using FluentResults;
 using Google.Apis.Auth.OAuth2;
 using Google.Apis.Drive.v3;
 using Google.Apis.Services;
+
 namespace BotDeScans.App.Services.Initializations.Factories;
 
 public class GoogleDriveClientFactory(GoogleWrapper googleWrapper) : ClientFactory<DriveService>
@@ -15,10 +16,12 @@ public class GoogleDriveClientFactory(GoogleWrapper googleWrapper) : ClientFacto
     public override async Task<Result<DriveService>> CreateAsync(CancellationToken cancellationToken = default)
     {
         await using var credentialStream = GetConfigFileAsStream(CREDENTIALS_FILE_NAME).Value;
-        var credential = await GoogleCredential.FromStreamAsync(credentialStream, cancellationToken);
+        var credential = await CredentialFactory.FromStreamAsync<ServiceAccountCredential>(credentialStream, cancellationToken);
+        var googleCredential = credential.ToGoogleCredential().CreateScoped(DriveService.Scope.Drive);
+
         return new DriveService(new BaseClientService.Initializer()
         {
-            HttpClientInitializer = credential.CreateScoped(DriveService.Scope.Drive).UnderlyingCredential,
+            HttpClientInitializer = googleCredential.UnderlyingCredential,
             ApplicationName = "BotDeScans"
         });
     }

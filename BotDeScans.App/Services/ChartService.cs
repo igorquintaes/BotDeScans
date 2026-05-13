@@ -1,5 +1,6 @@
 ﻿using BotDeScans.App.Models.DTOs;
 using ScottPlot;
+
 namespace BotDeScans.App.Services;
 
 public class ChartService
