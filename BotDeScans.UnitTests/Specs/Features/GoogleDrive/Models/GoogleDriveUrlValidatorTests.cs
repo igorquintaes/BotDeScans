@@ -9,7 +9,7 @@ namespace BotDeScans.UnitTests.Specs.Features.GoogleDrive.Models;
 
 public class GoogleDriveUrlValidatorTests : UnitTest
 {
-    const string VALID_URL = "https://drive.google.com/drive/folders/1LXGFGlcqbdUbdnU8C4aSvmnb5x8AldCn";
+    private const string VALID_URL = "https://drive.google.com/drive/folders/1LXGFGlcqbdUbdnU8C4aSvmnb5x8AldCn";
 
     public GoogleDriveUrlValidatorTests()
     {

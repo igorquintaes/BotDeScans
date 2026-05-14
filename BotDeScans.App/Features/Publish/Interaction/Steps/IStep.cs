@@ -6,19 +6,19 @@ namespace BotDeScans.App.Features.Publish.Interaction.Steps;
 
 public interface IStep
 {
-    public Task<Result> ExecuteAsync(CancellationToken cancellationToken);
-    public StepName Name { get; }
-    public StepType Type { get; }
-    public bool ContinueOnError => false;
+    Task<Result> ExecuteAsync(CancellationToken cancellationToken);
+    StepName Name { get; }
+    StepType Type { get; }
+    bool ContinueOnError => false;
 }
 
 public interface IManagementStep : IStep
 {
-    public bool IsMandatory { get; }
+    bool IsMandatory { get; }
 }
 
 public interface IPublishStep : IStep
 {
-    public StepName? Dependency { get; }
-    public abstract Task<Result> ValidateAsync(CancellationToken cancellationToken);
+    StepName? Dependency { get; }
+    abstract Task<Result> ValidateAsync(CancellationToken cancellationToken);
 }

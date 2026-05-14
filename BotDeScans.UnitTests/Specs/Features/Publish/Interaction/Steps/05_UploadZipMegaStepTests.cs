@@ -50,7 +50,7 @@ public class UploadZipMegaStepTests : UnitTest
 
     public class ExecuteAsync : UploadZipMegaStepTests
     {
-        const string FILE_LINK = "http://www.escoladescans.com/sample";
+        private const string FILE_LINK = "http://www.escoladescans.com/sample";
 
         public ExecuteAsync()
         {
