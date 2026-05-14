@@ -39,8 +39,8 @@ public class HandlerTests : UnitTest
         public async Task GivenSuccessfulExecutionShouldReturnSuccessResult()
         {
             var result = await handler.ExecuteAsync(
-                fixture.Create<int>(), 
-                fixture.Create<StepName>(), 
+                fixture.Create<int>(),
+                fixture.Create<StepName>(),
                 cancellationToken);
 
             result.Should().BeSuccess();
@@ -63,8 +63,8 @@ public class HandlerTests : UnitTest
             var titleId = fixture.Create<int>();
 
             var result = await handler.ExecuteAsync(
-                titleId, 
-                fixture.Create<StepName>(), 
+                titleId,
+                fixture.Create<StepName>(),
                 cancellationToken);
 
             A.CallTo(() => fixture

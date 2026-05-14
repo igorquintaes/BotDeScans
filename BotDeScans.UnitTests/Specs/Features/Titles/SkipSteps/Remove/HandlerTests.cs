@@ -82,8 +82,8 @@ public class HandlerTests : UnitTest
                 .Returns(null as Title);
 
             var result = await handler.ExecuteAsync(
-                title.Id, 
-                fixture.Create<StepName>(), 
+                title.Id,
+                fixture.Create<StepName>(),
                 cancellationToken);
 
             using var _ = new AssertionScope();

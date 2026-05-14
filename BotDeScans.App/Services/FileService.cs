@@ -84,6 +84,6 @@ public class FileService
         return filePath;
     }
 
-    public virtual string ReadTextFile(string filePath) => 
+    public virtual string ReadTextFile(string filePath) =>
         File.ReadAllText(filePath);
 }

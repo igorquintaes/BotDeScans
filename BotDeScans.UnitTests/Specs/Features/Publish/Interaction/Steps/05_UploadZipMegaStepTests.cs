@@ -7,7 +7,6 @@ using BotDeScans.App.Models.Entities;
 using BotDeScans.App.Models.Entities.Enums;
 using CG.Web.MegaApiClient;
 using FluentResults;
-using Serilog.Sinks.File;
 
 namespace BotDeScans.UnitTests.Specs.Features.Publish.Interaction.Steps;
 

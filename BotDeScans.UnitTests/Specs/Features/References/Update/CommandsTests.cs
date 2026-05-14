@@ -39,8 +39,8 @@ public class CommandsTests : UnitTest
         public async Task GivenValidRequestShouldReturnSuccess()
         {
             var result = await commands.ExecuteAsync(
-                fixture.Create<int>(), 
-                fixture.Create<ExternalReference>(), 
+                fixture.Create<int>(),
+                fixture.Create<ExternalReference>(),
                 fixture.Create<string>());
 
             result.IsSuccess.Should().BeTrue();
@@ -77,7 +77,7 @@ public class CommandsTests : UnitTest
                 .ExecuteAsync(A<Request>.That.Matches(x =>
                         x.TitleId == titleId &&
                         x.ReferenceKey == referenceKey &&
-                        x.ReferenceRawValue == referenceValue), 
+                        x.ReferenceRawValue == referenceValue),
                     cancellationToken))
                 .Returns(Result.Fail("some error."));
 

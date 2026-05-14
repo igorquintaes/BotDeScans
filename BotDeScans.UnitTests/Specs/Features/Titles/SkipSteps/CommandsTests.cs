@@ -65,7 +65,7 @@ public abstract class CommandsTests : UnitTest
         public async Task GivenSuccessExecutionShouldReturnExpectedObjectInMessage()
         {
             const int titleId = 4;
-            const StepName step = StepName.UploadMangadex; 
+            const StepName step = StepName.UploadMangadex;
             Embed embedResult = null!;
 
             A.CallTo(() => fixture
@@ -143,7 +143,7 @@ public abstract class CommandsTests : UnitTest
         public async Task GivenSuccessExecutionShouldReturnExpectedObjectInMessage()
         {
             const int titleId = 4;
-            const StepName step = StepName.UploadMangadex; 
+            const StepName step = StepName.UploadMangadex;
             Embed embedResult = null!;
 
             A.CallTo(() => fixture

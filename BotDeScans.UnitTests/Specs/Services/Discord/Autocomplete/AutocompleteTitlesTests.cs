@@ -10,13 +10,13 @@ public class AutocompleteTitlesTests : UnitPersistenceTest
 {
     private readonly AutocompleteTitles autocomplete;
 
-    public AutocompleteTitlesTests() => 
+    public AutocompleteTitlesTests() =>
         autocomplete = fixture.Create<AutocompleteTitles>();
 
     public class Identity : AutocompleteTitlesTests
     {
         [Fact]
-        public void GivenValidIdentityShouldReturnExpectedType() => 
+        public void GivenValidIdentityShouldReturnExpectedType() =>
             autocomplete.Identity.Should().Be("autocomplete::titles");
     }
 
@@ -31,7 +31,7 @@ public class AutocompleteTitlesTests : UnitPersistenceTest
                 .ToArray();
 
             fixture.Freeze<DatabaseContext>()
-                   .Titles.AddRange(databaseTitles.Select(databaseTitle => 
+                   .Titles.AddRange(databaseTitles.Select(databaseTitle =>
                        new Title
                        {
                            Id = databaseTitle.Id,
@@ -61,10 +61,10 @@ public class AutocompleteTitlesTests : UnitPersistenceTest
         public async Task GivenMatchingRequestShouldReturnExpectedTitles(string query)
         {
             var expectedNames = databaseTitles
-                .Where(x => x.Id >= 10 && x.Id <= 19)
+                .Where(x => x.Id is >= 10 and <= 19)
                 .Select(x => x.Name);
             var expectedIds = databaseTitles
-                .Where(x => x.Id >= 10 && x.Id <= 19)
+                .Where(x => x.Id is >= 10 and <= 19)
                 .Select(x => $"System.Int32: {x.Id}");
 
             var result = await autocomplete.GetSuggestionsAsync(default!, query, cancellationToken);
@@ -109,9 +109,9 @@ public class AutocompleteTitlesTests : UnitPersistenceTest
         [Fact]
         public async Task GivenAboveMaxLimitTitleLenghtShouldReturnItEscaping()
         {
-            var aboveMaxTitleLenght = "c".PadRight(Consts.DISCORD_PARAM_MAX_LENGTH+1, 'a');
+            var aboveMaxTitleLenght = "c".PadRight(Consts.DISCORD_PARAM_MAX_LENGTH + 1, 'a');
             var aboveMaxTitleId = 999;
-            var expectedTitleReturn = "c".PadRight(Consts.DISCORD_PARAM_MAX_LENGTH-3, 'a') + "...";
+            var expectedTitleReturn = "c".PadRight(Consts.DISCORD_PARAM_MAX_LENGTH - 3, 'a') + "...";
 
             fixture.Freeze<DatabaseContext>().Titles.Add(new()
             {

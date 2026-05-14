@@ -49,12 +49,12 @@ public class Handler(
         Result aggregate,
         IEnumerable<(IStep Step, Func<Task<Result>> Execute)> chain)
     {
-        foreach (var item in chain)
+        foreach (var (Step, Execute) in chain)
         {
-            var stepResult = await item.Execute();
+            var stepResult = await Execute();
             aggregate = Result.Merge(aggregate, stepResult);
 
-            if (stepResult.IsFailed && item.Step.ContinueOnError is false)
+            if (stepResult.IsFailed && Step.ContinueOnError is false)
                 return (aggregate, true);
         }
 

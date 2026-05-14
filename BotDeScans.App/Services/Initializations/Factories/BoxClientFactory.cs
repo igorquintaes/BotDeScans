@@ -30,9 +30,9 @@ public class BoxClientFactory(IConfiguration configuration) : ClientFactory<IBox
     public override async Task<Result> HealthCheckAsync(IBoxClient client, CancellationToken cancellationToken)
     {
         var folder = await client.Folders.GetFolderByIdAsync(BoxService.ROOT_ID, cancellationToken: cancellationToken);
-        return Result.OkIf(folder is not null && 
-                           folder.ItemCollection is not null && 
-                           folder.ItemCollection.TotalCount == 1, 
+        return Result.OkIf(folder is not null &&
+                           folder.ItemCollection is not null &&
+                           folder.ItemCollection.TotalCount == 1,
                error: "Unknown error while trying to retrieve information from account.");
     }
 }

@@ -3,8 +3,6 @@ using BotDeScans.App.Features.Publish.Interaction.Models;
 using BotDeScans.App.Features.Publish.Interaction.Steps;
 using BotDeScans.App.Models.DTOs;
 using BotDeScans.App.Models.Entities.Enums;
-using FakeItEasy;
-using FluentResults;
 using Remora.Discord.API.Abstractions.Objects;
 using Remora.Discord.API.Abstractions.Rest;
 using Remora.Discord.API.Objects;

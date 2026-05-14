@@ -35,7 +35,7 @@ public abstract class HandlerTests : UnitTest
                         new() { Key = (ExternalReference)999, Value = "random-value" }
                     ])
                     .Create());
-}
+        }
 
         [Fact]
         public async Task GivenReferencesFoundShouldReturnSuccessWithExpectedStringList()

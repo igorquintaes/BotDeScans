@@ -52,8 +52,8 @@ public class BoxService(
         };
 
         return await boxClient.Files.UpdateFileByIdAsync(
-            newFile.Entries!.Single().Id, 
-            updateFile, 
+            newFile.Entries!.Single().Id,
+            updateFile,
             cancellationToken: cancellationToken);
     }
 }

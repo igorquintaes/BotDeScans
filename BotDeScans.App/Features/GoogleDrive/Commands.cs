@@ -136,7 +136,7 @@ public class Commands(
             var createFolderResult = await googleDriveService.GetOrCreateFolderAsync(DEBUG_NAME_FOLDER, default, CancellationToken);
             if (createFolderResult.IsFailed)
                 return await feedbackService.SendContextualEmbedAsync(
-                    embed: EmbedBuilder.CreateErrorEmbed(createFolderResult), 
+                    embed: EmbedBuilder.CreateErrorEmbed(createFolderResult),
                     ct: CancellationToken);
 
             var parentId = createFolderResult.Value.Id;

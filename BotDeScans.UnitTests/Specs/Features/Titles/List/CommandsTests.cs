@@ -20,7 +20,7 @@ public class CommandsTests : UnitTest
         titles.Add(fixture.Build<Title>().With(x => x.Name, "AAA").With(x => x.Id, 2).Create());
         titles.Add(fixture.Build<Title>().With(x => x.Name, "BBB").With(x => x.Id, 3).Create());
         titles.Add(fixture.Build<Title>().With(x => x.Name, "CCC").With(x => x.Id, 1).Create());
-        
+
         fixture.FreezeFake<IFeedbackService>();
         fixture.FreezeFake<TitleRepository>();
 
@@ -86,9 +86,9 @@ public class CommandsTests : UnitTest
         A.CallTo(() => fixture
             .FreezeFake<IFeedbackService>()
             .SendContextualWarningAsync(
-                 "Não há obras cadastradas.", 
-                A<Snowflake?>.Ignored, 
-                A<FeedbackMessageOptions>.Ignored, 
+                 "Não há obras cadastradas.",
+                A<Snowflake?>.Ignored,
+                A<FeedbackMessageOptions>.Ignored,
                 cancellationToken))
             .Returns(Remora.Results.Result<IReadOnlyList<IMessage>>
                 .FromError(new ValidationError("prop", "reason")));
@@ -107,7 +107,7 @@ public class CommandsTests : UnitTest
             .FreezeFake<IFeedbackService>()
             .SendContextualEmbedAsync(A<Embed>.Ignored, A<FeedbackMessageOptions>.Ignored, cancellationToken))
             .Returns(Remora.Results.Result<IMessage>.FromError(new ValidationError("prop", "reason")));
-        
+
         var result = await commands.List();
 
         result.IsSuccess.Should().BeFalse();

@@ -97,7 +97,7 @@ public abstract class ConfigurationExtensionsTests : UnitTest
         public void GivenEmptyListShouldReturnEmpty()
         {
             const string SECTION = "SomeSection";
-            
+
             fixture.FreezeFakeConfiguration(SECTION, [])
                    .GetValues<string>(SECTION)
                    .Should().BeEmpty();

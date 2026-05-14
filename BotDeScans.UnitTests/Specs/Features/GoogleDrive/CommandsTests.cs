@@ -362,7 +362,7 @@ public class CommandsTests : UnitTest
                 .FreezeFake<IFeedbackService>()
                 .SendContextualEmbedAsync(A<Embed>.Ignored, A<FeedbackMessageOptions>.Ignored, cancellationToken))
                 .Invokes((Embed embed, FeedbackMessageOptions _, CancellationToken _) => embedResult = embed);
-            
+
             await commands.DataUsage();
 
             await Verify(embedResult);
