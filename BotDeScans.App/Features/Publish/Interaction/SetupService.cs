@@ -1,4 +1,4 @@
-using BotDeScans.App.Extensions;
+﻿using BotDeScans.App.Extensions;
 using BotDeScans.App.Features.Publish.Interaction.Pings;
 using BotDeScans.App.Features.Publish.Interaction.Steps;
 using BotDeScans.App.Infra.Repositories;
@@ -23,7 +23,7 @@ public class SetupService(
 
         var title = await titleRepository.GetTitleAsync(chapterInfo.TitleId, cancellationToken);
         if (title is null)
-            return Result.Fail("Obra n�o encontrada.");
+            return Result.Fail("Obra não encontrada.");
 
         state.Title = title;
         state.Steps = stepsService.GetEnabledSteps(

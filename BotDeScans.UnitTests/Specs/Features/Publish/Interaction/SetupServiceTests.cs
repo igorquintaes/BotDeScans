@@ -1,4 +1,4 @@
-using BotDeScans.App.Features.Publish.Interaction;
+﻿using BotDeScans.App.Features.Publish.Interaction;
 using BotDeScans.App.Features.Publish.Interaction.Models;
 using BotDeScans.App.Features.Publish.Interaction.Pings;
 using BotDeScans.App.Features.Publish.Interaction.Steps;
@@ -126,7 +126,7 @@ public class SetupServiceTests : UnitTest
 
             var result = await service.SetupAsync(fixture.Create<Info>(), cancellationToken);
 
-            result.Should().BeFailure().And.HaveError("Obra n�o encontrada.");
+            result.Should().BeFailure().And.HaveError("Obra não encontrada.");
         }
 
         [Fact]

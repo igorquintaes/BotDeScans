@@ -1,4 +1,4 @@
-using BotDeScans.App.Models.DTOs;
+﻿using BotDeScans.App.Models.DTOs;
 using BotDeScans.App.Models.Entities;
 
 namespace BotDeScans.App.Features.Publish.Interaction;

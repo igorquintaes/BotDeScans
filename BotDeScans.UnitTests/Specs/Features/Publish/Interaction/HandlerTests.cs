@@ -321,6 +321,27 @@ public class HandlerTests : UnitTest
         }
 
         [Fact]
+        public async Task GivenManagementStepErrorShouldStopBeforeValidationPhase()
+        {
+            var (managementStep1, managementInfo1) = fixture.Freeze<State>().Steps.ManagementSteps.First();
+            var (publishStep1, _) = fixture.Freeze<State>().Steps.PublishSteps.First();
+            var (publishStep2, _) = fixture.Freeze<State>().Steps.PublishSteps.Last();
+
+            A.CallTo(() => managementStep1
+                .ExecuteAsync(cancellationToken))
+                .Returns(Result.Fail("management error"));
+
+            var result = await handler.ExecuteAsync(cancellationToken);
+
+            result.Should().BeFailure().And.HaveError("management error");
+
+            A.CallTo(() => publishStep1.ValidateAsync(cancellationToken)).MustNotHaveHappened();
+            A.CallTo(() => publishStep2.ValidateAsync(cancellationToken)).MustNotHaveHappened();
+            A.CallTo(() => publishStep1.ExecuteAsync(cancellationToken)).MustNotHaveHappened();
+            A.CallTo(() => publishStep2.ExecuteAsync(cancellationToken)).MustNotHaveHappened();
+        }
+
+        [Fact]
         public async Task GivenErrorExecutionWhenStepAllowsContinueOnErrorShouldContinueChainCall()
         {
             var publishStep1 = fixture.Freeze<State>().Steps.PublishSteps.First().Step;

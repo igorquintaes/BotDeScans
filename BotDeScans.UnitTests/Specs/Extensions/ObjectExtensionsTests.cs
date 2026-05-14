@@ -1,4 +1,4 @@
-using BotDeScans.App.Extensions;
+﻿using BotDeScans.App.Extensions;
 using FluentResults;
 using Serilog;
 using Serilog.Events;

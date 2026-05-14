@@ -1,4 +1,4 @@
-name: Escola de Scans Build
+﻿name: Escola de Scans Build
 
 on:
   push:

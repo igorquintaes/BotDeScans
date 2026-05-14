@@ -1,4 +1,4 @@
-using BotDeScans.App.Features.Publish.Interaction;
+﻿using BotDeScans.App.Features.Publish.Interaction;
 using BotDeScans.App.Features.Publish.Interaction.Models;
 using BotDeScans.App.Features.Publish.Interaction.Steps;
 using BotDeScans.App.Models.DTOs;
@@ -176,6 +176,25 @@ public class DiscordPublisherTests : UnitTest, IDisposable
                 .FreezeFake<TextReplacer>()
                 .Replace(A<string>.Ignored))
                 .MustHaveHappenedOnceExactly();
+        }
+
+        [Fact]
+        public async Task GivenEmptyMessageShouldNotCallTextReplacer()
+        {
+            fixture.Freeze<State>().ChapterInfo = new Info(
+                googleDriveUrl: "https://drive.google.com/drive/folders/1q2w3e4r5t6y7u8i9o",
+                chapterName: "Chapter Name",
+                chapterNumber: "10",
+                chapterVolume: "1",
+                message: "",
+                titleId: 1);
+
+            await publisher.SuccessReleaseMessageAsync(cancellationToken);
+
+            A.CallTo(() => fixture
+                .FreezeFake<TextReplacer>()
+                .Replace(A<string>.Ignored))
+                .MustNotHaveHappened();
         }
     }
 

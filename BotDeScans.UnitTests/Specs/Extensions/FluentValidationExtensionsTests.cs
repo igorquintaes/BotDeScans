@@ -1,4 +1,4 @@
-using BotDeScans.App.Extensions;
+﻿using BotDeScans.App.Extensions;
 using FluentValidation.Results;
 
 namespace BotDeScans.UnitTests.Specs.Extensions;
