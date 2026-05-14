@@ -107,7 +107,7 @@ public class UploadPdfBoxStepTests : UnitTest
 
             A.CallTo(() => fixture
                 .FreezeFake<IPublishContext>()
-                .SetBoxPdfLink(A<string>.Ignored))
+                .SetBoxPdfLink(FILE_LINK))
                 .MustHaveHappenedOnceExactly();
         }
 
