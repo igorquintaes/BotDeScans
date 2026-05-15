@@ -10,7 +10,7 @@ using Remora.Discord.Commands.Contexts;
 using Remora.Discord.Commands.Feedback.Services;
 using Remora.Rest.Core;
 using Remora.Results;
-using System.ComponentModel;
+using BotDeScans.App.Features.Publish.Interaction.Models;
 using System.Drawing;
 using System.Reflection;
 
@@ -108,10 +108,10 @@ public class DiscordPublisher(
 
     private static List<EmbedField> CreatePublishLinkFields(State publishState) => [.. typeof(State)
         .GetProperties()
-        .Where(property => property.GetCustomAttribute<DescriptionAttribute>() is not null)
+        .Where(property => property.GetCustomAttribute<ReleaseLinkAttribute>() is not null)
         .Select(property => new
         {
-            Label = property.GetCustomAttribute<DescriptionAttribute>()!.Description,
+            Label = property.GetCustomAttribute<ReleaseLinkAttribute>()!.Label,
             Link = property.GetValue(publishState, null)?.ToString()
         })
         .Where(x => !string.IsNullOrWhiteSpace(x.Link))

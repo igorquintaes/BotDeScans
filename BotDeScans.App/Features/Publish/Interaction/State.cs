@@ -6,7 +6,7 @@ using BotDeScans.App.Models.Entities;
 using BotDeScans.App.Services.Discord;
 using FluentValidation;
 using Microsoft.Extensions.Configuration;
-using System.ComponentModel;
+using BotDeScans.App.Features.Publish.Interaction.Models;
 
 namespace BotDeScans.App.Features.Publish.Interaction;
 
@@ -25,31 +25,31 @@ public record State
     public string? Pings { get; init; }
     public TrackingMessage? TrackingMessage { get; init; }
 
-    [Description("Mega [Zip]")]
+    [ReleaseLink("Mega [Zip]")]
     public string? MegaZipLink { get; init; }
 
-    [Description("Mega [Pdf]")]
+    [ReleaseLink("Mega [Pdf]")]
     public string? MegaPdfLink { get; init; }
 
-    [Description("Drive [Zip]")]
+    [ReleaseLink("Drive [Zip]")]
     public string? DriveZipLink { get; init; }
 
-    [Description("Drive [Pdf]")]
+    [ReleaseLink("Drive [Pdf]")]
     public string? DrivePdfLink { get; init; }
 
-    [Description("Box [Zip]")]
+    [ReleaseLink("Box [Zip]")]
     public string? BoxZipLink { get; init; }
 
-    [Description("Box [Pdf]")]
+    [ReleaseLink("Box [Pdf]")]
     public string? BoxPdfLink { get; init; }
 
-    [Description("MangaDex")]
+    [ReleaseLink("MangaDex")]
     public string? MangaDexLink { get; init; }
 
-    [Description("Sakura Mangás")]
+    [ReleaseLink("Sakura Mangás")]
     public string? SakuraMangasLink { get; init; }
 
-    [Description("Blogger")]
+    [ReleaseLink("Blogger")]
     public string? BloggerLink { get; init; }
 }
 
