@@ -22,11 +22,11 @@ public class Handler(
 
         var currentState = trackingResult.Value;
 
-        var managementExecution = await ExecuteChainAsync(
+        var managementExecution = await RunChainAsync(
             trackingResult.ToResult(),
             currentState,
-            managementSteps.Select(data => (
-                Step: (IStep)data.Step, data.Info)),
+            managementSteps.Select(data => ((IStep)data.Step, data.Info)),
+            RunStepAsync,
             cancellationToken);
         if (managementExecution.ShouldStop)
             return managementExecution.Result.IsFailed
@@ -35,10 +35,11 @@ public class Handler(
 
         currentState = managementExecution.State;
 
-        var validationExecution = await ExecuteValidationChainAsync(
+        var validationExecution = await RunChainAsync(
             managementExecution.Result,
             currentState,
-            publishSteps.Select(data => (data.Step, data.Info)),
+            publishSteps.Select(data => ((IStep)data.Step, data.Info)),
+            RunValidationAsync,
             cancellationToken);
         if (validationExecution.ShouldStop)
             return validationExecution.Result.IsFailed
@@ -47,11 +48,11 @@ public class Handler(
 
         currentState = validationExecution.State;
 
-        var publishExecution = await ExecuteChainAsync(
+        var publishExecution = await RunChainAsync(
             validationExecution.Result,
             currentState,
-            publishSteps.Select(data => (
-                Step: (IStep)data.Step, data.Info)),
+            publishSteps.Select(data => ((IStep)data.Step, data.Info)),
+            RunStepAsync,
             cancellationToken);
 
         return publishExecution.Result.IsFailed
@@ -59,61 +60,41 @@ public class Handler(
             : Result.Ok(publishExecution.State);
     }
 
-    private async Task<(Result Result, State State, bool ShouldStop)> ExecuteChainAsync(
+    private static async Task<(Result Result, State State, bool ShouldStop)> RunChainAsync(
         Result aggregate,
         State state,
         IEnumerable<(IStep Step, StepInfo Info)> chain,
+        Func<(IStep Step, StepInfo Info), State, CancellationToken, Task<Result<State>>> stepAction,
         CancellationToken cancellationToken)
     {
-        foreach (var (Step, Info) in chain)
+        foreach (var item in chain)
         {
-            var stepResult = await ExecuteAsync((Step, Info), state, cancellationToken);
+            var stepResult = await stepAction(item, state, cancellationToken);
             if (stepResult.IsSuccess)
                 state = stepResult.Value;
 
             aggregate = Result.Merge(aggregate, stepResult.ToResult());
 
-            if (stepResult.IsFailed && Step.ContinueOnError is false)
+            if (stepResult.IsFailed && item.Step.ContinueOnError is false)
                 return (aggregate, state, true);
         }
 
         return (aggregate, state, false);
     }
 
-    private async Task<(Result Result, State State, bool ShouldStop)> ExecuteValidationChainAsync(
-        Result aggregate,
-        State state,
-        IEnumerable<(IPublishStep Step, StepInfo Info)> chain,
-        CancellationToken cancellationToken)
-    {
-        foreach (var (Step, Info) in chain)
-        {
-            var stepResult = await ValidateAsync((Step, Info), state, cancellationToken);
-            if (stepResult.IsSuccess)
-                state = stepResult.Value;
-
-            aggregate = Result.Merge(aggregate, stepResult.ToResult());
-
-            if (stepResult.IsFailed && Step.ContinueOnError is false)
-                return (aggregate, state, true);
-        }
-
-        return (aggregate, state, false);
-    }
-
-    private async Task<Result<State>> ValidateAsync(
-        (IPublishStep Step, StepInfo Info) data,
+    private async Task<Result<State>> RunValidationAsync(
+        (IStep Step, StepInfo Info) data,
         State state,
         CancellationToken cancellationToken)
     {
         if (data.Info.Status == StepStatus.Skip)
             return Result.Ok(state);
 
-        var result = await data.Step.SafeCallAsync(x => x.ValidateAsync(state, cancellationToken));
+        var result = await ((IPublishStep)data.Step).SafeCallAsync(x => x.ValidateAsync(state, cancellationToken));
         return await HandleResult(result, data.Step, state, cancellationToken);
     }
 
-    private async Task<Result<State>> ExecuteAsync(
+    private async Task<Result<State>> RunStepAsync(
         (IStep Step, StepInfo Info) data,
         State state,
         CancellationToken cancellationToken)
