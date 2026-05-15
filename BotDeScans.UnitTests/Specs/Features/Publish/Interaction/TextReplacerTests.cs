@@ -1,5 +1,4 @@
 using BotDeScans.App.Features.Publish.Interaction;
-using BotDeScans.App.Features.Publish.Interaction.Models;
 using BotDeScans.App.Models.DTOs;
 using BotDeScans.App.Models.Entities;
 
@@ -18,22 +17,16 @@ public class TextReplacerTests : UnitTest
             {
                 Title = fixture.Create<Title>(),
                 ChapterInfo = fixture.Create<Info>(),
-                InternalData = new InternalData
-                {
-                    BloggerImageAsBase64 = fixture.Create<string>(),
-                    BoxPdfReaderKey = fixture.Create<string>()
-                },
-                ReleaseLinks = new Links
-                {
-                    MegaZip = fixture.Create<string>(),
-                    MegaPdf = fixture.Create<string>(),
-                    BoxZip = fixture.Create<string>(),
-                    BoxPdf = fixture.Create<string>(),
-                    DriveZip = fixture.Create<string>(),
-                    DrivePdf = fixture.Create<string>(),
-                    MangaDex = fixture.Create<string>(),
-                    SakuraMangas = fixture.Create<string>()
-                }
+                BloggerImageAsBase64 = fixture.Create<string>(),
+                BoxPdfReaderKey = fixture.Create<string>(),
+                MegaZipLink = fixture.Create<string>(),
+                MegaPdfLink = fixture.Create<string>(),
+                BoxZipLink = fixture.Create<string>(),
+                BoxPdfLink = fixture.Create<string>(),
+                DriveZipLink = fixture.Create<string>(),
+                DrivePdfLink = fixture.Create<string>(),
+                MangaDexLink = fixture.Create<string>(),
+                SakuraMangasLink = fixture.Create<string>()
             };
         }
 
@@ -77,12 +70,9 @@ public class TextReplacerTests : UnitTest
         {
             var testState = state with
             {
-                ReleaseLinks = state.ReleaseLinks with
-                {
-                    BoxPdf = null,
-                    DriveZip = "drive-zip",
-                    DrivePdf = "drive-pdf"
-                }
+                BoxPdfLink = null,
+                DriveZipLink = "drive-zip",
+                DrivePdfLink = "drive-pdf"
             };
 
             var text = "1-!##BOX_PDF_LINK##!-1" +
@@ -113,9 +103,7 @@ public class TextReplacerTests : UnitTest
         private State CreateStateWithNullValues() => new()
         {
             Title = new Title { Name = null!, References = [], DiscordRoleId = 0 },
-            ChapterInfo = new Info(default!, null!, null!, null!, null!, default),
-            InternalData = new InternalData(),
-            ReleaseLinks = new Links()
+            ChapterInfo = new Info(default!, null!, null!, null!, null!, default)
         };
     }
 }

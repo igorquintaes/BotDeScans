@@ -32,6 +32,6 @@ public class UploadMangaDexStep(
         if (uploadResult.IsFailed)
             return uploadResult.ToResult<State>();
 
-        return Result.Ok(state.WithMangaDexLink($"https://mangadex.org/chapter/{uploadResult.Value.Id}/1"));
+        return Result.Ok(state with { MangaDexLink = $"https://mangadex.org/chapter/{uploadResult.Value.Id}/1" });
     }
 }

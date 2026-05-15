@@ -64,7 +64,7 @@ public class CompressFilesStepTests : UnitTest
 
             var state = new State
             {
-                InternalData = new InternalData { OriginContentFolder = resourcesDirectory }
+                OriginContentFolder = resourcesDirectory
             };
 
             A.CallTo(() => fixture

@@ -23,7 +23,7 @@ public class UploadZipBoxStepTests : UnitTest
         state = new State
         {
             Title = fixture.Create<Title>(),
-            InternalData = new InternalData { ZipFilePath = fixture.Create<string>() }
+            ZipFilePath = fixture.Create<string>()
         };
 
         step = fixture.Create<UploadZipBoxStep>();

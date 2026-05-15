@@ -23,6 +23,6 @@ public class UploadZipBoxStep(
             parentFolderId: titleFolder.Id,
             cancellationToken: cancellationToken);
 
-        return Result.Ok(state.WithBoxZipLink(file.SharedLink!.DownloadUrl));
+        return Result.Ok(state with { BoxZipLink = file.SharedLink!.DownloadUrl });
     }
 }

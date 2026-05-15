@@ -22,7 +22,7 @@ public class ZipFilesStepTests : UnitTest
         state = new State
         {
             ChapterInfo = fixture.Create<Info>(),
-            InternalData = new InternalData { OriginContentFolder = fixture.Create<string>() }
+            OriginContentFolder = fixture.Create<string>()
         };
 
         step = fixture.Create<ZipFilesStep>();

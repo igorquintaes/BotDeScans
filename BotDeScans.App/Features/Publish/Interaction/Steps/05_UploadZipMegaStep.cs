@@ -32,6 +32,6 @@ public class UploadZipMegaStep(
         if (fileResult.IsFailed)
             return fileResult.ToResult<State>();
 
-        return Result.Ok(state.WithMegaZipLink(fileResult.Value.AbsoluteUri));
+        return Result.Ok(state with { MegaZipLink = fileResult.Value.AbsoluteUri });
     }
 }

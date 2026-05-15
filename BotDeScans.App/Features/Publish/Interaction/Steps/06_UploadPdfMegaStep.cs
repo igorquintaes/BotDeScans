@@ -32,6 +32,6 @@ public class UploadPdfMegaStep(
         if (fileResult.IsFailed)
             return fileResult.ToResult<State>();
 
-        return Result.Ok(state.WithMegaPdfLink(fileResult.Value.AbsoluteUri));
+        return Result.Ok(state with { MegaPdfLink = fileResult.Value.AbsoluteUri });
     }
 }

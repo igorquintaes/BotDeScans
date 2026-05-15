@@ -22,7 +22,7 @@ public class UploadPdfGoogleDriveStepTests : UnitTest
         state = new State
         {
             Title = fixture.Create<Title>(),
-            InternalData = new InternalData { PdfFilePath = fixture.Create<string>() }
+            PdfFilePath = fixture.Create<string>()
         };
 
         step = fixture.Create<UploadPdfGoogleDriveStep>();

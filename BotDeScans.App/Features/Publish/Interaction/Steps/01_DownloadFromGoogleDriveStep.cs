@@ -27,9 +27,11 @@ public class DownloadFromGoogleDriveStep(
         if (saveFilesResult.IsFailed)
             return saveFilesResult.ToResult<State>();
 
-        var updatedState = state
-            .WithOriginContentFolder(downloadDirectory)
-            .WithCoverFilePath(fileReleaseService.MoveCoverFile(downloadDirectory, coverDirectory));
+        var updatedState = state with
+        {
+            OriginContentFolder = downloadDirectory,
+            CoverFilePath = fileReleaseService.MoveCoverFile(downloadDirectory, coverDirectory)
+        };
 
         return Result.Ok(updatedState);
     }

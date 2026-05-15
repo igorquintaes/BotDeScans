@@ -55,8 +55,9 @@ public class DiscordPublisherTests : UnitTest, IDisposable
         {
             Title = title,
             ChapterInfo = chapterInfo,
-            ReleaseLinks = new Links { MegaZip = "https://mega.nz/sample" },
-            InternalData = new InternalData { CoverFilePath = coverFilePath, Pings = "@everyone" }
+            MegaZipLink = "https://mega.nz/sample",
+            CoverFilePath = coverFilePath,
+            Pings = "@everyone"
         };
 
         var fakeStep = A.Fake<IManagementStep>();

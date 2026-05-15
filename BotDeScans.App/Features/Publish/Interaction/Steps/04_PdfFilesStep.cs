@@ -23,6 +23,6 @@ public class PdfFilesStep(
         if (pdfFileResult.IsFailed)
             return pdfFileResult.ToResult<State>();
 
-        return Result.Ok(state.WithPdfPath(pdfFileResult.Value));
+        return Result.Ok(state with { PdfFilePath = pdfFileResult.Value });
     }
 }

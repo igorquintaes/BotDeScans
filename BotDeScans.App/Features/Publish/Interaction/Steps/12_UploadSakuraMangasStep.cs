@@ -32,6 +32,6 @@ public class UploadSakuraMangasStep(
         if (uploadResult.IsFailed)
             return uploadResult.ToResult<State>();
 
-        return Result.Ok(state.WithSakuraMangasLink(uploadResult.Value));
+        return Result.Ok(state with { SakuraMangasLink = uploadResult.Value });
     }
 }

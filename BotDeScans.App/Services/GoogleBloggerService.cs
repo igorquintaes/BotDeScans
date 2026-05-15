@@ -56,8 +56,8 @@ public class GoogleBloggerService(
         var width = configuration.GetRequiredValue<int>("Blogger:Cover:Width");
         var height = configuration.GetRequiredValue<int>("Blogger:Cover:Height");
 
-        var isGrayScale = imageService.IsGrayscale(state.InternalData.CoverFilePath);
-        var cover = await imageService.CreateBase64StringAsync(state.InternalData.CoverFilePath, width, height, isGrayScale, cancellationToken);
+        var isGrayScale = imageService.IsGrayscale(state.CoverFilePath);
+        var cover = await imageService.CreateBase64StringAsync(state.CoverFilePath, width, height, isGrayScale, cancellationToken);
 
         return $"data:image/png;base64,{cover}";
     }

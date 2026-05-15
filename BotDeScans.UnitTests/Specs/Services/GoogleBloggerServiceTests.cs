@@ -119,13 +119,13 @@ public class GoogleBloggerServiceTests : UnitTest
 
             A.CallTo(() => fixture
                 .FreezeFake<ImageService>()
-                .IsGrayscale(fixture.Freeze<State>().InternalData.CoverFilePath, 20))
+                .IsGrayscale(fixture.Freeze<State>().CoverFilePath, 20))
                 .Returns(true);
 
             A.CallTo(() => fixture
                 .FreezeFake<ImageService>()
                 .CreateBase64StringAsync(
-                    fixture.Freeze<State>().InternalData.CoverFilePath,
+                    fixture.Freeze<State>().CoverFilePath,
                     700,
                     1200,
                     true,

@@ -10,16 +10,16 @@ public class TextReplacer
             { "CHAPTER_NUMBER",        state => state.ChapterInfo.ChapterNumber },
             { "VOLUME_NUMBER",         state => state.ChapterInfo.ChapterVolume },
             { "MESSAGE",               state => state.ChapterInfo.Message },
-            { "MEGA_ZIP_LINK",         state => state.ReleaseLinks.MegaZip },
-            { "MEGA_PDF_LINK",         state => state.ReleaseLinks.MegaPdf },
-            { "BOX_ZIP_LINK",          state => state.ReleaseLinks.BoxZip },
-            { "BOX_PDF_LINK",          state => state.ReleaseLinks.BoxPdf },
-            { "GOOGLE_DRIVE_ZIP_LINK", state => state.ReleaseLinks.DriveZip },
-            { "GOOGLE_DRIVE_PDF_LINK", state => state.ReleaseLinks.DrivePdf },
-            { "MANGADEX_LINK",         state => state.ReleaseLinks.MangaDex },
-            { "SAKURAMANGAS_LINK",     state => state.ReleaseLinks.SakuraMangas },
-            { "BLOGGER_COVER_IMAGE",   state => state.InternalData.BloggerImageAsBase64 },
-            { "BOX_PDF_READER",        state => state.InternalData.BoxPdfReaderKey }
+            { "MEGA_ZIP_LINK",         state => state.MegaZipLink },
+            { "MEGA_PDF_LINK",         state => state.MegaPdfLink },
+            { "BOX_ZIP_LINK",          state => state.BoxZipLink },
+            { "BOX_PDF_LINK",          state => state.BoxPdfLink },
+            { "GOOGLE_DRIVE_ZIP_LINK", state => state.DriveZipLink },
+            { "GOOGLE_DRIVE_PDF_LINK", state => state.DrivePdfLink },
+            { "MANGADEX_LINK",         state => state.MangaDexLink },
+            { "SAKURAMANGAS_LINK",     state => state.SakuraMangasLink },
+            { "BLOGGER_COVER_IMAGE",   state => state.BloggerImageAsBase64 },
+            { "BOX_PDF_READER",        state => state.BoxPdfReaderKey }
         };
 
     public virtual string Replace(string text, State state)

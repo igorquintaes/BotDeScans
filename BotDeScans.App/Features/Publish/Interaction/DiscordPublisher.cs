@@ -31,7 +31,7 @@ public class DiscordPublisher(
         var interactionContext = context as InteractionContext;
         var steps = state.Steps;
         var embed = new Embed(steps.MessageStatus, Description: steps.Details, Colour: steps.ColorStatus);
-        var trackingMessage = state.InternalData.TrackingMessage;
+        var trackingMessage = state.TrackingMessage;
 
         var result = trackingMessage is null
             ? await feedbackService.SendContextualEmbedAsync(embed, ct: cancellationToken)
@@ -47,9 +47,12 @@ public class DiscordPublisher(
                 .Fail("Error to update Discord message.")
                 .WithError(result.Error.Message);
 
-        var updatedState = state.WithTrackingMessage(new TrackingMessage(
-            result.Entity.Author.ID,
-            result.Entity.ID));
+        var updatedState = state with
+        {
+            TrackingMessage = new TrackingMessage(
+                result.Entity.Author.ID,
+                result.Entity.ID)
+        };
 
         return FluentResults.Result.Ok(updatedState);
     }
@@ -71,12 +74,12 @@ public class DiscordPublisher(
     {
         var interactionContext = context as InteractionContext;
         var releaseChannel = new Snowflake(configuration.GetRequiredValue<ulong>("Discord:ReleaseChannel"));
-        var coverFileName = Path.GetFileName(publishState.InternalData.CoverFilePath);
-        using var cover = new FileStream(publishState.InternalData.CoverFilePath, FileMode.Open);
+        var coverFileName = Path.GetFileName(publishState.CoverFilePath);
+        using var cover = new FileStream(publishState.CoverFilePath, FileMode.Open);
 
         return await discordRestChannelAPI.CreateMessageAsync(
             channelID: releaseChannel,
-            content: publishState.InternalData.Pings!,
+            content: publishState.Pings!,
             embeds: new[] { PublishEmbed(interactionContext!, coverFileName, publishState) },
             attachments: new[] { OneOf<FileData, IPartialAttachment>.FromT0(new FileData(coverFileName, cover)) },
             components: new[] { new ActionRowComponent([PromotedButton]) },
@@ -103,12 +106,13 @@ public class DiscordPublisher(
                 IconUrl: interactionContext!.GetUserAvatarUrl()));
     }
 
-    private static List<EmbedField> CreatePublishLinkFields(State publishState) => [.. typeof(Links)
+    private static List<EmbedField> CreatePublishLinkFields(State publishState) => [.. typeof(State)
         .GetProperties()
+        .Where(property => property.GetCustomAttribute<DescriptionAttribute>() is not null)
         .Select(property => new
         {
             Label = property.GetCustomAttribute<DescriptionAttribute>()!.Description,
-            Link = property.GetValue(publishState.ReleaseLinks, null)?.ToString()
+            Link = property.GetValue(publishState, null)?.ToString()
         })
         .Where(x => !string.IsNullOrWhiteSpace(x.Link))
         .Select(x => new EmbedField(x.Label, $":white_check_mark:  [Acesse]({x.Link})", true))];

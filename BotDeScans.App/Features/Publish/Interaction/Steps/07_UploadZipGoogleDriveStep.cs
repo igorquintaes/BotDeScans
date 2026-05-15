@@ -31,6 +31,6 @@ public class UploadZipGoogleDriveStep(
         if (fileResult.IsFailed)
             return fileResult.ToResult<State>();
 
-        return Result.Ok(state.WithDriveZipLink(fileResult.Value.WebViewLink));
+        return Result.Ok(state with { DriveZipLink = fileResult.Value.WebViewLink });
     }
 }

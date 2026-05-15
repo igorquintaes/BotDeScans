@@ -306,7 +306,7 @@ public class HandlerTests : UnitTest
         [Fact]
         public async Task GivenManagementStepStatePropagationShouldPassUpdatedStateToNextStep()
         {
-            var updatedState = state with { InternalData = new() { Pings = "updated" } };
+            var updatedState = state with { Pings = "updated" };
 
             A.CallTo(() => managementStep1.ExecuteAsync(A<State>.Ignored, cancellationToken))
                 .Returns(Result.Ok(updatedState));
@@ -314,7 +314,7 @@ public class HandlerTests : UnitTest
             await handler.ExecuteAsync(testState, cancellationToken);
 
             A.CallTo(() => managementStep2.ExecuteAsync(
-                A<State>.That.Matches(s => s.InternalData.Pings == "updated"),
+                A<State>.That.Matches(s => s.Pings == "updated"),
                 cancellationToken))
                 .MustHaveHappenedOnceExactly();
         }

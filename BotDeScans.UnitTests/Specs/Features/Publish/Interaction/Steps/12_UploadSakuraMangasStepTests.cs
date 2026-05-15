@@ -34,7 +34,7 @@ public class UploadSakuraMangasStepTests : UnitTest
         {
             Title = title,
             ChapterInfo = fixture.Create<Info>(),
-            InternalData = new InternalData { ZipFilePath = fixture.Create<string>() }
+            ZipFilePath = fixture.Create<string>()
         };
 
         step = fixture.Create<UploadSakuraMangasStep>();

@@ -18,7 +18,7 @@ public class PublishBloggerStep(
 
     public async Task<Result<State>> ExecuteAsync(State state, CancellationToken cancellationToken)
     {
-        var updatedState = state.WithBloggerImageAsBase64(await googleBloggerService.CreatePostCoverAsync(cancellationToken));
+        var updatedState = state with { BloggerImageAsBase64 = await googleBloggerService.CreatePostCoverAsync(cancellationToken) };
         var template = googleBloggerService.GetPostTemplate();
         var htmlContent = textReplacer.Replace(template, updatedState);
 
@@ -33,6 +33,6 @@ public class PublishBloggerStep(
         if (post.IsFailed)
             return post.ToResult<State>();
 
-        return Result.Ok(updatedState.WithBloggerLink(post.Value.Url));
+        return Result.Ok(updatedState with { BloggerLink = post.Value.Url });
     }
 }

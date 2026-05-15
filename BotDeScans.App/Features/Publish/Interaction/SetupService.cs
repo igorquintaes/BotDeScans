@@ -39,7 +39,7 @@ public class SetupService(
 
         var ping = pings.Single(x => x.IsApplicable);
         var pingAsText = await ping.GetPingAsTextAsync(cancellationToken);
-        state = state.WithPings(pingAsText);
+        state = state with { Pings = pingAsText };
 
         return Result.Ok(state);
     }

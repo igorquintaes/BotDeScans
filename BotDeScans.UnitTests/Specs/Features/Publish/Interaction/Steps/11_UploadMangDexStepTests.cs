@@ -34,7 +34,7 @@ public class UploadMangDexStepTests : UnitTest
         {
             Title = title,
             ChapterInfo = fixture.Create<Info>(),
-            InternalData = new InternalData { OriginContentFolder = fixture.Create<string>() }
+            OriginContentFolder = fixture.Create<string>()
         };
 
         step = fixture.Create<UploadMangaDexStep>();

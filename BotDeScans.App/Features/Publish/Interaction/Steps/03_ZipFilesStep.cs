@@ -23,6 +23,6 @@ public class ZipFilesStep(
         if (zipFileResult.IsFailed)
             return Task.FromResult(zipFileResult.ToResult<State>());
 
-        return Task.FromResult(Result.Ok(state.WithZipPath(zipFileResult.Value)));
+        return Task.FromResult(Result.Ok(state with { ZipFilePath = zipFileResult.Value }));
     }
 }

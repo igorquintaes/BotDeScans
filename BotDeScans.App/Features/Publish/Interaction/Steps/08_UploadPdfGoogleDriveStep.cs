@@ -31,6 +31,6 @@ public class UploadPdfGoogleDriveStep(
         if (fileResult.IsFailed)
             return fileResult.ToResult<State>();
 
-        return Result.Ok(state.WithDrivePdfLink(fileResult.Value.WebViewLink));
+        return Result.Ok(state with { DrivePdfLink = fileResult.Value.WebViewLink });
     }
 }

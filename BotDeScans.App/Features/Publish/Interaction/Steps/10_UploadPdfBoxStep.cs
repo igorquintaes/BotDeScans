@@ -23,12 +23,14 @@ public class UploadPdfBoxStep(
             parentFolderId: titleFolder.Id,
             cancellationToken: cancellationToken);
 
-        var updatedState = state
-            .WithBoxPdfLink(file.SharedLink!.DownloadUrl!)
-            .WithBoxPdfReaderKey(file.SharedLink!.DownloadUrl!
+        var updatedState = state with
+        {
+            BoxPdfLink = file.SharedLink!.DownloadUrl!,
+            BoxPdfReaderKey = file.SharedLink!.DownloadUrl!
                 .Split("/")
                 .Last()
-                .Replace(".pdf", "", StringComparison.InvariantCultureIgnoreCase));
+                .Replace(".pdf", "", StringComparison.InvariantCultureIgnoreCase)
+        };
 
         return Result.Ok(updatedState);
     }
