@@ -92,7 +92,7 @@ public class DiscordPublisherTests : UnitTest, IDisposable
                 .SendContextualEmbedAsync(A<Embed>.Ignored, A<FeedbackMessageOptions>.Ignored, cancellationToken))
                 .Returns(Remora.Results.Result<IMessage>.FromSuccess(A.Fake<IMessage>()));
 
-            var result = await publisher.UpdateTrackingMessageAsync(state.Steps, cancellationToken);
+            var result = await publisher.UpdateTrackingMessageAsync(state, cancellationToken);
 
             result.Should().BeSuccess();
             A.CallTo(() => fixture
@@ -117,8 +117,12 @@ public class DiscordPublisherTests : UnitTest, IDisposable
                 .SendContextualEmbedAsync(A<Embed>.Ignored, A<FeedbackMessageOptions>.Ignored, cancellationToken))
                 .Returns(Remora.Results.Result<IMessage>.FromSuccess(trackedMessage));
 
-            await publisher.UpdateTrackingMessageAsync(state.Steps, cancellationToken);
-            await publisher.UpdateTrackingMessageAsync(state.Steps, cancellationToken);
+            A.CallTo(fixture.FreezeFake<IDiscordRestInteractionAPI>())
+                .WithReturnType<Task<Remora.Results.Result<IMessage>>>()
+                .Returns(Remora.Results.Result<IMessage>.FromSuccess(trackedMessage));
+
+            var firstResult = await publisher.UpdateTrackingMessageAsync(state, cancellationToken);
+            await publisher.UpdateTrackingMessageAsync(firstResult.Value, cancellationToken);
 
             Fake.GetCalls(fixture.FreezeFake<IDiscordRestInteractionAPI>())
                 .Count(call => call.Method.Name == nameof(IDiscordRestInteractionAPI.EditFollowupMessageAsync))
@@ -133,7 +137,7 @@ public class DiscordPublisherTests : UnitTest, IDisposable
                 .SendContextualEmbedAsync(A<Embed>.Ignored, A<FeedbackMessageOptions>.Ignored, cancellationToken))
                 .Returns(Remora.Results.Result<IMessage>.FromError(new Remora.Results.InvalidOperationError("send failed")));
 
-            var result = await publisher.UpdateTrackingMessageAsync(state.Steps, cancellationToken);
+            var result = await publisher.UpdateTrackingMessageAsync(state, cancellationToken);
 
             result.Should().BeFailure()
                 .And.HaveError("Error to update Discord message.")

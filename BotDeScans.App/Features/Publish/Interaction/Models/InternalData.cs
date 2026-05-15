@@ -9,4 +9,5 @@ public record InternalData
     public string? BloggerImageAsBase64 { get; init; }
     public string? BoxPdfReaderKey { get; init; }
     public string? Pings { get; init; }
+    public TrackingMessage? TrackingMessage { get; init; }
 }

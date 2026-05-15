@@ -15,6 +15,12 @@ public class HandlerTests : UnitTest
     public HandlerTests()
     {
         fixture.FreezeFake<DiscordPublisher>();
+
+        A.CallTo(() => fixture
+            .FreezeFake<DiscordPublisher>()
+            .UpdateTrackingMessageAsync(A<State>._, A<CancellationToken>._))
+            .ReturnsLazily((State s, CancellationToken _) => Result.Ok(s));
+
         handler = fixture.Create<Handler>();
         state = new State();
     }
@@ -83,7 +89,7 @@ public class HandlerTests : UnitTest
 
             A.CallTo(() => fixture
                 .FreezeFake<DiscordPublisher>()
-                .UpdateTrackingMessageAsync(A<EnabledSteps>._, cancellationToken))
+                .UpdateTrackingMessageAsync(A<State>._, cancellationToken))
                 .MustHaveHappened(7, Times.Exactly);
         }
 
@@ -123,8 +129,8 @@ public class HandlerTests : UnitTest
             const string ERROR_MESSAGE = "some error message";
             A.CallTo(() => fixture
                 .FreezeFake<DiscordPublisher>()
-                .UpdateTrackingMessageAsync(A<EnabledSteps>._, cancellationToken))
-                .Returns(Result.Fail(ERROR_MESSAGE));
+                .UpdateTrackingMessageAsync(A<State>._, cancellationToken))
+                .Returns(Result.Fail<State>(ERROR_MESSAGE));
 
             var result = await handler.ExecuteAsync(testState, cancellationToken);
             result.Should().BeFailure().And.HaveError(ERROR_MESSAGE);
@@ -284,8 +290,8 @@ public class HandlerTests : UnitTest
         {
             A.CallTo(() => fixture
                 .FreezeFake<DiscordPublisher>()
-                .UpdateTrackingMessageAsync(A<EnabledSteps>._, cancellationToken))
-                .Returns(Result.Fail("tracking error"));
+                .UpdateTrackingMessageAsync(A<State>._, cancellationToken))
+                .Returns(Result.Fail<State>("tracking error"));
 
             var result = await handler.ExecuteAsync(testState, cancellationToken);
 

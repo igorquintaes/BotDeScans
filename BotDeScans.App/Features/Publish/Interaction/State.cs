@@ -56,6 +56,9 @@ public record State
     public State WithPings(string pings) =>
         this with { InternalData = InternalData with { Pings = pings } };
 
+    public State WithTrackingMessage(TrackingMessage trackingMessage) =>
+        this with { InternalData = InternalData with { TrackingMessage = trackingMessage } };
+
     public State WithMegaZipLink(string link) => this with { ReleaseLinks = ReleaseLinks with { MegaZip = link } };
     public State WithMegaPdfLink(string link) => this with { ReleaseLinks = ReleaseLinks with { MegaPdf = link } };
     public State WithDriveZipLink(string link) => this with { ReleaseLinks = ReleaseLinks with { DriveZip = link } };

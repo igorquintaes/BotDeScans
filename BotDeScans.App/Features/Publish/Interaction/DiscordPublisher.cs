@@ -24,29 +24,34 @@ public class DiscordPublisher(
     IDiscordRestInteractionAPI discordRestInteractionAPI,
     IDiscordRestChannelAPI discordRestChannelAPI)
 {
-    private Result<IMessage>? trackingMessage = null;
-
-    public virtual async Task<FluentResults.Result> UpdateTrackingMessageAsync(
-        EnabledSteps steps,
+    public virtual async Task<FluentResults.Result<State>> UpdateTrackingMessageAsync(
+        State state,
         CancellationToken cancellationToken)
     {
         var interactionContext = context as InteractionContext;
+        var steps = state.Steps;
         var embed = new Embed(steps.MessageStatus, Description: steps.Details, Colour: steps.ColorStatus);
+        var trackingMessage = state.InternalData.TrackingMessage;
 
-        trackingMessage = trackingMessage is null
+        var result = trackingMessage is null
             ? await feedbackService.SendContextualEmbedAsync(embed, ct: cancellationToken)
             : await discordRestInteractionAPI.EditFollowupMessageAsync(
-                trackingMessage.Value.Entity.Author.ID,
+                trackingMessage.AuthorId,
                 interactionContext!.Interaction.Token,
-                messageID: trackingMessage.Value.Entity.ID,
+                messageID: trackingMessage.MessageId,
                 embeds: new List<Embed> { embed },
                 ct: cancellationToken);
 
-        return trackingMessage.Value.IsSuccess is true
-            ? FluentResults.Result.Ok()
-            : FluentResults.Result
+        if (result.IsSuccess is false)
+            return FluentResults.Result
                 .Fail("Error to update Discord message.")
-                .WithError(trackingMessage.Value.Error.Message);
+                .WithError(result.Error.Message);
+
+        var updatedState = state.WithTrackingMessage(new TrackingMessage(
+            result.Entity.Author.ID,
+            result.Entity.ID));
+
+        return FluentResults.Result.Ok(updatedState);
     }
 
     public virtual async Task<IResult<IMessage>> ErrorReleaseMessageAsync(

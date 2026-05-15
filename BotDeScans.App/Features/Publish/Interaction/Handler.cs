@@ -16,14 +16,14 @@ public class Handler(
         var managementSteps = state.Steps.ManagementSteps;
         var publishSteps = state.Steps.PublishSteps;
 
-        var result = await discordPublisher.UpdateTrackingMessageAsync(state.Steps, cancellationToken);
-        if (result.IsFailed)
-            return result.ToResult<State>();
+        var trackingResult = await discordPublisher.UpdateTrackingMessageAsync(state, cancellationToken);
+        if (trackingResult.IsFailed)
+            return trackingResult;
 
-        var currentState = state;
+        var currentState = trackingResult.Value;
 
         var managementExecution = await ExecuteChainAsync(
-            result,
+            trackingResult.ToResult(),
             currentState,
             managementSteps.Select(data => (
                 Step: (IStep)data.Step, data.Info)),
@@ -147,10 +147,13 @@ public class Handler(
         var updatedSteps = state.Steps.WithUpdatedStepInfo(step, updatedInfo);
         var updatedState = state with { Steps = updatedSteps };
 
-        var feedbackResult = await discordPublisher.UpdateTrackingMessageAsync(updatedState.Steps, cancellationToken);
-        var merged = Result.Merge(result, feedbackResult);
+        var feedbackResult = await discordPublisher.UpdateTrackingMessageAsync(updatedState, cancellationToken);
+        if (feedbackResult.IsFailed)
+            return Result.Merge(result, feedbackResult.ToResult()).ToResult<State>();
+
+        var merged = Result.Merge(result, feedbackResult.ToResult());
         return merged.IsFailed
             ? merged.ToResult<State>()
-            : Result.Ok(updatedState);
+            : feedbackResult;
     }
 }
