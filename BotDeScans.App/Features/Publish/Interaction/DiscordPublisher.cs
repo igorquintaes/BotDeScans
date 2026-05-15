@@ -25,15 +25,12 @@ public class DiscordPublisher(
     IDiscordRestChannelAPI discordRestChannelAPI)
 {
     private Result<IMessage>? trackingMessage = null;
-    private EnabledSteps? _steps;
-
-    public void SetSteps(EnabledSteps steps) => _steps = steps;
 
     public virtual async Task<FluentResults.Result> UpdateTrackingMessageAsync(
+        EnabledSteps steps,
         CancellationToken cancellationToken)
     {
         var interactionContext = context as InteractionContext;
-        var steps = _steps!;
         var embed = new Embed(steps.MessageStatus, Description: steps.Details, Colour: steps.ColorStatus);
 
         trackingMessage = trackingMessage is null

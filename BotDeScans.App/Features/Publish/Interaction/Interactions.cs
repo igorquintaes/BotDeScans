@@ -29,8 +29,6 @@ public class Interactions(
         if (setupResult.IsFailed)
             return await discordPublisher.ErrorReleaseMessageAsync(setupResult.ToResult(), CancellationToken);
 
-        discordPublisher.SetSteps(setupResult.Value.Steps);
-
         var result = await handler.ExecuteAsync(setupResult.Value, CancellationToken);
         result.LogIfFailed();
 

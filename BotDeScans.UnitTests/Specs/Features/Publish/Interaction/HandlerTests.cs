@@ -65,7 +65,7 @@ public class HandlerTests : UnitTest
 
             A.CallTo(() => fixture
                 .FreezeFake<DiscordPublisher>()
-                .UpdateTrackingMessageAsync(cancellationToken))
+                .UpdateTrackingMessageAsync(A<EnabledSteps>._, cancellationToken))
                 .MustHaveHappened(7, Times.Exactly);
         }
 
@@ -107,7 +107,7 @@ public class HandlerTests : UnitTest
             const string ERROR_MESSAGE = "some error message";
             A.CallTo(() => fixture
                 .FreezeFake<DiscordPublisher>()
-                .UpdateTrackingMessageAsync(cancellationToken))
+                .UpdateTrackingMessageAsync(A<EnabledSteps>._, cancellationToken))
                 .Returns(Result.Fail(ERROR_MESSAGE));
 
             var result = await handler.ExecuteAsync(testState, cancellationToken);

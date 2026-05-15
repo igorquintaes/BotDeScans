@@ -16,7 +16,7 @@ public class Handler(
         var managementSteps = state.Steps.ManagementSteps;
         var publishSteps = state.Steps.PublishSteps;
 
-        var result = await discordPublisher.UpdateTrackingMessageAsync(cancellationToken);
+        var result = await discordPublisher.UpdateTrackingMessageAsync(state.Steps, cancellationToken);
         if (result.IsFailed)
             return result.ToResult<State>();
 
@@ -105,7 +105,7 @@ public class Handler(
             return Result.Ok();
 
         var result = await data.Step.SafeCallAsync(x => x.ValidateAsync(state, cancellationToken));
-        return await HandleResult(result, data.Info, cancellationToken);
+        return await HandleResult(result, data.Info, state, cancellationToken);
     }
 
     private async Task<Result<State>> ExecuteAsync(
@@ -126,7 +126,7 @@ public class Handler(
             stopwatch.ElapsedMilliseconds,
             result.IsSuccess ? "Success" : "Failure");
 
-        var handleResult = await HandleResult(result.ToResult(), data.Info, cancellationToken);
+        var handleResult = await HandleResult(result.ToResult(), data.Info, state, cancellationToken);
         return handleResult.IsFailed
             ? handleResult.ToResult<State>()
             : Result.Ok(result.Value);
@@ -135,11 +135,12 @@ public class Handler(
     private async Task<Result> HandleResult(
         Result result,
         StepInfo info,
+        State state,
         CancellationToken cancellationToken)
     {
         info.UpdateStatus(result);
 
-        var feedbackResult = await discordPublisher.UpdateTrackingMessageAsync(cancellationToken);
+        var feedbackResult = await discordPublisher.UpdateTrackingMessageAsync(state.Steps, cancellationToken);
         return Result.Merge(result, feedbackResult);
     }
 }
