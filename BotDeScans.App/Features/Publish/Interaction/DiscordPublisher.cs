@@ -18,7 +18,6 @@ namespace BotDeScans.App.Features.Publish.Interaction;
 
 public class DiscordPublisher(
     IOperationContext context,
-    State state,
     TextReplacer textReplacer,
     IFeedbackService feedbackService,
     IConfiguration configuration,
@@ -26,12 +25,15 @@ public class DiscordPublisher(
     IDiscordRestChannelAPI discordRestChannelAPI)
 {
     private Result<IMessage>? trackingMessage = null;
+    private EnabledSteps? _steps;
+
+    public void SetSteps(EnabledSteps steps) => _steps = steps;
 
     public virtual async Task<FluentResults.Result> UpdateTrackingMessageAsync(
         CancellationToken cancellationToken)
     {
         var interactionContext = context as InteractionContext;
-        var steps = state.Steps!;
+        var steps = _steps!;
         var embed = new Embed(steps.MessageStatus, Description: steps.Details, Colour: steps.ColorStatus);
 
         trackingMessage = trackingMessage is null
@@ -62,17 +64,18 @@ public class DiscordPublisher(
     }
 
     public virtual async Task<IResult<IMessage>> SuccessReleaseMessageAsync(
+        State publishState,
         CancellationToken cancellationToken)
     {
         var interactionContext = context as InteractionContext;
         var releaseChannel = new Snowflake(configuration.GetRequiredValue<ulong>("Discord:ReleaseChannel"));
-        var coverFileName = Path.GetFileName(state.InternalData.CoverFilePath);
-        using var cover = new FileStream(state.InternalData.CoverFilePath, FileMode.Open);
+        var coverFileName = Path.GetFileName(publishState.InternalData.CoverFilePath);
+        using var cover = new FileStream(publishState.InternalData.CoverFilePath, FileMode.Open);
 
         return await discordRestChannelAPI.CreateMessageAsync(
             channelID: releaseChannel,
-            content: state.InternalData.Pings!,
-            embeds: new[] { PublishEmbed(interactionContext!, coverFileName) },
+            content: publishState.InternalData.Pings!,
+            embeds: new[] { PublishEmbed(interactionContext!, coverFileName, publishState) },
             attachments: new[] { OneOf<FileData, IPartialAttachment>.FromT0(new FileData(coverFileName, cover)) },
             components: new[] { new ActionRowComponent([PromotedButton]) },
             ct: cancellationToken);
@@ -80,29 +83,30 @@ public class DiscordPublisher(
 
     private Embed PublishEmbed(
         InteractionContext interactionContext,
-        string coverFileName)
+        string coverFileName,
+        State publishState)
     {
-        var message = string.IsNullOrWhiteSpace(state.ChapterInfo.Message)
+        var message = string.IsNullOrWhiteSpace(publishState.ChapterInfo.Message)
             ? string.Empty
-            : textReplacer.Replace(state.ChapterInfo.Message);
+            : textReplacer.Replace(publishState.ChapterInfo.Message, publishState);
 
         return new(
-            Title: $"#{state.ChapterInfo.ChapterNumber} {state.Title.Name}",
+            Title: $"#{publishState.ChapterInfo.ChapterNumber} {publishState.Title.Name}",
             Image: new EmbedImage($"attachment://{coverFileName}"),
             Description: message,
             Colour: Color.Green,
-            Fields: CreatePublishLinkFields(),
+            Fields: CreatePublishLinkFields(publishState),
             Author: new EmbedAuthor(
                 Name: interactionContext!.GetUserName(),
                 IconUrl: interactionContext!.GetUserAvatarUrl()));
     }
 
-    private List<EmbedField> CreatePublishLinkFields() => [.. typeof(Links)
+    private static List<EmbedField> CreatePublishLinkFields(State publishState) => [.. typeof(Links)
         .GetProperties()
         .Select(property => new
         {
             Label = property.GetCustomAttribute<DescriptionAttribute>()!.Description,
-            Link = property.GetValue(state.ReleaseLinks, null)?.ToString()
+            Link = property.GetValue(publishState.ReleaseLinks, null)?.ToString()
         })
         .Where(x => !string.IsNullOrWhiteSpace(x.Link))
         .Select(x => new EmbedField(x.Label, $":white_check_mark:  [Acesse]({x.Link})", true))];

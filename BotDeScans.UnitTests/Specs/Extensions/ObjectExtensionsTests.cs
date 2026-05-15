@@ -1,7 +1,5 @@
 ﻿using BotDeScans.App.Extensions;
 using FluentResults;
-using Serilog;
-using Serilog.Events;
 using System.Linq.Expressions;
 
 namespace BotDeScans.UnitTests.Specs.Extensions;
@@ -12,13 +10,8 @@ public abstract class ObjectExtensionsTests : UnitTest
     {
         private readonly TestObject testObject;
 
-        public SafeCallAsync()
-        {
-            fixture.FreezeFake<ILogger>();
-            Log.Logger = fixture.FreezeFake<ILogger>();
-
+        public SafeCallAsync() =>
             testObject = fixture.Create<TestObject>();
-        }
 
         [Fact]
         public async Task GivenSuccessfulExecutionShouldReturnSuccessResult()
@@ -68,33 +61,16 @@ public abstract class ObjectExtensionsTests : UnitTest
         }
 
         [Fact]
-        public async Task GivenExceptionShouldLogError()
+        public async Task GivenExceptionShouldHaveExceptionAsCause()
         {
             const string ERROR_MESSAGE = "Fatal error occurred. More information inside log file.";
             const string EXCEPTION_MESSAGE = "Test exception";
 
             Expression<Func<TestObject, Task<Result>>> expression = obj => TestObject.ThrowExceptionMethodAsync();
 
-            await testObject.SafeCallAsync(expression);
-
-            A.CallTo(() => fixture
-                .FreezeFake<ILogger>()
-                .Write(LogEventLevel.Error,
-                       A<Exception>.That.Matches(ex => ex.Message == EXCEPTION_MESSAGE),
-                       ERROR_MESSAGE))
-                .MustHaveHappenedOnceExactly();
-        }
-
-        [Fact]
-        public async Task GivenExceptionShouldHaveExceptionAsCause()
-        {
-            const string EXCEPTION_MESSAGE = "Test exception";
-
-            Expression<Func<TestObject, Task<Result>>> expression = obj => TestObject.ThrowExceptionMethodAsync();
-
             var result = await testObject.SafeCallAsync(expression);
 
-            result.Should().BeFailure();
+            result.Should().BeFailure().And.HaveError(ERROR_MESSAGE);
             result.Errors.Should().ContainSingle()
                   .Which.Reasons.Should().ContainSingle()
                   .Which.Should().BeOfType<ExceptionalError>()

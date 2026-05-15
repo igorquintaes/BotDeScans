@@ -1,4 +1,5 @@
 ﻿using BotDeScans.App.Features.Publish.Interaction;
+using BotDeScans.App.Features.Publish.Interaction.Models;
 using BotDeScans.App.Features.Publish.Interaction.Steps;
 using BotDeScans.App.Features.Publish.Interaction.Steps.Enums;
 using BotDeScans.App.Models.Entities.Enums;
@@ -16,7 +17,6 @@ public class CompressFilesStepTests : UnitTest
 
     public CompressFilesStepTests()
     {
-        fixture.FreezeFake<IPublishContext>();
         fixture.FreezeFake<ImageService>();
         step = fixture.Create<CompressFilesStep>();
     }
@@ -62,9 +62,10 @@ public class CompressFilesStepTests : UnitTest
                 await image.SaveAsync(filePath, cancellationToken);
             }
 
-            A.CallTo(() => fixture
-                .FreezeFake<IPublishContext>().OriginContentFolder)
-                .Returns(resourcesDirectory);
+            var state = new State
+            {
+                InternalData = new InternalData { OriginContentFolder = resourcesDirectory }
+            };
 
             A.CallTo(() => fixture
                 .FreezeFake<ImageService>()
@@ -76,7 +77,7 @@ public class CompressFilesStepTests : UnitTest
                 .IsGrayscale(secondFilePath, 20))
                 .Returns(false);
 
-            var result = await step.ExecuteAsync(cancellationToken);
+            var result = await step.ExecuteAsync(state, cancellationToken);
 
             result.Should().BeSuccess();
 

@@ -1,4 +1,5 @@
 ﻿using BotDeScans.App.Features.Publish.Interaction;
+using BotDeScans.App.Features.Publish.Interaction.Models;
 using BotDeScans.App.Features.Publish.Interaction.Steps;
 using BotDeScans.App.Features.Publish.Interaction.Steps.Enums;
 using BotDeScans.App.Models.DTOs;
@@ -11,12 +12,19 @@ namespace BotDeScans.UnitTests.Specs.Features.Publish.Interaction.Steps;
 public class ZipFilesStepTests : UnitTest
 {
     private readonly ZipFilesStep step;
+    private readonly State state;
 
     public ZipFilesStepTests()
     {
-        fixture.FreezeFake<IPublishContext>();
         fixture.FreezeFake<FileService>();
         fixture.FreezeFake<FileReleaseService>();
+
+        state = new State
+        {
+            ChapterInfo = fixture.Create<Info>(),
+            InternalData = new InternalData { OriginContentFolder = fixture.Create<string>() }
+        };
+
         step = fixture.Create<ZipFilesStep>();
     }
 
@@ -37,20 +45,12 @@ public class ZipFilesStepTests : UnitTest
 
     public class ExecuteAsync : ZipFilesStepTests
     {
+        private readonly string zipPath;
+
         public ExecuteAsync()
         {
             var scopedDirectory = fixture.Create<string>();
-            var zipDirectory = fixture.Create<string>();
-            var chapterInfo = fixture.Create<Info>();
-            var originFolder = fixture.Create<string>();
-
-            A.CallTo(() => fixture
-                .FreezeFake<IPublishContext>().ChapterInfo)
-                .Returns(chapterInfo);
-
-            A.CallTo(() => fixture
-                .FreezeFake<IPublishContext>().OriginContentFolder)
-                .Returns(originFolder);
+            zipPath = fixture.Create<string>();
 
             A.CallTo(() => fixture
                 .FreezeFake<FileReleaseService>()
@@ -60,16 +60,16 @@ public class ZipFilesStepTests : UnitTest
             A.CallTo(() => fixture
                 .FreezeFake<FileService>()
                 .CreateZipFile(
-                    chapterInfo.ChapterNumber,
-                    originFolder,
+                    state.ChapterInfo.ChapterNumber,
+                    state.OriginContentFolder,
                     scopedDirectory))
-                .Returns(Result.Ok(zipDirectory));
+                .Returns(Result.Ok(zipPath));
         }
 
         [Fact]
         public async Task GivenSuccessfulExecutionShouldReturnSuccessResult()
         {
-            var result = await step.ExecuteAsync(cancellationToken);
+            var result = await step.ExecuteAsync(state, cancellationToken);
 
             result.Should().BeSuccess();
         }
@@ -77,12 +77,9 @@ public class ZipFilesStepTests : UnitTest
         [Fact]
         public async Task GivenSuccessfulExecutionShouldSetZipFilePath()
         {
-            await step.ExecuteAsync(cancellationToken);
+            var result = await step.ExecuteAsync(state, cancellationToken);
 
-            A.CallTo(() => fixture
-                .FreezeFake<IPublishContext>()
-                .SetZipPath(A<string>.Ignored))
-                .MustHaveHappenedOnceExactly();
+            result.Value.ZipFilePath.Should().Be(zipPath);
         }
 
         [Fact]
@@ -95,7 +92,7 @@ public class ZipFilesStepTests : UnitTest
                 .CreateZipFile(A<string>.Ignored, A<string>.Ignored, A<string>.Ignored))
                 .Returns(Result.Fail(ERROR_MESSAGE));
 
-            var result = await step.ExecuteAsync(cancellationToken);
+            var result = await step.ExecuteAsync(state, cancellationToken);
 
             result.Should().BeFailure().And.HaveError(ERROR_MESSAGE);
         }

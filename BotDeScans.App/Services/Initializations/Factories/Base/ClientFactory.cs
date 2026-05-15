@@ -42,7 +42,7 @@ public abstract class ClientFactory<TClient> : IClientFactory
             : configFileResult.ToResult();
     }
 
-    Task<Result<object>> IClientFactory.SafeCreateObjectAsync(CancellationToken cancellationToken) 
+    Task<Result<object>> IClientFactory.SafeCreateObjectAsync(CancellationToken cancellationToken)
         => (SafeCreateAsync(cancellationToken) as Task<Result<object>>)!;
 
     Task<Result> IClientFactory.HealthCheckAsync(object client, CancellationToken cancellationToken)

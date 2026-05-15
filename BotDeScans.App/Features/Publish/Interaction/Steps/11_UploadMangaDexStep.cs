@@ -7,8 +7,7 @@ using FluentResults;
 namespace BotDeScans.App.Features.Publish.Interaction.Steps;
 
 public class UploadMangaDexStep(
-    MangaDexService mangaDexService,
-    IPublishContext context) : IPublishStep
+    MangaDexService mangaDexService) : IPublishStep
 {
     public StepType Type => StepType.Upload;
     public StepName Name => StepName.UploadMangadex;
@@ -17,23 +16,22 @@ public class UploadMangaDexStep(
     // API validations
     // (NOK) Max 20MB per file
     // (NOK) Max 500 files per upload session
-    // (NOK) File resolution must be below 10'000 pixels in both width and height 
-    public Task<Result> ValidateAsync(CancellationToken _)
+    // (NOK) File resolution must be below 10.000 pixels in both width and height 
+    public Task<Result> ValidateAsync(State state, CancellationToken _)
         => Task.FromResult(Result.Ok());
 
-    public async Task<Result> ExecuteAsync(CancellationToken cancellationToken)
+    public async Task<Result<State>> ExecuteAsync(State state, CancellationToken cancellationToken)
     {
-        var mangaDexReference = context.Title.References.Single(x => x.Key == ExternalReference.MangaDex);
+        var mangaDexReference = state.Title.References.Single(x => x.Key == ExternalReference.MangaDex);
         var uploadResult = await mangaDexService.UploadAsync(
-            context.ChapterInfo,
+            state.ChapterInfo,
             mangaDexReference.Value,
-            context.OriginContentFolder,
+            state.OriginContentFolder,
             cancellationToken);
 
         if (uploadResult.IsFailed)
-            return uploadResult.ToResult();
+            return uploadResult.ToResult<State>();
 
-        context.SetMangaDexLink($"https://mangadex.org/chapter/{uploadResult.Value.Id}/1");
-        return Result.Ok();
+        return Result.Ok(state.WithMangaDexLink($"https://mangadex.org/chapter/{uploadResult.Value.Id}/1"));
     }
 }

@@ -17,7 +17,6 @@ public class SetupServiceTests : UnitTest
 
     public SetupServiceTests()
     {
-        fixture.Freeze<State>();
         fixture.FreezeFake<StepsService>();
         fixture.FreezeFake<TitleRepository>();
         fixture.FreezeFake<IValidator<State>>();
@@ -32,7 +31,7 @@ public class SetupServiceTests : UnitTest
         {
             A.CallTo(() => fixture
                 .FreezeFake<IValidator<State>>()
-                .ValidateAsync(fixture.Freeze<State>(), cancellationToken))
+                .ValidateAsync(A<State>._, cancellationToken))
                 .Returns(new ValidationResult());
 
             A.CallTo(() => fixture
@@ -52,9 +51,9 @@ public class SetupServiceTests : UnitTest
         public async Task GivenSuccessfulExecutionShouldSetPublishStateChapterInfo()
         {
             var info = fixture.Create<Info>();
-            await service.SetupAsync(info, cancellationToken);
+            var result = await service.SetupAsync(info, cancellationToken);
 
-            fixture.Freeze<State>().ChapterInfo.Should().Be(info);
+            result.Value.ChapterInfo.Should().Be(info);
         }
 
         [Fact]
@@ -77,9 +76,9 @@ public class SetupServiceTests : UnitTest
                 .GetEnabledSteps(A<IReadOnlyCollection<StepName>>._))
                 .Returns(enabledSteps);
 
-            await service.SetupAsync(info, cancellationToken);
+            var result = await service.SetupAsync(info, cancellationToken);
 
-            fixture.Freeze<State>().Steps.Should().BeSameAs(enabledSteps);
+            result.Value.Steps.Should().BeSameAs(enabledSteps);
         }
 
         [Fact]
@@ -96,9 +95,9 @@ public class SetupServiceTests : UnitTest
                 .GetTitleAsync(info.TitleId, cancellationToken))
                 .Returns(title);
 
-            await service.SetupAsync(info, cancellationToken);
+            var result = await service.SetupAsync(info, cancellationToken);
 
-            fixture.Freeze<State>().Title.Should().Be(title);
+            result.Value.Title.Should().Be(title);
         }
 
         [Fact]
@@ -111,9 +110,9 @@ public class SetupServiceTests : UnitTest
                 .GetPingAsTextAsync(cancellationToken))
                 .Returns(ping);
 
-            await service.SetupAsync(fixture.Create<Info>(), cancellationToken);
+            var result = await service.SetupAsync(fixture.Create<Info>(), cancellationToken);
 
-            fixture.Freeze<State>().InternalData.Pings.Should().Be(ping);
+            result.Value.InternalData.Pings.Should().Be(ping);
         }
 
         [Fact]
@@ -136,7 +135,7 @@ public class SetupServiceTests : UnitTest
 
             A.CallTo(() => fixture
                 .FreezeFake<IValidator<State>>()
-                .ValidateAsync(fixture.Freeze<State>(), cancellationToken))
+                .ValidateAsync(A<State>._, cancellationToken))
                 .Returns(new ValidationResult([new ValidationFailure("prop", ERROR_MESSAGE)]));
 
             var result = await service.SetupAsync(fixture.Create<Info>(), cancellationToken);

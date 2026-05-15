@@ -19,7 +19,7 @@ public class Handler(TitleRepository titleRepository)
                     .ToArray()
              : Result.Fail(NOT_FOUND_ERROR);
 
-        static string GetReferences(TitleReference reference, int index) => 
+        static string GetReferences(TitleReference reference, int index) =>
             string.Format("{0}. {1}{2}{3}{2}",
                 index + 1,
                 reference.Key.ToString(),

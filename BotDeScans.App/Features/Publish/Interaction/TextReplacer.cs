@@ -1,6 +1,6 @@
 ﻿namespace BotDeScans.App.Features.Publish.Interaction;
 
-public class TextReplacer(State state)
+public class TextReplacer
 {
     public static readonly IReadOnlyDictionary<string, Func<State, string?>>
         ReplaceRules = new Dictionary<string, Func<State, string?>>()
@@ -22,7 +22,7 @@ public class TextReplacer(State state)
             { "BOX_PDF_READER",        state => state.InternalData.BoxPdfReaderKey }
         };
 
-    public virtual string Replace(string text)
+    public virtual string Replace(string text, State state)
     {
         foreach (var rule in ReplaceRules)
         {

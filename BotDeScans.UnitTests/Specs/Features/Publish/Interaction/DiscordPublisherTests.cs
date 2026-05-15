@@ -2,6 +2,7 @@
 using BotDeScans.App.Features.Publish.Interaction.Models;
 using BotDeScans.App.Features.Publish.Interaction.Steps;
 using BotDeScans.App.Models.DTOs;
+using BotDeScans.App.Models.Entities;
 using BotDeScans.App.Models.Entities.Enums;
 using Remora.Discord.API.Abstractions.Objects;
 using Remora.Discord.API.Abstractions.Rest;
@@ -16,6 +17,7 @@ namespace BotDeScans.UnitTests.Specs.Features.Publish.Interaction;
 public class DiscordPublisherTests : UnitTest, IDisposable
 {
     private readonly DiscordPublisher publisher;
+    private readonly State state;
     private readonly string coverFilePath;
     private readonly InteractionContext interactionContext;
     private readonly ulong interactionChannelId;
@@ -37,12 +39,11 @@ public class DiscordPublisherTests : UnitTest, IDisposable
         coverFilePath = Path.GetTempFileName();
         File.WriteAllText(coverFilePath, "cover");
 
-        var state = fixture.Freeze<State>();
-        state.Title = fixture.Build<BotDeScans.App.Models.Entities.Title>()
+        var title = fixture.Build<Title>()
             .With(x => x.Name, "My Title")
             .Create();
 
-        state.ChapterInfo = new Info(
+        var chapterInfo = new Info(
             googleDriveUrl: "https://drive.google.com/drive/folders/1q2w3e4r5t6y7u8i9o",
             chapterName: "Chapter Name",
             chapterNumber: "10",
@@ -50,18 +51,28 @@ public class DiscordPublisherTests : UnitTest, IDisposable
             message: "Mensagem",
             titleId: 1);
 
-        state.ReleaseLinks = new Links { MegaZip = "https://mega.nz/sample" };
-        state.InternalData.CoverFilePath = coverFilePath;
-        state.InternalData.Pings = "@everyone";
+        var state = new State
+        {
+            Title = title,
+            ChapterInfo = chapterInfo,
+            ReleaseLinks = new Links { MegaZip = "https://mega.nz/sample" },
+            InternalData = new InternalData { CoverFilePath = coverFilePath, Pings = "@everyone" }
+        };
 
         var fakeStep = A.Fake<IManagementStep>();
         A.CallTo(() => fakeStep.Name).Returns(StepName.Download);
-        state.Steps = new EnabledSteps(new Dictionary<IStep, StepInfo>
+        state = state with
         {
-            { fakeStep, new StepInfo(fakeStep) }
-        });
+            Steps = new EnabledSteps(new Dictionary<IStep, StepInfo>
+            {
+                { fakeStep, new StepInfo(fakeStep) }
+            })
+        };
 
+        fixture.Inject(state);
+        this.state = state;
         publisher = fixture.Create<DiscordPublisher>();
+        publisher.SetSteps(state.Steps);
     }
 
     public void Dispose()
@@ -150,7 +161,7 @@ public class DiscordPublisherTests : UnitTest, IDisposable
             var sendEmbedCall = Fake.GetCalls(fixture.FreezeFake<IFeedbackService>())
                 .Single(call => call.Method.Name == nameof(IFeedbackService.SendEmbedAsync));
 
-            ((Snowflake)sendEmbedCall.Arguments[0]).Value.Should().Be(interactionChannelId);
+            ((Snowflake)sendEmbedCall.Arguments[0]!).Value.Should().Be(interactionChannelId);
         }
     }
 
@@ -159,12 +170,14 @@ public class DiscordPublisherTests : UnitTest, IDisposable
         [Fact]
         public async Task GivenValidStateShouldCreateReleaseMessage()
         {
+            var publishState = fixture.Create<State>();
+
             A.CallTo(() => fixture
                 .FreezeFake<TextReplacer>()
-                .Replace(A<string>.Ignored))
+                .Replace(A<string>.Ignored, A<State>.Ignored))
                 .Returns(fixture.Create<string>());
 
-            await publisher.SuccessReleaseMessageAsync(cancellationToken);
+            await publisher.SuccessReleaseMessageAsync(state, cancellationToken);
 
             Fake.GetCalls(fixture.FreezeFake<IDiscordRestChannelAPI>())
                 .Count(call => call.Method.Name == nameof(IDiscordRestChannelAPI.CreateMessageAsync))
@@ -172,26 +185,29 @@ public class DiscordPublisherTests : UnitTest, IDisposable
 
             A.CallTo(() => fixture
                 .FreezeFake<TextReplacer>()
-                .Replace(A<string>.Ignored))
+                .Replace(A<string>.Ignored, A<State>.Ignored))
                 .MustHaveHappenedOnceExactly();
         }
 
         [Fact]
         public async Task GivenEmptyMessageShouldNotCallTextReplacer()
         {
-            fixture.Freeze<State>().ChapterInfo = new Info(
-                googleDriveUrl: "https://drive.google.com/drive/folders/1q2w3e4r5t6y7u8i9o",
-                chapterName: "Chapter Name",
-                chapterNumber: "10",
-                chapterVolume: "1",
-                message: "",
-                titleId: 1);
+            var publishState = state with
+            {
+                ChapterInfo = new Info(
+                    googleDriveUrl: "https://drive.google.com/drive/folders/1q2w3e4r5t6y7u8i9o",
+                    chapterName: "Chapter Name",
+                    chapterNumber: "10",
+                    chapterVolume: "1",
+                    message: "",
+                    titleId: 1)
+            };
 
-            await publisher.SuccessReleaseMessageAsync(cancellationToken);
+            await publisher.SuccessReleaseMessageAsync(publishState, cancellationToken);
 
             A.CallTo(() => fixture
                 .FreezeFake<TextReplacer>()
-                .Replace(A<string>.Ignored))
+                .Replace(A<string>.Ignored, A<State>.Ignored))
                 .MustNotHaveHappened();
         }
     }

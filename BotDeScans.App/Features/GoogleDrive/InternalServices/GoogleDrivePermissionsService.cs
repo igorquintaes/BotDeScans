@@ -19,19 +19,19 @@ public class GoogleDrivePermissionsService(
         CancellationToken cancellationToken)
     {
         const StringComparison COMPARER = StringComparison.InvariantCultureIgnoreCase;
-        
+
         var permissionsRequest = driveService.Permissions.List(resourceId);
         permissionsRequest.Fields = "*";
 
         var permissionsResult = await googleWrapper.ExecuteAsync(
-            permissionsRequest, 
+            permissionsRequest,
             cancellationToken);
-        
+
         return permissionsResult.ValueOrDefault?.Permissions
-              .Where(permission => 
+              .Where(permission =>
                      permission.EmailAddress.Equals(email, COMPARER) &&
                      permission.Type.Equals(USER_PERMISSION_TYPE, COMPARER))
-              .ToResult() 
+              .ToResult()
             ?? permissionsResult.ToResult();
     }
 

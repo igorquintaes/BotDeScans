@@ -69,13 +69,13 @@ public class SakuraMangasService(
 
         var objectResponse = JsonSerializer.Deserialize<SakuraRequestResponse>(stringResponseContent);
         return objectResponse!.ErrorCode is EXPECTED_ERROR
-            ? Result.Ok() 
+            ? Result.Ok()
             : HandleError(stringResponseContent, objectResponse!.Message);
     }
 
     private static Result HandleError(string responseContent, string? errorMessage = null)
     {
-        const string DEFAULT_COMMUNICATION_ERROR = 
+        const string DEFAULT_COMMUNICATION_ERROR =
             "Erro ao se comunicar com a Sakura Mangás. " +
             "Cheque o arquivo de logs para mais detalhes.";
 

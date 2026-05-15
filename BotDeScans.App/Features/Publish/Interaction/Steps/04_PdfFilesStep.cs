@@ -7,24 +7,22 @@ namespace BotDeScans.App.Features.Publish.Interaction.Steps;
 
 public class PdfFilesStep(
     FileService fileService,
-    FileReleaseService fileReleaseService,
-    IPublishContext context) : IManagementStep
+    FileReleaseService fileReleaseService) : IManagementStep
 {
     public StepType Type => StepType.Management;
     public StepName Name => StepName.PdfFiles;
     public bool IsMandatory => false;
 
-    public async Task<Result> ExecuteAsync(CancellationToken cancellationToken)
+    public async Task<Result<State>> ExecuteAsync(State state, CancellationToken cancellationToken)
     {
         var pdfFileResult = await fileService.CreatePdfFileAsync(
-            fileName: context.ChapterInfo.ChapterNumber,
-            resourcesDirectory: context.OriginContentFolder,
+            fileName: state.ChapterInfo.ChapterNumber,
+            resourcesDirectory: state.OriginContentFolder,
             destinationDirectory: fileReleaseService.CreateScopedDirectory());
 
         if (pdfFileResult.IsFailed)
-            return pdfFileResult.ToResult();
+            return pdfFileResult.ToResult<State>();
 
-        context.SetPdfPath(pdfFileResult.Value);
-        return Result.Ok();
+        return Result.Ok(state.WithPdfPath(pdfFileResult.Value));
     }
 }

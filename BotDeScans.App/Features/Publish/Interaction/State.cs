@@ -9,13 +9,13 @@ using Microsoft.Extensions.Configuration;
 
 namespace BotDeScans.App.Features.Publish.Interaction;
 
-public class State : IPublishContext
+public record State
 {
-    public EnabledSteps Steps { get; set; } = null!;
-    public Title Title { get; set; } = null!;
-    public Info ChapterInfo { get; set; } = null!;
-    public Links ReleaseLinks { get; set; } = new();
-    public InternalData InternalData { get; set; } = new();
+    public EnabledSteps Steps { get; init; } = null!;
+    public Title Title { get; init; } = null!;
+    public Info ChapterInfo { get; init; } = null!;
+    public Links ReleaseLinks { get; init; } = new();
+    public InternalData InternalData { get; init; } = new();
 
     public string OriginContentFolder => InternalData.OriginContentFolder;
     public string CoverFilePath => InternalData.CoverFilePath;
@@ -35,36 +35,36 @@ public class State : IPublishContext
     public string? SakuraMangasLink => ReleaseLinks.SakuraMangas;
     public string? BloggerLink => ReleaseLinks.Blogger;
 
-    public void SetOriginContentFolder(string originContentFolder) =>
-        InternalData.OriginContentFolder = originContentFolder;
+    public State WithOriginContentFolder(string originContentFolder) =>
+        this with { InternalData = InternalData with { OriginContentFolder = originContentFolder } };
 
-    public void SetCoverFilePath(string coverFilePath) =>
-        InternalData.CoverFilePath = coverFilePath;
+    public State WithCoverFilePath(string coverFilePath) =>
+        this with { InternalData = InternalData with { CoverFilePath = coverFilePath } };
 
-    public void SetZipPath(string zipFilePath) =>
-        InternalData.ZipFilePath = zipFilePath;
+    public State WithZipPath(string zipFilePath) =>
+        this with { InternalData = InternalData with { ZipFilePath = zipFilePath } };
 
-    public void SetPdfPath(string pdfFilePath) =>
-        InternalData.PdfFilePath = pdfFilePath;
+    public State WithPdfPath(string pdfFilePath) =>
+        this with { InternalData = InternalData with { PdfFilePath = pdfFilePath } };
 
-    public void SetBloggerImageAsBase64(string bloggerImageAsBase64) =>
-        InternalData.BloggerImageAsBase64 = bloggerImageAsBase64;
+    public State WithBloggerImageAsBase64(string bloggerImageAsBase64) =>
+        this with { InternalData = InternalData with { BloggerImageAsBase64 = bloggerImageAsBase64 } };
 
-    public void SetBoxPdfReaderKey(string boxPdfReaderKey) =>
-        InternalData.BoxPdfReaderKey = boxPdfReaderKey;
+    public State WithBoxPdfReaderKey(string boxPdfReaderKey) =>
+        this with { InternalData = InternalData with { BoxPdfReaderKey = boxPdfReaderKey } };
 
-    public void SetPings(string pings) =>
-        InternalData.Pings = pings;
+    public State WithPings(string pings) =>
+        this with { InternalData = InternalData with { Pings = pings } };
 
-    public void SetMegaZipLink(string link) => ReleaseLinks.MegaZip = link;
-    public void SetMegaPdfLink(string link) => ReleaseLinks.MegaPdf = link;
-    public void SetDriveZipLink(string link) => ReleaseLinks.DriveZip = link;
-    public void SetDrivePdfLink(string link) => ReleaseLinks.DrivePdf = link;
-    public void SetBoxZipLink(string link) => ReleaseLinks.BoxZip = link;
-    public void SetBoxPdfLink(string link) => ReleaseLinks.BoxPdf = link;
-    public void SetMangaDexLink(string link) => ReleaseLinks.MangaDex = link;
-    public void SetSakuraMangasLink(string link) => ReleaseLinks.SakuraMangas = link;
-    public void SetBloggerLink(string link) => ReleaseLinks.Blogger = link;
+    public State WithMegaZipLink(string link) => this with { ReleaseLinks = ReleaseLinks with { MegaZip = link } };
+    public State WithMegaPdfLink(string link) => this with { ReleaseLinks = ReleaseLinks with { MegaPdf = link } };
+    public State WithDriveZipLink(string link) => this with { ReleaseLinks = ReleaseLinks with { DriveZip = link } };
+    public State WithDrivePdfLink(string link) => this with { ReleaseLinks = ReleaseLinks with { DrivePdf = link } };
+    public State WithBoxZipLink(string link) => this with { ReleaseLinks = ReleaseLinks with { BoxZip = link } };
+    public State WithBoxPdfLink(string link) => this with { ReleaseLinks = ReleaseLinks with { BoxPdf = link } };
+    public State WithMangaDexLink(string link) => this with { ReleaseLinks = ReleaseLinks with { MangaDex = link } };
+    public State WithSakuraMangasLink(string link) => this with { ReleaseLinks = ReleaseLinks with { SakuraMangas = link } };
+    public State WithBloggerLink(string link) => this with { ReleaseLinks = ReleaseLinks with { Blogger = link } };
 }
 
 public class StateValidator : AbstractValidator<State>

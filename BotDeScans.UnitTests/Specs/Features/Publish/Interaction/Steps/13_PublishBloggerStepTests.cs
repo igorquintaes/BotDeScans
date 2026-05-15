@@ -1,4 +1,4 @@
-﻿using BotDeScans.App.Features.Publish.Interaction;
+using BotDeScans.App.Features.Publish.Interaction;
 using BotDeScans.App.Features.Publish.Interaction.Steps;
 using BotDeScans.App.Features.Publish.Interaction.Steps.Enums;
 using BotDeScans.App.Models.DTOs;
@@ -13,12 +13,31 @@ namespace BotDeScans.UnitTests.Specs.Features.Publish.Interaction.Steps;
 public class PublishBloggerStepTests : UnitTest
 {
     private readonly PublishBloggerStep step;
+    private readonly State state;
 
     public PublishBloggerStepTests()
     {
-        fixture.FreezeFake<IPublishContext>();
         fixture.FreezeFake<GoogleBloggerService>();
         fixture.FreezeFake<TextReplacer>();
+
+        var title = fixture.Build<Title>()
+            .With(x => x.Name, "Title X")
+            .With(x => x.DiscordRoleId, 1UL)
+            .Create();
+
+        var chapterInfo = new Info(
+            googleDriveUrl: "https://drive.google.com/drive/folders/1q2w3e4r5t6y7u8i9o",
+            chapterName: "cap",
+            chapterNumber: "1",
+            chapterVolume: "1",
+            message: "msg",
+            titleId: 1);
+
+        state = new State
+        {
+            Title = title,
+            ChapterInfo = chapterInfo
+        };
 
         step = fixture.Create<PublishBloggerStep>();
     }
@@ -43,7 +62,7 @@ public class PublishBloggerStepTests : UnitTest
         [Fact]
         public async Task ShouldReturnSuccess()
         {
-            var result = await step.ValidateAsync(cancellationToken);
+            var result = await step.ValidateAsync(state, cancellationToken);
 
             result.Should().BeSuccess();
         }
@@ -53,29 +72,6 @@ public class PublishBloggerStepTests : UnitTest
     {
         public ExecuteAsync()
         {
-            var title = fixture.Build<Title>()
-                .With(x => x.Name, "Title X")
-                .With(x => x.DiscordRoleId, 1UL)
-                .Create();
-
-            var chapterInfo = new Info(
-                googleDriveUrl: "https://drive.google.com/drive/folders/1q2w3e4r5t6y7u8i9o",
-                chapterName: "cap",
-                chapterNumber: "1",
-                chapterVolume: "1",
-                message: "msg",
-                titleId: 1);
-
-            A.CallTo(() => fixture
-                .FreezeFake<IPublishContext>()
-                .Title)
-                .Returns(title);
-
-            A.CallTo(() => fixture
-                .FreezeFake<IPublishContext>()
-                .ChapterInfo)
-                .Returns(chapterInfo);
-
             A.CallTo(() => fixture
                 .FreezeFake<GoogleBloggerService>()
                 .CreatePostCoverAsync(cancellationToken))
@@ -88,7 +84,7 @@ public class PublishBloggerStepTests : UnitTest
 
             A.CallTo(() => fixture
                 .FreezeFake<TextReplacer>()
-                .Replace(A<string>.Ignored))
+                .Replace(A<string>.Ignored, A<State>.Ignored))
                 .Returns(fixture.Create<string>());
 
             A.CallTo(() => fixture
@@ -105,7 +101,7 @@ public class PublishBloggerStepTests : UnitTest
         [Fact]
         public async Task GivenSuccessfulExecutionShouldReturnSuccessResult()
         {
-            var result = await step.ExecuteAsync(cancellationToken);
+            var result = await step.ExecuteAsync(state, cancellationToken);
 
             result.Should().BeSuccess();
         }
@@ -120,12 +116,9 @@ public class PublishBloggerStepTests : UnitTest
                 .CreatePostCoverAsync(cancellationToken))
                 .Returns(cover);
 
-            await step.ExecuteAsync(cancellationToken);
+            var result = await step.ExecuteAsync(state, cancellationToken);
 
-            A.CallTo(() => fixture
-                .FreezeFake<IPublishContext>()
-                .SetBloggerImageAsBase64(cover))
-                .MustHaveHappenedOnceExactly();
+            result.Value.BloggerImageAsBase64.Should().Be(cover);
         }
 
         [Fact]
@@ -143,12 +136,9 @@ public class PublishBloggerStepTests : UnitTest
                     cancellationToken))
                 .Returns(new Post() { Url = url });
 
-            await step.ExecuteAsync(cancellationToken);
+            var result = await step.ExecuteAsync(state, cancellationToken);
 
-            A.CallTo(() => fixture
-                .FreezeFake<IPublishContext>()
-                .SetBloggerLink(url))
-                .MustHaveHappenedOnceExactly();
+            result.Value.BloggerLink.Should().Be(url);
         }
 
         [Fact]
@@ -161,7 +151,7 @@ public class PublishBloggerStepTests : UnitTest
                 .PostAsync(A<string>._, A<string>._, A<string>._, A<string>._, cancellationToken))
                 .Returns(Result.Fail(ERROR_MESSAGE));
 
-            var result = await step.ExecuteAsync(cancellationToken);
+            var result = await step.ExecuteAsync(state, cancellationToken);
 
             result.Should().BeFailure().And.HaveError(ERROR_MESSAGE);
         }

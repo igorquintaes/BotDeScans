@@ -1,8 +1,10 @@
 ﻿using BotDeScans.App.Features.Mega;
 using BotDeScans.App.Features.Mega.InternalServices;
 using BotDeScans.App.Features.Publish.Interaction;
+using BotDeScans.App.Features.Publish.Interaction.Models;
 using BotDeScans.App.Features.Publish.Interaction.Steps;
 using BotDeScans.App.Features.Publish.Interaction.Steps.Enums;
+using BotDeScans.App.Models.Entities;
 using BotDeScans.App.Models.Entities.Enums;
 using CG.Web.MegaApiClient;
 using FluentResults;
@@ -12,12 +14,19 @@ namespace BotDeScans.UnitTests.Specs.Features.Publish.Interaction.Steps;
 public class UploadPdfMegaStepTests : UnitTest
 {
     private readonly UploadPdfMegaStep step;
+    private readonly State state;
 
     public UploadPdfMegaStepTests()
     {
-        fixture.FreezeFake<IPublishContext>();
         fixture.FreezeFake<MegaService>();
         fixture.FreezeFake<MegaSettingsService>();
+
+        state = new State
+        {
+            Title = fixture.Create<Title>(),
+            InternalData = new InternalData { PdfFilePath = fixture.Create<string>() }
+        };
+
         step = fixture.Create<UploadPdfMegaStep>();
     }
 
@@ -41,7 +50,7 @@ public class UploadPdfMegaStepTests : UnitTest
         [Fact]
         public async Task ShouldReturnSuccess()
         {
-            var result = await step.ValidateAsync(cancellationToken);
+            var result = await step.ValidateAsync(state, cancellationToken);
 
             result.Should().BeSuccess();
         }
@@ -49,15 +58,12 @@ public class UploadPdfMegaStepTests : UnitTest
 
     public class ExecuteAsync : UploadPdfMegaStepTests
     {
+        private const string FILE_LINK = "http://www.escoladescans.com/sample";
+
         public ExecuteAsync()
         {
             var rootNode = A.Fake<INode>();
             var titleFolderNode = A.Fake<INode>();
-            var title = fixture.Create<BotDeScans.App.Models.Entities.Title>();
-            var pdfPath = fixture.Create<string>();
-
-            A.CallTo(() => fixture.FreezeFake<IPublishContext>().Title).Returns(title);
-            A.CallTo(() => fixture.FreezeFake<IPublishContext>().PdfFilePath).Returns(pdfPath);
 
             A.CallTo(() => fixture
                 .FreezeFake<MegaSettingsService>()
@@ -66,22 +72,22 @@ public class UploadPdfMegaStepTests : UnitTest
 
             A.CallTo(() => fixture
                 .FreezeFake<MegaService>()
-                .GetOrCreateFolderAsync(title.Name, rootNode))
+                .GetOrCreateFolderAsync(state.Title.Name, rootNode))
                 .Returns(Result.Ok(titleFolderNode));
 
             A.CallTo(() => fixture
                 .FreezeFake<MegaService>()
                 .CreateFileAsync(
-                    pdfPath,
+                    state.PdfFilePath!,
                     titleFolderNode,
                     cancellationToken))
-                .Returns(Result.Ok(new Uri("http://www.escoladescans.com/sample")));
+                .Returns(Result.Ok(new Uri(FILE_LINK)));
         }
 
         [Fact]
         public async Task GivenSuccessfulExecutionShouldReturnSuccessResult()
         {
-            var result = await step.ExecuteAsync(cancellationToken);
+            var result = await step.ExecuteAsync(state, cancellationToken);
 
             result.Should().BeSuccess();
         }
@@ -89,11 +95,9 @@ public class UploadPdfMegaStepTests : UnitTest
         [Fact]
         public async Task GivenSuccessfulExecutionShouldSetMegaPdfContextValue()
         {
-            await step.ExecuteAsync(cancellationToken);
+            var result = await step.ExecuteAsync(state, cancellationToken);
 
-            A.CallTo(() => fixture.FreezeFake<IPublishContext>()
-                .SetMegaPdfLink(A<string>.Ignored))
-                .MustHaveHappenedOnceExactly();
+            result.Value.MegaPdfLink.Should().Be(FILE_LINK);
         }
 
         [Fact]
@@ -106,7 +110,7 @@ public class UploadPdfMegaStepTests : UnitTest
                 .GetOrCreateFolderAsync(A<string>.Ignored, A<INode>.Ignored))
                 .Returns(Result.Fail(ERROR_MESSAGE));
 
-            var result = await step.ExecuteAsync(cancellationToken);
+            var result = await step.ExecuteAsync(state, cancellationToken);
 
             result.Should().BeFailure().And.HaveError(ERROR_MESSAGE);
         }
@@ -124,7 +128,7 @@ public class UploadPdfMegaStepTests : UnitTest
                     cancellationToken))
                 .Returns(Result.Fail(ERROR_MESSAGE));
 
-            var result = await step.ExecuteAsync(cancellationToken);
+            var result = await step.ExecuteAsync(state, cancellationToken);
 
             result.Should().BeFailure().And.HaveError(ERROR_MESSAGE);
         }

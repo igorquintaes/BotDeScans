@@ -50,6 +50,9 @@ public class Program
             .UseConsoleLifetime()
             .Build();
 
+        Result.Setup(cfg =>
+            cfg.Logger = new ResultLogger(Log.Logger));
+
         var warmupResult = Result.Ok();
         using (var scope = host.Services.CreateScope())
         {

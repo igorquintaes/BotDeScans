@@ -35,8 +35,8 @@ public class GoogleDriveResourcesService(
             return requestResult.ToResult();
 
         var validationResult = ValidateResultCount(
-            requestResult.Value.Files.Count, 
-            minResult, 
+            requestResult.Value.Files.Count,
+            minResult,
             maxResult);
 
         return Result.Ok(requestResult.Value.Files)
