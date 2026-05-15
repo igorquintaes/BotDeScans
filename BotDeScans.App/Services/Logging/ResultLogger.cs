@@ -1,3 +1,4 @@
+using BotDeScans.App.Extensions;
 using FluentResults;
 using Microsoft.Extensions.Logging;
 using ILogger = Serilog.ILogger;
@@ -17,7 +18,10 @@ public class ResultLogger(ILogger logger) : IResultLogger
             _ => Serilog.Events.LogEventLevel.Verbose
         };
 
-        logger.Write(serilogLevel, "FluentResults [{Context}]: {Content}", context, content);
+        const string ERROR_MESSAGE_TEMPLATE = "FluentResults [{Context}]: {Content} {ErrorMessage}";
+        var errorMessage = Environment.NewLine + result.ToValidationErrorMessage();
+
+        logger.Write(serilogLevel, ERROR_MESSAGE_TEMPLATE, context, content, errorMessage);
     }
 
     public void Log<TContext>(string content, ResultBase result, LogLevel level) =>

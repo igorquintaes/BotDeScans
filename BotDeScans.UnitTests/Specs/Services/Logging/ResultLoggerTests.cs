@@ -1,3 +1,4 @@
+using BotDeScans.App.Extensions;
 using BotDeScans.App.Services.Logging;
 using FluentResults;
 using Microsoft.Extensions.Logging;
