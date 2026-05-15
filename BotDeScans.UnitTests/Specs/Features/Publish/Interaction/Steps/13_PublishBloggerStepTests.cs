@@ -74,7 +74,7 @@ public class PublishBloggerStepTests : UnitTest
         {
             A.CallTo(() => fixture
                 .FreezeFake<GoogleBloggerService>()
-                .CreatePostCoverAsync(cancellationToken))
+                .CreatePostCoverAsync(A<string>.Ignored, cancellationToken))
                 .Returns(fixture.Create<string>());
 
             A.CallTo(() => fixture
@@ -113,7 +113,7 @@ public class PublishBloggerStepTests : UnitTest
 
             A.CallTo(() => fixture
                 .FreezeFake<GoogleBloggerService>()
-                .CreatePostCoverAsync(cancellationToken))
+                .CreatePostCoverAsync(A<string>.Ignored, cancellationToken))
                 .Returns(cover);
 
             var result = await step.ExecuteAsync(state, cancellationToken);
