@@ -53,6 +53,11 @@ public class HandlerTests : UnitTest
             publishStepInfo1 = A.Fake<StepInfo>();
             publishStepInfo2 = A.Fake<StepInfo>();
 
+            A.CallTo(() => managementStepInfo1.UpdateStatus(A<Result>.Ignored)).Returns(managementStepInfo1);
+            A.CallTo(() => managementStepInfo2.UpdateStatus(A<Result>.Ignored)).Returns(managementStepInfo2);
+            A.CallTo(() => publishStepInfo1.UpdateStatus(A<Result>.Ignored)).Returns(publishStepInfo1);
+            A.CallTo(() => publishStepInfo2.UpdateStatus(A<Result>.Ignored)).Returns(publishStepInfo2);
+
             var steps = new EnabledSteps(new Dictionary<IStep, StepInfo>
             {
                 { managementStep1, managementStepInfo1 },

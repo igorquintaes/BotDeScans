@@ -9,6 +9,13 @@ namespace BotDeScans.App.Features.Publish.Interaction.Models;
 
 public class EnabledSteps(Dictionary<IStep, StepInfo> steps) : ReadOnlyDictionary<IStep, StepInfo>(steps)
 {
+    public EnabledSteps WithUpdatedStepInfo(IStep step, StepInfo updatedInfo)
+    {
+        var newDict = new Dictionary<IStep, StepInfo>(this);
+        newDict[step] = updatedInfo;
+        return new EnabledSteps(newDict);
+    }
+
     public IEnumerable<(IManagementStep Step, StepInfo Info)> ManagementSteps =>
         this.Where(step => step.Key is IManagementStep)
             .Select(step => ((IManagementStep)step.Key, step.Value));

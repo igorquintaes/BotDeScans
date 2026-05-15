@@ -43,7 +43,9 @@ public class Handler(
         if (validationExecution.ShouldStop)
             return validationExecution.Result.IsFailed
                 ? validationExecution.Result.ToResult<State>()
-                : Result.Ok(currentState);
+                : Result.Ok(validationExecution.State);
+
+        currentState = validationExecution.State;
 
         var publishExecution = await ExecuteChainAsync(
             validationExecution.Result,
@@ -78,7 +80,7 @@ public class Handler(
         return (aggregate, state, false);
     }
 
-    private async Task<(Result Result, bool ShouldStop)> ExecuteValidationChainAsync(
+    private async Task<(Result Result, State State, bool ShouldStop)> ExecuteValidationChainAsync(
         Result aggregate,
         State state,
         IEnumerable<(IPublishStep Step, StepInfo Info)> chain,
@@ -87,25 +89,28 @@ public class Handler(
         foreach (var (Step, Info) in chain)
         {
             var stepResult = await ValidateAsync((Step, Info), state, cancellationToken);
-            aggregate = Result.Merge(aggregate, stepResult);
+            if (stepResult.IsSuccess)
+                state = stepResult.Value;
+
+            aggregate = Result.Merge(aggregate, stepResult.ToResult());
 
             if (stepResult.IsFailed && Step.ContinueOnError is false)
-                return (aggregate, true);
+                return (aggregate, state, true);
         }
 
-        return (aggregate, false);
+        return (aggregate, state, false);
     }
 
-    private async Task<Result> ValidateAsync(
+    private async Task<Result<State>> ValidateAsync(
         (IPublishStep Step, StepInfo Info) data,
         State state,
         CancellationToken cancellationToken)
     {
         if (data.Info.Status == StepStatus.Skip)
-            return Result.Ok();
+            return Result.Ok(state);
 
         var result = await data.Step.SafeCallAsync(x => x.ValidateAsync(state, cancellationToken));
-        return await HandleResult(result, data.Info, state, cancellationToken);
+        return await HandleResult(result, data.Step, state, cancellationToken);
     }
 
     private async Task<Result<State>> ExecuteAsync(
@@ -126,21 +131,26 @@ public class Handler(
             stopwatch.ElapsedMilliseconds,
             result.IsSuccess ? "Success" : "Failure");
 
-        var handleResult = await HandleResult(result.ToResult(), data.Info, state, cancellationToken);
+        var handleResult = await HandleResult(result.ToResult(), data.Step, state, cancellationToken);
         return handleResult.IsFailed
-            ? handleResult.ToResult<State>()
-            : Result.Ok(result.Value);
+            ? handleResult
+            : Result.Ok(result.IsSuccess ? result.Value with { Steps = handleResult.Value.Steps } : handleResult.Value);
     }
 
-    private async Task<Result> HandleResult(
+    private async Task<Result<State>> HandleResult(
         Result result,
-        StepInfo info,
+        IStep step,
         State state,
         CancellationToken cancellationToken)
     {
-        info.UpdateStatus(result);
+        var updatedInfo = state.Steps[step].UpdateStatus(result);
+        var updatedSteps = state.Steps.WithUpdatedStepInfo(step, updatedInfo);
+        var updatedState = state with { Steps = updatedSteps };
 
-        var feedbackResult = await discordPublisher.UpdateTrackingMessageAsync(state.Steps, cancellationToken);
-        return Result.Merge(result, feedbackResult);
+        var feedbackResult = await discordPublisher.UpdateTrackingMessageAsync(updatedState.Steps, cancellationToken);
+        var merged = Result.Merge(result, feedbackResult);
+        return merged.IsFailed
+            ? merged.ToResult<State>()
+            : Result.Ok(updatedState);
     }
 }

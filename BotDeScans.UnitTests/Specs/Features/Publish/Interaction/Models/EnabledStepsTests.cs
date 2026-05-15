@@ -61,30 +61,20 @@ public class EnabledStepsTests : UnitTest
         [Fact]
         public void GivenAllStepsWithSuccessStatusCollectionShouldHaveGreenColorStatus()
         {
+            var step1 = A.Fake<IStep>();
+            var step2 = A.Fake<IStep>();
+            var step3 = A.Fake<IStep>();
+
+            A.CallTo(() => step1.Name).Returns(StepName.Setup);
+            A.CallTo(() => step2.Name).Returns(StepName.Download);
+            A.CallTo(() => step3.Name).Returns(StepName.Compress);
+
             var enabledSteps = new EnabledSteps(new Dictionary<IStep, StepInfo>
             {
-                { A.Fake<IStep>(), new StepInfo(A.Fake<IStep>()) },
-                { A.Fake<IStep>(), new StepInfo(A.Fake<IStep>()) },
-                { A.Fake<IStep>(), new StepInfo(A.Fake<IStep>()) }
+                { step1, new StepInfo(A.Fake<IStep>()) { Status = StepStatus.Success } },
+                { step2, new StepInfo(A.Fake<IStep>()) { Status = StepStatus.Success } },
+                { step3, new StepInfo(A.Fake<IStep>()) { Status = StepStatus.Success } }
             });
-
-            A.CallTo(() => enabledSteps.ElementAt(0).Key.Name)
-                            .Returns(StepName.Setup);
-
-            A.CallTo(() => enabledSteps.ElementAt(1).Key.Name)
-                            .Returns(StepName.Download);
-
-            A.CallTo(() => enabledSteps.ElementAt(2).Key.Name)
-                            .Returns(StepName.Compress);
-
-            typeof(StepInfo).GetProperty(nameof(StepInfo.Status))!
-                            .SetValue(enabledSteps.ElementAt(0).Value, StepStatus.Success);
-
-            typeof(StepInfo).GetProperty(nameof(StepInfo.Status))!
-                            .SetValue(enabledSteps.ElementAt(1).Value, StepStatus.Success);
-
-            typeof(StepInfo).GetProperty(nameof(StepInfo.Status))!
-                            .SetValue(enabledSteps.ElementAt(2).Value, StepStatus.Success);
 
             using var _ = new AssertionScope();
             enabledSteps.ColorStatus.Should().Be(Color.Green);
@@ -98,30 +88,20 @@ public class EnabledStepsTests : UnitTest
         [Fact]
         public void GivenStepsWithSuccessAndQueuedStatusCollectionShouldHaveLightBlueColorStatus()
         {
+            var step1 = A.Fake<IStep>();
+            var step2 = A.Fake<IStep>();
+            var step3 = A.Fake<IStep>();
+
+            A.CallTo(() => step1.Name).Returns(StepName.Setup);
+            A.CallTo(() => step2.Name).Returns(StepName.Download);
+            A.CallTo(() => step3.Name).Returns(StepName.Compress);
+
             var enabledSteps = new EnabledSteps(new Dictionary<IStep, StepInfo>
             {
-                { A.Fake<IStep>(), new StepInfo(A.Fake<IStep>()) },
-                { A.Fake<IStep>(), new StepInfo(A.Fake<IStep>()) },
-                { A.Fake<IStep>(), new StepInfo(A.Fake<IStep>()) }
+                { step1, new StepInfo(A.Fake<IStep>()) { Status = StepStatus.Success } },
+                { step2, new StepInfo(A.Fake<IStep>()) { Status = StepStatus.QueuedForExecution } },
+                { step3, new StepInfo(A.Fake<IStep>()) { Status = StepStatus.QueuedForValidation } }
             });
-
-            A.CallTo(() => enabledSteps.ElementAt(0).Key.Name)
-                            .Returns(StepName.Setup);
-
-            A.CallTo(() => enabledSteps.ElementAt(1).Key.Name)
-                            .Returns(StepName.Download);
-
-            A.CallTo(() => enabledSteps.ElementAt(2).Key.Name)
-                            .Returns(StepName.Compress);
-
-            typeof(StepInfo).GetProperty(nameof(StepInfo.Status))!
-                            .SetValue(enabledSteps.ElementAt(0).Value, StepStatus.Success);
-
-            typeof(StepInfo).GetProperty(nameof(StepInfo.Status))!
-                            .SetValue(enabledSteps.ElementAt(1).Value, StepStatus.QueuedForExecution);
-
-            typeof(StepInfo).GetProperty(nameof(StepInfo.Status))!
-                            .SetValue(enabledSteps.ElementAt(2).Value, StepStatus.QueuedForValidation);
 
             using var _ = new AssertionScope();
             enabledSteps.ColorStatus.Should().Be(Color.LightBlue);
@@ -135,37 +115,23 @@ public class EnabledStepsTests : UnitTest
         [Fact]
         public void GivenStepsWithEvenASingleErrorStatusCollectionShouldHaveRedColorStatus()
         {
+            var step1 = A.Fake<IStep>();
+            var step2 = A.Fake<IStep>();
+            var step3 = A.Fake<IStep>();
+            var step4 = A.Fake<IStep>();
+
+            A.CallTo(() => step1.Name).Returns(StepName.Setup);
+            A.CallTo(() => step2.Name).Returns(StepName.Download);
+            A.CallTo(() => step3.Name).Returns(StepName.Compress);
+            A.CallTo(() => step4.Name).Returns(StepName.ZipFiles);
+
             var enabledSteps = new EnabledSteps(new Dictionary<IStep, StepInfo>
             {
-                { A.Fake<IStep>(), new StepInfo(A.Fake<IStep>()) },
-                { A.Fake<IStep>(), new StepInfo(A.Fake<IStep>()) },
-                { A.Fake<IStep>(), new StepInfo(A.Fake<IStep>()) },
-                { A.Fake<IStep>(), new StepInfo(A.Fake<IStep>()) }
+                { step1, new StepInfo(A.Fake<IStep>()) { Status = StepStatus.Success } },
+                { step2, new StepInfo(A.Fake<IStep>()) { Status = StepStatus.QueuedForExecution } },
+                { step3, new StepInfo(A.Fake<IStep>()) { Status = StepStatus.Error } },
+                { step4, new StepInfo(A.Fake<IStep>()) { Status = StepStatus.QueuedForValidation } }
             });
-
-            A.CallTo(() => enabledSteps.ElementAt(0).Key.Name)
-                            .Returns(StepName.Setup);
-
-            A.CallTo(() => enabledSteps.ElementAt(1).Key.Name)
-                            .Returns(StepName.Download);
-
-            A.CallTo(() => enabledSteps.ElementAt(2).Key.Name)
-                            .Returns(StepName.Compress);
-
-            A.CallTo(() => enabledSteps.ElementAt(3).Key.Name)
-                            .Returns(StepName.ZipFiles);
-
-            typeof(StepInfo).GetProperty(nameof(StepInfo.Status))!
-                            .SetValue(enabledSteps.ElementAt(0).Value, StepStatus.Success);
-
-            typeof(StepInfo).GetProperty(nameof(StepInfo.Status))!
-                            .SetValue(enabledSteps.ElementAt(1).Value, StepStatus.QueuedForExecution);
-
-            typeof(StepInfo).GetProperty(nameof(StepInfo.Status))!
-                            .SetValue(enabledSteps.ElementAt(2).Value, StepStatus.Error);
-
-            typeof(StepInfo).GetProperty(nameof(StepInfo.Status))!
-                            .SetValue(enabledSteps.ElementAt(3).Value, StepStatus.QueuedForValidation);
 
             using var _ = new AssertionScope();
             enabledSteps.ColorStatus.Should().Be(Color.Red);
