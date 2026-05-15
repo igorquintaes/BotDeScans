@@ -18,7 +18,7 @@ public class PublishBloggerStep(
 
     public async Task<Result<State>> ExecuteAsync(State state, CancellationToken cancellationToken)
     {
-        var updatedState = state with { BloggerImageAsBase64 = await googleBloggerService.CreatePostCoverAsync(cancellationToken) };
+        var updatedState = state with { BloggerImageAsBase64 = await googleBloggerService.CreatePostCoverAsync(state.CoverFilePath, cancellationToken) };
         var template = googleBloggerService.GetPostTemplate();
         var htmlContent = textReplacer.Replace(template, updatedState);
 

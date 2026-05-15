@@ -9,7 +9,6 @@ using Microsoft.Extensions.Configuration;
 namespace BotDeScans.App.Services;
 
 public class GoogleBloggerService(
-    State state,
     ImageService imageService,
     BloggerService bloggerService,
     GoogleWrapper googleWrapper,
@@ -51,13 +50,13 @@ public class GoogleBloggerService(
         return fileService.ReadTextFile(templatePath);
     }
 
-    public virtual async Task<string> CreatePostCoverAsync(CancellationToken cancellationToken)
+    public virtual async Task<string> CreatePostCoverAsync(string coverFilePath, CancellationToken cancellationToken)
     {
         var width = configuration.GetRequiredValue<int>("Blogger:Cover:Width");
         var height = configuration.GetRequiredValue<int>("Blogger:Cover:Height");
 
-        var isGrayScale = imageService.IsGrayscale(state.CoverFilePath);
-        var cover = await imageService.CreateBase64StringAsync(state.CoverFilePath, width, height, isGrayScale, cancellationToken);
+        var isGrayScale = imageService.IsGrayscale(coverFilePath);
+        var cover = await imageService.CreateBase64StringAsync(coverFilePath, width, height, isGrayScale, cancellationToken);
 
         return $"data:image/png;base64,{cover}";
     }

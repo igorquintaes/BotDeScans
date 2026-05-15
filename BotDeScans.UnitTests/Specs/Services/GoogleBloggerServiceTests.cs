@@ -14,7 +14,6 @@ public class GoogleBloggerServiceTests : UnitTest
 
     public GoogleBloggerServiceTests()
     {
-        fixture.Freeze<State>();
         fixture.FreezeFake<ImageService>();
         fixture.FreezeFake<BloggerService>();
         fixture.FreezeFake<GoogleWrapper>();
@@ -114,25 +113,26 @@ public class GoogleBloggerServiceTests : UnitTest
         public async Task GivenExecutionShouldReturnExpectedString()
         {
             const string base64String = "base64-string";
+            const string coverFilePath = "cover.png";
             fixture.FreezeFakeConfiguration("Blogger:Cover:Width", "700");
             fixture.FreezeFakeConfiguration("Blogger:Cover:Height", "1200");
 
             A.CallTo(() => fixture
                 .FreezeFake<ImageService>()
-                .IsGrayscale(fixture.Freeze<State>().CoverFilePath, 20))
+                .IsGrayscale(coverFilePath, 20))
                 .Returns(true);
 
             A.CallTo(() => fixture
                 .FreezeFake<ImageService>()
                 .CreateBase64StringAsync(
-                    fixture.Freeze<State>().CoverFilePath,
+                    coverFilePath,
                     700,
                     1200,
                     true,
                     cancellationToken))
                 .Returns(base64String);
 
-            var result = await service.CreatePostCoverAsync(cancellationToken);
+            var result = await service.CreatePostCoverAsync(coverFilePath, cancellationToken);
             result.Should().Be($"data:image/png;base64,{base64String}");
         }
     }
