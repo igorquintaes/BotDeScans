@@ -1,4 +1,4 @@
-﻿using BotDeScans.App.Features.Publish.Interaction;
+using BotDeScans.App.Features.Publish.Interaction;
 using BotDeScans.App.Features.Publish.Interaction.Steps;
 using BotDeScans.App.Features.Publish.Interaction.Steps.Enums;
 using BotDeScans.App.Models.DTOs;
@@ -14,12 +14,27 @@ namespace BotDeScans.UnitTests.Specs.Features.Publish.Interaction.Steps;
 public class UploadMangDexStepTests : UnitTest
 {
     private readonly UploadMangaDexStep step;
+    private readonly State state;
 
     public UploadMangDexStepTests()
     {
-        fixture.FreezeFake<IPublishContext>();
         fixture.FreezeFake<IConfiguration>();
         fixture.FreezeFake<MangaDexService>();
+
+        var title = fixture
+            .Build<Title>()
+            .With(x => x.References, [.. fixture
+                .Build<TitleReference>()
+                .With(x => x.Key, ExternalReference.MangaDex)
+                .CreateMany(1)])
+            .Create();
+
+        state = new State
+        {
+            Title = title,
+            ChapterInfo = fixture.Create<Info>(),
+            OriginContentFolder = fixture.Create<string>()
+        };
 
         step = fixture.Create<UploadMangaDexStep>();
     }
@@ -44,7 +59,7 @@ public class UploadMangDexStepTests : UnitTest
         [Fact]
         public async Task ShouldReturnSuccess()
         {
-            var result = await step.ValidateAsync(cancellationToken);
+            var result = await step.ValidateAsync(state, cancellationToken);
 
             result.Should().BeSuccess();
         }
@@ -56,34 +71,12 @@ public class UploadMangDexStepTests : UnitTest
 
         public ExecuteAsync()
         {
-            var chapterInfo = fixture.Create<Info>();
-            var originFolder = fixture.Create<string>();
-            var title = fixture
-                .Build<Title>()
-                .With(x => x.References, [.. fixture
-                    .Build<TitleReference>()
-                    .With(x => x.Key, ExternalReference.MangaDex)
-                    .CreateMany(1)])
-                .Create();
-
-            A.CallTo(() => fixture
-                .FreezeFake<IPublishContext>().ChapterInfo)
-                .Returns(chapterInfo);
-
-            A.CallTo(() => fixture
-                .FreezeFake<IPublishContext>().OriginContentFolder)
-                .Returns(originFolder);
-
-            A.CallTo(() => fixture
-                .FreezeFake<IPublishContext>().Title)
-                .Returns(title);
-
             A.CallTo(() => fixture
                 .FreezeFake<MangaDexService>()
                 .UploadAsync(
-                    chapterInfo,
-                    title.References.Single().Value,
-                    originFolder,
+                    state.ChapterInfo,
+                    state.Title.References.Single().Value,
+                    state.OriginContentFolder,
                     cancellationToken))
                 .Returns(Result.Ok(new Chapter() { Id = CHAPTER_ID }));
         }
@@ -91,7 +84,7 @@ public class UploadMangDexStepTests : UnitTest
         [Fact]
         public async Task GivenSuccessfulExecutionShouldReturnSuccessResult()
         {
-            var result = await step.ExecuteAsync(cancellationToken);
+            var result = await step.ExecuteAsync(state, cancellationToken);
 
             result.Should().BeSuccess();
         }
@@ -101,12 +94,9 @@ public class UploadMangDexStepTests : UnitTest
         {
             var expectedLink = $"https://mangadex.org/chapter/{CHAPTER_ID}/1";
 
-            await step.ExecuteAsync(cancellationToken);
+            var result = await step.ExecuteAsync(state, cancellationToken);
 
-            A.CallTo(() => fixture
-                .FreezeFake<IPublishContext>()
-                .SetMangaDexLink(expectedLink))
-                .MustHaveHappenedOnceExactly();
+            result.Value.MangaDexLink.Should().Be(expectedLink);
         }
 
         [Fact]
@@ -123,7 +113,7 @@ public class UploadMangDexStepTests : UnitTest
                     A<CancellationToken>.Ignored))
                 .Returns(Result.Fail(ERROR_MESSAGE));
 
-            var result = await step.ExecuteAsync(cancellationToken);
+            var result = await step.ExecuteAsync(state, cancellationToken);
 
             result.Should().BeFailure()
                   .And.HaveError(ERROR_MESSAGE);

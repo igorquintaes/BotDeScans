@@ -12,11 +12,18 @@ namespace BotDeScans.UnitTests.Specs.Features.Publish.Interaction.Steps;
 public class UploadZipGoogleDriveStepTests : UnitTest
 {
     private readonly UploadZipGoogleDriveStep step;
+    private readonly State state;
 
     public UploadZipGoogleDriveStepTests()
     {
-        fixture.FreezeFake<IPublishContext>();
         fixture.FreezeFake<GoogleDriveService>();
+
+        state = new State
+        {
+            Title = fixture.Create<Title>(),
+            ZipFilePath = fixture.Create<string>()
+        };
+
         step = fixture.Create<UploadZipGoogleDriveStep>();
     }
 
@@ -40,7 +47,7 @@ public class UploadZipGoogleDriveStepTests : UnitTest
         [Fact]
         public async Task ShouldReturnSuccess()
         {
-            var result = await step.ValidateAsync(cancellationToken);
+            var result = await step.ValidateAsync(state, cancellationToken);
 
             result.Should().BeSuccess();
         }
@@ -56,21 +63,10 @@ public class UploadZipGoogleDriveStepTests : UnitTest
             var titleFile = fixture.Create<File>();
             titleFile.WebViewLink = FILE_LINK;
 
-            var title = fixture.Create<Title>();
-            var zipPath = fixture.Create<string>();
-
-            A.CallTo(() => fixture
-                .FreezeFake<IPublishContext>().Title)
-                .Returns(title);
-
-            A.CallTo(() => fixture
-                .FreezeFake<IPublishContext>().ZipFilePath)
-                .Returns(zipPath);
-
             A.CallTo(() => fixture
                 .FreezeFake<GoogleDriveService>()
                 .GetOrCreateFolderAsync(
-                    title.Name,
+                    state.Title.Name,
                     default,
                     cancellationToken))
                 .Returns(Result.Ok(titleFolder));
@@ -78,7 +74,7 @@ public class UploadZipGoogleDriveStepTests : UnitTest
             A.CallTo(() => fixture
                 .FreezeFake<GoogleDriveService>()
                 .CreateFileAsync(
-                    zipPath,
+                    state.ZipFilePath!,
                     titleFolder.Id,
                     true,
                     cancellationToken))
@@ -88,7 +84,7 @@ public class UploadZipGoogleDriveStepTests : UnitTest
         [Fact]
         public async Task GivenSuccessfulExecutionShouldReturnSuccessResult()
         {
-            var result = await step.ExecuteAsync(cancellationToken);
+            var result = await step.ExecuteAsync(state, cancellationToken);
 
             result.Should().BeSuccess();
         }
@@ -96,12 +92,9 @@ public class UploadZipGoogleDriveStepTests : UnitTest
         [Fact]
         public async Task GivenSuccessfulExecutionShouldSetGoogleDriveZipContextValue()
         {
-            await step.ExecuteAsync(cancellationToken);
+            var result = await step.ExecuteAsync(state, cancellationToken);
 
-            A.CallTo(() => fixture
-                .FreezeFake<IPublishContext>()
-                .SetDriveZipLink(FILE_LINK))
-                .MustHaveHappenedOnceExactly();
+            result.Value.DriveZipLink.Should().Be(FILE_LINK);
         }
 
         [Fact]
@@ -117,7 +110,7 @@ public class UploadZipGoogleDriveStepTests : UnitTest
                     cancellationToken))
                 .Returns(Result.Fail(ERROR_MESSAGE));
 
-            var result = await step.ExecuteAsync(cancellationToken);
+            var result = await step.ExecuteAsync(state, cancellationToken);
 
             result.Should().BeFailure().And.HaveError(ERROR_MESSAGE);
         }
@@ -136,7 +129,7 @@ public class UploadZipGoogleDriveStepTests : UnitTest
                     cancellationToken))
                 .Returns(Result.Fail(ERROR_MESSAGE));
 
-            var result = await step.ExecuteAsync(cancellationToken);
+            var result = await step.ExecuteAsync(state, cancellationToken);
 
             result.Should().BeFailure().And.HaveError(ERROR_MESSAGE);
         }

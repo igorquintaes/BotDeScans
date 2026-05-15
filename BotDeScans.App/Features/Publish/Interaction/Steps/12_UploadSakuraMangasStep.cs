@@ -7,8 +7,7 @@ using FluentResults;
 namespace BotDeScans.App.Features.Publish.Interaction.Steps;
 
 public class UploadSakuraMangasStep(
-    SakuraMangasService sakuraMangasService,
-    IPublishContext context) : IPublishStep
+    SakuraMangasService sakuraMangasService) : IPublishStep
 {
     public StepName? Dependency => StepName.ZipFiles;
 
@@ -18,22 +17,21 @@ public class UploadSakuraMangasStep(
 
     public bool ContinueOnError => true;
 
-    public Task<Result> ValidateAsync(CancellationToken cancellationToken) =>
+    public Task<Result> ValidateAsync(State state, CancellationToken cancellationToken) =>
         Task.FromResult(Result.Ok()); // Todo: validação de arquivo com max de 100mb (pós zip)
 
-    public async Task<Result> ExecuteAsync(CancellationToken cancellationToken)
+    public async Task<Result<State>> ExecuteAsync(State state, CancellationToken cancellationToken)
     {
         var uploadResult = await sakuraMangasService.UploadAsync(
-            context.ChapterInfo.ChapterNumber,
-            context.ChapterInfo.ChapterName,
-            context.Title.References.Single(x => x.Key == ExternalReference.SakuraMangas).Value,
-            context.ZipFilePath!,
+            state.ChapterInfo.ChapterNumber,
+            state.ChapterInfo.ChapterName,
+            state.Title.References.Single(x => x.Key == ExternalReference.SakuraMangas).Value,
+            state.ZipFilePath!,
             cancellationToken);
 
         if (uploadResult.IsFailed)
-            return uploadResult.ToResult();
+            return uploadResult.ToResult<State>();
 
-        context.SetSakuraMangasLink(uploadResult.Value);
-        return Result.Ok();
+        return Result.Ok(state with { SakuraMangasLink = uploadResult.Value });
     }
 }

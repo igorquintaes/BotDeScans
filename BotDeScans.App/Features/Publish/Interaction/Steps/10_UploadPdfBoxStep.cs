@@ -6,30 +6,32 @@ using FluentResults;
 namespace BotDeScans.App.Features.Publish.Interaction.Steps;
 
 public class UploadPdfBoxStep(
-    BoxService boxService,
-    IPublishContext context) : IPublishStep
+    BoxService boxService) : IPublishStep
 {
     public StepType Type => StepType.Upload;
     public StepName Name => StepName.UploadPdfBox;
     public StepName? Dependency => StepName.PdfFiles;
 
-    public Task<Result> ValidateAsync(CancellationToken _)
+    public Task<Result> ValidateAsync(State state, CancellationToken _)
         => Task.FromResult(Result.Ok());
 
-    public async Task<Result> ExecuteAsync(CancellationToken cancellationToken)
+    public async Task<Result<State>> ExecuteAsync(State state, CancellationToken cancellationToken)
     {
-        var titleFolder = await boxService.GetOrCreateFolderAsync(context.Title.Name, cancellationToken);
+        var titleFolder = await boxService.GetOrCreateFolderAsync(state.Title.Name, cancellationToken);
         var file = await boxService.CreateFileAsync(
-            filePath: context.PdfFilePath!,
+            filePath: state.PdfFilePath!,
             parentFolderId: titleFolder.Id,
             cancellationToken: cancellationToken);
 
-        context.SetBoxPdfLink(file.SharedLink!.DownloadUrl!);
-        context.SetBoxPdfReaderKey(file.SharedLink.DownloadUrl
-            .Split("/")
-            .Last()
-            .Replace(".pdf", "", StringComparison.InvariantCultureIgnoreCase));
+        var updatedState = state with
+        {
+            BoxPdfLink = file.SharedLink!.DownloadUrl!,
+            BoxPdfReaderKey = file.SharedLink!.DownloadUrl!
+                .Split("/")
+                .Last()
+                .Replace(".pdf", "", StringComparison.InvariantCultureIgnoreCase)
+        };
 
-        return Result.Ok();
+        return Result.Ok(updatedState);
     }
 }

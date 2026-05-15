@@ -27,13 +27,13 @@ public class Interactions(
             CancellationToken);
         setupResult.LogIfFailed();
         if (setupResult.IsFailed)
-            return await discordPublisher.ErrorReleaseMessageAsync(setupResult, CancellationToken);
+            return await discordPublisher.ErrorReleaseMessageAsync(setupResult.ToResult(), CancellationToken);
 
-        var result = await handler.ExecuteAsync(CancellationToken);
+        var result = await handler.ExecuteAsync(setupResult.Value, CancellationToken);
         result.LogIfFailed();
 
         return result.IsSuccess
-            ? await discordPublisher.SuccessReleaseMessageAsync(CancellationToken)
-            : await discordPublisher.ErrorReleaseMessageAsync(result, CancellationToken);
+            ? await discordPublisher.SuccessReleaseMessageAsync(result.Value, CancellationToken)
+            : await discordPublisher.ErrorReleaseMessageAsync(result.ToResult(), CancellationToken);
     }
 }

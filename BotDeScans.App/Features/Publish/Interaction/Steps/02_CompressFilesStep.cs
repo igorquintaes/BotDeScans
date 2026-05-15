@@ -6,14 +6,13 @@ using FluentResults;
 namespace BotDeScans.App.Features.Publish.Interaction.Steps;
 
 public class CompressFilesStep(
-    ImageService imageService,
-    IPublishContext context) : IManagementStep
+    ImageService imageService) : IManagementStep
 {
     public StepType Type => StepType.Management;
     public StepName Name => StepName.Compress;
     public bool IsMandatory => true;
 
-    public async Task<Result> ExecuteAsync(CancellationToken cancellationToken)
+    public async Task<Result<State>> ExecuteAsync(State state, CancellationToken cancellationToken)
     {
         var maxDegreeOfParallelism = Convert.ToInt32(Math.Ceiling(Environment.ProcessorCount * 0.75 * 2.0));
         var parallelOptions = new ParallelOptions
@@ -22,13 +21,13 @@ public class CompressFilesStep(
             MaxDegreeOfParallelism = maxDegreeOfParallelism
         };
 
-        var files = Directory.GetFiles(context.OriginContentFolder);
+        var files = Directory.GetFiles(state.OriginContentFolder);
         await Parallel.ForEachAsync(files, parallelOptions, async (filePath, ct) =>
         {
             var isGrayScale = imageService.IsGrayscale(filePath);
             await imageService.CompressImageAsync(filePath, isGrayScale, ct);
         });
 
-        return Result.Ok();
+        return Result.Ok(state);
     }
 }

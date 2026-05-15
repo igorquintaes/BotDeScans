@@ -6,65 +6,51 @@ using BotDeScans.App.Models.Entities;
 using BotDeScans.App.Services.Discord;
 using FluentValidation;
 using Microsoft.Extensions.Configuration;
+using BotDeScans.App.Features.Publish.Interaction.Models;
 
 namespace BotDeScans.App.Features.Publish.Interaction;
 
-public class State : IPublishContext
+public record State
 {
-    public EnabledSteps Steps { get; set; } = null!;
-    public Title Title { get; set; } = null!;
-    public Info ChapterInfo { get; set; } = null!;
-    public Links ReleaseLinks { get; set; } = new();
-    public InternalData InternalData { get; set; } = new();
+    public EnabledSteps Steps { get; init; } = null!;
+    public Title Title { get; init; } = null!;
+    public Info ChapterInfo { get; init; } = null!;
 
-    public string OriginContentFolder => InternalData.OriginContentFolder;
-    public string CoverFilePath => InternalData.CoverFilePath;
-    public string? ZipFilePath => InternalData.ZipFilePath;
-    public string? PdfFilePath => InternalData.PdfFilePath;
-    public string? BloggerImageAsBase64 => InternalData.BloggerImageAsBase64;
-    public string? BoxPdfReaderKey => InternalData.BoxPdfReaderKey;
-    public string? Pings => InternalData.Pings;
+    public string OriginContentFolder { get; init; } = null!;
+    public string CoverFilePath { get; init; } = null!;
+    public string? ZipFilePath { get; init; }
+    public string? PdfFilePath { get; init; }
+    public string? BloggerImageAsBase64 { get; init; }
+    public string? BoxPdfReaderKey { get; init; }
+    public string? Pings { get; init; }
+    public TrackingMessage? TrackingMessage { get; init; }
 
-    public string? MegaZipLink => ReleaseLinks.MegaZip;
-    public string? MegaPdfLink => ReleaseLinks.MegaPdf;
-    public string? DriveZipLink => ReleaseLinks.DriveZip;
-    public string? DrivePdfLink => ReleaseLinks.DrivePdf;
-    public string? BoxZipLink => ReleaseLinks.BoxZip;
-    public string? BoxPdfLink => ReleaseLinks.BoxPdf;
-    public string? MangaDexLink => ReleaseLinks.MangaDex;
-    public string? SakuraMangasLink => ReleaseLinks.SakuraMangas;
-    public string? BloggerLink => ReleaseLinks.Blogger;
+    [ReleaseLink("Mega [Zip]")]
+    public string? MegaZipLink { get; init; }
 
-    public void SetOriginContentFolder(string originContentFolder) =>
-        InternalData.OriginContentFolder = originContentFolder;
+    [ReleaseLink("Mega [Pdf]")]
+    public string? MegaPdfLink { get; init; }
 
-    public void SetCoverFilePath(string coverFilePath) =>
-        InternalData.CoverFilePath = coverFilePath;
+    [ReleaseLink("Drive [Zip]")]
+    public string? DriveZipLink { get; init; }
 
-    public void SetZipPath(string zipFilePath) =>
-        InternalData.ZipFilePath = zipFilePath;
+    [ReleaseLink("Drive [Pdf]")]
+    public string? DrivePdfLink { get; init; }
 
-    public void SetPdfPath(string pdfFilePath) =>
-        InternalData.PdfFilePath = pdfFilePath;
+    [ReleaseLink("Box [Zip]")]
+    public string? BoxZipLink { get; init; }
 
-    public void SetBloggerImageAsBase64(string bloggerImageAsBase64) =>
-        InternalData.BloggerImageAsBase64 = bloggerImageAsBase64;
+    [ReleaseLink("Box [Pdf]")]
+    public string? BoxPdfLink { get; init; }
 
-    public void SetBoxPdfReaderKey(string boxPdfReaderKey) =>
-        InternalData.BoxPdfReaderKey = boxPdfReaderKey;
+    [ReleaseLink("MangaDex")]
+    public string? MangaDexLink { get; init; }
 
-    public void SetPings(string pings) =>
-        InternalData.Pings = pings;
+    [ReleaseLink("Sakura Mangás")]
+    public string? SakuraMangasLink { get; init; }
 
-    public void SetMegaZipLink(string link) => ReleaseLinks.MegaZip = link;
-    public void SetMegaPdfLink(string link) => ReleaseLinks.MegaPdf = link;
-    public void SetDriveZipLink(string link) => ReleaseLinks.DriveZip = link;
-    public void SetDrivePdfLink(string link) => ReleaseLinks.DrivePdf = link;
-    public void SetBoxZipLink(string link) => ReleaseLinks.BoxZip = link;
-    public void SetBoxPdfLink(string link) => ReleaseLinks.BoxPdf = link;
-    public void SetMangaDexLink(string link) => ReleaseLinks.MangaDex = link;
-    public void SetSakuraMangasLink(string link) => ReleaseLinks.SakuraMangas = link;
-    public void SetBloggerLink(string link) => ReleaseLinks.Blogger = link;
+    [ReleaseLink("Blogger")]
+    public string? BloggerLink { get; init; }
 }
 
 public class StateValidator : AbstractValidator<State>

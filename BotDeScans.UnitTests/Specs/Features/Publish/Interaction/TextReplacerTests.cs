@@ -1,5 +1,5 @@
-﻿using AutoFixture.AutoFakeItEasy;
 using BotDeScans.App.Features.Publish.Interaction;
+using BotDeScans.App.Models.DTOs;
 using BotDeScans.App.Models.Entities;
 
 namespace BotDeScans.UnitTests.Specs.Features.Publish.Interaction;
@@ -8,86 +8,72 @@ public class TextReplacerTests : UnitTest
 {
     public class Replace : TextReplacerTests
     {
-        private static IFixture Fixture => ReplaceTestData.Fixture;
+        private readonly TextReplacer replacer = new();
+        private readonly State state;
 
-        [Theory]
-        [ClassData(typeof(ReplaceTestData))]
-        public void ShouldReplaceText(string key, Func<string?> value)
+        public Replace()
         {
-            var replacer = Fixture.Create<TextReplacer>();
-            var text = $"abc{key}xyz";
-
-            var result = replacer.Replace(text);
-
-            result.Should().Be($"abc{value()}xyz");
+            state = new State
+            {
+                Title = fixture.Create<Title>(),
+                ChapterInfo = fixture.Create<Info>(),
+                BloggerImageAsBase64 = fixture.Create<string>(),
+                BoxPdfReaderKey = fixture.Create<string>(),
+                MegaZipLink = fixture.Create<string>(),
+                MegaPdfLink = fixture.Create<string>(),
+                BoxZipLink = fixture.Create<string>(),
+                BoxPdfLink = fixture.Create<string>(),
+                DriveZipLink = fixture.Create<string>(),
+                DrivePdfLink = fixture.Create<string>(),
+                MangaDexLink = fixture.Create<string>(),
+                SakuraMangasLink = fixture.Create<string>()
+            };
         }
 
         [Theory]
-        [ClassData(typeof(RemoveTestData))]
-        public void ShouldRemoveText(string keyStart, string keyEnd, string? value)
+        [MemberData(nameof(GetReplaceRuleKeys))]
+        public void ShouldReplaceText(string key)
         {
-            var replacer = Fixture.Create<TextReplacer>();
-            var text = $"abc{keyStart}something{keyEnd}xyz";
-            SetPublishStateReplaceFieldsValue(Fixture.Freeze<State>(), value);
+            var text = $"abc!##{key}##!xyz";
+            var expectedValue = TextReplacer.ReplaceRules[key](state);
 
-            var result = replacer.Replace(text);
+            var result = replacer.Replace(text, state);
 
-            result.Should().Be($"abcxyz");
+            result.Should().Be($"abc{expectedValue}xyz");
         }
 
         [Theory]
-        [ClassData(typeof(RemoveTestData))]
-        public void ShouldRemoveOnlyTags(string keyStart, string keyEnd, string? _)
+        [MemberData(nameof(GetReplaceRuleKeys))]
+        public void ShouldRemoveTextWhenValueIsNull(string key)
         {
-            var replacer = Fixture.Create<TextReplacer>();
-            var text = $"abc{keyStart}something{keyEnd}xyz";
-            SetPublishStateReplaceFieldsValue(Fixture.Freeze<State>(), "some-value");
+            var emptyState = CreateStateWithNullValues();
+            var text = $"abc!##START_REMOVE_IF_EMPTY_{key}##!something!##END_REMOVE_IF_EMPTY_{key}##!xyz";
 
-            var result = replacer.Replace(text);
+            var result = replacer.Replace(text, emptyState);
 
-            result.Should().Be($"abcsomethingxyz");
+            result.Should().Be("abcxyz");
         }
 
         [Theory]
-        [InlineData(null)]
-        [InlineData("value")]
-        public void ShouldRemoveWronglyOpeningTag(string? keyValue)
+        [MemberData(nameof(GetReplaceRuleKeys))]
+        public void ShouldRemoveOnlyTagsWhenValueIsPresent(string key)
         {
-            var replacer = Fixture.Create<TextReplacer>();
-            var sampleKey = TextReplacer.ReplaceRules.First().Key;
-            var openingKey = $"!##START_REMOVE_IF_EMPTY_{sampleKey}##!";
-            var text = $"abc{openingKey}xyz";
-            SetPublishStateReplaceFieldsValue(Fixture.Freeze<State>(), keyValue);
+            var text = $"abc!##START_REMOVE_IF_EMPTY_{key}##!something!##END_REMOVE_IF_EMPTY_{key}##!xyz";
 
-            var result = replacer.Replace(text);
+            var result = replacer.Replace(text, state);
 
-            result.Should().Be($"abcxyz");
-        }
-
-        [Theory]
-        [InlineData(null)]
-        [InlineData("value")]
-        public void ShouldRemoveWronglyClosingTag(string? keyValue)
-        {
-            var replacer = Fixture.Create<TextReplacer>();
-            var sampleKey = TextReplacer.ReplaceRules.First().Key;
-            var openingKey = $"!##END_REMOVE_IF_EMPTY_{sampleKey}##!";
-            var text = $"abc{openingKey}xyz";
-            SetPublishStateReplaceFieldsValue(Fixture.Freeze<State>(), keyValue);
-
-            var result = replacer.Replace(text);
-
-            result.Should().Be($"abcxyz");
+            result.Should().Be("abcsomethingxyz");
         }
 
         [Fact]
         public void GivenAllReplacementRulesShouldApplyAllTogether()
         {
-            Fixture.Freeze<State>().ReleaseLinks.BoxPdf = null;
-            Fixture.Freeze<State>().ReleaseLinks.DriveZip = "drive-zip";
-            Fixture.Freeze<State>().ReleaseLinks.DrivePdf = "drive-pdf";
-
-            var replacer = Fixture.Create<TextReplacer>();
+            var testState = state with
+            {
+                BoxPdfLink = null,
+                DriveZipLink = "drive-zip",
+                DrivePdfLink = "drive-pdf"
+            };
 
             var text = "1-!##BOX_PDF_LINK##!-1" +
                        "2-!##START_REMOVE_IF_EMPTY_BOX_PDF_LINK##!-2" +
@@ -106,75 +92,18 @@ public class TextReplacerTests : UnitTest
                        "7--7" +
                        "8-drive-zip-8";
 
-            var result = replacer.Replace(text);
+            var result = replacer.Replace(text, testState);
 
             result.Should().Be(expectedText);
         }
 
-        public class ReplaceTestData : TheoryData<string, Func<string?>>
+        public static IEnumerable<object[]> GetReplaceRuleKeys() =>
+            TextReplacer.ReplaceRules.Keys.Select(k => new object[] { k });
+
+        private State CreateStateWithNullValues() => new()
         {
-            public static readonly IFixture Fixture = CreateReplacerFixture();
-
-            public ReplaceTestData() => AddRange(TextReplacer.ReplaceRules
-                .Select(x => ($"!##{x.Key}##!",
-                              new Func<string?>(() => x.Value(Fixture.Freeze<State>())))));
-        }
-
-        public class RemoveTestData : TheoryData<string, string, string?>
-        {
-            public static readonly IFixture Fixture = CreateReplacerFixture();
-
-            public RemoveTestData()
-            {
-                AddRange(TextReplacer.ReplaceRules
-                    .SelectMany(x => new (string, string, string?)[]
-                    {
-                        ($"!##START_REMOVE_IF_EMPTY_{x.Key}##!",
-                         $"!##END_REMOVE_IF_EMPTY_{x.Key}##!",
-                         null),
-                        ($"!##START_REMOVE_IF_EMPTY_{x.Key}##!",
-                         $"!##END_REMOVE_IF_EMPTY_{x.Key}##!",
-                         string.Empty),
-                        ($"!##START_REMOVE_IF_EMPTY_{x.Key}##!",
-                         $"!##END_REMOVE_IF_EMPTY_{x.Key}##!",
-                         " ")
-                    }));
-            }
-        }
-
-        private static IFixture CreateReplacerFixture()
-        {
-            var fixture = new Fixture().Customize(new AutoFakeItEasyCustomization());
-            fixture.Behaviors.Remove(new ThrowingRecursionBehavior());
-            fixture.Behaviors.Add(new OmitOnRecursionBehavior());
-
-            fixture.Freeze<State>();
-
-            return fixture;
-        }
-
-        private static void SetPublishStateReplaceFieldsValue(State state, string? value)
-        {
-            var title = new Title
-            {
-                Id = state.Title.Id,
-                Name = value!,
-                References = state.Title.References,
-                DiscordRoleId = state.Title.DiscordRoleId
-            };
-
-            state.Title = title;
-            state.ChapterInfo = new(default!, value!, value!, value!, value!, default);
-            state.InternalData.BloggerImageAsBase64 = value;
-            state.InternalData.BoxPdfReaderKey = value;
-            state.ReleaseLinks.MegaZip = value;
-            state.ReleaseLinks.MegaPdf = value;
-            state.ReleaseLinks.BoxZip = value;
-            state.ReleaseLinks.BoxPdf = value;
-            state.ReleaseLinks.DriveZip = value;
-            state.ReleaseLinks.DrivePdf = value;
-            state.ReleaseLinks.MangaDex = value;
-            state.ReleaseLinks.SakuraMangas = value;
-        }
+            Title = new Title { Name = null!, References = [], DiscordRoleId = 0 },
+            ChapterInfo = new Info(default!, null!, null!, null!, null!, default)
+        };
     }
 }

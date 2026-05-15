@@ -8,6 +8,7 @@ namespace BotDeScans.UnitTests.Specs.Features.Publish.Interaction;
 public class InteractionsTests : UnitTest
 {
     private readonly Interactions interactions;
+    private readonly State state;
 
     public InteractionsTests()
     {
@@ -17,10 +18,17 @@ public class InteractionsTests : UnitTest
 
         fixture.FreezeFake<Remora.Results.IResult<IMessage>>();
 
+        state = fixture.Create<State>();
+
         A.CallTo(() => fixture
             .FreezeFake<SetupService>()
             .SetupAsync(A<Info>._, cancellationToken))
-            .Returns(Result.Ok());
+            .Returns(Result.Ok(state));
+
+        A.CallTo(() => fixture
+            .FreezeFake<Handler>()
+            .ExecuteAsync(A<State>._, cancellationToken))
+            .Returns(Result.Ok(state));
 
         A.CallTo(() => fixture
             .FreezeFake<Remora.Results.IResult<IMessage>>().IsSuccess)
@@ -28,7 +36,7 @@ public class InteractionsTests : UnitTest
 
         A.CallTo(() => fixture
             .FreezeFake<DiscordPublisher>()
-            .SuccessReleaseMessageAsync(cancellationToken))
+            .SuccessReleaseMessageAsync(A<State>._, cancellationToken))
             .Returns(fixture.FreezeFake<Remora.Results.IResult<IMessage>>());
 
         interactions = fixture.CreateCommand<Interactions>(cancellationToken);
@@ -69,14 +77,14 @@ public class InteractionsTests : UnitTest
 
             A.CallTo(() => fixture
                 .FreezeFake<DiscordPublisher>()
-                .SuccessReleaseMessageAsync(cancellationToken))
+                .SuccessReleaseMessageAsync(A<State>._, cancellationToken))
                 .MustHaveHappenedOnceExactly();
         }
 
         [Fact]
         public async Task GivenSetupErrorShouldCallErrorReleaseMessageAsync()
         {
-            var setupResult = Result.Fail("setup error.");
+            var setupResult = Result.Fail<State>("setup error.");
 
             A.CallTo(() => fixture
                 .FreezeFake<SetupService>()
@@ -85,14 +93,14 @@ public class InteractionsTests : UnitTest
 
             A.CallTo(() => fixture
                 .FreezeFake<DiscordPublisher>()
-                .ErrorReleaseMessageAsync(setupResult, cancellationToken))
+                .ErrorReleaseMessageAsync(A<Result>._, cancellationToken))
                 .Returns(fixture.FreezeFake<Remora.Results.IResult<IMessage>>());
 
             await interactions.ExecuteAsync(default!, default!, default!, default!, default!, "1");
 
             A.CallTo(() => fixture
                 .FreezeFake<DiscordPublisher>()
-                .ErrorReleaseMessageAsync(setupResult, cancellationToken))
+                .ErrorReleaseMessageAsync(A<Result>._, cancellationToken))
                 .MustHaveHappenedOnceExactly();
         }
 
@@ -102,7 +110,7 @@ public class InteractionsTests : UnitTest
             A.CallTo(() => fixture
                 .FreezeFake<SetupService>()
                 .SetupAsync(A<Info>._, cancellationToken))
-                .Returns(Result.Fail("setup error."));
+                .Returns(Result.Fail<State>("setup error."));
 
             A.CallTo(() => fixture
                 .FreezeFake<DiscordPublisher>()
@@ -113,23 +121,23 @@ public class InteractionsTests : UnitTest
 
             A.CallTo(() => fixture
                 .FreezeFake<Handler>()
-                .ExecuteAsync(cancellationToken))
+                .ExecuteAsync(A<State>._, cancellationToken))
                 .MustNotHaveHappened();
         }
 
         [Fact]
         public async Task GivenErrorToExecuteStepsShouldCallErrorMessageAsync()
         {
-            var stepsResult = Result.Fail("some error.");
+            var stepsResult = Result.Fail<State>("some error.");
 
             A.CallTo(() => fixture
                 .FreezeFake<Handler>()
-                .ExecuteAsync(cancellationToken))
+                .ExecuteAsync(A<State>._, cancellationToken))
                 .Returns(stepsResult);
 
             A.CallTo(() => fixture
                 .FreezeFake<DiscordPublisher>()
-                .ErrorReleaseMessageAsync(stepsResult, cancellationToken))
+                .ErrorReleaseMessageAsync(A<Result>._, cancellationToken))
                 .Returns(fixture.FreezeFake<Remora.Results.IResult<IMessage>>());
 
             var result = await interactions.ExecuteAsync(default!, default!, default!, default!, default!, "1");
@@ -137,7 +145,7 @@ public class InteractionsTests : UnitTest
 
             A.CallTo(() => fixture
                 .FreezeFake<DiscordPublisher>()
-                .ErrorReleaseMessageAsync(stepsResult, cancellationToken))
+                .ErrorReleaseMessageAsync(A<Result>._, cancellationToken))
                 .MustHaveHappenedOnceExactly();
         }
 
@@ -150,7 +158,7 @@ public class InteractionsTests : UnitTest
 
             A.CallTo(() => fixture
                 .FreezeFake<DiscordPublisher>()
-                .SuccessReleaseMessageAsync(cancellationToken))
+                .SuccessReleaseMessageAsync(A<State>._, cancellationToken))
                 .Returns(fixture.FreezeFake<Remora.Results.IResult<IMessage>>());
 
             var result = await interactions.ExecuteAsync(default!, default!, default!, default!, default!, "1");
@@ -163,8 +171,8 @@ public class InteractionsTests : UnitTest
         {
             A.CallTo(() => fixture
                 .FreezeFake<Handler>()
-                .ExecuteAsync(cancellationToken))
-                .Returns(Result.Fail("some error."));
+                .ExecuteAsync(A<State>._, cancellationToken))
+                .Returns(Result.Fail<State>("some error."));
 
             A.CallTo(() => fixture
                 .FreezeFake<Remora.Results.IResult<IMessage>>().IsSuccess)

@@ -6,25 +6,23 @@ using FluentResults;
 namespace BotDeScans.App.Features.Publish.Interaction.Steps;
 
 public class UploadZipBoxStep(
-    BoxService boxService,
-    IPublishContext context) : IPublishStep
+    BoxService boxService) : IPublishStep
 {
     public StepType Type => StepType.Upload;
     public StepName Name => StepName.UploadZipBox;
     public StepName? Dependency => StepName.ZipFiles;
 
-    public Task<Result> ValidateAsync(CancellationToken _)
+    public Task<Result> ValidateAsync(State state, CancellationToken _)
         => Task.FromResult(Result.Ok());
 
-    public async Task<Result> ExecuteAsync(CancellationToken cancellationToken)
+    public async Task<Result<State>> ExecuteAsync(State state, CancellationToken cancellationToken)
     {
-        var titleFolder = await boxService.GetOrCreateFolderAsync(context.Title.Name, cancellationToken);
+        var titleFolder = await boxService.GetOrCreateFolderAsync(state.Title.Name, cancellationToken);
         var file = await boxService.CreateFileAsync(
-            filePath: context.ZipFilePath!,
+            filePath: state.ZipFilePath!,
             parentFolderId: titleFolder.Id,
             cancellationToken: cancellationToken);
 
-        context.SetBoxZipLink(file.SharedLink!.DownloadUrl);
-        return Result.Ok();
+        return Result.Ok(state with { BoxZipLink = file.SharedLink!.DownloadUrl });
     }
 }

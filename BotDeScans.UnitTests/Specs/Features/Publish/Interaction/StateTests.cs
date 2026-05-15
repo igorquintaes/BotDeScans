@@ -1,5 +1,4 @@
 using BotDeScans.App.Features.Publish.Interaction;
-using BotDeScans.App.Features.Publish.Interaction.Models;
 
 namespace BotDeScans.UnitTests.Specs.Features.Publish.Interaction;
 
@@ -11,238 +10,153 @@ public class StateTests : UnitTest
     {
         state = new State
         {
-            InternalData = new InternalData(),
-            ReleaseLinks = new Links()
+            OriginContentFolder = "folder",
+            CoverFilePath = "cover.png",
+            ZipFilePath = "file.zip",
+            PdfFilePath = "file.pdf",
+            BloggerImageAsBase64 = "base64",
+            BoxPdfReaderKey = "key",
+            Pings = "@everyone",
+            MegaZipLink = "mega-zip",
+            MegaPdfLink = "mega-pdf",
+            DriveZipLink = "drive-zip",
+            DrivePdfLink = "drive-pdf",
+            BoxZipLink = "box-zip",
+            BoxPdfLink = "box-pdf",
+            MangaDexLink = "mangadex",
+            SakuraMangasLink = "sakura",
+            BloggerLink = "blogger"
         };
     }
 
-    public class Getters : StateTests
+    public class ImmutabilityTests : StateTests
     {
         [Fact]
-        public void OriginContentFolderShouldReturnInternalDataValue()
+        public void WithShouldReturnNewStateWithUpdatedOriginContentFolder()
         {
-            state.InternalData.OriginContentFolder = "folder";
+            var newState = state with { OriginContentFolder = "new-folder" };
+            newState.OriginContentFolder.Should().Be("new-folder");
             state.OriginContentFolder.Should().Be("folder");
         }
 
         [Fact]
-        public void CoverFilePathShouldReturnInternalDataValue()
+        public void WithShouldReturnNewStateWithUpdatedCoverFilePath()
         {
-            state.InternalData.CoverFilePath = "cover.png";
+            var newState = state with { CoverFilePath = "new-cover.png" };
+            newState.CoverFilePath.Should().Be("new-cover.png");
             state.CoverFilePath.Should().Be("cover.png");
         }
 
         [Fact]
-        public void ZipFilePathShouldReturnInternalDataValue()
+        public void WithShouldReturnNewStateWithUpdatedZipFilePath()
         {
-            state.InternalData.ZipFilePath = "file.zip";
+            var newState = state with { ZipFilePath = "new.zip" };
+            newState.ZipFilePath.Should().Be("new.zip");
             state.ZipFilePath.Should().Be("file.zip");
         }
 
         [Fact]
-        public void PdfFilePathShouldReturnInternalDataValue()
+        public void WithShouldReturnNewStateWithUpdatedPdfFilePath()
         {
-            state.InternalData.PdfFilePath = "file.pdf";
+            var newState = state with { PdfFilePath = "new.pdf" };
+            newState.PdfFilePath.Should().Be("new.pdf");
             state.PdfFilePath.Should().Be("file.pdf");
         }
 
         [Fact]
-        public void BloggerImageAsBase64ShouldReturnInternalDataValue()
+        public void WithShouldReturnNewStateWithUpdatedBloggerImageAsBase64()
         {
-            state.InternalData.BloggerImageAsBase64 = "base64";
+            var newState = state with { BloggerImageAsBase64 = "img64" };
+            newState.BloggerImageAsBase64.Should().Be("img64");
             state.BloggerImageAsBase64.Should().Be("base64");
         }
 
         [Fact]
-        public void BoxPdfReaderKeyShouldReturnInternalDataValue()
+        public void WithShouldReturnNewStateWithUpdatedBoxPdfReaderKey()
         {
-            state.InternalData.BoxPdfReaderKey = "key";
+            var newState = state with { BoxPdfReaderKey = "rkey" };
+            newState.BoxPdfReaderKey.Should().Be("rkey");
             state.BoxPdfReaderKey.Should().Be("key");
         }
 
         [Fact]
-        public void PingsShouldReturnInternalDataValue()
+        public void WithShouldReturnNewStateWithUpdatedPings()
         {
-            state.InternalData.Pings = "@everyone";
+            var newState = state with { Pings = "@here" };
+            newState.Pings.Should().Be("@here");
             state.Pings.Should().Be("@everyone");
         }
 
         [Fact]
-        public void MegaZipLinkShouldReturnReleaseLinksValue()
+        public void WithShouldReturnNewStateWithUpdatedMegaZipLink()
         {
-            state.ReleaseLinks.MegaZip = "link";
-            state.MegaZipLink.Should().Be("link");
+            var newState = state with { MegaZipLink = "new-link" };
+            newState.MegaZipLink.Should().Be("new-link");
+            state.MegaZipLink.Should().Be("mega-zip");
         }
 
         [Fact]
-        public void MegaPdfLinkShouldReturnReleaseLinksValue()
+        public void WithShouldReturnNewStateWithUpdatedMegaPdfLink()
         {
-            state.ReleaseLinks.MegaPdf = "link";
-            state.MegaPdfLink.Should().Be("link");
+            var newState = state with { MegaPdfLink = "new-link" };
+            newState.MegaPdfLink.Should().Be("new-link");
+            state.MegaPdfLink.Should().Be("mega-pdf");
         }
 
         [Fact]
-        public void DriveZipLinkShouldReturnReleaseLinksValue()
+        public void WithShouldReturnNewStateWithUpdatedDriveZipLink()
         {
-            state.ReleaseLinks.DriveZip = "link";
-            state.DriveZipLink.Should().Be("link");
+            var newState = state with { DriveZipLink = "new-link" };
+            newState.DriveZipLink.Should().Be("new-link");
+            state.DriveZipLink.Should().Be("drive-zip");
         }
 
         [Fact]
-        public void DrivePdfLinkShouldReturnReleaseLinksValue()
+        public void WithShouldReturnNewStateWithUpdatedDrivePdfLink()
         {
-            state.ReleaseLinks.DrivePdf = "link";
-            state.DrivePdfLink.Should().Be("link");
+            var newState = state with { DrivePdfLink = "new-link" };
+            newState.DrivePdfLink.Should().Be("new-link");
+            state.DrivePdfLink.Should().Be("drive-pdf");
         }
 
         [Fact]
-        public void BoxZipLinkShouldReturnReleaseLinksValue()
+        public void WithShouldReturnNewStateWithUpdatedBoxZipLink()
         {
-            state.ReleaseLinks.BoxZip = "link";
-            state.BoxZipLink.Should().Be("link");
+            var newState = state with { BoxZipLink = "new-link" };
+            newState.BoxZipLink.Should().Be("new-link");
+            state.BoxZipLink.Should().Be("box-zip");
         }
 
         [Fact]
-        public void BoxPdfLinkShouldReturnReleaseLinksValue()
+        public void WithShouldReturnNewStateWithUpdatedBoxPdfLink()
         {
-            state.ReleaseLinks.BoxPdf = "link";
-            state.BoxPdfLink.Should().Be("link");
+            var newState = state with { BoxPdfLink = "new-link" };
+            newState.BoxPdfLink.Should().Be("new-link");
+            state.BoxPdfLink.Should().Be("box-pdf");
         }
 
         [Fact]
-        public void MangaDexLinkShouldReturnReleaseLinksValue()
+        public void WithShouldReturnNewStateWithUpdatedMangaDexLink()
         {
-            state.ReleaseLinks.MangaDex = "link";
-            state.MangaDexLink.Should().Be("link");
+            var newState = state with { MangaDexLink = "new-link" };
+            newState.MangaDexLink.Should().Be("new-link");
+            state.MangaDexLink.Should().Be("mangadex");
         }
 
         [Fact]
-        public void SakuraMangasLinkShouldReturnReleaseLinksValue()
+        public void WithShouldReturnNewStateWithUpdatedSakuraMangasLink()
         {
-            state.ReleaseLinks.SakuraMangas = "link";
-            state.SakuraMangasLink.Should().Be("link");
+            var newState = state with { SakuraMangasLink = "new-link" };
+            newState.SakuraMangasLink.Should().Be("new-link");
+            state.SakuraMangasLink.Should().Be("sakura");
         }
 
         [Fact]
-        public void BloggerLinkShouldReturnReleaseLinksValue()
+        public void WithShouldReturnNewStateWithUpdatedBloggerLink()
         {
-            state.ReleaseLinks.Blogger = "link";
-            state.BloggerLink.Should().Be("link");
-        }
-    }
-
-    public class Setters : StateTests
-    {
-        [Fact]
-        public void SetOriginContentFolderShouldUpdateInternalData()
-        {
-            state.SetOriginContentFolder("new-folder");
-            state.InternalData.OriginContentFolder.Should().Be("new-folder");
-        }
-
-        [Fact]
-        public void SetCoverFilePathShouldUpdateInternalData()
-        {
-            state.SetCoverFilePath("new-cover.png");
-            state.InternalData.CoverFilePath.Should().Be("new-cover.png");
-        }
-
-        [Fact]
-        public void SetZipPathShouldUpdateInternalData()
-        {
-            state.SetZipPath("new.zip");
-            state.InternalData.ZipFilePath.Should().Be("new.zip");
-        }
-
-        [Fact]
-        public void SetPdfPathShouldUpdateInternalData()
-        {
-            state.SetPdfPath("new.pdf");
-            state.InternalData.PdfFilePath.Should().Be("new.pdf");
-        }
-
-        [Fact]
-        public void SetBloggerImageAsBase64ShouldUpdateInternalData()
-        {
-            state.SetBloggerImageAsBase64("img64");
-            state.InternalData.BloggerImageAsBase64.Should().Be("img64");
-        }
-
-        [Fact]
-        public void SetBoxPdfReaderKeyShouldUpdateInternalData()
-        {
-            state.SetBoxPdfReaderKey("rkey");
-            state.InternalData.BoxPdfReaderKey.Should().Be("rkey");
-        }
-
-        [Fact]
-        public void SetPingsShouldUpdateInternalData()
-        {
-            state.SetPings("@here");
-            state.InternalData.Pings.Should().Be("@here");
-        }
-
-        [Fact]
-        public void SetMegaZipLinkShouldUpdateReleaseLinks()
-        {
-            state.SetMegaZipLink("mega-zip");
-            state.ReleaseLinks.MegaZip.Should().Be("mega-zip");
-        }
-
-        [Fact]
-        public void SetMegaPdfLinkShouldUpdateReleaseLinks()
-        {
-            state.SetMegaPdfLink("mega-pdf");
-            state.ReleaseLinks.MegaPdf.Should().Be("mega-pdf");
-        }
-
-        [Fact]
-        public void SetDriveZipLinkShouldUpdateReleaseLinks()
-        {
-            state.SetDriveZipLink("drive-zip");
-            state.ReleaseLinks.DriveZip.Should().Be("drive-zip");
-        }
-
-        [Fact]
-        public void SetDrivePdfLinkShouldUpdateReleaseLinks()
-        {
-            state.SetDrivePdfLink("drive-pdf");
-            state.ReleaseLinks.DrivePdf.Should().Be("drive-pdf");
-        }
-
-        [Fact]
-        public void SetBoxZipLinkShouldUpdateReleaseLinks()
-        {
-            state.SetBoxZipLink("box-zip");
-            state.ReleaseLinks.BoxZip.Should().Be("box-zip");
-        }
-
-        [Fact]
-        public void SetBoxPdfLinkShouldUpdateReleaseLinks()
-        {
-            state.SetBoxPdfLink("box-pdf");
-            state.ReleaseLinks.BoxPdf.Should().Be("box-pdf");
-        }
-
-        [Fact]
-        public void SetMangaDexLinkShouldUpdateReleaseLinks()
-        {
-            state.SetMangaDexLink("mangadex");
-            state.ReleaseLinks.MangaDex.Should().Be("mangadex");
-        }
-
-        [Fact]
-        public void SetSakuraMangasLinkShouldUpdateReleaseLinks()
-        {
-            state.SetSakuraMangasLink("sakura");
-            state.ReleaseLinks.SakuraMangas.Should().Be("sakura");
-        }
-
-        [Fact]
-        public void SetBloggerLinkShouldUpdateReleaseLinks()
-        {
-            state.SetBloggerLink("blogger");
-            state.ReleaseLinks.Blogger.Should().Be("blogger");
+            var newState = state with { BloggerLink = "new-link" };
+            newState.BloggerLink.Should().Be("new-link");
+            state.BloggerLink.Should().Be("blogger");
         }
     }
 }

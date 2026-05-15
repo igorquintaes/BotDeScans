@@ -11,6 +11,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
 using Remora.Discord.Interactivity.Extensions;
 using Serilog;
 using System.Diagnostics.CodeAnalysis;
@@ -49,6 +50,19 @@ public class Program
                 .AddJsonFile(Path.Combine("config", "config.local.json"), optional: true, reloadOnChange: true))
             .UseConsoleLifetime()
             .Build();
+
+        Result.Setup(cfg => 
+        {
+            cfg.Logger = new ResultLogger(Log.Logger);
+            cfg.ExceptionalErrorFactory = (message, ex) => 
+            {
+                var error = new Error(message).CausedBy(ex);
+                var errorResult = new Result().WithError(error);
+                cfg.Logger.Log(ex.Source, message, errorResult, LogLevel.Error);
+
+                return new ExceptionalError(message, ex);
+            };
+        });
 
         var warmupResult = Result.Ok();
         using (var scope = host.Services.CreateScope())

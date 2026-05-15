@@ -10,24 +10,28 @@ using Serilog;
 namespace BotDeScans.App.Features.Publish.Interaction;
 
 public class SetupService(
-    State state,
     StepsService stepsService,
     TitleRepository titleRepository,
     IEnumerable<Ping> pings,
     IValidator<State> stateValidator)
 {
-    public virtual async Task<Result> SetupAsync(Info chapterInfo, CancellationToken cancellationToken)
+    public virtual async Task<Result<State>> SetupAsync(Info chapterInfo, CancellationToken cancellationToken)
     {
-        state.ChapterInfo = chapterInfo;
-        Log.Information(state.ChapterInfo.ToString());
+        Log.Information(chapterInfo.ToString());
 
         var title = await titleRepository.GetTitleAsync(chapterInfo.TitleId, cancellationToken);
         if (title is null)
             return Result.Fail("Obra não encontrada.");
 
-        state.Title = title;
-        state.Steps = stepsService.GetEnabledSteps(
+        var steps = stepsService.GetEnabledSteps(
             [.. title.SkipSteps.Select(s => s.Step)]);
+
+        var state = new State
+        {
+            ChapterInfo = chapterInfo,
+            Title = title,
+            Steps = steps
+        };
 
         var initialValidation = await stateValidator.ValidateAsync(state, cancellationToken);
         if (initialValidation.IsValid is false)
@@ -35,8 +39,8 @@ public class SetupService(
 
         var ping = pings.Single(x => x.IsApplicable);
         var pingAsText = await ping.GetPingAsTextAsync(cancellationToken);
-        state.SetPings(pingAsText);
+        state = state with { Pings = pingAsText };
 
-        return Result.Ok();
+        return Result.Ok(state);
     }
 }

@@ -25,7 +25,7 @@ public class BoxService(
         var folderItems = await boxClient.Folders.GetFolderItemsAsync(ROOT_ID, cancellationToken: cancellationToken);
         var folder = folderItems.Entries?.FirstOrDefault(x => x.FolderMini!.Name == folderName);
 
-        return folder?.FolderMini ?? 
+        return folder?.FolderMini ??
             await boxClient.Folders.CreateFolderAsync(
                 requestBody: new(folderName, new(ROOT_ID)),
                 cancellationToken: cancellationToken);

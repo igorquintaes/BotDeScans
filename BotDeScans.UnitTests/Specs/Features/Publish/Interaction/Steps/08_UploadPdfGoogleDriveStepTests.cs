@@ -1,4 +1,4 @@
-﻿using BotDeScans.App.Features.GoogleDrive;
+using BotDeScans.App.Features.GoogleDrive;
 using BotDeScans.App.Features.Publish.Interaction;
 using BotDeScans.App.Features.Publish.Interaction.Steps;
 using BotDeScans.App.Features.Publish.Interaction.Steps.Enums;
@@ -12,11 +12,18 @@ namespace BotDeScans.UnitTests.Specs.Features.Publish.Interaction.Steps;
 public class UploadPdfGoogleDriveStepTests : UnitTest
 {
     private readonly UploadPdfGoogleDriveStep step;
+    private readonly State state;
 
     public UploadPdfGoogleDriveStepTests()
     {
-        fixture.FreezeFake<IPublishContext>();
         fixture.FreezeFake<GoogleDriveService>();
+
+        state = new State
+        {
+            Title = fixture.Create<Title>(),
+            PdfFilePath = fixture.Create<string>()
+        };
+
         step = fixture.Create<UploadPdfGoogleDriveStep>();
     }
 
@@ -40,7 +47,7 @@ public class UploadPdfGoogleDriveStepTests : UnitTest
         [Fact]
         public async Task ShouldReturnSuccess()
         {
-            var result = await step.ValidateAsync(cancellationToken);
+            var result = await step.ValidateAsync(state, cancellationToken);
 
             result.Should().BeSuccess();
         }
@@ -56,20 +63,10 @@ public class UploadPdfGoogleDriveStepTests : UnitTest
             var titleFile = fixture.Create<File>();
             titleFile.WebViewLink = FILE_LINK;
 
-            var title = fixture.Create<Title>();
-            var pdfPath = fixture.Create<string>();
-
-            A.CallTo(() => fixture
-                .FreezeFake<IPublishContext>().Title)
-                .Returns(title);
-            A.CallTo(() => fixture
-                .FreezeFake<IPublishContext>().PdfFilePath)
-                .Returns(pdfPath);
-
             A.CallTo(() => fixture
                 .FreezeFake<GoogleDriveService>()
                 .GetOrCreateFolderAsync(
-                    title.Name,
+                    state.Title.Name,
                     default,
                     cancellationToken))
                 .Returns(Result.Ok(titleFolder));
@@ -77,7 +74,7 @@ public class UploadPdfGoogleDriveStepTests : UnitTest
             A.CallTo(() => fixture
                 .FreezeFake<GoogleDriveService>()
                 .CreateFileAsync(
-                    pdfPath,
+                    state.PdfFilePath!,
                     titleFolder.Id,
                     true,
                     cancellationToken))
@@ -87,7 +84,7 @@ public class UploadPdfGoogleDriveStepTests : UnitTest
         [Fact]
         public async Task GivenSuccessfulExecutionShouldReturnSuccessResult()
         {
-            var result = await step.ExecuteAsync(cancellationToken);
+            var result = await step.ExecuteAsync(state, cancellationToken);
 
             result.Should().BeSuccess();
         }
@@ -95,11 +92,9 @@ public class UploadPdfGoogleDriveStepTests : UnitTest
         [Fact]
         public async Task GivenSuccessfulExecutionShouldSetGoogleDrivePdfContextValue()
         {
-            await step.ExecuteAsync(cancellationToken);
+            var result = await step.ExecuteAsync(state, cancellationToken);
 
-            A.CallTo(() => fixture.FreezeFake<IPublishContext>()
-                .SetDrivePdfLink(FILE_LINK))
-                .MustHaveHappenedOnceExactly();
+            result.Value.DrivePdfLink.Should().Be(FILE_LINK);
         }
 
         [Fact]
@@ -115,7 +110,7 @@ public class UploadPdfGoogleDriveStepTests : UnitTest
                     cancellationToken))
                 .Returns(Result.Fail(ERROR_MESSAGE));
 
-            var result = await step.ExecuteAsync(cancellationToken);
+            var result = await step.ExecuteAsync(state, cancellationToken);
 
             result.Should().BeFailure().And.HaveError(ERROR_MESSAGE);
         }
@@ -134,7 +129,7 @@ public class UploadPdfGoogleDriveStepTests : UnitTest
                     cancellationToken))
                 .Returns(Result.Fail(ERROR_MESSAGE));
 
-            var result = await step.ExecuteAsync(cancellationToken);
+            var result = await step.ExecuteAsync(state, cancellationToken);
 
             result.Should().BeFailure().And.HaveError(ERROR_MESSAGE);
         }

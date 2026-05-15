@@ -21,7 +21,7 @@ public class Handler(TitleRepository titleRepository)
                  .ToArray()
              : Result.Fail(NOT_FOUND_ERROR);
 
-        static string GetLine(SkipStep x, int index) => 
+        static string GetLine(SkipStep x, int index) =>
             $"{index + 1}. {x.Step.GetDescription()}";
     }
 }

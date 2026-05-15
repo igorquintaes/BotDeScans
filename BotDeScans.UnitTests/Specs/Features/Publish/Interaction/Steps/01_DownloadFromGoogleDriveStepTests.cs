@@ -12,12 +12,17 @@ namespace BotDeScans.UnitTests.Specs.Features.Publish.Interaction.Steps;
 public class DownloadFromGoogleDriveStepTests : UnitTest
 {
     private readonly DownloadFromGoogleDriveStep step;
+    private readonly State state;
 
     public DownloadFromGoogleDriveStepTests()
     {
-        fixture.FreezeFake<IPublishContext>();
         fixture.FreezeFake<FileReleaseService>();
         fixture.FreezeFake<GoogleDriveService>();
+
+        state = new State
+        {
+            ChapterInfo = fixture.Create<Info>()
+        };
 
         step = fixture.Create<DownloadFromGoogleDriveStep>();
     }
@@ -40,11 +45,12 @@ public class DownloadFromGoogleDriveStepTests : UnitTest
     public class ExecuteAsync : DownloadFromGoogleDriveStepTests
     {
         private readonly string[] scopedDirectories;
+        private readonly string coverPath;
 
         public ExecuteAsync()
         {
             scopedDirectories = [.. fixture.CreateMany<string>(2)];
-            var chapterInfo = fixture.Create<Info>();
+            coverPath = fixture.Create<string>();
 
             A.CallTo(() => fixture
                 .FreezeFake<FileReleaseService>()
@@ -52,14 +58,9 @@ public class DownloadFromGoogleDriveStepTests : UnitTest
                 .ReturnsNextFromSequence(scopedDirectories);
 
             A.CallTo(() => fixture
-                .FreezeFake<IPublishContext>()
-                .ChapterInfo)
-                .Returns(chapterInfo);
-
-            A.CallTo(() => fixture
                 .FreezeFake<GoogleDriveService>()
                 .SaveFilesAsync(
-                    chapterInfo.GoogleDriveUrl.Id,
+                    state.ChapterInfo.GoogleDriveUrl.Id,
                     scopedDirectories[0],
                     cancellationToken))
                 .Returns(Result.Ok());
@@ -69,13 +70,13 @@ public class DownloadFromGoogleDriveStepTests : UnitTest
                 .MoveCoverFile(
                     scopedDirectories[0],
                     scopedDirectories[1]))
-                .Returns(fixture.Create<string>());
+                .Returns(coverPath);
         }
 
         [Fact]
         public async Task GivenSuccessfulExecitionShouldReturnSuccessResult()
         {
-            var result = await step.ExecuteAsync(cancellationToken);
+            var result = await step.ExecuteAsync(state, cancellationToken);
 
             result.Should().BeSuccess();
         }
@@ -83,17 +84,10 @@ public class DownloadFromGoogleDriveStepTests : UnitTest
         [Fact]
         public async Task GivenSuccessfulExecitionShouldSetContextData()
         {
-            await step.ExecuteAsync(cancellationToken);
+            var result = await step.ExecuteAsync(state, cancellationToken);
 
-            A.CallTo(() => fixture
-                .FreezeFake<IPublishContext>()
-                .SetOriginContentFolder(scopedDirectories[0]))
-                .MustHaveHappenedOnceExactly();
-
-            A.CallTo(() => fixture
-                .FreezeFake<IPublishContext>()
-                .SetCoverFilePath(A<string>.Ignored))
-                .MustHaveHappenedOnceExactly();
+            result.Value.OriginContentFolder.Should().Be(scopedDirectories[0]);
+            result.Value.CoverFilePath.Should().Be(coverPath);
         }
 
         [Fact]
@@ -109,7 +103,7 @@ public class DownloadFromGoogleDriveStepTests : UnitTest
                     cancellationToken))
                 .Returns(Result.Fail(ERROR_MESSAGE));
 
-            var result = await step.ExecuteAsync(cancellationToken);
+            var result = await step.ExecuteAsync(state, cancellationToken);
 
             result.Should().BeFailure().And.HaveError(ERROR_MESSAGE);
         }

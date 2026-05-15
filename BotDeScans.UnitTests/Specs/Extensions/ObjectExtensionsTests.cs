@@ -1,8 +1,9 @@
 ﻿using BotDeScans.App.Extensions;
+using BotDeScans.App.Services.Logging;
 using FluentResults;
-using Serilog;
 using Serilog.Events;
 using System.Linq.Expressions;
+using ILogger = Serilog.ILogger;
 
 namespace BotDeScans.UnitTests.Specs.Extensions;
 
@@ -12,13 +13,8 @@ public abstract class ObjectExtensionsTests : UnitTest
     {
         private readonly TestObject testObject;
 
-        public SafeCallAsync()
-        {
-            fixture.FreezeFake<ILogger>();
-            Log.Logger = fixture.FreezeFake<ILogger>();
-
+        public SafeCallAsync() =>
             testObject = fixture.Create<TestObject>();
-        }
 
         [Fact]
         public async Task GivenSuccessfulExecutionShouldReturnSuccessResult()
@@ -68,33 +64,16 @@ public abstract class ObjectExtensionsTests : UnitTest
         }
 
         [Fact]
-        public async Task GivenExceptionShouldLogError()
+        public async Task GivenExceptionShouldHaveExceptionAsCause()
         {
             const string ERROR_MESSAGE = "Fatal error occurred. More information inside log file.";
             const string EXCEPTION_MESSAGE = "Test exception";
 
             Expression<Func<TestObject, Task<Result>>> expression = obj => TestObject.ThrowExceptionMethodAsync();
 
-            await testObject.SafeCallAsync(expression);
-
-            A.CallTo(() => fixture
-                .FreezeFake<ILogger>()
-                .Write(LogEventLevel.Error,
-                       A<Exception>.That.Matches(ex => ex.Message == EXCEPTION_MESSAGE),
-                       ERROR_MESSAGE))
-                .MustHaveHappenedOnceExactly();
-        }
-
-        [Fact]
-        public async Task GivenExceptionShouldHaveExceptionAsCause()
-        {
-            const string EXCEPTION_MESSAGE = "Test exception";
-
-            Expression<Func<TestObject, Task<Result>>> expression = obj => TestObject.ThrowExceptionMethodAsync();
-
             var result = await testObject.SafeCallAsync(expression);
 
-            result.Should().BeFailure();
+            result.Should().BeFailure().And.HaveError(ERROR_MESSAGE);
             result.Errors.Should().ContainSingle()
                   .Which.Reasons.Should().ContainSingle()
                   .Which.Should().BeOfType<ExceptionalError>()
@@ -114,6 +93,44 @@ public abstract class ObjectExtensionsTests : UnitTest
             public static Task<Result> FailureMethodAsync(string errorMessage) =>
                 Task.FromResult(Result.Fail(errorMessage));
 
+            public static Task<Result> ThrowExceptionMethodAsync() =>
+                throw new InvalidOperationException("Test exception");
+        }
+    }
+
+    public sealed class SafeCallAsyncWithLogging : ObjectExtensionsTests, IDisposable
+    {
+        private readonly ILogger fakeLogger;
+
+        public SafeCallAsyncWithLogging()
+        {
+            fakeLogger = A.Fake<ILogger>();
+            A.CallTo(() => fakeLogger.IsEnabled(A<LogEventLevel>.Ignored)).Returns(true);
+
+            Result.Setup(cfg => cfg.Logger = new ResultLogger(fakeLogger));
+        }
+
+        public void Dispose() =>
+            Result.Setup(cfg => { });
+
+        [Fact]
+        public async Task GivenExceptionWhenLogIfFailedIsCalledShouldLogExceptionDetailsThroughResultLogger()
+        {
+            var testObject = fixture.Create<TestObject>();
+            Expression<Func<TestObject, Task<Result>>> expression = obj => TestObject.ThrowExceptionMethodAsync();
+
+            var result = await testObject.SafeCallAsync(expression);
+            result.LogIfFailed();
+
+            A.CallTo(fakeLogger)
+                .Where(call => call.Method.Name == nameof(ILogger.Write)
+                    && call.Arguments.Count >= 1
+                    && Equals(call.Arguments[0], LogEventLevel.Error))
+                .MustHaveHappenedOnceExactly();
+        }
+
+        private class TestObject
+        {
             public static Task<Result> ThrowExceptionMethodAsync() =>
                 throw new InvalidOperationException("Test exception");
         }

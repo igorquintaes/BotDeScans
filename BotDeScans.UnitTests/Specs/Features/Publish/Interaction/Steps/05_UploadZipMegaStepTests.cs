@@ -13,12 +13,19 @@ namespace BotDeScans.UnitTests.Specs.Features.Publish.Interaction.Steps;
 public class UploadZipMegaStepTests : UnitTest
 {
     private readonly UploadZipMegaStep step;
+    private readonly State state;
 
     public UploadZipMegaStepTests()
     {
-        fixture.FreezeFake<IPublishContext>();
         fixture.FreezeFake<MegaService>();
         fixture.FreezeFake<MegaSettingsService>();
+
+        state = new State
+        {
+            Title = fixture.Create<Title>(),
+            ZipFilePath = fixture.Create<string>()
+        };
+
         step = fixture.Create<UploadZipMegaStep>();
     }
 
@@ -42,7 +49,7 @@ public class UploadZipMegaStepTests : UnitTest
         [Fact]
         public async Task ShouldReturnSuccess()
         {
-            var result = await step.ValidateAsync(cancellationToken);
+            var result = await step.ValidateAsync(state, cancellationToken);
 
             result.Should().BeSuccess();
         }
@@ -56,16 +63,6 @@ public class UploadZipMegaStepTests : UnitTest
         {
             var rootNode = A.Fake<INode>();
             var titleFolderNode = A.Fake<INode>();
-            var title = fixture.Create<Title>();
-            var zipPath = fixture.Create<string>();
-
-            A.CallTo(() => fixture
-                .FreezeFake<IPublishContext>().Title)
-                .Returns(title);
-
-            A.CallTo(() => fixture
-                .FreezeFake<IPublishContext>().ZipFilePath)
-                .Returns(zipPath);
 
             A.CallTo(() => fixture
                 .FreezeFake<MegaSettingsService>()
@@ -74,13 +71,13 @@ public class UploadZipMegaStepTests : UnitTest
 
             A.CallTo(() => fixture
                 .FreezeFake<MegaService>()
-                .GetOrCreateFolderAsync(title.Name, rootNode))
+                .GetOrCreateFolderAsync(state.Title.Name, rootNode))
                 .Returns(Result.Ok(titleFolderNode));
 
             A.CallTo(() => fixture
                 .FreezeFake<MegaService>()
                 .CreateFileAsync(
-                    zipPath,
+                    state.ZipFilePath!,
                     titleFolderNode,
                     cancellationToken))
                 .Returns(Result.Ok(new Uri(FILE_LINK)));
@@ -89,7 +86,7 @@ public class UploadZipMegaStepTests : UnitTest
         [Fact]
         public async Task GivenSuccessfulExecutionShouldReturnSuccessResult()
         {
-            var result = await step.ExecuteAsync(cancellationToken);
+            var result = await step.ExecuteAsync(state, cancellationToken);
 
             result.Should().BeSuccess();
         }
@@ -97,12 +94,9 @@ public class UploadZipMegaStepTests : UnitTest
         [Fact]
         public async Task GivenSuccessfulExecutionShouldSetMegaZipContextValue()
         {
-            await step.ExecuteAsync(cancellationToken);
+            var result = await step.ExecuteAsync(state, cancellationToken);
 
-            A.CallTo(() => fixture
-                .FreezeFake<IPublishContext>()
-                .SetMegaZipLink(FILE_LINK))
-                .MustHaveHappenedOnceExactly();
+            result.Value.MegaZipLink.Should().Be(FILE_LINK);
         }
 
         [Fact]
@@ -115,7 +109,7 @@ public class UploadZipMegaStepTests : UnitTest
                 .GetOrCreateFolderAsync(A<string>.Ignored, A<INode>.Ignored))
                 .Returns(Result.Fail(ERROR_MESSAGE));
 
-            var result = await step.ExecuteAsync(cancellationToken);
+            var result = await step.ExecuteAsync(state, cancellationToken);
 
             result.Should().BeFailure().And.HaveError(ERROR_MESSAGE);
         }
@@ -133,7 +127,7 @@ public class UploadZipMegaStepTests : UnitTest
                     cancellationToken))
                 .Returns(Result.Fail(ERROR_MESSAGE));
 
-            var result = await step.ExecuteAsync(cancellationToken);
+            var result = await step.ExecuteAsync(state, cancellationToken);
 
             result.Should().BeFailure().And.HaveError(ERROR_MESSAGE);
         }

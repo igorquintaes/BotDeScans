@@ -9,78 +9,101 @@ using System.Diagnostics;
 namespace BotDeScans.App.Features.Publish.Interaction;
 
 public class Handler(
-    DiscordPublisher discordPublisher,
-    State state)
+    DiscordPublisher discordPublisher)
 {
-    public virtual async Task<Result> ExecuteAsync(CancellationToken cancellationToken)
+    public virtual async Task<Result<State>> ExecuteAsync(State state, CancellationToken cancellationToken)
     {
         var managementSteps = state.Steps.ManagementSteps;
         var publishSteps = state.Steps.PublishSteps;
 
-        var result = await discordPublisher.UpdateTrackingMessageAsync(cancellationToken);
-        if (result.IsFailed)
-            return result;
+        var trackingResult = await discordPublisher.UpdateTrackingMessageAsync(state, cancellationToken);
+        if (trackingResult.IsFailed)
+            return trackingResult;
 
-        var managementExecution = await ExecuteChainAsync(
-            result,
-            managementSteps.Select(data => (
-                Step: (IStep)data.Step,
-                Execute: (Func<Task<Result>>)(() => ExecuteAsync((data.Step, data.Info), cancellationToken)))));
+        var currentState = trackingResult.Value;
+
+        var managementExecution = await RunChainAsync(
+            trackingResult.ToResult(),
+            currentState,
+            managementSteps.Select(data => ((IStep)data.Step, data.Info)),
+            RunStepAsync,
+            cancellationToken);
         if (managementExecution.ShouldStop)
-            return managementExecution.Result;
+            return managementExecution.Result.IsFailed
+                ? managementExecution.Result.ToResult<State>()
+                : Result.Ok(managementExecution.State);
 
-        var validationExecution = await ExecuteChainAsync(
+        currentState = managementExecution.State;
+
+        var validationExecution = await RunChainAsync(
             managementExecution.Result,
-            publishSteps.Select(data => (
-                Step: (IStep)data.Step,
-                Execute: (Func<Task<Result>>)(() => ValidateAsync((data.Step, data.Info), cancellationToken)))));
+            currentState,
+            publishSteps.Select(data => ((IStep)data.Step, data.Info)),
+            RunValidationAsync,
+            cancellationToken);
         if (validationExecution.ShouldStop)
-            return validationExecution.Result;
+            return validationExecution.Result.IsFailed
+                ? validationExecution.Result.ToResult<State>()
+                : Result.Ok(validationExecution.State);
 
-        var publishExecution = await ExecuteChainAsync(
+        currentState = validationExecution.State;
+
+        var publishExecution = await RunChainAsync(
             validationExecution.Result,
-            publishSteps.Select(data => (
-                Step: (IStep)data.Step,
-                Execute: (Func<Task<Result>>)(() => ExecuteAsync((data.Step, data.Info), cancellationToken)))));
-        return publishExecution.Result;
+            currentState,
+            publishSteps.Select(data => ((IStep)data.Step, data.Info)),
+            RunStepAsync,
+            cancellationToken);
+
+        return publishExecution.Result.IsFailed
+            ? publishExecution.Result.ToResult<State>()
+            : Result.Ok(publishExecution.State);
     }
 
-    private static async Task<(Result Result, bool ShouldStop)> ExecuteChainAsync(
+    private static async Task<(Result Result, State State, bool ShouldStop)> RunChainAsync(
         Result aggregate,
-        IEnumerable<(IStep Step, Func<Task<Result>> Execute)> chain)
+        State state,
+        IEnumerable<(IStep Step, StepInfo Info)> chain,
+        Func<(IStep Step, StepInfo Info), State, CancellationToken, Task<Result<State>>> stepAction,
+        CancellationToken cancellationToken)
     {
-        foreach (var (Step, Execute) in chain)
+        foreach (var item in chain)
         {
-            var stepResult = await Execute();
-            aggregate = Result.Merge(aggregate, stepResult);
+            var stepResult = await stepAction(item, state, cancellationToken);
+            if (stepResult.IsSuccess)
+                state = stepResult.Value;
 
-            if (stepResult.IsFailed && Step.ContinueOnError is false)
-                return (aggregate, true);
+            aggregate = Result.Merge(aggregate, stepResult.ToResult());
+
+            if (stepResult.IsFailed && item.Step.ContinueOnError is false)
+                return (aggregate, state, true);
         }
 
-        return (aggregate, false);
+        return (aggregate, state, false);
     }
 
-    private async Task<Result> ValidateAsync(
-        (IPublishStep Step, StepInfo Info) data,
-        CancellationToken cancellationToken)
-    {
-        if (data.Info.Status == StepStatus.Skip)
-            return Result.Ok();
-
-        var result = await data.Step.SafeCallAsync(x => x.ValidateAsync(cancellationToken));
-        return await HandleResult(result, data.Info, cancellationToken);
-    }
-
-    private async Task<Result> ExecuteAsync(
+    private async Task<Result<State>> RunValidationAsync(
         (IStep Step, StepInfo Info) data,
+        State state,
         CancellationToken cancellationToken)
     {
         if (data.Info.Status == StepStatus.Skip)
-            return Result.Ok();
+            return Result.Ok(state);
+
+        var result = await ((IPublishStep)data.Step).SafeCallAsync(x => x.ValidateAsync(state, cancellationToken));
+        return await HandleResult(result, data.Step, state, cancellationToken);
+    }
+
+    private async Task<Result<State>> RunStepAsync(
+        (IStep Step, StepInfo Info) data,
+        State state,
+        CancellationToken cancellationToken)
+    {
+        if (data.Info.Status == StepStatus.Skip)
+            return Result.Ok(state);
 
         var stopwatch = Stopwatch.StartNew();
-        var result = await data.Step.SafeCallAsync(x => x.ExecuteAsync(cancellationToken));
+        var result = await data.Step.SafeCallAsync(x => x.ExecuteAsync(state, cancellationToken));
         stopwatch.Stop();
 
         Log.Information(
@@ -89,17 +112,29 @@ public class Handler(
             stopwatch.ElapsedMilliseconds,
             result.IsSuccess ? "Success" : "Failure");
 
-        return await HandleResult(result, data.Info, cancellationToken);
+        var handleResult = await HandleResult(result.ToResult(), data.Step, state, cancellationToken);
+        return handleResult.IsFailed
+            ? handleResult
+            : Result.Ok(result.IsSuccess ? result.Value with { Steps = handleResult.Value.Steps } : handleResult.Value);
     }
 
-    private async Task<Result> HandleResult(
+    private async Task<Result<State>> HandleResult(
         Result result,
-        StepInfo info,
+        IStep step,
+        State state,
         CancellationToken cancellationToken)
     {
-        info.UpdateStatus(result);
+        var updatedInfo = state.Steps[step].UpdateStatus(result);
+        var updatedSteps = state.Steps.WithUpdatedStepInfo(step, updatedInfo);
+        var updatedState = state with { Steps = updatedSteps };
 
-        var feedbackResult = await discordPublisher.UpdateTrackingMessageAsync(cancellationToken);
-        return Result.Merge(result, feedbackResult);
+        var feedbackResult = await discordPublisher.UpdateTrackingMessageAsync(updatedState, cancellationToken);
+        if (feedbackResult.IsFailed)
+            return Result.Merge(result, feedbackResult.ToResult()).ToResult<State>();
+
+        var merged = Result.Merge(result, feedbackResult.ToResult());
+        return merged.IsFailed
+            ? merged.ToResult<State>()
+            : feedbackResult;
     }
 }

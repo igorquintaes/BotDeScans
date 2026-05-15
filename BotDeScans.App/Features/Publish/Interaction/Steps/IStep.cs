@@ -6,7 +6,7 @@ namespace BotDeScans.App.Features.Publish.Interaction.Steps;
 
 public interface IStep
 {
-    Task<Result> ExecuteAsync(CancellationToken cancellationToken);
+    Task<Result<State>> ExecuteAsync(State state, CancellationToken cancellationToken);
     StepName Name { get; }
     StepType Type { get; }
     bool ContinueOnError => false;
@@ -20,5 +20,5 @@ public interface IManagementStep : IStep
 public interface IPublishStep : IStep
 {
     StepName? Dependency { get; }
-    abstract Task<Result> ValidateAsync(CancellationToken cancellationToken);
+    abstract Task<Result> ValidateAsync(State state, CancellationToken cancellationToken);
 }

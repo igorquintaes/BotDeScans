@@ -26,56 +26,56 @@ public class StepInfoTests : UnitTest
         public void GivenManagementStepTypeShouldChangeStatusToSuccessWhenResultIsSuccess()
         {
             var stepInfo = new StepInfo(A.Fake<IManagementStep>());
-            stepInfo.UpdateStatus(Result.Ok());
+            var updated = stepInfo.UpdateStatus(Result.Ok());
 
-            stepInfo.Status.Should().Be(StepStatus.Success);
+            updated.Status.Should().Be(StepStatus.Success);
         }
 
         [Fact]
         public void GivenPublishStepTypeInFirstCallShouldChangeStatusToQueuedToExecutionWhenResultIsSuccess()
         {
             var stepInfo = new StepInfo(A.Fake<IPublishStep>());
-            stepInfo.UpdateStatus(Result.Ok());
+            var updated = stepInfo.UpdateStatus(Result.Ok());
 
-            stepInfo.Status.Should().Be(StepStatus.QueuedForExecution);
+            updated.Status.Should().Be(StepStatus.QueuedForExecution);
         }
 
         [Fact]
         public void GivenPublishStepTypeInSecondCallShouldChangeStatusToSuccessWhenResultIsSuccess()
         {
             var stepInfo = new StepInfo(A.Fake<IPublishStep>());
-            stepInfo.UpdateStatus(Result.Ok());
-            stepInfo.UpdateStatus(Result.Ok());
+            var updated = stepInfo.UpdateStatus(Result.Ok())
+                                  .UpdateStatus(Result.Ok());
 
-            stepInfo.Status.Should().Be(StepStatus.Success);
+            updated.Status.Should().Be(StepStatus.Success);
         }
 
         [Fact]
         public void GivenManagementStepTypeShouldChangeStatusToErrorWhenResultIsFailed()
         {
             var stepInfo = new StepInfo(A.Fake<IManagementStep>());
-            stepInfo.UpdateStatus(Result.Fail("some message"));
+            var updated = stepInfo.UpdateStatus(Result.Fail("some message"));
 
-            stepInfo.Status.Should().Be(StepStatus.Error);
+            updated.Status.Should().Be(StepStatus.Error);
         }
 
         [Fact]
         public void GivenPublishStepTypeInFirstCallShouldChangeStatusToErrorWhenResultIsFailed()
         {
             var stepInfo = new StepInfo(A.Fake<IPublishStep>());
-            stepInfo.UpdateStatus(Result.Fail("some message"));
+            var updated = stepInfo.UpdateStatus(Result.Fail("some message"));
 
-            stepInfo.Status.Should().Be(StepStatus.Error);
+            updated.Status.Should().Be(StepStatus.Error);
         }
 
         [Fact]
         public void GivenPublishStepTypeInSecondCallShouldChangeStatusToErrorWhenResultIsFailed()
         {
             var stepInfo = new StepInfo(A.Fake<IPublishStep>());
-            stepInfo.UpdateStatus(Result.Ok());
-            stepInfo.UpdateStatus(Result.Fail("some message"));
+            var updated = stepInfo.UpdateStatus(Result.Ok())
+                                  .UpdateStatus(Result.Fail("some message"));
 
-            stepInfo.Status.Should().Be(StepStatus.Error);
+            updated.Status.Should().Be(StepStatus.Error);
         }
     }
 

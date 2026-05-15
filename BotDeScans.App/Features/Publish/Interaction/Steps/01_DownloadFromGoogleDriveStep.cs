@@ -8,31 +8,31 @@ namespace BotDeScans.App.Features.Publish.Interaction.Steps;
 
 public class DownloadFromGoogleDriveStep(
     FileReleaseService fileReleaseService,
-    GoogleDriveService googleDriveService,
-    IPublishContext context) : IManagementStep
+    GoogleDriveService googleDriveService) : IManagementStep
 {
     public StepType Type => StepType.Management;
     public StepName Name => StepName.Download;
     public bool IsMandatory => true;
 
-    public async Task<Result> ExecuteAsync(CancellationToken cancellationToken)
+    public async Task<Result<State>> ExecuteAsync(State state, CancellationToken cancellationToken)
     {
         var downloadDirectory = fileReleaseService.CreateScopedDirectory();
         var coverDirectory = fileReleaseService.CreateScopedDirectory();
 
         var saveFilesResult = await googleDriveService.SaveFilesAsync(
-            context.ChapterInfo.GoogleDriveUrl.Id,
+            state.ChapterInfo.GoogleDriveUrl.Id,
             downloadDirectory,
             cancellationToken);
 
         if (saveFilesResult.IsFailed)
-            return saveFilesResult;
+            return saveFilesResult.ToResult<State>();
 
-        context.SetOriginContentFolder(downloadDirectory);
-        context.SetCoverFilePath(fileReleaseService.MoveCoverFile(
-            downloadDirectory,
-            coverDirectory));
+        var updatedState = state with
+        {
+            OriginContentFolder = downloadDirectory,
+            CoverFilePath = fileReleaseService.MoveCoverFile(downloadDirectory, coverDirectory)
+        };
 
-        return Result.Ok();
+        return Result.Ok(updatedState);
     }
 }

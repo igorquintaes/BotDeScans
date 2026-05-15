@@ -1,4 +1,4 @@
-﻿using BotDeScans.App.Features.Publish.Interaction;
+using BotDeScans.App.Features.Publish.Interaction;
 using BotDeScans.App.Features.Publish.Interaction.Steps;
 using BotDeScans.App.Features.Publish.Interaction.Steps.Enums;
 using BotDeScans.App.Models.DTOs;
@@ -12,11 +12,29 @@ namespace BotDeScans.UnitTests.Specs.Features.Publish.Interaction.Steps;
 public class UploadSakuraMangasStepTests : UnitTest
 {
     private readonly UploadSakuraMangasStep step;
+    private readonly State state;
 
     public UploadSakuraMangasStepTests()
     {
-        fixture.FreezeFake<IPublishContext>();
         fixture.FreezeFake<SakuraMangasService>();
+
+        var titleReference = new TitleReference
+        {
+            Key = ExternalReference.SakuraMangas,
+            Value = fixture.Create<string>()
+        };
+
+        var title = fixture
+            .Build<Title>()
+            .With(x => x.References, [titleReference])
+            .Create();
+
+        state = new State
+        {
+            Title = title,
+            ChapterInfo = fixture.Create<Info>(),
+            ZipFilePath = fixture.Create<string>()
+        };
 
         step = fixture.Create<UploadSakuraMangasStep>();
     }
@@ -45,7 +63,7 @@ public class UploadSakuraMangasStepTests : UnitTest
         [Fact]
         public async Task ShouldReturnSuccess()
         {
-            var result = await step.ValidateAsync(cancellationToken);
+            var result = await step.ValidateAsync(state, cancellationToken);
 
             result.Should().BeSuccess();
         }
@@ -59,38 +77,13 @@ public class UploadSakuraMangasStepTests : UnitTest
         {
             sakuraMangasLink = fixture.Create<string>();
 
-            var titleReference = new TitleReference
-            {
-                Key = ExternalReference.SakuraMangas,
-                Value = fixture.Create<string>()
-            };
-
-            var chapterInfo = fixture.Create<Info>();
-            var zipPath = fixture.Create<string>();
-            var title = fixture
-                .Build<Title>()
-                .With(x => x.References, [titleReference])
-                .Create();
-
-            A.CallTo(() => fixture
-                .FreezeFake<IPublishContext>().ChapterInfo)
-                .Returns(chapterInfo);
-
-            A.CallTo(() => fixture
-                .FreezeFake<IPublishContext>()
-                .ZipFilePath).Returns(zipPath);
-
-            A.CallTo(() => fixture
-                .FreezeFake<IPublishContext>().Title)
-                .Returns(title);
-
             A.CallTo(() => fixture
                 .FreezeFake<SakuraMangasService>()
                 .UploadAsync(
-                    chapterInfo.ChapterNumber,
-                    chapterInfo.ChapterName,
-                    title.References.Single().Value,
-                    zipPath,
+                    state.ChapterInfo.ChapterNumber,
+                    state.ChapterInfo.ChapterName,
+                    state.Title.References.Single().Value,
+                    state.ZipFilePath!,
                     cancellationToken))
                 .Returns(Result.Ok(sakuraMangasLink));
         }
@@ -98,7 +91,7 @@ public class UploadSakuraMangasStepTests : UnitTest
         [Fact]
         public async Task GivenSuccessfulExecutionShouldReturnSuccessResult()
         {
-            var result = await step.ExecuteAsync(cancellationToken);
+            var result = await step.ExecuteAsync(state, cancellationToken);
 
             result.Should().BeSuccess();
         }
@@ -106,12 +99,9 @@ public class UploadSakuraMangasStepTests : UnitTest
         [Fact]
         public async Task GivenSuccessfulExecutionShouldSaveSakuraMangasLinkInContext()
         {
-            await step.ExecuteAsync(cancellationToken);
+            var result = await step.ExecuteAsync(state, cancellationToken);
 
-            A.CallTo(() => fixture
-                .FreezeFake<IPublishContext>()
-                .SetSakuraMangasLink(sakuraMangasLink))
-                .MustHaveHappenedOnceExactly();
+            result.Value.SakuraMangasLink.Should().Be(sakuraMangasLink);
         }
 
         [Fact]
@@ -129,7 +119,7 @@ public class UploadSakuraMangasStepTests : UnitTest
                     cancellationToken))
                 .Returns(Result.Fail(ERROR_MESSAGE));
 
-            var result = await step.ExecuteAsync(cancellationToken);
+            var result = await step.ExecuteAsync(state, cancellationToken);
 
             result.Should().BeFailure().And.HaveError(ERROR_MESSAGE);
         }

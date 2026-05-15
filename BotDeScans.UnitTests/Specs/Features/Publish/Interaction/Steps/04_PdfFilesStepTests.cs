@@ -11,12 +11,19 @@ namespace BotDeScans.UnitTests.Specs.Features.Publish.Interaction.Steps;
 public class PdfFilesStepTests : UnitTest
 {
     private readonly PdfFilesStep step;
+    private readonly State state;
 
     public PdfFilesStepTests()
     {
-        fixture.FreezeFake<IPublishContext>();
         fixture.FreezeFake<FileService>();
         fixture.FreezeFake<FileReleaseService>();
+
+        state = new State
+        {
+            ChapterInfo = fixture.Create<Info>(),
+            OriginContentFolder = fixture.Create<string>()
+        };
+
         step = fixture.Create<PdfFilesStep>();
     }
 
@@ -37,20 +44,12 @@ public class PdfFilesStepTests : UnitTest
 
     public class ExecuteAsync : PdfFilesStepTests
     {
+        private readonly string pdfPath;
+
         public ExecuteAsync()
         {
             var scopedDirectory = fixture.Create<string>();
-            var pdfDirectory = fixture.Create<string>();
-            var chapterInfo = fixture.Create<Info>();
-            var originFolder = fixture.Create<string>();
-
-            A.CallTo(() => fixture
-                .FreezeFake<IPublishContext>().ChapterInfo)
-                .Returns(chapterInfo);
-
-            A.CallTo(() => fixture
-                .FreezeFake<IPublishContext>().OriginContentFolder)
-                .Returns(originFolder);
+            pdfPath = fixture.Create<string>();
 
             A.CallTo(() => fixture
                 .FreezeFake<FileReleaseService>()
@@ -60,16 +59,16 @@ public class PdfFilesStepTests : UnitTest
             A.CallTo(() => fixture
                 .FreezeFake<FileService>()
                 .CreatePdfFileAsync(
-                    chapterInfo.ChapterNumber,
-                    originFolder,
+                    state.ChapterInfo.ChapterNumber,
+                    state.OriginContentFolder,
                     scopedDirectory))
-                .Returns(Result.Ok(pdfDirectory));
+                .Returns(Result.Ok(pdfPath));
         }
 
         [Fact]
         public async Task GivenSuccessfulExecutionShouldReturnSuccessResult()
         {
-            var result = await step.ExecuteAsync(cancellationToken);
+            var result = await step.ExecuteAsync(state, cancellationToken);
 
             result.Should().BeSuccess();
         }
@@ -77,12 +76,9 @@ public class PdfFilesStepTests : UnitTest
         [Fact]
         public async Task GivenSuccessfulExecutionShouldSetPdfFilePath()
         {
-            await step.ExecuteAsync(cancellationToken);
+            var result = await step.ExecuteAsync(state, cancellationToken);
 
-            A.CallTo(() => fixture
-                .FreezeFake<IPublishContext>()
-                .SetPdfPath(A<string>.Ignored))
-                .MustHaveHappenedOnceExactly();
+            result.Value.PdfFilePath.Should().Be(pdfPath);
         }
 
         [Fact]
@@ -95,7 +91,7 @@ public class PdfFilesStepTests : UnitTest
                 .CreatePdfFileAsync(A<string>.Ignored, A<string>.Ignored, A<string>.Ignored))
                 .Returns(Result.Fail(ERROR_MESSAGE));
 
-            var result = await step.ExecuteAsync(cancellationToken);
+            var result = await step.ExecuteAsync(state, cancellationToken);
 
             result.Should().BeFailure().And.HaveError(ERROR_MESSAGE);
         }

@@ -26,8 +26,8 @@ public class GoogleDriveFoldersService(
             maxResult: 1,
             cancellationToken);
 
-        return resourcesResult.IsFailed 
-             ? resourcesResult.ToResult() 
+        return resourcesResult.IsFailed
+             ? resourcesResult.ToResult()
              : resourcesResult.Value.SingleOrDefault();
     }
 
