@@ -7,6 +7,7 @@ using Google.Apis.Blogger.v3;
 using Google.Apis.Blogger.v3.Data;
 using Microsoft.Extensions.Configuration;
 using System.Reflection;
+
 namespace BotDeScans.UnitTests.Specs.Services.Initializations.Factories;
 
 public class GoogleBloggerClientFactoryTests : UnitTest

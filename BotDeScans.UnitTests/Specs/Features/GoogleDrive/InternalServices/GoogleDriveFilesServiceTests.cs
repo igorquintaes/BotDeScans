@@ -386,7 +386,7 @@ public class GoogleDriveFilesServiceTests : UnitTest
 
             using var _ = new AssertionScope();
             result.Should().BeFailure();
-            result.Should().HaveError($"Falha ao efetuar download do arquivo {file.Name} no Google Drive.");
+            result.Should().HaveError($"Ocorreu um erro ao tentar baixar o arquivo {file.Name} do Google Drive.");
             result.Errors.Should().HaveCount(1);
             result.Errors.FirstOrDefault()?.Reasons.Should().HaveCount(1);
             result.Errors.FirstOrDefault()?.Reasons.FirstOrDefault()?.Should().BeOfType<ExceptionalError>();

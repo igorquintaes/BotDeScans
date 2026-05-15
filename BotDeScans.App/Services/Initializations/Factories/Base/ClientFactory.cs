@@ -1,4 +1,5 @@
 ﻿using FluentResults;
+
 namespace BotDeScans.App.Services.Initializations.Factories.Base;
 
 public interface IClientFactory
@@ -26,30 +27,30 @@ public abstract class ClientFactory<TClient> : IClientFactory
         }
     }
 
-    public static Result ConfigFileExists(string fileName)
+    public static Result<string> ConfigFileExists(string fileName)
     {
         var filePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "config", fileName);
-        if (File.Exists(filePath))
-            return Result.Ok();
+        var errorMessage = $"Unable to find {typeof(TClient).Name} file: {filePath}";
+        var errors = File.Exists(filePath) ? [] : new[] { errorMessage };
 
-        return Result.Fail($"Unable to find {typeof(TClient).Name} file: {filePath}");
+        return Result.Ok(filePath).WithErrors(errors);
     }
 
     protected static Result<FileStream> GetConfigFileAsStream(string fileName)
     {
-        var filePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "config", fileName);
-        if (File.Exists(filePath))
-            return Result.Ok(new FileStream(filePath, FileMode.Open, FileAccess.Read));
+        var configFileResult = ConfigFileExists(fileName);
 
-        return Result.Fail($"Unable to find {typeof(TClient).Name} file: {filePath}");
+        return configFileResult.IsSuccess
+            ? new FileStream(configFileResult.Value, FileMode.Open, FileAccess.Read)
+            : configFileResult.ToResult();
     }
 
     async Task<Result<object>> IClientFactory.SafeCreateObjectAsync(CancellationToken cancellationToken)
     {
         var result = await SafeCreateAsync(cancellationToken);
-        return result.IsFailed
-            ? Result.Fail<object>(result.Errors)
-            : Result.Ok<object>(result.Value!);
+
+        return Result.Ok<object>(result.ValueOrDefault!)
+                     .WithReasons(result.Reasons);
     }
 
     Task<Result> IClientFactory.HealthCheckAsync(object client, CancellationToken cancellationToken)

@@ -34,22 +34,22 @@ public class GoogleDriveResourcesService(
         if (requestResult.IsFailed)
             return requestResult.ToResult();
 
-        var validationResult = ValidateResultCount(requestResult.Value.Files.Count, minResult, maxResult);
-        if (validationResult.IsFailed)
-            return validationResult;
+        var validationResult = ValidateResultCount(
+            requestResult.Value.Files.Count, 
+            minResult, 
+            maxResult);
 
-        return Result.Ok(requestResult.Value.Files);
+        return Result.Ok(requestResult.Value.Files)
+              .WithReasons(validationResult.Reasons);
     }
 
     private static Result ValidateResultCount(int count, int? minResult, int? maxResult)
     {
-        if (minResult is not null && count < minResult)
-            return Result.Fail($"Foi encontrado menos resultados para os dados mencionados, quando era esperado no mínimo {minResult}.");
+        const string RANGE_ERROR = "Foi encontrado {0} resultados para os dados mencionados, quando era esperado no {1} {2}.";
 
-        if (maxResult is not null && count > maxResult)
-            return Result.Fail($"Foi encontrado mais resultados para os dados mencionados, quando era esperado no máximo {maxResult}.");
-
-        return Result.Ok();
+        return count < minResult ? Result.Fail(string.Format(RANGE_ERROR, count, "mínimo", minResult))
+             : count > maxResult ? Result.Fail(string.Format(RANGE_ERROR, count, "máximo", maxResult))
+             : Result.Ok();
     }
 
     public virtual File CreateResourceObject(

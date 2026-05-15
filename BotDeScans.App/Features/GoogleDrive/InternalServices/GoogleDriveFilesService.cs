@@ -28,10 +28,8 @@ public class GoogleDriveFilesService(
             maxResult: 1,
             cancellationToken);
 
-        if (resourcesResult.IsFailed)
-            return resourcesResult.ToResult();
-
-        return resourcesResult.Value.SingleOrDefault();
+        return Result.Ok(resourcesResult.ValueOrDefault?.SingleOrDefault())
+                     .WithReasons(resourcesResult.Reasons);
     }
 
     public virtual Task<Result<IList<File>>> GetManyAsync(
@@ -39,6 +37,7 @@ public class GoogleDriveFilesService(
         CancellationToken cancellationToken = default)
     {
         const string FOLDER_MIMETYPE = "application/vnd.google-apps.folder";
+
         return googleDriveResourcesService.GetResourcesAsync(
             mimeType: default,
             forbiddenMimeType: FOLDER_MIMETYPE,
@@ -67,9 +66,9 @@ public class GoogleDriveFilesService(
 
         if (withPublicUrl)
         {
-            var persmissionResult = await googleDrivePermissionsService.CreatePublicReaderPermissionAsync(uploadResult.Value.Id, cancellationToken);
-            if (persmissionResult.IsFailed)
-                return persmissionResult.ToResult();
+            var permissionResult = await googleDrivePermissionsService.CreatePublicReaderPermissionAsync(uploadResult.Value.Id, cancellationToken);
+            if (permissionResult.IsFailed)
+                return permissionResult.ToResult();
         }
 
         return uploadResult;
@@ -92,14 +91,17 @@ public class GoogleDriveFilesService(
         string targetDirectory,
         CancellationToken cancellationToken = default)
     {
+        const string ERROR_MESSAGE = "Ocorreu um erro ao tentar baixar o arquivo {0} do Google Drive.";
+
         var filePath = Path.Combine(targetDirectory, file.Name);
         var getRequest = driveService.Files.Get(file.Id);
+
         await using var stream = streamWrapper.CreateFileStream(filePath, FileMode.Create);
         var downloadProgress = await getRequest.DownloadAsync(stream, cancellationToken);
 
-        return downloadProgress.Status == DownloadStatus.Completed
-            ? Result.Ok()
-            : Result.Fail(new Error($"Falha ao efetuar download do arquivo {file.Name} no Google Drive.")
-                    .CausedBy(downloadProgress.Exception));
+        return Result.OkIf(
+               isSuccess: downloadProgress.Status == DownloadStatus.Completed,
+               error: new Error(string.Format(ERROR_MESSAGE, file.Name))
+                               .CausedBy(downloadProgress.Exception));
     }
 }

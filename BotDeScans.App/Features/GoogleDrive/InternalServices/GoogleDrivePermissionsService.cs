@@ -2,6 +2,7 @@
 using FluentResults;
 using Google.Apis.Drive.v3;
 using Google.Apis.Drive.v3.Data;
+
 namespace BotDeScans.App.Features.GoogleDrive.InternalServices;
 
 public class GoogleDrivePermissionsService(
@@ -17,16 +18,21 @@ public class GoogleDrivePermissionsService(
         string resourceId,
         CancellationToken cancellationToken)
     {
+        const StringComparison COMPARER = StringComparison.InvariantCultureIgnoreCase;
+        
         var permissionsRequest = driveService.Permissions.List(resourceId);
         permissionsRequest.Fields = "*";
 
-        var permissionsResult = await googleWrapper.ExecuteAsync(permissionsRequest, cancellationToken);
-        if (permissionsResult.IsFailed)
-            return permissionsResult.ToResult();
-
-        return Result.Ok(permissionsResult.Value.Permissions.Where(x =>
-            x.EmailAddress.Equals(email, StringComparison.InvariantCultureIgnoreCase) &&
-            x.Type.Equals(USER_PERMISSION_TYPE, StringComparison.InvariantCultureIgnoreCase)));
+        var permissionsResult = await googleWrapper.ExecuteAsync(
+            permissionsRequest, 
+            cancellationToken);
+        
+        return permissionsResult.ValueOrDefault?.Permissions
+              .Where(permission => 
+                     permission.EmailAddress.Equals(email, COMPARER) &&
+                     permission.Type.Equals(USER_PERMISSION_TYPE, COMPARER))
+              .ToResult() 
+            ?? permissionsResult.ToResult();
     }
 
     public virtual Task<Result<Permission>> CreatePublicReaderPermissionAsync(
