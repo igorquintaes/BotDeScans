@@ -62,8 +62,8 @@ public class FileListValidator : AbstractValidator<IList<File>>
     private static bool ShouldExpectedSizeCoverFile(IList<File> files) =>
         files.Where(x => x.Kind == "drive#file")
              .Where(x => FileReleaseService.ValidCoverFiles.Contains(x.Name, StringComparer.InvariantCulture))
-             .All(x => x.Size is not null 
-                    && x.Size <= 8 * 1024 * 1024);
+             .All(x => x.Size is not null
+                    and <= (8 * 1024 * 1024));
 
     private static bool ShouldHaveExactlyOneCreditsFile(IList<File> files) =>
         files.Where(x => x.Kind == "drive#file")

@@ -1,46 +1,34 @@
 ﻿using BotDeScans.App.Features.Publish.Interaction;
+using BotDeScans.App.Features.Publish.Interaction.Models;
 using BotDeScans.App.Features.Publish.Interaction.Pings;
 using BotDeScans.App.Features.Publish.Interaction.Steps;
-using BotDeScans.App.Features.Publish.Interaction.Steps.Enums;
 using BotDeScans.App.Infra.Repositories;
+using BotDeScans.App.Models.DTOs;
 using BotDeScans.App.Models.Entities;
 using BotDeScans.App.Models.Entities.Enums;
 using FluentValidation;
 using FluentValidation.Results;
-namespace BotDeScans.UnitTests.Specs.Features.Publish.Interaction.Steps;
 
-public class SetupStepTests : UnitTest
+namespace BotDeScans.UnitTests.Specs.Features.Publish.Interaction;
+
+public class SetupServiceTests : UnitTest
 {
-    private readonly SetupStep step;
+    private readonly SetupService service;
 
-    public SetupStepTests()
+    public SetupServiceTests()
     {
         fixture.Freeze<State>();
+        fixture.FreezeFake<StepsService>();
         fixture.FreezeFake<TitleRepository>();
         fixture.FreezeFake<IValidator<State>>();
         fixture.Inject<IEnumerable<Ping>>([fixture.FreezeFake<Ping>()]);
 
-        step = fixture.Create<SetupStep>();
+        service = fixture.Create<SetupService>();
     }
 
-    public class Properties : SetupStepTests
+    public class SetupAsync : SetupServiceTests
     {
-        [Fact]
-        public void ShouldHaveExpectedType() =>
-            step.Type.Should().Be(StepType.Management);
-
-        [Fact]
-        public void ShouldHaveExpectedName() =>
-            step.Name.Should().Be(StepName.Setup);
-
-        [Fact]
-        public void ShouldHaveExpectedIsMandatory() =>
-            step.IsMandatory.Should().Be(true);
-    }
-
-    public class ExecuteAsync : SetupStepTests
-    {
-        public ExecuteAsync()
+        public SetupAsync()
         {
             A.CallTo(() => fixture
                 .FreezeFake<IValidator<State>>()
@@ -55,25 +43,60 @@ public class SetupStepTests : UnitTest
         [Fact]
         public async Task GivenSuccessfulExecutionShouldReturnSuccessResult()
         {
-            var result = await step.ExecuteAsync(cancellationToken);
+            var result = await service.SetupAsync(fixture.Create<Info>(), cancellationToken);
 
             result.Should().BeSuccess();
         }
 
         [Fact]
-        public async Task GivenSuccessfulExecutionShouldSetPublishStateTitle()
+        public async Task GivenSuccessfulExecutionShouldSetPublishStateChapterInfo()
         {
+            var info = fixture.Create<Info>();
+            await service.SetupAsync(info, cancellationToken);
+
+            fixture.Freeze<State>().ChapterInfo.Should().Be(info);
+        }
+
+        [Fact]
+        public async Task GivenSuccessfulExecutionShouldSetPublishStateSteps()
+        {
+            var info = fixture.Create<Info>();
             var title = fixture
                 .Build<Title>()
-                .With(x => x.Id, fixture.Freeze<State>().ChapterInfo.TitleId)
+                .With(x => x.Id, info.TitleId)
                 .Create();
 
             A.CallTo(() => fixture
                 .FreezeFake<TitleRepository>()
-                .GetTitleAsync(title.Id, cancellationToken))
+                .GetTitleAsync(info.TitleId, cancellationToken))
                 .Returns(title);
 
-            await step.ExecuteAsync(cancellationToken);
+            var enabledSteps = fixture.Create<EnabledSteps>();
+            A.CallTo(() => fixture
+                .FreezeFake<StepsService>()
+                .GetEnabledSteps(A<IReadOnlyCollection<StepName>>._))
+                .Returns(enabledSteps);
+
+            await service.SetupAsync(info, cancellationToken);
+
+            fixture.Freeze<State>().Steps.Should().BeSameAs(enabledSteps);
+        }
+
+        [Fact]
+        public async Task GivenSuccessfulExecutionShouldSetPublishStateTitle()
+        {
+            var info = fixture.Create<Info>();
+            var title = fixture
+                .Build<Title>()
+                .With(x => x.Id, info.TitleId)
+                .Create();
+
+            A.CallTo(() => fixture
+                .FreezeFake<TitleRepository>()
+                .GetTitleAsync(info.TitleId, cancellationToken))
+                .Returns(title);
+
+            await service.SetupAsync(info, cancellationToken);
 
             fixture.Freeze<State>().Title.Should().Be(title);
         }
@@ -88,7 +111,7 @@ public class SetupStepTests : UnitTest
                 .GetPingAsTextAsync(cancellationToken))
                 .Returns(ping);
 
-            await step.ExecuteAsync(cancellationToken);
+            await service.SetupAsync(fixture.Create<Info>(), cancellationToken);
 
             fixture.Freeze<State>().InternalData.Pings.Should().Be(ping);
         }
@@ -101,7 +124,7 @@ public class SetupStepTests : UnitTest
                 .GetTitleAsync(A<int>.Ignored, cancellationToken))
                 .Returns(null as Title);
 
-            var result = await step.ExecuteAsync(cancellationToken);
+            var result = await service.SetupAsync(fixture.Create<Info>(), cancellationToken);
 
             result.Should().BeFailure().And.HaveError("Obra não encontrada.");
         }
@@ -116,10 +139,9 @@ public class SetupStepTests : UnitTest
                 .ValidateAsync(fixture.Freeze<State>(), cancellationToken))
                 .Returns(new ValidationResult([new ValidationFailure("prop", ERROR_MESSAGE)]));
 
-            var result = await step.ExecuteAsync(cancellationToken);
+            var result = await service.SetupAsync(fixture.Create<Info>(), cancellationToken);
 
             result.Should().BeFailure().And.HaveError(ERROR_MESSAGE);
         }
     }
 }
-

@@ -45,8 +45,8 @@ public class HandlerTests : UnitTest
         public async Task GivenSuccessfulExecutionShouldReturnSuccessResult()
         {
             var result = await handler.ExecuteAsync(
-                fixture.Create<string>(), 
-                fixture.Create<string>(), 
+                fixture.Create<string>(),
+                fixture.Create<string>(),
                 cancellationToken);
 
             result.Should().BeSuccess();

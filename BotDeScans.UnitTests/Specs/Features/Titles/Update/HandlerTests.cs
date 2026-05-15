@@ -161,7 +161,7 @@ public class HandlerTests : UnitTest
                 titleId,
                 cancellationToken);
 
-            result.Should().BeFailure().And.HaveError("Obra não encontrada."); 
+            result.Should().BeFailure().And.HaveError("Obra não encontrada.");
 
             A.CallTo(() => fixture
                 .FreezeFake<TitleRepository>()

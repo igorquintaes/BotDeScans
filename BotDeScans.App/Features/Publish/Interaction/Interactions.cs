@@ -1,15 +1,13 @@
-﻿using BotDeScans.App.Features.Publish.Interaction.Steps;
+﻿using BotDeScans.App.Models.DTOs;
 using Remora.Discord.Interactivity;
 using Remora.Results;
-using Serilog;
 using System.ComponentModel;
 
 namespace BotDeScans.App.Features.Publish.Interaction;
 
 public class Interactions(
     DiscordPublisher discordPublisher,
-    StepsService stepsService,
-    State interactionState,
+    SetupService setupService,
     Handler handler) : InteractionGroup
 {
     public const string MODAL_NAME = "Features.Publish";
@@ -24,10 +22,12 @@ public class Interactions(
         string message,
         string state)
     {
-        interactionState.ChapterInfo = new(driveUrl, chapterName, chapterNumber, chapterVolume, message, int.Parse(state));
-        interactionState.Steps = stepsService.GetEnabledSteps();
-
-        Log.Information(interactionState.ChapterInfo.ToString());
+        var setupResult = await setupService.SetupAsync(
+            new Info(driveUrl, chapterName, chapterNumber, chapterVolume, message, int.Parse(state)),
+            CancellationToken);
+        setupResult.LogIfFailed();
+        if (setupResult.IsFailed)
+            return await discordPublisher.ErrorReleaseMessageAsync(setupResult, CancellationToken);
 
         var result = await handler.ExecuteAsync(CancellationToken);
         result.LogIfFailed();

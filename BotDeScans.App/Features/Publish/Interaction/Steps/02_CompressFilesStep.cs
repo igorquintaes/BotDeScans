@@ -7,7 +7,7 @@ namespace BotDeScans.App.Features.Publish.Interaction.Steps;
 
 public class CompressFilesStep(
     ImageService imageService,
-    State state) : IManagementStep
+    IPublishContext context) : IManagementStep
 {
     public StepType Type => StepType.Management;
     public StepName Name => StepName.Compress;
@@ -22,7 +22,7 @@ public class CompressFilesStep(
             MaxDegreeOfParallelism = maxDegreeOfParallelism
         };
 
-        var files = Directory.GetFiles(state.InternalData.OriginContentFolder);
+        var files = Directory.GetFiles(context.OriginContentFolder);
         await Parallel.ForEachAsync(files, parallelOptions, async (filePath, ct) =>
         {
             var isGrayScale = imageService.IsGrayscale(filePath);

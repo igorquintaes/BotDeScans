@@ -1,4 +1,4 @@
-using BotDeScans.App.Extensions;
+﻿using BotDeScans.App.Extensions;
 using MangaDexSharp;
 
 namespace BotDeScans.UnitTests.Specs.Extensions;

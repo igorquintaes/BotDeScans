@@ -1,4 +1,4 @@
-using BotDeScans.App.Extensions;
+﻿using BotDeScans.App.Extensions;
 using FluentResults;
 using Google;
 using System.Net;

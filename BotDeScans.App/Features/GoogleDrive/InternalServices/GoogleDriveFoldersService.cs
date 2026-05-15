@@ -2,6 +2,7 @@
 using FluentResults;
 using Google.Apis.Drive.v3;
 using File = Google.Apis.Drive.v3.Data.File;
+
 namespace BotDeScans.App.Features.GoogleDrive.InternalServices;
 
 public class GoogleDriveFoldersService(
@@ -25,10 +26,9 @@ public class GoogleDriveFoldersService(
             maxResult: 1,
             cancellationToken);
 
-        if (resourcesResult.IsFailed)
-            return resourcesResult.ToResult();
-
-        return resourcesResult.Value.SingleOrDefault();
+        return resourcesResult.IsFailed 
+             ? resourcesResult.ToResult() 
+             : resourcesResult.Value.SingleOrDefault();
     }
 
     public virtual Task<Result<File>> CreateAsync(
@@ -39,6 +39,7 @@ public class GoogleDriveFoldersService(
         var resource = googleDriveResourcesService.CreateResourceObject(FOLDER_MIMETYPE, folderName, parentId);
         var createRequest = driveService.Files.Create(resource);
         createRequest.Fields = "webViewLink, id";
+
         return googleWrapper.ExecuteAsync(createRequest, cancellationToken);
     }
 }

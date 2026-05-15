@@ -14,7 +14,7 @@ public class AutocompleteStepNamesTests : UnitTest
     public class Identity : AutocompleteStepNamesTests
     {
         [Fact]
-        public void GivenValidIdentityShouldReturnExpectedType() => 
+        public void GivenValidIdentityShouldReturnExpectedType() =>
             autocomplete.Identity.Should().Be("autocomplete::stepnames");
     }
 

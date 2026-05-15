@@ -2,6 +2,7 @@
 using BotDeScans.App.Features.Publish.Interaction;
 using BotDeScans.App.Features.Publish.Interaction.Steps;
 using BotDeScans.App.Features.Publish.Interaction.Steps.Enums;
+using BotDeScans.App.Models.Entities;
 using BotDeScans.App.Models.Entities.Enums;
 using FluentResults;
 using File = Google.Apis.Drive.v3.Data.File;
@@ -14,7 +15,7 @@ public class UploadPdfGoogleDriveStepTests : UnitTest
 
     public UploadPdfGoogleDriveStepTests()
     {
-        fixture.Freeze<State>();
+        fixture.FreezeFake<IPublishContext>();
         fixture.FreezeFake<GoogleDriveService>();
         step = fixture.Create<UploadPdfGoogleDriveStep>();
     }
@@ -55,10 +56,20 @@ public class UploadPdfGoogleDriveStepTests : UnitTest
             var titleFile = fixture.Create<File>();
             titleFile.WebViewLink = FILE_LINK;
 
+            var title = fixture.Create<Title>();
+            var pdfPath = fixture.Create<string>();
+
+            A.CallTo(() => fixture
+                .FreezeFake<IPublishContext>().Title)
+                .Returns(title);
+            A.CallTo(() => fixture
+                .FreezeFake<IPublishContext>().PdfFilePath)
+                .Returns(pdfPath);
+
             A.CallTo(() => fixture
                 .FreezeFake<GoogleDriveService>()
                 .GetOrCreateFolderAsync(
-                    fixture.Freeze<State>().Title.Name,
+                    title.Name,
                     default,
                     cancellationToken))
                 .Returns(Result.Ok(titleFolder));
@@ -66,7 +77,7 @@ public class UploadPdfGoogleDriveStepTests : UnitTest
             A.CallTo(() => fixture
                 .FreezeFake<GoogleDriveService>()
                 .CreateFileAsync(
-                    fixture.Freeze<State>().InternalData.PdfFilePath!,
+                    pdfPath,
                     titleFolder.Id,
                     true,
                     cancellationToken))
@@ -82,13 +93,13 @@ public class UploadPdfGoogleDriveStepTests : UnitTest
         }
 
         [Fact]
-        public async Task GivenSuccessfulExecutionShouldSetGoogleDrivePdfStateValue()
+        public async Task GivenSuccessfulExecutionShouldSetGoogleDrivePdfContextValue()
         {
-            fixture.Freeze<State>().ReleaseLinks.DrivePdf = null!;
-
             await step.ExecuteAsync(cancellationToken);
 
-            fixture.Freeze<State>().ReleaseLinks.DrivePdf.Should().Be(FILE_LINK);
+            A.CallTo(() => fixture.FreezeFake<IPublishContext>()
+                .SetDrivePdfLink(FILE_LINK))
+                .MustHaveHappenedOnceExactly();
         }
 
         [Fact]

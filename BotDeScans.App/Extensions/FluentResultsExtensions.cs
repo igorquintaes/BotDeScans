@@ -41,10 +41,9 @@ public static class FluentResultsExtensions
             var error = errors[index];
             var errorNumber = index + 1;
 
-            if (TryGetExceptionMessageFromError(error, out var exceptionMessage))
-                yield return new(exceptionMessage, errorNumber, depth, ErrorType.Exception);
-            else
-                yield return new(error.Message, errorNumber, depth, ErrorType.Regular);
+            yield return TryGetExceptionMessageFromError(error, out var exceptionMessage)
+                ? new(exceptionMessage, errorNumber, depth, ErrorType.Exception)
+                : new(error.Message, errorNumber, depth, ErrorType.Regular);
 
             foreach (var innerError in GetErrorsInfo(error.Reasons, depth + 1))
                 yield return innerError;

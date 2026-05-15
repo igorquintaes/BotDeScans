@@ -7,7 +7,7 @@ namespace BotDeScans.App.Features.Publish.Interaction.Steps;
 
 public class UploadPdfBoxStep(
     BoxService boxService,
-    State state) : IPublishStep
+    IPublishContext context) : IPublishStep
 {
     public StepType Type => StepType.Upload;
     public StepName Name => StepName.UploadPdfBox;
@@ -18,17 +18,17 @@ public class UploadPdfBoxStep(
 
     public async Task<Result> ExecuteAsync(CancellationToken cancellationToken)
     {
-        var titleFolder = await boxService.GetOrCreateFolderAsync(state.Title.Name, cancellationToken);
+        var titleFolder = await boxService.GetOrCreateFolderAsync(context.Title.Name, cancellationToken);
         var file = await boxService.CreateFileAsync(
-            filePath: state.InternalData.PdfFilePath!,
+            filePath: context.PdfFilePath!,
             parentFolderId: titleFolder.Id,
             cancellationToken: cancellationToken);
 
-        state.ReleaseLinks.BoxPdf = file.SharedLink!.DownloadUrl;
-        state.InternalData.BoxPdfReaderKey = file.SharedLink.DownloadUrl!
+        context.SetBoxPdfLink(file.SharedLink!.DownloadUrl!);
+        context.SetBoxPdfReaderKey(file.SharedLink.DownloadUrl
             .Split("/")
             .Last()
-            .Replace(".pdf", "", StringComparison.InvariantCultureIgnoreCase);
+            .Replace(".pdf", "", StringComparison.InvariantCultureIgnoreCase));
 
         return Result.Ok();
     }

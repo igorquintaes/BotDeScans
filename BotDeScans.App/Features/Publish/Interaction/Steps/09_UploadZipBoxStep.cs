@@ -7,7 +7,7 @@ namespace BotDeScans.App.Features.Publish.Interaction.Steps;
 
 public class UploadZipBoxStep(
     BoxService boxService,
-    State state) : IPublishStep
+    IPublishContext context) : IPublishStep
 {
     public StepType Type => StepType.Upload;
     public StepName Name => StepName.UploadZipBox;
@@ -18,13 +18,13 @@ public class UploadZipBoxStep(
 
     public async Task<Result> ExecuteAsync(CancellationToken cancellationToken)
     {
-        var titleFolder = await boxService.GetOrCreateFolderAsync(state.Title.Name, cancellationToken);
+        var titleFolder = await boxService.GetOrCreateFolderAsync(context.Title.Name, cancellationToken);
         var file = await boxService.CreateFileAsync(
-            filePath: state.InternalData.ZipFilePath!,
+            filePath: context.ZipFilePath!,
             parentFolderId: titleFolder.Id,
             cancellationToken: cancellationToken);
 
-        state.ReleaseLinks.BoxZip = file.SharedLink!.DownloadUrl;
+        context.SetBoxZipLink(file.SharedLink!.DownloadUrl);
         return Result.Ok();
     }
 }

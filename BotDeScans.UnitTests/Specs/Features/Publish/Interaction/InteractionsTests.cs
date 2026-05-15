@@ -1,6 +1,4 @@
 ﻿using BotDeScans.App.Features.Publish.Interaction;
-using BotDeScans.App.Features.Publish.Interaction.Models;
-using BotDeScans.App.Features.Publish.Interaction.Steps;
 using BotDeScans.App.Models.DTOs;
 using FluentResults;
 using Remora.Discord.API.Abstractions.Objects;
@@ -13,13 +11,16 @@ public class InteractionsTests : UnitTest
 
     public InteractionsTests()
     {
-        fixture.Freeze<State>();
-
         fixture.FreezeFake<DiscordPublisher>();
-        fixture.FreezeFake<StepsService>();
+        fixture.FreezeFake<SetupService>();
         fixture.FreezeFake<Handler>();
 
         fixture.FreezeFake<Remora.Results.IResult<IMessage>>();
+
+        A.CallTo(() => fixture
+            .FreezeFake<SetupService>()
+            .SetupAsync(A<Info>._, cancellationToken))
+            .Returns(Result.Ok());
 
         A.CallTo(() => fixture
             .FreezeFake<Remora.Results.IResult<IMessage>>().IsSuccess)
@@ -44,14 +45,8 @@ public class InteractionsTests : UnitTest
         }
 
         [Fact]
-        public async Task GivenSuccessfulExecutionShouldFillPublishStateData()
+        public async Task GivenSuccessfulExecutionShouldCallSetupWithChapterInfo()
         {
-            var enabledSteps = fixture.Create<EnabledSteps>();
-            A.CallTo(() => fixture
-                .FreezeFake<StepsService>()
-                .GetEnabledSteps())
-                .Returns(enabledSteps);
-
             var info = fixture.Create<Info>();
             await interactions.ExecuteAsync(
                 info.GoogleDriveUrl.Url,
@@ -61,8 +56,10 @@ public class InteractionsTests : UnitTest
                 info.Message!,
                 info.TitleId.ToString());
 
-            fixture.Freeze<State>().ChapterInfo.Should().BeEquivalentTo(info);
-            fixture.Freeze<State>().Steps.Should().BeEquivalentTo(enabledSteps);
+            A.CallTo(() => fixture
+                .FreezeFake<SetupService>()
+                .SetupAsync(info, cancellationToken))
+                .MustHaveHappenedOnceExactly();
         }
 
         [Fact]
@@ -74,6 +71,50 @@ public class InteractionsTests : UnitTest
                 .FreezeFake<DiscordPublisher>()
                 .SuccessReleaseMessageAsync(cancellationToken))
                 .MustHaveHappenedOnceExactly();
+        }
+
+        [Fact]
+        public async Task GivenSetupErrorShouldCallErrorReleaseMessageAsync()
+        {
+            var setupResult = Result.Fail("setup error.");
+
+            A.CallTo(() => fixture
+                .FreezeFake<SetupService>()
+                .SetupAsync(A<Info>._, cancellationToken))
+                .Returns(setupResult);
+
+            A.CallTo(() => fixture
+                .FreezeFake<DiscordPublisher>()
+                .ErrorReleaseMessageAsync(setupResult, cancellationToken))
+                .Returns(fixture.FreezeFake<Remora.Results.IResult<IMessage>>());
+
+            await interactions.ExecuteAsync(default!, default!, default!, default!, default!, "1");
+
+            A.CallTo(() => fixture
+                .FreezeFake<DiscordPublisher>()
+                .ErrorReleaseMessageAsync(setupResult, cancellationToken))
+                .MustHaveHappenedOnceExactly();
+        }
+
+        [Fact]
+        public async Task GivenSetupErrorShouldNotCallHandler()
+        {
+            A.CallTo(() => fixture
+                .FreezeFake<SetupService>()
+                .SetupAsync(A<Info>._, cancellationToken))
+                .Returns(Result.Fail("setup error."));
+
+            A.CallTo(() => fixture
+                .FreezeFake<DiscordPublisher>()
+                .ErrorReleaseMessageAsync(A<Result>.Ignored, cancellationToken))
+                .Returns(fixture.FreezeFake<Remora.Results.IResult<IMessage>>());
+
+            await interactions.ExecuteAsync(default!, default!, default!, default!, default!, "1");
+
+            A.CallTo(() => fixture
+                .FreezeFake<Handler>()
+                .ExecuteAsync(cancellationToken))
+                .MustNotHaveHappened();
         }
 
         [Fact]

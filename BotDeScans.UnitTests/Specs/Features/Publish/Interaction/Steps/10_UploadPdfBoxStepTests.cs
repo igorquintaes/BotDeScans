@@ -1,6 +1,7 @@
 ﻿using BotDeScans.App.Features.Publish.Interaction;
 using BotDeScans.App.Features.Publish.Interaction.Steps;
 using BotDeScans.App.Features.Publish.Interaction.Steps.Enums;
+using BotDeScans.App.Models.Entities;
 using BotDeScans.App.Models.Entities.Enums;
 using BotDeScans.App.Services;
 using Box.Sdk.Gen.Schemas;
@@ -15,7 +16,7 @@ public class UploadPdfBoxStepTests : UnitTest
 
     public UploadPdfBoxStepTests()
     {
-        fixture.Freeze<State>();
+        fixture.FreezeFake<IPublishContext>();
         fixture.FreezeFake<BoxService>();
         step = fixture.Create<UploadPdfBoxStep>();
     }
@@ -49,8 +50,8 @@ public class UploadPdfBoxStepTests : UnitTest
     public class ExecuteAsync : UploadPdfBoxStepTests
     {
         private const string FILE_LINK = "http://www.escoladescans.com/sample.pdf";
+
         private readonly FolderMini titleFolder;
-        private readonly File titleFile;
 
         public ExecuteAsync()
         {
@@ -61,20 +62,31 @@ public class UploadPdfBoxStepTests : UnitTest
             titleFolder = fixture.CreateCustom<FolderMini>(f => f
                 .With(x => x.Id, folderId));
 
-            titleFile = fixture.CreateCustom<File>(f => f
+            var titleFile = fixture.CreateCustom<File>(f => f
                 .With(x => x.SharedLink, sharedLink));
+
+            var title = fixture.Create<Title>();
+            var pdfPath = fixture.Create<string>();
+
+            A.CallTo(() => fixture
+                .FreezeFake<IPublishContext>().Title)
+                .Returns(title);
+
+            A.CallTo(() => fixture
+                .FreezeFake<IPublishContext>().PdfFilePath)
+                .Returns(pdfPath);
 
             A.CallTo(() => fixture
                 .FreezeFake<BoxService>()
                 .GetOrCreateFolderAsync(
-                    fixture.Freeze<State>().Title.Name,
+                    title.Name,
                     cancellationToken))
                 .Returns(titleFolder);
 
             A.CallTo(() => fixture
                 .FreezeFake<BoxService>()
                 .CreateFileAsync(
-                    fixture.Freeze<State>().InternalData.PdfFilePath!,
+                    pdfPath,
                     titleFolder.Id,
                     cancellationToken))
                 .Returns(titleFile);
@@ -89,32 +101,41 @@ public class UploadPdfBoxStepTests : UnitTest
         }
 
         [Fact]
-        public async Task GivenSuccessfulExecutionShouldSetBoxPdfStateValue()
+        public async Task GivenSuccessfulExecutionShouldSetBoxPdfContextValue()
         {
-            fixture.Freeze<State>().ReleaseLinks.BoxPdf = null!;
-
             await step.ExecuteAsync(cancellationToken);
 
-            fixture.Freeze<State>().ReleaseLinks.BoxPdf.Should().Be(FILE_LINK);
+            A.CallTo(() => fixture
+                .FreezeFake<IPublishContext>()
+                .SetBoxPdfLink(FILE_LINK))
+                .MustHaveHappenedOnceExactly();
         }
 
         [Fact]
         public async Task GivenPdfLinkShouldConvertItIntoAReaderKey()
         {
-            const string LINK = "http://escoladescans.com/sample.pdf";
             const string EXPECTED_KEY = "sample";
 
-            fixture.Freeze<State>().InternalData.BoxPdfReaderKey = null!;
-
             var sharedLink = fixture.CreateCustom<FileSharedLinkField>(f => f
-                .With(x => x.DownloadUrl, LINK));
+                .With(x => x.DownloadUrl, FILE_LINK));
 
             var updatedFile = fixture.CreateCustom<File>(f => f
                 .With(x => x.SharedLink, sharedLink));
 
+            A.CallTo(() => fixture
+                .FreezeFake<BoxService>()
+                .CreateFileAsync(
+                    A<string>.Ignored,
+                    A<string>.Ignored,
+                    cancellationToken))
+                .Returns(updatedFile);
+
             await step.ExecuteAsync(cancellationToken);
 
-            fixture.Freeze<State>().InternalData.BoxPdfReaderKey.Should().Be(EXPECTED_KEY);
+            A.CallTo(() => fixture
+                .FreezeFake<IPublishContext>()
+                .SetBoxPdfReaderKey(EXPECTED_KEY))
+                .MustHaveHappenedOnceExactly();
         }
 
         [Fact]
@@ -125,7 +146,7 @@ public class UploadPdfBoxStepTests : UnitTest
             A.CallTo(() => fixture
                 .FreezeFake<BoxService>()
                 .GetOrCreateFolderAsync(
-                    fixture.Freeze<State>().Title.Name,
+                    A<string>.Ignored,
                     cancellationToken))
                 .MustHaveHappenedOnceExactly();
         }
@@ -138,7 +159,7 @@ public class UploadPdfBoxStepTests : UnitTest
             A.CallTo(() => fixture
                 .FreezeFake<BoxService>()
                 .CreateFileAsync(
-                    fixture.Freeze<State>().InternalData.PdfFilePath!,
+                    A<string>.Ignored,
                     titleFolder.Id,
                     cancellationToken))
                 .MustHaveHappenedOnceExactly();

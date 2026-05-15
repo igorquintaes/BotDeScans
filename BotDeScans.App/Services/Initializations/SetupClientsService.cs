@@ -17,7 +17,7 @@ public class SetupClientsService(IServiceProvider serviceProvider)
         var aggregatedResult = Result.Ok();
         foreach (var (factory, factoryValidator) in GetEnabledFactoriesData())
         {
-            var validationResult = await factoryValidator.ValidateAsync(new ValidationContext<IClientFactory>(factory), cancellationToken); 
+            var validationResult = await factoryValidator.ValidateAsync(new ValidationContext<IClientFactory>(factory), cancellationToken);
             aggregatedResult = aggregatedResult.WithReasons(FluentValidationExtensions.ToResult(validationResult).Reasons);
             if (aggregatedResult.IsFailed)
                 continue;
@@ -48,7 +48,7 @@ public class SetupClientsService(IServiceProvider serviceProvider)
         var factoryTypes = Assembly
             .GetEntryAssembly()!
             .GetTypes()
-            .Where(type => type.BaseType is not null 
+            .Where(type => type.BaseType is not null
                         && type.BaseType.IsGenericType is true
                         && type.BaseType.GetGenericTypeDefinition() == typeof(ClientFactory<>));
 

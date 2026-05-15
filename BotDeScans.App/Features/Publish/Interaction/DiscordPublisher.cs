@@ -11,13 +11,11 @@ using Remora.Discord.Commands.Feedback.Services;
 using Remora.Rest.Core;
 using Remora.Results;
 using System.ComponentModel;
-using System.Diagnostics.CodeAnalysis;
 using System.Drawing;
 using System.Reflection;
 
 namespace BotDeScans.App.Features.Publish.Interaction;
 
-[ExcludeFromCodeCoverage]
 public class DiscordPublisher(
     IOperationContext context,
     State state,
@@ -99,7 +97,7 @@ public class DiscordPublisher(
                 IconUrl: interactionContext!.GetUserAvatarUrl()));
     }
 
-    private List<EmbedField> CreatePublishLinkFields() => typeof(Links)
+    private List<EmbedField> CreatePublishLinkFields() => [.. typeof(Links)
         .GetProperties()
         .Select(property => new
         {
@@ -107,8 +105,7 @@ public class DiscordPublisher(
             Link = property.GetValue(state.ReleaseLinks, null)?.ToString()
         })
         .Where(x => !string.IsNullOrWhiteSpace(x.Link))
-        .Select(x => new EmbedField(x.Label, $":white_check_mark:  [Acesse]({x.Link})", true))
-        .ToList();
+        .Select(x => new EmbedField(x.Label, $":white_check_mark:  [Acesse]({x.Link})", true))];
 
     private static readonly ButtonComponent PromotedButton = new(
         ButtonComponentStyle.Link,

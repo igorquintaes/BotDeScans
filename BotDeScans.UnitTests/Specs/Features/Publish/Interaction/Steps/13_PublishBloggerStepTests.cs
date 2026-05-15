@@ -1,6 +1,8 @@
 ﻿using BotDeScans.App.Features.Publish.Interaction;
 using BotDeScans.App.Features.Publish.Interaction.Steps;
 using BotDeScans.App.Features.Publish.Interaction.Steps.Enums;
+using BotDeScans.App.Models.DTOs;
+using BotDeScans.App.Models.Entities;
 using BotDeScans.App.Models.Entities.Enums;
 using BotDeScans.App.Services;
 using FluentResults;
@@ -14,7 +16,7 @@ public class PublishBloggerStepTests : UnitTest
 
     public PublishBloggerStepTests()
     {
-        fixture.Freeze<State>();
+        fixture.FreezeFake<IPublishContext>();
         fixture.FreezeFake<GoogleBloggerService>();
         fixture.FreezeFake<TextReplacer>();
 
@@ -51,10 +53,28 @@ public class PublishBloggerStepTests : UnitTest
     {
         public ExecuteAsync()
         {
-            var state = fixture.Freeze<State>();
-            var template = fixture.Create<string>();
-            var replacedTemplate = fixture.Create<string>();
+            var title = fixture.Build<Title>()
+                .With(x => x.Name, "Title X")
+                .With(x => x.DiscordRoleId, 1UL)
+                .Create();
 
+            var chapterInfo = new Info(
+                googleDriveUrl: "https://drive.google.com/drive/folders/1q2w3e4r5t6y7u8i9o",
+                chapterName: "cap",
+                chapterNumber: "1",
+                chapterVolume: "1",
+                message: "msg",
+                titleId: 1);
+
+            A.CallTo(() => fixture
+                .FreezeFake<IPublishContext>()
+                .Title)
+                .Returns(title);
+
+            A.CallTo(() => fixture
+                .FreezeFake<IPublishContext>()
+                .ChapterInfo)
+                .Returns(chapterInfo);
 
             A.CallTo(() => fixture
                 .FreezeFake<GoogleBloggerService>()
@@ -64,22 +84,22 @@ public class PublishBloggerStepTests : UnitTest
             A.CallTo(() => fixture
                 .FreezeFake<GoogleBloggerService>()
                 .GetPostTemplate())
-                .Returns(template);
+                .Returns(fixture.Create<string>());
 
             A.CallTo(() => fixture
                 .FreezeFake<TextReplacer>()
-                .Replace(template))
-                .Returns(replacedTemplate);
+                .Replace(A<string>.Ignored))
+                .Returns(fixture.Create<string>());
 
             A.CallTo(() => fixture
                 .FreezeFake<GoogleBloggerService>()
                 .PostAsync(
-                    $"[{state.Title.Name}] Capítulo {state.ChapterInfo.ChapterNumber}",
-                    replacedTemplate,
-                    state.Title.Name,
-                    state.ChapterInfo.ChapterNumber,
+                    A<string>.Ignored,
+                    A<string>.Ignored,
+                    A<string>.Ignored,
+                    A<string>.Ignored,
                     cancellationToken))
-                .Returns(new Post());
+                .Returns(new Post { Url = fixture.Create<string>() });
         }
 
         [Fact]
@@ -91,7 +111,7 @@ public class PublishBloggerStepTests : UnitTest
         }
 
         [Fact]
-        public async Task GivenSuccessfulExecutionShouldSaveBloggerCoverInState()
+        public async Task GivenSuccessfulExecutionShouldSaveBloggerCoverInContext()
         {
             var cover = fixture.Create<string>();
 
@@ -102,11 +122,14 @@ public class PublishBloggerStepTests : UnitTest
 
             await step.ExecuteAsync(cancellationToken);
 
-            fixture.Freeze<State>().InternalData.BloggerImageAsBase64.Should().Be(cover);
+            A.CallTo(() => fixture
+                .FreezeFake<IPublishContext>()
+                .SetBloggerImageAsBase64(cover))
+                .MustHaveHappenedOnceExactly();
         }
 
         [Fact]
-        public async Task GivenSuccessfulExecutionShouldSavePostUrlInState()
+        public async Task GivenSuccessfulExecutionShouldSavePostUrlInContext()
         {
             var url = fixture.Create<string>();
 
@@ -122,20 +145,25 @@ public class PublishBloggerStepTests : UnitTest
 
             await step.ExecuteAsync(cancellationToken);
 
-            fixture.Freeze<State>().ReleaseLinks.Blogger.Should().Be(url);
+            A.CallTo(() => fixture
+                .FreezeFake<IPublishContext>()
+                .SetBloggerLink(url))
+                .MustHaveHappenedOnceExactly();
         }
 
         [Fact]
         public async Task GivenErrorToPostInBloggerShouldReturnErrorResult()
         {
+            const string ERROR_MESSAGE = "some error.";
+
             A.CallTo(() => fixture
                 .FreezeFake<GoogleBloggerService>()
                 .PostAsync(A<string>._, A<string>._, A<string>._, A<string>._, cancellationToken))
-                .Returns(Result.Fail("some error."));
+                .Returns(Result.Fail(ERROR_MESSAGE));
 
             var result = await step.ExecuteAsync(cancellationToken);
 
-            result.Should().BeFailure().And.HaveError("some error.");
+            result.Should().BeFailure().And.HaveError(ERROR_MESSAGE);
         }
     }
 }

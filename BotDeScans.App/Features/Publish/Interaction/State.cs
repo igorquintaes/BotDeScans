@@ -9,13 +9,62 @@ using Microsoft.Extensions.Configuration;
 
 namespace BotDeScans.App.Features.Publish.Interaction;
 
-public class State
+public class State : IPublishContext
 {
     public EnabledSteps Steps { get; set; } = null!;
     public Title Title { get; set; } = null!;
     public Info ChapterInfo { get; set; } = null!;
     public Links ReleaseLinks { get; set; } = new();
     public InternalData InternalData { get; set; } = new();
+
+    public string OriginContentFolder => InternalData.OriginContentFolder;
+    public string CoverFilePath => InternalData.CoverFilePath;
+    public string? ZipFilePath => InternalData.ZipFilePath;
+    public string? PdfFilePath => InternalData.PdfFilePath;
+    public string? BloggerImageAsBase64 => InternalData.BloggerImageAsBase64;
+    public string? BoxPdfReaderKey => InternalData.BoxPdfReaderKey;
+    public string? Pings => InternalData.Pings;
+
+    public string? MegaZipLink => ReleaseLinks.MegaZip;
+    public string? MegaPdfLink => ReleaseLinks.MegaPdf;
+    public string? DriveZipLink => ReleaseLinks.DriveZip;
+    public string? DrivePdfLink => ReleaseLinks.DrivePdf;
+    public string? BoxZipLink => ReleaseLinks.BoxZip;
+    public string? BoxPdfLink => ReleaseLinks.BoxPdf;
+    public string? MangaDexLink => ReleaseLinks.MangaDex;
+    public string? SakuraMangasLink => ReleaseLinks.SakuraMangas;
+    public string? BloggerLink => ReleaseLinks.Blogger;
+
+    public void SetOriginContentFolder(string originContentFolder) =>
+        InternalData.OriginContentFolder = originContentFolder;
+
+    public void SetCoverFilePath(string coverFilePath) =>
+        InternalData.CoverFilePath = coverFilePath;
+
+    public void SetZipPath(string zipFilePath) =>
+        InternalData.ZipFilePath = zipFilePath;
+
+    public void SetPdfPath(string pdfFilePath) =>
+        InternalData.PdfFilePath = pdfFilePath;
+
+    public void SetBloggerImageAsBase64(string bloggerImageAsBase64) =>
+        InternalData.BloggerImageAsBase64 = bloggerImageAsBase64;
+
+    public void SetBoxPdfReaderKey(string boxPdfReaderKey) =>
+        InternalData.BoxPdfReaderKey = boxPdfReaderKey;
+
+    public void SetPings(string pings) =>
+        InternalData.Pings = pings;
+
+    public void SetMegaZipLink(string link) => ReleaseLinks.MegaZip = link;
+    public void SetMegaPdfLink(string link) => ReleaseLinks.MegaPdf = link;
+    public void SetDriveZipLink(string link) => ReleaseLinks.DriveZip = link;
+    public void SetDrivePdfLink(string link) => ReleaseLinks.DrivePdf = link;
+    public void SetBoxZipLink(string link) => ReleaseLinks.BoxZip = link;
+    public void SetBoxPdfLink(string link) => ReleaseLinks.BoxPdf = link;
+    public void SetMangaDexLink(string link) => ReleaseLinks.MangaDex = link;
+    public void SetSakuraMangasLink(string link) => ReleaseLinks.SakuraMangas = link;
+    public void SetBloggerLink(string link) => ReleaseLinks.Blogger = link;
 }
 
 public class StateValidator : AbstractValidator<State>

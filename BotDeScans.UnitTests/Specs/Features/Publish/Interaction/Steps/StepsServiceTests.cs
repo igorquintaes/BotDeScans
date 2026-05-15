@@ -36,23 +36,32 @@ public class StepsServiceTests : UnitTest
     [Fact]
     public void GivenSuccessfulExecutionShouldReturnExpectedEnablesSteps()
     {
-        var result = service.GetEnabledSteps();
+        var result = service.GetEnabledSteps([]);
 
         using var _ = new AssertionScope();
-        result.Should().HaveCount(6);
+        result.Should().HaveCount(5);
 
-        result.ElementAt(0).Key.Name.Should().Be(StepName.Setup);
-        result.ElementAt(1).Key.Name.Should().Be(StepName.Download);
-        result.ElementAt(2).Key.Name.Should().Be(StepName.Compress);
-        result.ElementAt(3).Key.Name.Should().Be(StepName.ZipFiles);
-        result.ElementAt(4).Key.Name.Should().Be(StepName.UploadZipGoogleDrive);
-        result.ElementAt(5).Key.Name.Should().Be(StepName.UploadMangadex);
+        result.ElementAt(0).Key.Name.Should().Be(StepName.Download);
+        result.ElementAt(1).Key.Name.Should().Be(StepName.Compress);
+        result.ElementAt(2).Key.Name.Should().Be(StepName.ZipFiles);
+        result.ElementAt(3).Key.Name.Should().Be(StepName.UploadZipGoogleDrive);
+        result.ElementAt(4).Key.Name.Should().Be(StepName.UploadMangadex);
 
         result.ElementAt(0).Value.Status.Should().Be(StepStatus.QueuedForExecution);
         result.ElementAt(1).Value.Status.Should().Be(StepStatus.QueuedForExecution);
         result.ElementAt(2).Value.Status.Should().Be(StepStatus.QueuedForExecution);
-        result.ElementAt(3).Value.Status.Should().Be(StepStatus.QueuedForExecution);
+        result.ElementAt(3).Value.Status.Should().Be(StepStatus.QueuedForValidation);
         result.ElementAt(4).Value.Status.Should().Be(StepStatus.QueuedForValidation);
-        result.ElementAt(5).Value.Status.Should().Be(StepStatus.QueuedForValidation);
+    }
+
+    [Fact]
+    public void GivenStepsToSkipShouldReturnThemWithSkipStatus()
+    {
+        var result = service.GetEnabledSteps([StepName.UploadZipGoogleDrive]);
+
+        using var _ = new AssertionScope();
+        result.ElementAt(3).Key.Name.Should().Be(StepName.UploadZipGoogleDrive);
+        result.ElementAt(3).Value.Status.Should().Be(StepStatus.Skip);
+        result.ElementAt(4).Value.Status.Should().Be(StepStatus.QueuedForValidation);
     }
 }

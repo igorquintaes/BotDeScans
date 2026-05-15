@@ -20,7 +20,7 @@ public class Commands() : CommandGroup
         IFeedbackService feedbackService,
         Add.Handler addHandler,
         List.Handler listHandler,
-        Remove.Handler removeHandler) 
+        Remove.Handler removeHandler)
         : CommandGroup
     {
         [Command("add")]

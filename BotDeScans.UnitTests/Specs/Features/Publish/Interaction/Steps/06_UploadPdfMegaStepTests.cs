@@ -15,7 +15,7 @@ public class UploadPdfMegaStepTests : UnitTest
 
     public UploadPdfMegaStepTests()
     {
-        fixture.Freeze<State>();
+        fixture.FreezeFake<IPublishContext>();
         fixture.FreezeFake<MegaService>();
         fixture.FreezeFake<MegaSettingsService>();
         step = fixture.Create<UploadPdfMegaStep>();
@@ -49,12 +49,15 @@ public class UploadPdfMegaStepTests : UnitTest
 
     public class ExecuteAsync : UploadPdfMegaStepTests
     {
-        private const string FILE_LINK = "http://www.escoladescans.com/sample";
-
         public ExecuteAsync()
         {
             var rootNode = A.Fake<INode>();
             var titleFolderNode = A.Fake<INode>();
+            var title = fixture.Create<BotDeScans.App.Models.Entities.Title>();
+            var pdfPath = fixture.Create<string>();
+
+            A.CallTo(() => fixture.FreezeFake<IPublishContext>().Title).Returns(title);
+            A.CallTo(() => fixture.FreezeFake<IPublishContext>().PdfFilePath).Returns(pdfPath);
 
             A.CallTo(() => fixture
                 .FreezeFake<MegaSettingsService>()
@@ -63,16 +66,16 @@ public class UploadPdfMegaStepTests : UnitTest
 
             A.CallTo(() => fixture
                 .FreezeFake<MegaService>()
-                .GetOrCreateFolderAsync(fixture.Freeze<State>().Title.Name, rootNode))
+                .GetOrCreateFolderAsync(title.Name, rootNode))
                 .Returns(Result.Ok(titleFolderNode));
 
             A.CallTo(() => fixture
                 .FreezeFake<MegaService>()
                 .CreateFileAsync(
-                    fixture.Freeze<State>().InternalData.PdfFilePath!,
+                    pdfPath,
                     titleFolderNode,
                     cancellationToken))
-                .Returns(Result.Ok(new Uri(FILE_LINK)));
+                .Returns(Result.Ok(new Uri("http://www.escoladescans.com/sample")));
         }
 
         [Fact]
@@ -84,13 +87,13 @@ public class UploadPdfMegaStepTests : UnitTest
         }
 
         [Fact]
-        public async Task GivenSuccessfulExecutionShouldSetMegaPdfStateValue()
+        public async Task GivenSuccessfulExecutionShouldSetMegaPdfContextValue()
         {
-            fixture.Freeze<State>().ReleaseLinks.MegaPdf = null!;
-
             await step.ExecuteAsync(cancellationToken);
 
-            fixture.Freeze<State>().ReleaseLinks.MegaPdf.Should().Be(FILE_LINK);
+            A.CallTo(() => fixture.FreezeFake<IPublishContext>()
+                .SetMegaPdfLink(A<string>.Ignored))
+                .MustHaveHappenedOnceExactly();
         }
 
         [Fact]
@@ -99,7 +102,7 @@ public class UploadPdfMegaStepTests : UnitTest
             const string ERROR_MESSAGE = "some error.";
 
             A.CallTo(() => fixture
-            .FreezeFake<MegaService>()
+                .FreezeFake<MegaService>()
                 .GetOrCreateFolderAsync(A<string>.Ignored, A<INode>.Ignored))
                 .Returns(Result.Fail(ERROR_MESSAGE));
 

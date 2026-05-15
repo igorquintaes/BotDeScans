@@ -2,6 +2,7 @@
 using BotDeScans.App.Features.Publish.Interaction;
 using BotDeScans.App.Features.Publish.Interaction.Steps;
 using BotDeScans.App.Features.Publish.Interaction.Steps.Enums;
+using BotDeScans.App.Models.Entities;
 using BotDeScans.App.Models.Entities.Enums;
 using FluentResults;
 using File = Google.Apis.Drive.v3.Data.File;
@@ -14,7 +15,7 @@ public class UploadZipGoogleDriveStepTests : UnitTest
 
     public UploadZipGoogleDriveStepTests()
     {
-        fixture.Freeze<State>();
+        fixture.FreezeFake<IPublishContext>();
         fixture.FreezeFake<GoogleDriveService>();
         step = fixture.Create<UploadZipGoogleDriveStep>();
     }
@@ -55,10 +56,21 @@ public class UploadZipGoogleDriveStepTests : UnitTest
             var titleFile = fixture.Create<File>();
             titleFile.WebViewLink = FILE_LINK;
 
+            var title = fixture.Create<Title>();
+            var zipPath = fixture.Create<string>();
+
+            A.CallTo(() => fixture
+                .FreezeFake<IPublishContext>().Title)
+                .Returns(title);
+
+            A.CallTo(() => fixture
+                .FreezeFake<IPublishContext>().ZipFilePath)
+                .Returns(zipPath);
+
             A.CallTo(() => fixture
                 .FreezeFake<GoogleDriveService>()
                 .GetOrCreateFolderAsync(
-                    fixture.Freeze<State>().Title.Name,
+                    title.Name,
                     default,
                     cancellationToken))
                 .Returns(Result.Ok(titleFolder));
@@ -66,7 +78,7 @@ public class UploadZipGoogleDriveStepTests : UnitTest
             A.CallTo(() => fixture
                 .FreezeFake<GoogleDriveService>()
                 .CreateFileAsync(
-                    fixture.Freeze<State>().InternalData.ZipFilePath!,
+                    zipPath,
                     titleFolder.Id,
                     true,
                     cancellationToken))
@@ -82,13 +94,14 @@ public class UploadZipGoogleDriveStepTests : UnitTest
         }
 
         [Fact]
-        public async Task GivenSuccessfulExecutionShouldSetGoogleDriveZipStateValue()
+        public async Task GivenSuccessfulExecutionShouldSetGoogleDriveZipContextValue()
         {
-            fixture.Freeze<State>().ReleaseLinks.DriveZip = null!;
-
             await step.ExecuteAsync(cancellationToken);
 
-            fixture.Freeze<State>().ReleaseLinks.DriveZip.Should().Be(FILE_LINK);
+            A.CallTo(() => fixture
+                .FreezeFake<IPublishContext>()
+                .SetDriveZipLink(FILE_LINK))
+                .MustHaveHappenedOnceExactly();
         }
 
         [Fact]

@@ -13,12 +13,14 @@ public class MangaDexClientFactory(
     IConfiguration configuration)
     : ClientFactory<MangaDexAccessToken>
 {
+
     public override bool Enabled => configuration
         .GetValues<StepName>("Settings:Publish:Steps")
         .Any(x => x == StepName.UploadMangadex);
 
     public override async Task<Result<MangaDexAccessToken>> CreateAsync(CancellationToken cancellationToken)
     {
+        const string LOGIN_ERROR = "Unable to login in mangadex.";
         var username = configuration.GetRequiredValue<string>("Mangadex:Username");
         var password = configuration.GetRequiredValue<string>("Mangadex:Password");
         var clientId = configuration.GetRequiredValue<string>("Mangadex:ClientId");
@@ -26,13 +28,12 @@ public class MangaDexClientFactory(
 
         var result = await mangaDex.Auth.Personal(clientId, clientSecret, username, password);
 
-        if (result is null ||
-            result.ExpiresIn is null ||
-            result.ExpiresIn <= 0 ||
-            string.IsNullOrWhiteSpace(result.AccessToken))
-            return Result.Fail("Unable to login in mangadex.");
-
-        return new MangaDexAccessToken(result.AccessToken);
+        return result is not null
+            && result.ExpiresIn is not null
+            && result.ExpiresIn > 0 is true
+            && string.IsNullOrWhiteSpace(result.AccessToken) is false
+                ? new MangaDexAccessToken(result.AccessToken)
+                : Result.Fail(LOGIN_ERROR);
     }
 
     public override async Task<Result> HealthCheckAsync(MangaDexAccessToken accessToken, CancellationToken cancellationToken)

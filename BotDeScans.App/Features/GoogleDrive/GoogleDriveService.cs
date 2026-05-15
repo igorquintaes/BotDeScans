@@ -3,6 +3,7 @@ using BotDeScans.App.Features.GoogleDrive.InternalServices;
 using FluentResults;
 using Microsoft.Extensions.Configuration;
 using System.Collections.Concurrent;
+using System.Linq.Expressions;
 using File = Google.Apis.Drive.v3.Data.File;
 namespace BotDeScans.App.Features.GoogleDrive;
 
@@ -21,13 +22,10 @@ public class GoogleDriveService(
         CancellationToken cancellationToken)
     {
         var folderResult = await googleDriveFoldersService.GetAsync(folderName, parentId, cancellationToken);
-        if (folderResult.IsFailed)
-            return folderResult.ToResult<File>();
 
-        if (folderResult.ValueOrDefault is not null)
-            return folderResult.ToResult(_ => folderResult.Value!);
-
-        return await googleDriveFoldersService.CreateAsync(folderName, parentId, cancellationToken);
+        return folderResult.IsSuccess && folderResult.Value is null
+            ? await googleDriveFoldersService.CreateAsync(folderName, parentId, cancellationToken)
+            : folderResult!;
     }
 
     public virtual async Task<Result<File>> CreateFileAsync(
@@ -36,6 +34,8 @@ public class GoogleDriveService(
         bool publicAccess,
         CancellationToken cancellationToken)
     {
+        const string DUPLICATE_FILE_ERROR = $"Já existe um arquivo com o nome especificado. Se desejar sobrescrever o arquivo existente, altere a configuração {REWRITE_KEY} para permitir.";
+
         var fileName = Path.GetFileName(filePath);
         var fileResult = await googleDriveFilesService.GetAsync(fileName, parentId, cancellationToken);
         if (fileResult.IsFailed)
@@ -44,13 +44,17 @@ public class GoogleDriveService(
         if (fileResult.ValueOrDefault is not null)
         {
             var rewriteFile = configuration.GetValue<bool?>(REWRITE_KEY) ?? false;
-            if (rewriteFile is false)
-                return Result.Fail($"Já existe um arquivo com o nome especificado. Se desejar sobrescrever o arquivo existente, altere a configuração {REWRITE_KEY} para permitir.");
 
-            return await googleDriveFilesService.UpdateAsync(filePath, fileResult.Value!.Id, cancellationToken);
+            return await Result.OkIf(rewriteFile, DUPLICATE_FILE_ERROR)
+                               .BindIfSuccessAsync(UpdateFileFuncion);
         }
 
         return await googleDriveFilesService.UploadAsync(filePath, parentId, publicAccess, cancellationToken);
+
+        Task<Result<File>> UpdateFileFuncion() => googleDriveFilesService.UpdateAsync(
+            filePath,
+            fileResult.Value!.Id,
+            cancellationToken);
     }
 
     public virtual async Task<Result> DeleteFileByNameAndParentNameAsync(
@@ -113,9 +117,8 @@ public class GoogleDriveService(
         CancellationToken cancellationToken)
     {
         var getPermissionsResult = await googleDrivePermissionsService.GetUserPermissionsAsync(email, GoogleDriveSettingsService.BaseFolderId, cancellationToken);
-        if (getPermissionsResult.IsFailed)
-            return getPermissionsResult.ToResult();
-
-        return await googleDrivePermissionsService.DeleteUserReaderPermissionsAsync(getPermissionsResult.Value, GoogleDriveSettingsService.BaseFolderId, cancellationToken);
+        return getPermissionsResult.IsSuccess
+            ? await googleDrivePermissionsService.DeleteUserReaderPermissionsAsync(getPermissionsResult.Value, GoogleDriveSettingsService.BaseFolderId, cancellationToken)
+            : getPermissionsResult.ToResult();
     }
 }

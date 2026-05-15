@@ -11,11 +11,13 @@ public class StepInfoTests : UnitTest
     {
         [Fact]
         public void GivenManagementStepTypeShouldCreateStepInfoWithQueuedForExecutionStatus() =>
-            new StepInfo(A.Fake<IManagementStep>()).Status.Should().Be(StepStatus.QueuedForExecution);
+            new StepInfo(A.Fake<IManagementStep>()).Status
+               .Should().Be(StepStatus.QueuedForExecution);
 
         [Fact]
         public void GivenPublishStepTypeShouldCreateStepInfoWithQueuedForValidationStatus() =>
-            new StepInfo(A.Fake<IPublishStep>()).Status.Should().Be(StepStatus.QueuedForValidation);
+            new StepInfo(A.Fake<IPublishStep>()).Status
+               .Should().Be(StepStatus.QueuedForValidation);
     }
 
     public class UpdateStatus : StepInfoTests
@@ -77,24 +79,16 @@ public class StepInfoTests : UnitTest
         }
     }
 
-    public class SetToSkip : StepInfoTests
+    public class SkipConstructorParam : StepInfoTests
     {
         [Fact]
-        public void GivenManagementStepTypeShouldChangeStatusToSkipped()
-        {
-            var stepInfo = new StepInfo(A.Fake<IManagementStep>());
-            stepInfo.SetToSkip();
-
-            stepInfo.Status.Should().Be(StepStatus.Skip);
-        }
+        public void GivenSkipTrueShouldCreateStepInfoWithSkipStatus() =>
+            new StepInfo(A.Fake<IManagementStep>(), skip: true).Status
+               .Should().Be(StepStatus.Skip);
 
         [Fact]
-        public void GivenPublishStepTypeShouldChangeStatusToSkipped()
-        {
-            var stepInfo = new StepInfo(A.Fake<IPublishStep>());
-            stepInfo.SetToSkip();
-
-            stepInfo.Status.Should().Be(StepStatus.Skip);
-        }
+        public void GivenSkipFalseShouldCreateStepInfoWithNormalStatus() =>
+            new StepInfo(A.Fake<IManagementStep>(), skip: false).Status
+               .Should().Be(StepStatus.QueuedForExecution);
     }
 }

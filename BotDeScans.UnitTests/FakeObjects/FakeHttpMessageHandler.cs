@@ -7,5 +7,5 @@ public abstract class FakeHttpMessageHandler : HttpMessageHandler
 
     protected sealed override Task<HttpResponseMessage> SendAsync(
             HttpRequestMessage request, CancellationToken cancellationToken)
-        => this.FakeSendAsync(request, cancellationToken);
+        => FakeSendAsync(request, cancellationToken);
 }

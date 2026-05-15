@@ -1,4 +1,4 @@
-using BotDeScans.App.Extensions;
+﻿using BotDeScans.App.Extensions;
 using FluentResults;
 using Serilog;
 using Serilog.Events;
@@ -105,16 +105,16 @@ public abstract class ObjectExtensionsTests : UnitTest
         {
             public string? SuccessMessage { get; set; }
 
-            public static Task<Result> SuccessMethodAsync() => 
+            public static Task<Result> SuccessMethodAsync() =>
                 Task.FromResult(Result.Ok());
 
-            public Task<Result> SuccessWithValueMethodAsync() => 
+            public Task<Result> SuccessWithValueMethodAsync() =>
                 Task.FromResult(Result.Ok().WithSuccess(SuccessMessage!));
 
-            public static Task<Result> FailureMethodAsync(string errorMessage) => 
+            public static Task<Result> FailureMethodAsync(string errorMessage) =>
                 Task.FromResult(Result.Fail(errorMessage));
 
-            public static Task<Result> ThrowExceptionMethodAsync() => 
+            public static Task<Result> ThrowExceptionMethodAsync() =>
                 throw new InvalidOperationException("Test exception");
         }
     }

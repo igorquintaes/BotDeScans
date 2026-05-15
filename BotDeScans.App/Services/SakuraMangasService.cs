@@ -52,6 +52,7 @@ public class SakuraMangasService(
 
     public virtual async Task<Result> PingCredentialsAsync(CancellationToken cancellationToken)
     {
+        const string EXPECTED_ERROR = "MANGA_NOT_FOUND";
         using var form = new MultipartFormDataContent
         {
             { new StringContent(user), "email" },
@@ -67,18 +68,21 @@ public class SakuraMangasService(
             return HandleError(stringResponseContent);
 
         var objectResponse = JsonSerializer.Deserialize<SakuraRequestResponse>(stringResponseContent);
-        if (objectResponse!.ErrorCode == "MANGA_NOT_FOUND")
-            return Result.Ok();
-
-        return HandleError(stringResponseContent, objectResponse.Message);
+        return objectResponse!.ErrorCode is EXPECTED_ERROR
+            ? Result.Ok() 
+            : HandleError(stringResponseContent, objectResponse!.Message);
     }
 
     private static Result HandleError(string responseContent, string? errorMessage = null)
     {
+        const string DEFAULT_COMMUNICATION_ERROR = 
+            "Erro ao se comunicar com a Sakura Mangás. " +
+            "Cheque o arquivo de logs para mais detalhes.";
+
         Log.Error(responseContent);
 
         return new Error(
-            message: errorMessage ?? "Erro ao se comunicar com a Sakura Mangás. Cheque o arquivo de logs para mais detalhes.",
+            message: errorMessage ?? DEFAULT_COMMUNICATION_ERROR,
             causedBy: new Error(responseContent));
     }
 }

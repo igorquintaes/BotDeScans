@@ -120,7 +120,7 @@ public class FileServiceTests : UnitTest
                 .Select(x => x.Name)
                 .OrderBy(x => x)
                 .Should().BeEquivalentTo(
-                    [ "1.png", "2.png", "3.png" ],
+                    ["1.png", "2.png", "3.png"],
                     options => options.WithStrictOrdering());
         }
 
@@ -149,7 +149,7 @@ public class FileServiceTests : UnitTest
                 .Select(x => x.Name)
                 .OrderBy(x => x)
                 .Should().BeEquivalentTo(
-                    [ "01.png", "02.png", "03.png", "04.png", "05.png", "06.png", "07.png", "08.png", "09.png", "10.png" ],
+                    ["01.png", "02.png", "03.png", "04.png", "05.png", "06.png", "07.png", "08.png", "09.png", "10.png"],
                     options => options.WithStrictOrdering());
         }
 

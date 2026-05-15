@@ -1,6 +1,7 @@
 ﻿using BotDeScans.App.Features.Publish.Interaction;
 using BotDeScans.App.Features.Publish.Interaction.Steps;
 using BotDeScans.App.Features.Publish.Interaction.Steps.Enums;
+using BotDeScans.App.Models.DTOs;
 using BotDeScans.App.Models.Entities.Enums;
 using BotDeScans.App.Services;
 using FluentResults;
@@ -13,7 +14,7 @@ public class ZipFilesStepTests : UnitTest
 
     public ZipFilesStepTests()
     {
-        fixture.Freeze<State>();
+        fixture.FreezeFake<IPublishContext>();
         fixture.FreezeFake<FileService>();
         fixture.FreezeFake<FileReleaseService>();
         step = fixture.Create<ZipFilesStep>();
@@ -40,6 +41,16 @@ public class ZipFilesStepTests : UnitTest
         {
             var scopedDirectory = fixture.Create<string>();
             var zipDirectory = fixture.Create<string>();
+            var chapterInfo = fixture.Create<Info>();
+            var originFolder = fixture.Create<string>();
+
+            A.CallTo(() => fixture
+                .FreezeFake<IPublishContext>().ChapterInfo)
+                .Returns(chapterInfo);
+
+            A.CallTo(() => fixture
+                .FreezeFake<IPublishContext>().OriginContentFolder)
+                .Returns(originFolder);
 
             A.CallTo(() => fixture
                 .FreezeFake<FileReleaseService>()
@@ -49,8 +60,8 @@ public class ZipFilesStepTests : UnitTest
             A.CallTo(() => fixture
                 .FreezeFake<FileService>()
                 .CreateZipFile(
-                    fixture.Freeze<State>().ChapterInfo.ChapterNumber,
-                    fixture.Freeze<State>().InternalData.OriginContentFolder,
+                    chapterInfo.ChapterNumber,
+                    originFolder,
                     scopedDirectory))
                 .Returns(Result.Ok(zipDirectory));
         }
@@ -66,11 +77,12 @@ public class ZipFilesStepTests : UnitTest
         [Fact]
         public async Task GivenSuccessfulExecutionShouldSetZipFilePath()
         {
-            fixture.Freeze<State>().InternalData.ZipFilePath = null!;
-
             await step.ExecuteAsync(cancellationToken);
 
-            fixture.Freeze<State>().InternalData.ZipFilePath.Should().NotBeNullOrWhiteSpace();
+            A.CallTo(() => fixture
+                .FreezeFake<IPublishContext>()
+                .SetZipPath(A<string>.Ignored))
+                .MustHaveHappenedOnceExactly();
         }
 
         [Fact]

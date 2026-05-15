@@ -7,7 +7,7 @@ namespace BotDeScans.App.Features.Publish.Interaction.Steps;
 
 public class UploadZipGoogleDriveStep(
     GoogleDriveService googleDriveService,
-    State state) : IPublishStep
+    IPublishContext context) : IPublishStep
 {
     public StepType Type => StepType.Upload;
     public StepName Name => StepName.UploadZipGoogleDrive;
@@ -19,12 +19,12 @@ public class UploadZipGoogleDriveStep(
 
     public async Task<Result> ExecuteAsync(CancellationToken cancellationToken)
     {
-        var titleFolderResult = await googleDriveService.GetOrCreateFolderAsync(state.Title.Name, default, cancellationToken);
+        var titleFolderResult = await googleDriveService.GetOrCreateFolderAsync(context.Title.Name, default, cancellationToken);
         if (titleFolderResult.IsFailed)
             return titleFolderResult.ToResult();
 
         var fileResult = await googleDriveService.CreateFileAsync(
-            filePath: state.InternalData.ZipFilePath!,
+            filePath: context.ZipFilePath!,
             parentId: titleFolderResult.Value.Id,
             publicAccess: true,
             cancellationToken);
@@ -32,7 +32,7 @@ public class UploadZipGoogleDriveStep(
         if (fileResult.IsFailed)
             return fileResult.ToResult();
 
-        state.ReleaseLinks.DriveZip = fileResult.Value.WebViewLink;
+        context.SetDriveZipLink(fileResult.Value.WebViewLink);
         return Result.Ok();
     }
 }

@@ -8,7 +8,7 @@ using Remora.Rest.Core;
 namespace BotDeScans.App.Services.Discord;
 
 public class RolesService(
-    IConfiguration configuration, 
+    IConfiguration configuration,
     ScopedRoleCache scopedRoleCache,
     IDiscordRestGuildAPI discordRestGuildAPI)
 {

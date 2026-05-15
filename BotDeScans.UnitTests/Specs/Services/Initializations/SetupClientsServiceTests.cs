@@ -63,8 +63,8 @@ public class SetupClientsServiceTests : UnitTest
             const string ERROR_MESSAGE = "some-error";
             A.CallTo(() => fixture
                 .FreezeFake<IValidator<FakeClientFactory>>()
-                .ValidateAsync(A<ValidationContext<IClientFactory>>.That.Matches(x => 
-                    x.InstanceToValidate == fixture.FreezeFake<FakeClientFactory>()), 
+                .ValidateAsync(A<ValidationContext<IClientFactory>>.That.Matches(x =>
+                    x.InstanceToValidate == fixture.FreezeFake<FakeClientFactory>()),
                     cancellationToken))
                 .Returns(new ValidationResult([new ValidationFailure("prop", ERROR_MESSAGE)]));
 

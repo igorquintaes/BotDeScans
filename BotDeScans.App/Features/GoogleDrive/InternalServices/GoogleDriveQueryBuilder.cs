@@ -1,4 +1,4 @@
-namespace BotDeScans.App.Features.GoogleDrive.InternalServices;
+﻿namespace BotDeScans.App.Features.GoogleDrive.InternalServices;
 
 public class GoogleDriveQueryBuilder
 {

@@ -1,4 +1,4 @@
-using BotDeScans.App.Features.Mega.Discord;
+﻿using BotDeScans.App.Features.Mega.Discord;
 using BotDeScans.App.Features.Mega.InternalServices;
 using BotDeScans.App.Models.DTOs;
 using BotDeScans.App.Services;

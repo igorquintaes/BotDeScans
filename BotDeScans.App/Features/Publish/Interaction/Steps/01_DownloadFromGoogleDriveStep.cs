@@ -6,10 +6,10 @@ using FluentResults;
 
 namespace BotDeScans.App.Features.Publish.Interaction.Steps;
 
-public class DownloadStep(
+public class DownloadFromGoogleDriveStep(
     FileReleaseService fileReleaseService,
     GoogleDriveService googleDriveService,
-    State state) : IManagementStep
+    IPublishContext context) : IManagementStep
 {
     public StepType Type => StepType.Management;
     public StepName Name => StepName.Download;
@@ -21,17 +21,17 @@ public class DownloadStep(
         var coverDirectory = fileReleaseService.CreateScopedDirectory();
 
         var saveFilesResult = await googleDriveService.SaveFilesAsync(
-            state.ChapterInfo.GoogleDriveUrl.Id,
+            context.ChapterInfo.GoogleDriveUrl.Id,
             downloadDirectory,
             cancellationToken);
 
         if (saveFilesResult.IsFailed)
             return saveFilesResult;
 
-        state.InternalData.OriginContentFolder = downloadDirectory;
-        state.InternalData.CoverFilePath = fileReleaseService.MoveCoverFile(
+        context.SetOriginContentFolder(downloadDirectory);
+        context.SetCoverFilePath(fileReleaseService.MoveCoverFile(
             downloadDirectory,
-            coverDirectory);
+            coverDirectory));
 
         return Result.Ok();
     }

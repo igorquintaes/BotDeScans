@@ -17,7 +17,7 @@ public abstract class FeedbackMessageOptionsBuilderTests : UnitTest
                 builder.WithAttachment($"file{i}.txt", stream);
 
             Action act = () => builder.WithAttachment("file10.txt", stream);
-           
+
             act.Should().Throw<ArgumentOutOfRangeException>()
                 .WithMessage($"Discord allows only {FeedbackMessageOptionsBuilder.MAX_ATTACHMENTS_ALLOWED} attachments for each message. (Parameter 'name')");
         }

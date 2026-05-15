@@ -31,7 +31,7 @@ public class RequestValidator : AbstractValidator<Request>
             .Must(IsMangaValidMangaDexReference)
             .When(request => (request.ReferenceKey is ExternalReference.MangaDex or ExternalReference.SakuraMangas)
                           && string.IsNullOrWhiteSpace(request.ReferenceRawValue) is false)
-            .WithMessage(request => 
+            .WithMessage(request =>
                           $"Valor de referência inválida para {request.ReferenceKey.GetDescription()}. " +
                           $"É necessário o ID da obra ou o link da página da obra.");
     }
