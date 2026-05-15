@@ -11,8 +11,7 @@ public class EnabledSteps(Dictionary<IStep, StepInfo> steps) : ReadOnlyDictionar
 {
     public EnabledSteps WithUpdatedStepInfo(IStep step, StepInfo updatedInfo)
     {
-        var newDict = new Dictionary<IStep, StepInfo>(this);
-        newDict[step] = updatedInfo;
+        var newDict = new Dictionary<IStep, StepInfo>(this) { [step] = updatedInfo };
         return new EnabledSteps(newDict);
     }
 
