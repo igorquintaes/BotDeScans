@@ -17,14 +17,11 @@ public abstract class ClientFactory<TClient> : IClientFactory
 
     public async Task<Result<TClient>> SafeCreateAsync(CancellationToken cancellationToken)
     {
-        try
-        {
-            return await CreateAsync(cancellationToken);
-        }
-        catch (Exception ex)
-        {
-            return new Error($"Failed to create a client of type {typeof(TClient).Name}.").CausedBy(ex);
-        }
+        var errorMessage = $"Failed to create a client of type {typeof(TClient).Name}.";
+
+        return await Result.Try(
+            action: () => CreateAsync(cancellationToken),
+            catchHandler: ex => new Error(errorMessage).CausedBy(ex));
     }
 
     public static Result<string> ConfigFileExists(string fileName)
@@ -45,13 +42,8 @@ public abstract class ClientFactory<TClient> : IClientFactory
             : configFileResult.ToResult();
     }
 
-    async Task<Result<object>> IClientFactory.SafeCreateObjectAsync(CancellationToken cancellationToken)
-    {
-        var result = await SafeCreateAsync(cancellationToken);
-
-        return Result.Ok<object>(result.ValueOrDefault!)
-                     .WithReasons(result.Reasons);
-    }
+    Task<Result<object>> IClientFactory.SafeCreateObjectAsync(CancellationToken cancellationToken) 
+        => (SafeCreateAsync(cancellationToken) as Task<Result<object>>)!;
 
     Task<Result> IClientFactory.HealthCheckAsync(object client, CancellationToken cancellationToken)
         => HealthCheckAsync((TClient)client, cancellationToken);
