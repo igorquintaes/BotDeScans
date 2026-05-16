@@ -94,7 +94,7 @@ public class ParallelStepsTrackerTests : UnitTest
 
             // step1 completes first
             await tracker.ApplyAndNotifyAsync(Result.Ok(), step1, initialState, cancellationToken);
-            // step2 completes second — must not revert step1 back to queued
+            // step2 completes second â€” must not revert step1 back to queued
             await tracker.ApplyAndNotifyAsync(Result.Ok(), step2, initialState, cancellationToken);
 
             using var _ = new AssertionScope();
@@ -116,7 +116,7 @@ public class ParallelStepsTrackerTests : UnitTest
         }
 
         [Fact]
-        public async Task GivenSkippedStepShouldReturnOkWithoutCallingTrackingCallback()
+        public async Task GivenUnchangedSnapshotShouldStillCallTrackingCallback()
         {
             var called = false;
             Task<Result<State>> TrackingCallback(State s, CancellationToken _)
@@ -127,7 +127,7 @@ public class ParallelStepsTrackerTests : UnitTest
 
             var tracker = new ParallelStepsTracker(initialState, TrackingCallback);
 
-            // Simulate skip by passing StepStatus.Skip in StepInfo — tracker tests the ApplyAndNotifyAsync
+            // Simulate skip by passing StepStatus.Skip in StepInfo â€” tracker tests the ApplyAndNotifyAsync
             // path directly, so we simulate a skipped step result as an already-ok result with no snapshot change.
             // The actual skip guard lives in RunStepParallelAsync (Handler), tested via HandlerTests.
             // Here we just verify that a success result with unchanged snapshot still sends a tracking update.
