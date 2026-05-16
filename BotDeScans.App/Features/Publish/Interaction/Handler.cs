@@ -206,6 +206,7 @@ public class Handler(
             MangaDexLink = updated.MangaDexLink ?? @base.MangaDexLink,
             SakuraMangasLink = updated.SakuraMangasLink ?? @base.SakuraMangasLink,
             BloggerLink = updated.BloggerLink ?? @base.BloggerLink,
+            BloggerImageAsBase64 = updated.BloggerImageAsBase64 ?? @base.BloggerImageAsBase64,
         };
 
     private async Task<Result<State>> RunValidationAsync(
