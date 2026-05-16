@@ -506,18 +506,47 @@ public class HandlerTests : UnitTest
         }
 
         [Fact]
-        public async Task GivenConversionStepWithContinueOnErrorShouldContinueToPublishPhase()
+        public async Task GivenConversionStepWithContinueOnErrorShouldStillRunSiblingConversionStep()
         {
             A.CallTo(() => conversionStep1.ExecuteAsync(A<State>.Ignored, cancellationToken))
                 .Returns(Result.Fail<State>("conversion error"));
             A.CallTo(() => conversionStep1.ContinueOnError).Returns(true);
 
-            var result = await handler.ExecuteAsync(conversionTestState, cancellationToken);
+            await handler.ExecuteAsync(conversionTestState, cancellationToken);
 
-            result.Should().BeFailure();
-            // conversionStep2 still ran (parallel in same group)
+            // conversionStep2 still ran in parallel despite conversionStep1 failing
             A.CallTo(() => conversionStep2.ExecuteAsync(A<State>.Ignored, cancellationToken))
                 .MustHaveHappenedOnceExactly();
+        }
+
+        [Fact]
+        public async Task GivenConversionStepWithContinueOnErrorShouldContinueToPublishPhase()
+        {
+            var publishStep = A.Fake<IPublishStep>();
+            var publishStepInfo = A.Fake<StepInfo>();
+            A.CallTo(() => publishStep.Dependency).Returns(null);
+            A.CallTo(() => publishStep.ValidateAsync(A<State>.Ignored, cancellationToken)).Returns(Result.Ok());
+            A.CallTo(() => publishStep.ExecuteAsync(A<State>.Ignored, cancellationToken)).Returns(Result.Ok(state));
+            A.CallTo(() => publishStepInfo.UpdateStatus(A<Result>.Ignored)).Returns(publishStepInfo);
+
+            A.CallTo(() => conversionStep1.ExecuteAsync(A<State>.Ignored, cancellationToken))
+                .Returns(Result.Fail<State>("conversion error"));
+            A.CallTo(() => conversionStep1.ContinueOnError).Returns(true);
+
+            var steps = new EnabledSteps(new Dictionary<IStep, StepInfo>
+            {
+                { managementStep, managementStepInfo },
+                { conversionStep1, conversionStepInfo1 },
+                { conversionStep2, conversionStepInfo2 },
+                { publishStep, publishStepInfo },
+            });
+            var stateWithPublish = state with { Steps = steps };
+
+            var result = await handler.ExecuteAsync(stateWithPublish, cancellationToken);
+
+            result.Should().BeFailure().And.HaveError("conversion error");
+            A.CallTo(() => publishStep.ValidateAsync(A<State>.Ignored, cancellationToken)).MustHaveHappenedOnceExactly();
+            A.CallTo(() => publishStep.ExecuteAsync(A<State>.Ignored, cancellationToken)).MustHaveHappenedOnceExactly();
         }
     }
 
