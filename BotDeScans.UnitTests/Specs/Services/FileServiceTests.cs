@@ -130,7 +130,7 @@ public class FileServiceTests : UnitTest
         }
 
         [Fact]
-        public async Task ShouldContainsExpectedFilesInsideZipFileCreatingPaddingLeftZeroes()
+        public async Task ShouldContainExpectedFilesInsideZipFileCreatingPaddingLeftZeroes()
         {
             File.Create(Path.Combine(resourcesDirectory, "credits.png")).Dispose();
             File.Create(Path.Combine(resourcesDirectory, "01.png")).Dispose();
