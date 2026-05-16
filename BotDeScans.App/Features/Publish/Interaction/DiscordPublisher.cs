@@ -126,8 +126,7 @@ public class DiscordPublisher(
         .GetProperties()
         .Where(property => property.GetCustomAttribute<ReleaseLinkAttribute>() is not null)
         .Select(property => new
-        {
-            Label = property.GetCustomAttribute<ReleaseLinkAttribute>()!.Label,
+        { property.GetCustomAttribute<ReleaseLinkAttribute>()!.Label,
             Link = property.GetValue(publishState, null)?.ToString()
         })
         .Where(x => !string.IsNullOrWhiteSpace(x.Link))

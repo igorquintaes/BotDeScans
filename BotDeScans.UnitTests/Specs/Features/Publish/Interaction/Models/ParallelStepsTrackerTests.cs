@@ -1,7 +1,6 @@
 using BotDeScans.App.Features.Publish.Interaction;
 using BotDeScans.App.Features.Publish.Interaction.Models;
 using BotDeScans.App.Features.Publish.Interaction.Steps;
-using BotDeScans.App.Models.Entities.Enums;
 using FluentAssertions.Execution;
 using FluentResults;
 
@@ -61,8 +60,8 @@ public class ParallelStepsTrackerTests : UnitTest
         [Fact]
         public async Task GivenTwoSequentialCallsShouldAccumulateStateWithoutRegressingPriorStep()
         {
-            Task<Result<State>> TrackingCallback(State s, CancellationToken _) =>
-                Task.FromResult(Result.Ok(s));
+            static Task<Result<State>> TrackingCallback(State s, CancellationToken _) =>
+                   Task.FromResult(Result.Ok(s));
 
             var tracker = new ParallelStepsTracker(initialState, TrackingCallback);
 
@@ -105,8 +104,8 @@ public class ParallelStepsTrackerTests : UnitTest
         [Fact]
         public async Task GivenTrackingCallbackFailureShouldAggregateError()
         {
-            Task<Result<State>> TrackingCallback(State s, CancellationToken _) =>
-                Task.FromResult(Result.Fail<State>("discord error"));
+            static Task<Result<State>> TrackingCallback(State s, CancellationToken _) =>
+                   Task.FromResult(Result.Fail<State>("discord error"));
 
             var tracker = new ParallelStepsTracker(initialState, TrackingCallback);
 

@@ -14,11 +14,9 @@ public class ParallelStepsTracker(
     Func<State, CancellationToken, Task<Result<State>>> sendTrackingUpdate)
 {
     private readonly SemaphoreSlim _lock = new(1, 1);
-    private State _currentState = initialState;
-    private Result _aggregateTrackingResult = Result.Ok();
 
-    public State CurrentState => _currentState;
-    public Result AggregateTrackingResult => _aggregateTrackingResult;
+    public State CurrentState { get; private set; } = initialState;
+    public Result AggregateTrackingResult { get; private set; } = Result.Ok();
 
     /// <summary>
     /// Called by each parallel step after it finishes executing.
@@ -37,19 +35,19 @@ public class ParallelStepsTracker(
         {
             // Merge file paths / links from this step's output into the latest shared state.
             var merged = stepSnapshot.Steps is not null
-                ? Handler.MergeStates(_currentState, stepSnapshot)
-                : _currentState;
+                ? Handler.MergeStates(CurrentState, stepSnapshot)
+                : CurrentState;
 
             // Apply this step's status onto the freshly merged state.
             var updatedInfo = merged.Steps[step].UpdateStatus(stepResult);
             var stateToSend = merged with { Steps = merged.Steps.WithUpdatedStepInfo(step, updatedInfo) };
 
             var trackingResult = await sendTrackingUpdate(stateToSend, cancellationToken);
-            _aggregateTrackingResult = Result.Merge(_aggregateTrackingResult, trackingResult.ToResult());
+            AggregateTrackingResult = Result.Merge(AggregateTrackingResult, trackingResult.ToResult());
 
-            _currentState = trackingResult.IsSuccess ? trackingResult.Value : stateToSend;
+            CurrentState = trackingResult.IsSuccess ? trackingResult.Value : stateToSend;
 
-            return _aggregateTrackingResult;
+            return AggregateTrackingResult;
         }
         finally
         {

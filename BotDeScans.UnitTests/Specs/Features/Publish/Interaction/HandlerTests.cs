@@ -559,7 +559,7 @@ public class HandlerTests : UnitTest
             var updatedState = new State
             {
                 BoxZipLink = "https://box.com/zip",
-                Steps = new EnabledSteps(new Dictionary<IStep, StepInfo>()),
+                Steps = new EnabledSteps([]),
             };
 
             var merged = Handler.MergeStates(baseState, updatedState);
@@ -575,7 +575,7 @@ public class HandlerTests : UnitTest
             var updatedState = new State
             {
                 PdfFilePath = "/tmp/chapter.pdf",
-                Steps = new EnabledSteps(new Dictionary<IStep, StepInfo>()),
+                Steps = new EnabledSteps([]),
             };
 
             var merged = Handler.MergeStates(baseState, updatedState);
@@ -591,7 +591,7 @@ public class HandlerTests : UnitTest
             var updatedState = new State
             {
                 MegaZipLink = "https://new.link",
-                Steps = new EnabledSteps(new Dictionary<IStep, StepInfo>()),
+                Steps = new EnabledSteps([]),
             };
 
             var merged = Handler.MergeStates(baseState, updatedState);
@@ -606,7 +606,7 @@ public class HandlerTests : UnitTest
             var updatedState = new State
             {
                 DriveZipLink = null,
-                Steps = new EnabledSteps(new Dictionary<IStep, StepInfo>()),
+                Steps = new EnabledSteps([]),
             };
 
             var merged = Handler.MergeStates(baseState, updatedState);
