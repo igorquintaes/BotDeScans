@@ -7,9 +7,9 @@ namespace BotDeScans.App.Features.Publish.Interaction.Steps;
 
 public class ZipFilesStep(
     FileService fileService,
-    FileReleaseService fileReleaseService) : IManagementStep
+    FileReleaseService fileReleaseService) : IConversionStep
 {
-    public StepType Type => StepType.Management;
+    public StepType Type => StepType.Conversion;
     public StepName Name => StepName.ZipFiles;
     public bool IsMandatory => false;
 

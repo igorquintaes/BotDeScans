@@ -16,8 +16,12 @@ public class EnabledSteps(Dictionary<IStep, StepInfo> steps) : ReadOnlyDictionar
     }
 
     public IEnumerable<(IManagementStep Step, StepInfo Info)> ManagementSteps =>
-        this.Where(step => step.Key is IManagementStep)
+        this.Where(step => step.Key is IManagementStep and not IConversionStep)
             .Select(step => ((IManagementStep)step.Key, step.Value));
+
+    public IEnumerable<(IConversionStep Step, StepInfo Info)> ConversionSteps =>
+        this.Where(step => step.Key is IConversionStep)
+            .Select(step => ((IConversionStep)step.Key, step.Value));
 
     public IEnumerable<(IPublishStep Step, StepInfo Info)> PublishSteps =>
         this.Where(step => step.Key is IPublishStep)

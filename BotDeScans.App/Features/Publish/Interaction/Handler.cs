@@ -2,6 +2,7 @@
 using BotDeScans.App.Features.Publish.Interaction.Models;
 using BotDeScans.App.Features.Publish.Interaction.Steps;
 using BotDeScans.App.Features.Publish.Interaction.Steps.Enums;
+using BotDeScans.App.Models.Entities.Enums;
 using FluentResults;
 using Serilog;
 using System.Diagnostics;
@@ -11,22 +12,29 @@ namespace BotDeScans.App.Features.Publish.Interaction;
 public class Handler(
     DiscordPublisher discordPublisher)
 {
+    // Caps concurrent conversion steps to avoid file-descriptor exhaustion.
+    // Conversions read from the same source directory; too many parallel opens can hit OS limits.
+    private static readonly SemaphoreSlim ConversionThrottle = new(
+        Environment.ProcessorCount, Environment.ProcessorCount);
+
     public virtual async Task<Result<State>> ExecuteAsync(State state, CancellationToken cancellationToken)
     {
-        var managementSteps = state.Steps.ManagementSteps;
-        var publishSteps = state.Steps.PublishSteps;
+        var managementSteps = state.Steps.ManagementSteps.ToList();
+        var conversionSteps = state.Steps.ConversionSteps.ToList();
+        var publishSteps = state.Steps.PublishSteps.ToList();
 
         var trackingResult = await discordPublisher.UpdateTrackingMessageAsync(state, cancellationToken);
         if (trackingResult.IsFailed)
             return trackingResult;
 
         var currentState = trackingResult.Value;
+        var currentResult = trackingResult.ToResult();
 
-        var managementExecution = await RunChainAsync(
-            trackingResult.ToResult(),
+        // Phase 1: Setup, Download, Compress — strictly sequential.
+        var managementExecution = await RunSequentialChainAsync(
+            currentResult,
             currentState,
             managementSteps.Select(data => ((IStep)data.Step, data.Info)),
-            RunStepAsync,
             cancellationToken);
         if (managementExecution.ShouldStop)
             return managementExecution.Result.IsFailed
@@ -34,9 +42,28 @@ public class Handler(
                 : Result.Ok(managementExecution.State);
 
         currentState = managementExecution.State;
+        currentResult = managementExecution.Result;
 
-        var validationExecution = await RunChainAsync(
-            managementExecution.Result,
+        // Phase 2: Conversion steps (ZipFiles, PdfFiles, …) — run in parallel with I/O throttle.
+        if (conversionSteps.Count > 0)
+        {
+            var conversionExecution = await RunParallelConversionAsync(
+                currentResult,
+                currentState,
+                conversionSteps,
+                cancellationToken);
+            if (conversionExecution.ShouldStop)
+                return conversionExecution.Result.IsFailed
+                    ? conversionExecution.Result.ToResult<State>()
+                    : Result.Ok(conversionExecution.State);
+
+            currentState = conversionExecution.State;
+            currentResult = conversionExecution.Result;
+        }
+
+        // Phase 3: Validate all publish steps sequentially.
+        var validationExecution = await RunSequentialChainAsync(
+            currentResult,
             currentState,
             publishSteps.Select(data => ((IStep)data.Step, data.Info)),
             RunValidationAsync,
@@ -48,11 +75,11 @@ public class Handler(
 
         currentState = validationExecution.State;
 
-        var publishExecution = await RunChainAsync(
+        // Phase 4: Publish steps — grouped by Dependency, each group in parallel.
+        var publishExecution = await RunParallelDagAsync(
             validationExecution.Result,
             currentState,
-            publishSteps.Select(data => ((IStep)data.Step, data.Info)),
-            RunStepAsync,
+            publishSteps,
             cancellationToken);
 
         return publishExecution.Result.IsFailed
@@ -60,7 +87,8 @@ public class Handler(
             : Result.Ok(publishExecution.State);
     }
 
-    private static async Task<(Result Result, State State, bool ShouldStop)> RunChainAsync(
+    // Runs steps sequentially, used for management and validation phases.
+    private async Task<(Result Result, State State, bool ShouldStop)> RunSequentialChainAsync(
         Result aggregate,
         State state,
         IEnumerable<(IStep Step, StepInfo Info)> chain,
@@ -81,6 +109,119 @@ public class Handler(
 
         return (aggregate, state, false);
     }
+
+    // Overload that defaults to RunStepAsync, used for management execution.
+    private Task<(Result Result, State State, bool ShouldStop)> RunSequentialChainAsync(
+        Result aggregate,
+        State state,
+        IEnumerable<(IStep Step, StepInfo Info)> chain,
+        CancellationToken cancellationToken)
+        => RunSequentialChainAsync(aggregate, state, chain, RunStepAsync, cancellationToken);
+
+    // Runs conversion steps in parallel, throttled to avoid exceeding OS file-descriptor limits.
+    // Each conversion reads from the same source directory but writes to its own isolated directory,
+    // so there is no write conflict. The semaphore caps concurrency to ProcessorCount.
+    private async Task<(Result Result, State State, bool ShouldStop)> RunParallelConversionAsync(
+        Result aggregate,
+        State state,
+        IEnumerable<(IConversionStep Step, StepInfo Info)> conversionSteps,
+        CancellationToken cancellationToken)
+    {
+        var items = conversionSteps.ToList();
+
+        var tasks = items.Select(async item =>
+        {
+            await ConversionThrottle.WaitAsync(cancellationToken);
+            try
+            {
+                return await RunStepAsync((item.Step, item.Info), state, cancellationToken);
+            }
+            finally
+            {
+                ConversionThrottle.Release();
+            }
+        });
+
+        var results = await Task.WhenAll(tasks);
+
+        foreach (var (stepResult, item) in results.Zip(items))
+        {
+            if (stepResult.IsSuccess)
+                state = MergeStates(state, stepResult.Value);
+
+            aggregate = Result.Merge(aggregate, stepResult.ToResult());
+        }
+
+        var hasFatalFailure = results
+            .Zip(items, (r, item) => (Result: r, Step: (IStep)item.Step))
+            .Any(x => x.Result.IsFailed && !x.Step.ContinueOnError);
+
+        return (aggregate, state, hasFatalFailure);
+    }
+
+    // Runs publish steps grouped by Dependency, each group in parallel, groups sequentially.
+    private async Task<(Result Result, State State)> RunParallelDagAsync(
+        Result aggregate,
+        State state,
+        IEnumerable<(IPublishStep Step, StepInfo Info)> publishSteps,
+        CancellationToken cancellationToken)
+    {
+        // Group by dependency: null-dependency steps run after all dependency-based groups
+        var groups = publishSteps
+            .GroupBy(x => x.Step.Dependency)
+            .OrderBy(g => g.Key.HasValue ? 0 : 1)  // dependency groups first, null last
+            .ToList();
+
+        foreach (var group in groups)
+        {
+            var groupItems = group.ToList();
+
+            // Run all steps in this group in parallel
+            var tasks = groupItems.Select(item =>
+                RunStepAsync((item.Step, item.Info), state, cancellationToken));
+
+            var results = await Task.WhenAll(tasks);
+
+            // Merge states from parallel steps (each writes to disjoint properties)
+            foreach (var stepResult in results)
+            {
+                if (stepResult.IsSuccess)
+                    state = MergeStates(state, stepResult.Value);
+
+                aggregate = Result.Merge(aggregate, stepResult.ToResult());
+            }
+
+            // Stop the entire DAG if any non-continuable step failed
+            var hasFatalFailure = results
+                .Zip(groupItems, (r, item) => (Result: r, Step: item.Step))
+                .Any(x => x.Result.IsFailed && !x.Step.ContinueOnError);
+
+            if (hasFatalFailure)
+                return (aggregate, state);
+        }
+
+        return (aggregate, state);
+    }
+
+    // Merges two State instances produced by parallel steps, combining their non-null properties.
+    public static State MergeStates(State @base, State updated) =>
+        @base with
+        {
+            Steps = updated.Steps,
+            TrackingMessage = updated.TrackingMessage,
+            ZipFilePath = updated.ZipFilePath ?? @base.ZipFilePath,
+            PdfFilePath = updated.PdfFilePath ?? @base.PdfFilePath,
+            BoxPdfReaderKey = updated.BoxPdfReaderKey ?? @base.BoxPdfReaderKey,
+            MegaZipLink = updated.MegaZipLink ?? @base.MegaZipLink,
+            MegaPdfLink = updated.MegaPdfLink ?? @base.MegaPdfLink,
+            DriveZipLink = updated.DriveZipLink ?? @base.DriveZipLink,
+            DrivePdfLink = updated.DrivePdfLink ?? @base.DrivePdfLink,
+            BoxZipLink = updated.BoxZipLink ?? @base.BoxZipLink,
+            BoxPdfLink = updated.BoxPdfLink ?? @base.BoxPdfLink,
+            MangaDexLink = updated.MangaDexLink ?? @base.MangaDexLink,
+            SakuraMangasLink = updated.SakuraMangasLink ?? @base.SakuraMangasLink,
+            BloggerLink = updated.BloggerLink ?? @base.BloggerLink,
+        };
 
     private async Task<Result<State>> RunValidationAsync(
         (IStep Step, StepInfo Info) data,
@@ -128,7 +269,7 @@ public class Handler(
         var updatedSteps = state.Steps.WithUpdatedStepInfo(step, updatedInfo);
         var updatedState = state with { Steps = updatedSteps };
 
-        var feedbackResult = await discordPublisher.UpdateTrackingMessageAsync(updatedState, cancellationToken);
+        var feedbackResult = await discordPublisher.SynchronizedUpdateTrackingMessageAsync(updatedState, cancellationToken);
         if (feedbackResult.IsFailed)
             return Result.Merge(result, feedbackResult.ToResult()).ToResult<State>();
 

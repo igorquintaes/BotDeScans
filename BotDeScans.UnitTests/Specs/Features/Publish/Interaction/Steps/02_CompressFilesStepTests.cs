@@ -57,7 +57,7 @@ public class CompressFilesStepTests : UnitTest
             foreach (var filePath in new[] { firstFilePath, secondFilePath })
             {
                 using var image = new Image<Rgba32>(1, 1);
-                image.Mutate(x => x.BackgroundColor(new Rgba32(5, 5, 5)));
+                image.Mutate(x => x.BackgroundColor(Color.FromPixel(new Rgba32(5, 5, 5))));
                 await image.SaveAsync(filePath, cancellationToken);
             }
 
