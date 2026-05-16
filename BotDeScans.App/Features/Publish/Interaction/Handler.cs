@@ -39,7 +39,7 @@ public class Handler(
         currentState = managementExecution.State;
         currentResult = managementExecution.Result;
 
-        // Phase 2: Conversion steps (ZipFiles, PdfFiles, …) — run in parallel with I/O throttle.
+        // Phase 2: Conversion steps (ZipFiles, PdfFiles, …) — run in parallel.
         if (conversionSteps.Count > 0)
         {
             var conversionExecution = await RunParallelConversionAsync(
