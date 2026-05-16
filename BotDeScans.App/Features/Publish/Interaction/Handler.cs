@@ -2,7 +2,6 @@
 using BotDeScans.App.Features.Publish.Interaction.Models;
 using BotDeScans.App.Features.Publish.Interaction.Steps;
 using BotDeScans.App.Features.Publish.Interaction.Steps.Enums;
-using BotDeScans.App.Models.Entities.Enums;
 using FluentResults;
 using Serilog;
 using System.Diagnostics;
@@ -83,7 +82,7 @@ public class Handler(
     }
 
     // Runs steps sequentially, used for management and validation phases.
-    private async Task<(Result Result, State State, bool ShouldStop)> RunSequentialChainAsync(
+    private static async Task<(Result Result, State State, bool ShouldStop)> RunSequentialChainAsync(
         Result aggregate,
         State state,
         IEnumerable<(IStep Step, StepInfo Info)> chain,
@@ -125,22 +124,22 @@ public class Handler(
         CancellationToken cancellationToken)
     {
         var items = conversionSteps.ToList();
+        var tracker = new ParallelStepsTracker(state, discordPublisher.SynchronizedUpdateTrackingMessageAsync);
+
         var results = await Task.WhenAll(
-            items.Select(item => RunStepAsync((item.Step, item.Info), state, cancellationToken)));
+            items.Select(item => RunStepParallelAsync((item.Step, item.Info), state, tracker, cancellationToken)));
 
-        foreach (var (stepResult, item) in results.Zip(items))
-        {
-            if (stepResult.IsSuccess)
-                state = MergeStates(state, stepResult.Value);
+        foreach (var stepResult in results)
+            aggregate = Result.Merge(aggregate, stepResult);
 
-            aggregate = Result.Merge(aggregate, stepResult.ToResult());
-        }
+        aggregate = Result.Merge(aggregate, tracker.AggregateTrackingResult);
 
         var hasFatalFailure = results
             .Zip(items, (r, item) => (Result: r, Step: (IStep)item.Step))
-            .Any(x => x.Result.IsFailed && !x.Step.ContinueOnError);
+            .Any(x => x.Result.IsFailed && !x.Step.ContinueOnError)
+            || tracker.AggregateTrackingResult.IsFailed;
 
-        return (aggregate, state, hasFatalFailure);
+        return (aggregate, tracker.CurrentState, hasFatalFailure);
     }
 
     // Runs publish steps grouped by Dependency, each group in parallel, groups sequentially.
@@ -159,26 +158,23 @@ public class Handler(
         foreach (var group in groups)
         {
             var groupItems = group.ToList();
+            var tracker = new ParallelStepsTracker(state, discordPublisher.SynchronizedUpdateTrackingMessageAsync);
 
-            // Run all steps in this group in parallel
-            var tasks = groupItems.Select(item =>
-                RunStepAsync((item.Step, item.Info), state, cancellationToken));
+            var results = await Task.WhenAll(
+                groupItems.Select(item =>
+                    RunStepParallelAsync((item.Step, item.Info), state, tracker, cancellationToken)));
 
-            var results = await Task.WhenAll(tasks);
-
-            // Merge states from parallel steps (each writes to disjoint properties)
             foreach (var stepResult in results)
-            {
-                if (stepResult.IsSuccess)
-                    state = MergeStates(state, stepResult.Value);
+                aggregate = Result.Merge(aggregate, stepResult);
 
-                aggregate = Result.Merge(aggregate, stepResult.ToResult());
-            }
+            aggregate = Result.Merge(aggregate, tracker.AggregateTrackingResult);
+            state = tracker.CurrentState;
 
             // Stop the entire DAG if any non-continuable step failed
             var hasFatalFailure = results
-                .Zip(groupItems, (r, item) => (Result: r, Step: item.Step))
-                .Any(x => x.Result.IsFailed && !x.Step.ContinueOnError);
+                .Zip(groupItems, (r, item) => (Result: r, item.Step))
+                .Any(x => x.Result.IsFailed && !x.Step.ContinueOnError)
+                || tracker.AggregateTrackingResult.IsFailed;
 
             if (hasFatalFailure)
                 return (aggregate, state);
@@ -245,6 +241,32 @@ public class Handler(
             : Result.Ok(result.IsSuccess ? result.Value with { Steps = handleResult.Value.Steps } : handleResult.Value);
     }
 
+    // Used by parallel phases: executes the step freely (no lock), then calls the tracker
+    // to atomically merge its output, update the StepInfo and send the Discord tracking message.
+    private static async Task<Result> RunStepParallelAsync(
+        (IStep Step, StepInfo Info) data,
+        State initialState,
+        ParallelStepsTracker tracker,
+        CancellationToken cancellationToken)
+    {
+        if (data.Info.Status == StepStatus.Skip)
+            return Result.Ok();
+
+        var stopwatch = Stopwatch.StartNew();
+        var result = await data.Step.SafeCallAsync(x => x.ExecuteAsync(initialState, cancellationToken));
+        stopwatch.Stop();
+
+        Log.Information(
+            "Publish step '{StepName}' ExecuteAsync finished in {ElapsedMilliseconds} ms with status {Status}.",
+            data.Step.Name,
+            stopwatch.ElapsedMilliseconds,
+            result.IsSuccess ? "Success" : "Failure");
+
+        var stepSnapshot = result.IsSuccess ? result.Value : initialState;
+        await tracker.ApplyAndNotifyAsync(result.ToResult(), data.Step, stepSnapshot, cancellationToken);
+        return result.ToResult();
+    }
+
     private async Task<Result<State>> HandleResult(
         Result result,
         IStep step,
@@ -252,8 +274,7 @@ public class Handler(
         CancellationToken cancellationToken)
     {
         var updatedInfo = state.Steps[step].UpdateStatus(result);
-        var updatedSteps = state.Steps.WithUpdatedStepInfo(step, updatedInfo);
-        var updatedState = state with { Steps = updatedSteps };
+        var updatedState = state with { Steps = state.Steps.WithUpdatedStepInfo(step, updatedInfo) };
 
         var feedbackResult = await discordPublisher.SynchronizedUpdateTrackingMessageAsync(updatedState, cancellationToken);
         if (feedbackResult.IsFailed)
