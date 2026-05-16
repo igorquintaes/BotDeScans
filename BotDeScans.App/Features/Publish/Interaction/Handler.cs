@@ -12,11 +12,6 @@ namespace BotDeScans.App.Features.Publish.Interaction;
 public class Handler(
     DiscordPublisher discordPublisher)
 {
-    // Caps concurrent conversion steps to avoid file-descriptor exhaustion.
-    // Conversions read from the same source directory; too many parallel opens can hit OS limits.
-    private static readonly SemaphoreSlim ConversionThrottle = new(
-        Environment.ProcessorCount, Environment.ProcessorCount);
-
     public virtual async Task<Result<State>> ExecuteAsync(State state, CancellationToken cancellationToken)
     {
         var managementSteps = state.Steps.ManagementSteps.ToList();
@@ -118,9 +113,11 @@ public class Handler(
         CancellationToken cancellationToken)
         => RunSequentialChainAsync(aggregate, state, chain, RunStepAsync, cancellationToken);
 
-    // Runs conversion steps in parallel, throttled to avoid exceeding OS file-descriptor limits.
-    // Each conversion reads from the same source directory but writes to its own isolated directory,
-    // so there is no write conflict. The semaphore caps concurrency to ProcessorCount.
+    // Runs conversion steps in parallel using Task.WhenAll.
+    // Each step reads from State.OriginContentFolder (read-only, safe for concurrent access on all
+    // major OS/filesystems) and writes to its own isolated directory created by CreateScopedDirectory,
+    // so there are no write conflicts. CPU/I/O throttling is the responsibility of each individual
+    // step implementation (e.g. CompressFilesStep already uses Parallel.ForEachAsync internally).
     private async Task<(Result Result, State State, bool ShouldStop)> RunParallelConversionAsync(
         Result aggregate,
         State state,
@@ -128,21 +125,8 @@ public class Handler(
         CancellationToken cancellationToken)
     {
         var items = conversionSteps.ToList();
-
-        var tasks = items.Select(async item =>
-        {
-            await ConversionThrottle.WaitAsync(cancellationToken);
-            try
-            {
-                return await RunStepAsync((item.Step, item.Info), state, cancellationToken);
-            }
-            finally
-            {
-                ConversionThrottle.Release();
-            }
-        });
-
-        var results = await Task.WhenAll(tasks);
+        var results = await Task.WhenAll(
+            items.Select(item => RunStepAsync((item.Step, item.Info), state, cancellationToken)));
 
         foreach (var (stepResult, item) in results.Zip(items))
         {
