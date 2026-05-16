@@ -188,10 +188,11 @@ public class Handler(
     }
 
     // Merges two State instances produced by parallel steps, combining their non-null properties.
+    // Steps are merged entry-by-entry so status updates from all parallel steps are preserved.
     public static State MergeStates(State @base, State updated) =>
         @base with
         {
-            Steps = updated.Steps,
+            Steps = @base.Steps?.MergeWith(updated.Steps) ?? updated.Steps,
             TrackingMessage = updated.TrackingMessage,
             ZipFilePath = updated.ZipFilePath ?? @base.ZipFilePath,
             PdfFilePath = updated.PdfFilePath ?? @base.PdfFilePath,

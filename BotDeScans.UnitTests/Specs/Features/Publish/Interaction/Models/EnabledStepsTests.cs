@@ -167,4 +167,52 @@ public class EnabledStepsTests : UnitTest
                 $":clock9: - {StepName.ZipFiles.GetDescription()}");
         }
     }
+
+    public class MergeWithMethod : EnabledStepsTests
+    {
+        [Fact]
+        public void GivenTwoSnapshotsShouldPreserveUpdatedStatusFromOther()
+        {
+            var stepA = A.Fake<IConversionStep>();
+            var stepB = A.Fake<IConversionStep>();
+
+            var baseSteps = new EnabledSteps(new Dictionary<IStep, StepInfo>
+            {
+                { stepA, new StepInfo(stepA) { Status = StepStatus.Success } },
+                { stepB, new StepInfo(stepB) { Status = StepStatus.QueuedForExecution } },
+            });
+
+            var otherSteps = new EnabledSteps(new Dictionary<IStep, StepInfo>
+            {
+                { stepA, new StepInfo(stepA) { Status = StepStatus.QueuedForExecution } },
+                { stepB, new StepInfo(stepB) { Status = StepStatus.Success } },
+            });
+
+            var merged = baseSteps.MergeWith(otherSteps);
+
+            using var _ = new AssertionScope();
+            merged[stepA].Status.Should().Be(StepStatus.Success);
+            merged[stepB].Status.Should().Be(StepStatus.Success);
+        }
+
+        [Fact]
+        public void GivenSameStatusInBothSnapshotsShouldKeepBaseStepInfo()
+        {
+            var step = A.Fake<IConversionStep>();
+
+            var baseSteps = new EnabledSteps(new Dictionary<IStep, StepInfo>
+            {
+                { step, new StepInfo(step) { Status = StepStatus.Success } },
+            });
+
+            var otherSteps = new EnabledSteps(new Dictionary<IStep, StepInfo>
+            {
+                { step, new StepInfo(step) { Status = StepStatus.Success } },
+            });
+
+            var merged = baseSteps.MergeWith(otherSteps);
+
+            merged[step].Status.Should().Be(StepStatus.Success);
+        }
+    }
 }
