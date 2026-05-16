@@ -6,7 +6,6 @@ using BotDeScans.App.Models.Entities;
 using BotDeScans.App.Services.Discord;
 using FluentValidation;
 using Microsoft.Extensions.Configuration;
-using BotDeScans.App.Features.Publish.Interaction.Models;
 
 namespace BotDeScans.App.Features.Publish.Interaction;
 

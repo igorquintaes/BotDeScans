@@ -13,12 +13,13 @@ public class EnabledStepsTests : UnitTest
     public class ManagementStepsProperty : EnabledStepsTests
     {
         [Fact]
-        public void ShouldReturnOnlyManagementSteps()
+        public void ShouldReturnOnlyManagementStepsExcludingConversionSteps()
         {
             var steps = new List<IStep>
             {
                 A.Fake<IStep>(),
                 A.Fake<IManagementStep>(),
+                A.Fake<IConversionStep>(),
                 A.Fake<IPublishStep>(),
                 A.Fake<IManagementStep>(),
                 A.Fake<IPublishStep>(),
@@ -29,7 +30,30 @@ public class EnabledStepsTests : UnitTest
             using var _ = new AssertionScope();
             enabledSteps.ManagementSteps.Should().HaveCount(2);
             enabledSteps.ManagementSteps.ElementAt(0).Step.Should().Be(steps[1]);
-            enabledSteps.ManagementSteps.ElementAt(1).Step.Should().Be(steps[3]);
+            enabledSteps.ManagementSteps.ElementAt(1).Step.Should().Be(steps[4]);
+        }
+    }
+
+    public class ConversionStepsProperty : EnabledStepsTests
+    {
+        [Fact]
+        public void ShouldReturnOnlyConversionSteps()
+        {
+            var steps = new List<IStep>
+            {
+                A.Fake<IStep>(),
+                A.Fake<IManagementStep>(),
+                A.Fake<IConversionStep>(),
+                A.Fake<IPublishStep>(),
+                A.Fake<IConversionStep>(),
+            };
+
+            var enabledSteps = new EnabledSteps(steps.ToDictionary(x => x, x => new StepInfo(x)));
+
+            using var _ = new AssertionScope();
+            enabledSteps.ConversionSteps.Should().HaveCount(2);
+            enabledSteps.ConversionSteps.ElementAt(0).Step.Should().Be(steps[2]);
+            enabledSteps.ConversionSteps.ElementAt(1).Step.Should().Be(steps[4]);
         }
     }
 
@@ -141,6 +165,54 @@ public class EnabledStepsTests : UnitTest
                 $":clock10: - {StepName.Download.GetDescription()}{Environment.NewLine}" +
                 $":warning: - {StepName.Compress.GetDescription()}{Environment.NewLine}" +
                 $":clock9: - {StepName.ZipFiles.GetDescription()}");
+        }
+    }
+
+    public class MergeWithMethod : EnabledStepsTests
+    {
+        [Fact]
+        public void GivenTwoSnapshotsShouldPreserveUpdatedStatusFromOther()
+        {
+            var stepA = A.Fake<IConversionStep>();
+            var stepB = A.Fake<IConversionStep>();
+
+            var baseSteps = new EnabledSteps(new Dictionary<IStep, StepInfo>
+            {
+                { stepA, new StepInfo(stepA) { Status = StepStatus.Success } },
+                { stepB, new StepInfo(stepB) { Status = StepStatus.QueuedForExecution } },
+            });
+
+            var otherSteps = new EnabledSteps(new Dictionary<IStep, StepInfo>
+            {
+                { stepA, new StepInfo(stepA) { Status = StepStatus.QueuedForExecution } },
+                { stepB, new StepInfo(stepB) { Status = StepStatus.Success } },
+            });
+
+            var merged = baseSteps.MergeWith(otherSteps);
+
+            using var _ = new AssertionScope();
+            merged[stepA].Status.Should().Be(StepStatus.Success);
+            merged[stepB].Status.Should().Be(StepStatus.Success);
+        }
+
+        [Fact]
+        public void GivenSameStatusInBothSnapshotsShouldKeepBaseStepInfo()
+        {
+            var step = A.Fake<IConversionStep>();
+
+            var baseSteps = new EnabledSteps(new Dictionary<IStep, StepInfo>
+            {
+                { step, new StepInfo(step) { Status = StepStatus.Success } },
+            });
+
+            var otherSteps = new EnabledSteps(new Dictionary<IStep, StepInfo>
+            {
+                { step, new StepInfo(step) { Status = StepStatus.Success } },
+            });
+
+            var merged = baseSteps.MergeWith(otherSteps);
+
+            merged[step].Status.Should().Be(StepStatus.Success);
         }
     }
 }

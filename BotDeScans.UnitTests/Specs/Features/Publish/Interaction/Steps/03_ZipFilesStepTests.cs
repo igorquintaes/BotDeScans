@@ -31,7 +31,7 @@ public class ZipFilesStepTests : UnitTest
     {
         [Fact]
         public void ShouldHaveExpectedType() =>
-            step.Type.Should().Be(StepType.Management);
+            step.Type.Should().Be(StepType.Conversion);
 
         [Fact]
         public void ShouldHaveExpectedName() =>
@@ -58,10 +58,11 @@ public class ZipFilesStepTests : UnitTest
 
             A.CallTo(() => fixture
                 .FreezeFake<FileService>()
-                .CreateZipFile(
+                .CreateZipFileAsync(
                     state.ChapterInfo.ChapterNumber,
                     state.OriginContentFolder,
-                    scopedDirectory))
+                    scopedDirectory,
+                    cancellationToken))
                 .Returns(Result.Ok(zipPath));
         }
 
@@ -88,7 +89,7 @@ public class ZipFilesStepTests : UnitTest
 
             A.CallTo(() => fixture
                 .FreezeFake<FileService>()
-                .CreateZipFile(A<string>.Ignored, A<string>.Ignored, A<string>.Ignored))
+                .CreateZipFileAsync(A<string>.Ignored, A<string>.Ignored, A<string>.Ignored, A<CancellationToken>.Ignored))
                 .Returns(Result.Fail(ERROR_MESSAGE));
 
             var result = await step.ExecuteAsync(state, cancellationToken);

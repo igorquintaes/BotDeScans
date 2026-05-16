@@ -10,7 +10,6 @@ using Remora.Discord.Commands.Contexts;
 using Remora.Discord.Commands.Feedback.Services;
 using Remora.Rest.Core;
 using Remora.Results;
-using BotDeScans.App.Features.Publish.Interaction.Models;
 using System.Drawing;
 using System.Reflection;
 
@@ -24,6 +23,23 @@ public class DiscordPublisher(
     IDiscordRestInteractionAPI discordRestInteractionAPI,
     IDiscordRestChannelAPI discordRestChannelAPI)
 {
+    private readonly SemaphoreSlim _trackingLock = new(1, 1);
+
+    public virtual async Task<FluentResults.Result<State>> SynchronizedUpdateTrackingMessageAsync(
+        State state,
+        CancellationToken cancellationToken)
+    {
+        await _trackingLock.WaitAsync(cancellationToken);
+        try
+        {
+            return await UpdateTrackingMessageAsync(state, cancellationToken);
+        }
+        finally
+        {
+            _trackingLock.Release();
+        }
+    }
+
     public virtual async Task<FluentResults.Result<State>> UpdateTrackingMessageAsync(
         State state,
         CancellationToken cancellationToken)
@@ -110,8 +126,7 @@ public class DiscordPublisher(
         .GetProperties()
         .Where(property => property.GetCustomAttribute<ReleaseLinkAttribute>() is not null)
         .Select(property => new
-        {
-            Label = property.GetCustomAttribute<ReleaseLinkAttribute>()!.Label,
+        { property.GetCustomAttribute<ReleaseLinkAttribute>()!.Label,
             Link = property.GetValue(publishState, null)?.ToString()
         })
         .Where(x => !string.IsNullOrWhiteSpace(x.Link))

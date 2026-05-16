@@ -31,7 +31,7 @@ public class PdfFilesStepTests : UnitTest
     {
         [Fact]
         public void ShouldHaveExpectedType() =>
-            step.Type.Should().Be(StepType.Management);
+            step.Type.Should().Be(StepType.Conversion);
 
         [Fact]
         public void ShouldHaveExpectedName() =>

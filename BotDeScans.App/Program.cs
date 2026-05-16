@@ -51,10 +51,10 @@ public class Program
             .UseConsoleLifetime()
             .Build();
 
-        Result.Setup(cfg => 
+        Result.Setup(cfg =>
         {
             cfg.Logger = new ResultLogger(Log.Logger);
-            cfg.ExceptionalErrorFactory = (message, ex) => 
+            cfg.ExceptionalErrorFactory = (message, ex) =>
             {
                 var error = new Error(message).CausedBy(ex);
                 var errorResult = new Result().WithError(error);

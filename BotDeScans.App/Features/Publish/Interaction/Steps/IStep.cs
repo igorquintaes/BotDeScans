@@ -17,6 +17,12 @@ public interface IManagementStep : IStep
     bool IsMandatory { get; }
 }
 
+// Marks a management step that transforms already-downloaded files (e.g. zip, pdf, epub).
+// These steps read from State.OriginContentFolder and write to an isolated output directory.
+// Because they do not share output locations, they are suitable for independent execution;
+// concurrency limits, if any, are determined by the caller/handler implementation.
+public interface IConversionStep : IManagementStep { }
+
 public interface IPublishStep : IStep
 {
     StepName? Dependency { get; }

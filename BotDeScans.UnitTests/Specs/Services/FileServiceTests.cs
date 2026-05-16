@@ -56,63 +56,68 @@ public class FileServiceTests : UnitTest
         }
 
         [Fact]
-        public void ShouldCreateZipInExpectedDirectory()
+        public async Task ShouldCreateZipInExpectedDirectory()
         {
-            var result = service.CreateZipFile(
+            var result = await service.CreateZipFileAsync(
                 "fileName",
                 resourcesDirectory,
-                destinationDirectory);
+                destinationDirectory,
+                cancellationToken);
 
             File.Exists(result.Value).Should().BeTrue();
         }
 
         [Fact]
-        public void ShouldReturnZipPath()
+        public async Task ShouldReturnZipPath()
         {
             var expectedPath = Path.Combine(
                 destinationDirectory,
                 "fileName.zip");
 
-            var result = service.CreateZipFile(
+            var result = await service.CreateZipFileAsync(
                 "fileName",
                 resourcesDirectory,
-                destinationDirectory);
+                destinationDirectory,
+                cancellationToken);
 
             result.Should().BeSuccess().And.HaveValue(expectedPath);
         }
 
         [Fact]
-        public void ShouldReturnFailResultIfResourcesDirectoryIsSameThanDestinationDirectory()
+        public async Task ShouldReturnFailResultIfResourcesDirectoryIsSameThanDestinationDirectory()
         {
-            var result = service.CreateZipFile(
+            var result = await service.CreateZipFileAsync(
                 "fileName",
                 resourcesDirectory.ToLower(),
-                resourcesDirectory.ToUpper());
+                resourcesDirectory.ToUpper(),
+                cancellationToken);
 
             result.Should().BeFailure().And.HaveError("Source and destination directories should not be the same.");
         }
 
         [Fact]
-        public void ShouldResutlFailResultIfNoFilesFoundInSourceDirectory()
+        public async Task ShouldReturnFailResultIfNoFilesFoundInSourceDirectory()
         {
             Directory.Delete(resourcesDirectory, true);
             Directory.CreateDirectory(resourcesDirectory);
 
-            var result = service.CreateZipFile(
+            var result = await service.CreateZipFileAsync(
                 "fileName",
                 resourcesDirectory,
-                destinationDirectory);
+                destinationDirectory,
+                cancellationToken);
 
             result.Should().BeFailure().And.HaveError("No files found in the source directory.");
         }
 
         [Fact]
-        public void ShouldContainsExpectedFilesInsideZipFile()
+        public async Task ShouldContainExpectedFilesInsideZipFile()
         {
-            var result = service.CreateZipFile(
+            var result = await service.CreateZipFileAsync(
                 "fileName",
                 resourcesDirectory,
-                destinationDirectory);
+                destinationDirectory,
+                cancellationToken);
 
             using var zipFile = ZipFile.Open(result.Value, ZipArchiveMode.Read);
 
@@ -125,7 +130,7 @@ public class FileServiceTests : UnitTest
         }
 
         [Fact]
-        public void ShouldContainsExpectedFilesInsideZipFileCreatingPadingLeftZeroes()
+        public async Task ShouldContainExpectedFilesInsideZipFileCreatingPaddingLeftZeroes()
         {
             File.Create(Path.Combine(resourcesDirectory, "credits.png")).Dispose();
             File.Create(Path.Combine(resourcesDirectory, "01.png")).Dispose();
@@ -138,10 +143,11 @@ public class FileServiceTests : UnitTest
             File.Create(Path.Combine(resourcesDirectory, "08.png")).Dispose();
             File.Create(Path.Combine(resourcesDirectory, "09.png")).Dispose();
 
-            var result = service.CreateZipFile(
+            var result = await service.CreateZipFileAsync(
                 "fileName",
                 resourcesDirectory,
-                destinationDirectory);
+                destinationDirectory,
+                cancellationToken);
 
             using var zipFile = ZipFile.Open(result.Value, ZipArchiveMode.Read);
 

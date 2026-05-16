@@ -1,4 +1,6 @@
-﻿namespace BotDeScans.App.Services;
+﻿using System.Collections.Concurrent;
+
+namespace BotDeScans.App.Services;
 
 /// <summary>
 /// Manage release files and directories
@@ -7,7 +9,7 @@ public class FileReleaseService : IDisposable
 {
     public static readonly IEnumerable<string> ValidReleaseImageExtensions = ["jpg", "jpeg", "png"];
     private readonly string scopedDirectoryBaseName = Guid.NewGuid().ToString();
-    private readonly List<string> scopedDirectories = [];
+    private readonly ConcurrentBag<string> scopedDirectories = [];
 
     // todo: podemos pensar sobre termos capas dinâmicas. Exemplo: Facebook usar capa-facebook, enquanto o blogger usar capa-blogger;
     // definirmos um nome de capa genérico, caso não ache... e uma configuração de obrigar/não obrigar nomes específicos,
@@ -62,7 +64,7 @@ public class FileReleaseService : IDisposable
         foreach (var scopedDirectory in scopedDirectories)
             Directory.Delete(scopedDirectory, true);
 
-        if (scopedDirectories.Count > 0)
+        if (scopedDirectories.IsEmpty is false)
         {
             var scopedDirectoryBasePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "scoped", scopedDirectoryBaseName);
             Directory.Delete(scopedDirectoryBasePath, true);

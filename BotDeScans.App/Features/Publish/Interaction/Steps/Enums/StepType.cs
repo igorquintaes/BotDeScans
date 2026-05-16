@@ -3,6 +3,7 @@
 public enum StepType
 {
     Management,
+    Conversion,
     Upload,
     Publish
 }

@@ -23,8 +23,8 @@ public class ImageServiceTests : UnitTest, IDisposable
 
     public class IsGrayscale : ImageServiceTests
     {
-        private static readonly Color grey = new Rgba32(5, 5, 5);
-        private static readonly Color notGrey = new Rgba32(5, 5, 6);
+        private static readonly Color grey = Color.FromPixel(new Rgba32(5, 5, 5));
+        private static readonly Color notGrey = Color.FromPixel(new Rgba32(5, 5, 6));
 
         [Fact]
         public async Task GivenGreyImageShouldReturnTrue()
@@ -90,7 +90,7 @@ public class ImageServiceTests : UnitTest, IDisposable
             const string expectedResult = "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAMAAAAoyzS7AAAAA1BMVEUFBQWsrP/7AAAACklEQVR4nGNgAAAAAgABSK+kcQAAAABJRU5ErkJggg==";
             using (var image = new Image<Rgba32>(1, 1))
             {
-                image.Mutate(x => x.BackgroundColor(new Rgba32(5, 5, 5)));
+                image.Mutate(x => x.BackgroundColor(Color.FromPixel(new Rgba32(5, 5, 5))));
                 await image.SaveAsync(imagePath, cancellationToken);
             }
 
@@ -108,7 +108,7 @@ public class ImageServiceTests : UnitTest, IDisposable
         {
             using (var image = new Image<Rgba32>(100, 100))
             {
-                image.Mutate(x => x.BackgroundColor(new Rgba32(5, 5, 5)));
+                image.Mutate(x => x.BackgroundColor(Color.FromPixel(new Rgba32(5, 5, 5))));
                 await image.SaveAsync(imagePath, cancellationToken);
             }
 
@@ -126,7 +126,7 @@ public class ImageServiceTests : UnitTest, IDisposable
             var jpgImagePath = Path.ChangeExtension(imagePath, ".jpg");
             using (var image = new Image<Rgba32>(1, 1))
             {
-                image.Mutate(x => x.BackgroundColor(new Rgba32(5, 5, 5)));
+                image.Mutate(x => x.BackgroundColor(Color.FromPixel(new Rgba32(5, 5, 5))));
                 await image.SaveAsync(jpgImagePath, cancellationToken);
             }
 
