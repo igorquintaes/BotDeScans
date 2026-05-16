@@ -24,12 +24,11 @@ public class FileService
     public virtual string GetMimeType(string fileName) =>
         MimeTypes[Path.GetExtension(fileName)];
 
-    // Limitação assíncrona: https://github.com/dotnet/runtime/issues/1541
-    // Todo: foi resolvido no .NET 10, verificar quando migrar
-    public virtual Result<string> CreateZipFile(
+    public virtual async Task<Result<string>> CreateZipFileAsync(
         string fileName,
         string resourcesDirectory,
-        string destinationDirectory)
+        string destinationDirectory,
+        CancellationToken cancellationToken)
     {
         if (resourcesDirectory.Equals(destinationDirectory, StringComparison.InvariantCultureIgnoreCase))
             return Result.Fail("Source and destination directories should not be the same.");
@@ -44,12 +43,12 @@ public class FileService
         var pagesQuantity = (int)Math.Floor(Math.Log10(pages.Length) + 1);
         var filePath = Path.Combine(destinationDirectory, $"{fileName}.zip");
 
-        using var newFile = ZipFile.Open(filePath, ZipArchiveMode.Create);
+        await using var newFile = await ZipFile.OpenAsync(filePath, ZipArchiveMode.Create, cancellationToken);
         for (var i = 0; i < pages.Length; i++)
         {
             var pageNumber = (i + 1).ToString($"D{pagesQuantity}");
             var entryName = $"{pageNumber}{Path.GetExtension(pages[i])}";
-            newFile.CreateEntryFromFile(pages[i], entryName, CompressionLevel.SmallestSize);
+            await newFile.CreateEntryFromFileAsync(pages[i], entryName, CompressionLevel.SmallestSize, cancellationToken);
         }
 
         return filePath;

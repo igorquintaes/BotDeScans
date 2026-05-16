@@ -13,16 +13,17 @@ public class ZipFilesStep(
     public StepName Name => StepName.ZipFiles;
     public bool IsMandatory => false;
 
-    public Task<Result<State>> ExecuteAsync(State state, CancellationToken cancellationToken)
+    public async Task<Result<State>> ExecuteAsync(State state, CancellationToken cancellationToken)
     {
-        var zipFileResult = fileService.CreateZipFile(
+        var zipFileResult = await fileService.CreateZipFileAsync(
             fileName: state.ChapterInfo.ChapterNumber,
             resourcesDirectory: state.OriginContentFolder,
-            destinationDirectory: fileReleaseService.CreateScopedDirectory());
+            destinationDirectory: fileReleaseService.CreateScopedDirectory(),
+            cancellationToken: cancellationToken);
 
         if (zipFileResult.IsFailed)
-            return Task.FromResult(zipFileResult.ToResult<State>());
+            return zipFileResult.ToResult<State>();
 
-        return Task.FromResult(Result.Ok(state with { ZipFilePath = zipFileResult.Value }));
+        return Result.Ok(state with { ZipFilePath = zipFileResult.Value });
     }
 }
