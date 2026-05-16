@@ -35,7 +35,7 @@ public class ParallelStepsTracker(
         {
             // Merge file paths / links from this step's output into the latest shared state.
             var merged = stepSnapshot.Steps is not null
-                ? Handler.MergeStates(CurrentState, stepSnapshot)
+                ? CurrentState.MergeWith(stepSnapshot)
                 : CurrentState;
 
             // Apply this step's status onto the freshly merged state.

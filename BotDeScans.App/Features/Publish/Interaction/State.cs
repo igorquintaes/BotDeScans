@@ -50,6 +50,27 @@ public record State
 
     [ReleaseLink("Blogger")]
     public string? BloggerLink { get; init; }
+
+    // Merges two State instances produced by parallel steps, combining their non-null properties.
+    // Steps are merged entry-by-entry so status updates from all parallel steps are preserved.
+    public State MergeWith(State other) => this with
+    {
+        Steps = Steps?.MergeWith(other.Steps) ?? other.Steps,
+        TrackingMessage = other.TrackingMessage,
+        ZipFilePath = other.ZipFilePath ?? ZipFilePath,
+        PdfFilePath = other.PdfFilePath ?? PdfFilePath,
+        BoxPdfReaderKey = other.BoxPdfReaderKey ?? BoxPdfReaderKey,
+        BloggerImageAsBase64 = other.BloggerImageAsBase64 ?? BloggerImageAsBase64,
+        MegaZipLink = other.MegaZipLink ?? MegaZipLink,
+        MegaPdfLink = other.MegaPdfLink ?? MegaPdfLink,
+        DriveZipLink = other.DriveZipLink ?? DriveZipLink,
+        DrivePdfLink = other.DrivePdfLink ?? DrivePdfLink,
+        BoxZipLink = other.BoxZipLink ?? BoxZipLink,
+        BoxPdfLink = other.BoxPdfLink ?? BoxPdfLink,
+        MangaDexLink = other.MangaDexLink ?? MangaDexLink,
+        SakuraMangasLink = other.SakuraMangasLink ?? SakuraMangasLink,
+        BloggerLink = other.BloggerLink ?? BloggerLink,
+    };
 }
 
 public class StateValidator : AbstractValidator<State>
