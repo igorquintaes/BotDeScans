@@ -111,7 +111,7 @@ public class FileServiceTests : UnitTest
         }
 
         [Fact]
-        public async Task ShouldContainsExpectedFilesInsideZipFile()
+        public async Task ShouldContainExpectedFilesInsideZipFile()
         {
             var result = await service.CreateZipFileAsync(
                 "fileName",
