@@ -30,7 +30,7 @@ public class Handler(
             cancellationToken);
 
         if (managementExecution.ShouldStop)
-            return managementExecution.Result.SetValueOnSuccess(() => managementExecution.State);
+            return managementExecution.Result.Set(managementExecution.State);
 
         currentState = managementExecution.State;
         currentResult = managementExecution.Result;
@@ -43,7 +43,7 @@ public class Handler(
             cancellationToken);
 
         if (conversionExecution.ShouldStop)
-            return conversionExecution.Result.SetValueOnSuccess(() => conversionExecution.State);
+            return conversionExecution.Result.Set(conversionExecution.State);
 
         currentState = conversionExecution.State;
         currentResult = conversionExecution.Result;
@@ -56,7 +56,7 @@ public class Handler(
             cancellationToken);
 
         if (validationExecution.ShouldStop)
-            return validationExecution.Result.SetValueOnSuccess(() => validationExecution.State);
+            return validationExecution.Result.Set(validationExecution.State);
 
         // Phase 4: Publish steps — grouped by Dependency, each group in parallel.
         var publishExecution = await parallelRunner.RunDagAsync(
@@ -65,6 +65,6 @@ public class Handler(
             publishSteps,
             cancellationToken);
 
-        return publishExecution.Result.SetValueOnSuccess(() => publishExecution.State);
+        return publishExecution.Result.Set(publishExecution.State);
     }
 }

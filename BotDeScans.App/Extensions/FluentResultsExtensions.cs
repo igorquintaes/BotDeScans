@@ -18,15 +18,11 @@ public static class FluentResultsExtensions
         return string.Join("; ", errorMessages);
     }
 
+    public static Result<Out> Set<Out>(this Result result, Out value) =>
+        new Result<Out>().Map(_ => value).WithReasons(result.Reasons);
+
     public static Result<Out> Map<In, Out>(this Result<In> result, Out value) =>
         result.Map(_ => value);
-
-    public static Result<T> SetValueOnSuccess<T>(this ResultBase result, Func<T> factory) =>
-        result.IsSuccess
-             ? Result.Ok(factory.Invoke())
-                     .WithReasons(result.Reasons)
-             : Result.Fail(result.Errors)
-                     .WithSuccesses(result.Successes);
 
     public static Remora.Results.Result ToDiscordResult(this ResultBase result)
     {
@@ -39,44 +35,43 @@ public static class FluentResultsExtensions
         return Remora.Results.Result.FromError(remoraError);
     }
 
-    public static Task<Result<T>> SafeCallAsync<T>(this Result result, Func<Task<Result<T>>> func, Error error) =>
-        SafeCallAsync<T>(result, func, error);
+    public static async Task<Result<T>> SafeCallAsync<T>(this Result result, Func<Task<Result<T>>> func, Error error)
+    {
+        Result<T> innerResult;
+        try
+        {
+            innerResult = await func();
+        }
+        catch (Exception ex)
+        {
+            return Result.Fail(error.CausedBy(ex));
+        }
+
+        return innerResult.WithReasons(result.Reasons);
+    }
 
     public static async Task<Result<T>> SafeCallAsync<T>(this Result result, Func<Task<T>> func, Error error)
     {
+        if (typeof(T) == typeof(ResultBase) ||
+            typeof(T) == typeof(ResultBase<>) ||
+            typeof(T) == typeof(Result) ||
+            typeof(T) == typeof(Result<>) ||
+            typeof(T) == typeof(IResult<>) ||
+            typeof(T) == typeof(IResultBase))
+            throw new ArgumentException("O tipo genérico de retorno do método não deve ser um tipo de resultado do FluentResults.");
+
         var executionResult = await Result.Try(
             action: () => func(),
             catchHandler: error.CausedBy);
-
-        if (typeof(T) != typeof(ResultBase))
-            return executionResult;
-
-        var funcResult = (Result?)(dynamic)executionResult!.ValueOrDefault!;
-        var funcResultReasons = funcResult?.Reasons ?? [];
-
-        return executionResult.WithReasons([
-            .. result.Reasons,
-            .. funcResultReasons]);
+        
+        return result
+            .Set(executionResult.ValueOrDefault)
+            .WithReasons(executionResult.Reasons);
     }
 
-    public static Result<T> SafeCall<T>(this Result result, Func<T> func, string errorMessage, Error? innerError = null)
-    {
-        var executionResult = Result.Try(
-            action: () => func(),
-            catchHandler: ex => innerError is null
-                ? new Error(errorMessage)
-                : new Error(errorMessage, innerError));
-
-        if (typeof(T) == typeof(ResultBase))
-            return executionResult;
-
-        var funcResult = (Result?)(dynamic)executionResult!.ValueOrDefault!;
-        var funcResultReasons = funcResult?.Reasons ?? [];
-
-        return executionResult.WithReasons([
-            .. result.Reasons,
-            .. funcResultReasons]);
-    }
+    public static Result<T> SafeCall<T>(this Result result, Func<T> func, string errorMessage, Error? innerError = null) => 
+        result.SafeCallAsync(() => Task.FromResult(func()), innerError is null ? new(errorMessage) : new(errorMessage, innerError))
+              .GetAwaiter().GetResult();
 
     public static IEnumerable<ErrorInfo> GetErrorsInfo(this IReadOnlyList<IError> errors, int depth = 0)
     {
@@ -100,6 +95,10 @@ public static class FluentResultsExtensions
             {
                 if (exceptionalError.Exception is GoogleApiException googleException)
                 {
+                    // precisamos adicionar mensagems da exception abaixo em um inner error
+                    var TODO = googleException.Message;
+                    var TODO2 = googleException.ServiceName;
+
                     var code = googleException.HttpStatusCode;
                     var intCode = (int)code;
                     exceptionMessage = $"O Google retornou o HTTP Status Code [{code} ({intCode})](https://http.cat/{intCode})";

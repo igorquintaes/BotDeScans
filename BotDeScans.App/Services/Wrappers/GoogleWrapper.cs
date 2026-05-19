@@ -3,6 +3,7 @@ using FluentResults;
 using Google.Apis.Requests;
 using Google.Apis.Upload;
 using System.Diagnostics.CodeAnalysis;
+
 namespace BotDeScans.App.Services.Wrappers;
 
 [ExcludeFromCodeCoverage(Justification = @"
@@ -40,6 +41,6 @@ public class GoogleWrapper
         return result.IsSuccess && result.Value.Status == UploadStatus.Completed
              ? Result.Ok(resumableUpload.ResponseBody)
              : Result.Fail(new Error(ERROR_DETAILS_MESSAGE)
-                     .CausedBy(result.Value.Exception));
+                     .CausedBy(result.ValueOrDefault?.Exception));
     }
 }

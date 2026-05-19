@@ -17,6 +17,6 @@ public class RolePing(
         var roleResult = await rolesService.GetRoleAsync(publishState.Title.DiscordRoleId.ToString()!, cancellationToken);
         var text = roleResult.ValueOrDefault?.ToDiscordString();
 
-        return roleResult.SetValueOnSuccess(() => text!);
+        return roleResult.Map(text!);
     }
 }

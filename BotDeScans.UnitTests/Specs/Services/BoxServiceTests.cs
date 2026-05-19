@@ -3,7 +3,6 @@ using BotDeScans.App.Services.Wrappers;
 using Box.Sdk.Gen;
 using Box.Sdk.Gen.Managers;
 using Box.Sdk.Gen.Schemas;
-using Castle.Components.DictionaryAdapter.Xml;
 using FluentResults;
 using Task = System.Threading.Tasks.Task;
 
