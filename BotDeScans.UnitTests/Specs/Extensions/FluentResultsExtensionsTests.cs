@@ -360,4 +360,43 @@ public abstract class FluentResultsExtensionsTests : UnitTest
                   .Which.Message.Should().Be(EXCEPTION_MESSAGE);
         }
     }
+
+    public class SafeCallAsyncGuard : FluentResultsExtensionsTests
+    {
+        [Fact]
+        public async Task GivenResultBaseTypeShouldThrowArgumentException()
+        {
+            var result = new Result();
+
+            var act = () => result.SafeCallAsync(
+                func:  () => Task.FromResult<ResultBase>(Result.Ok()),
+                error: new Error(ERROR_MESSAGE));
+
+            await act.Should().ThrowAsync<ArgumentException>();
+        }
+
+        [Fact]
+        public async Task GivenResultTypeShouldThrowArgumentException()
+        {
+            var result = new Result();
+
+            var act = () => result.SafeCallAsync(
+                func:  () => Task.FromResult<Result>(Result.Ok()),
+                error: new Error(ERROR_MESSAGE));
+
+            await act.Should().ThrowAsync<ArgumentException>();
+        }
+
+        [Fact]
+        public async Task GivenIResultBaseTypeShouldThrowArgumentException()
+        {
+            var result = new Result();
+
+            var act = () => result.SafeCallAsync(
+                func:  () => Task.FromResult<IResultBase>(Result.Ok()),
+                error: new Error(ERROR_MESSAGE));
+
+            await act.Should().ThrowAsync<ArgumentException>();
+        }
+    }
 }

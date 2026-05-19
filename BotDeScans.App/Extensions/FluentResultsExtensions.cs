@@ -35,21 +35,6 @@ public static class FluentResultsExtensions
         return Remora.Results.Result.FromError(remoraError);
     }
 
-    public static async Task<Result<T>> SafeCallAsync<T>(this Result result, Func<Task<Result<T>>> func, Error error)
-    {
-        Result<T> innerResult;
-        try
-        {
-            innerResult = await func();
-        }
-        catch (Exception ex)
-        {
-            return Result.Fail(error.CausedBy(ex));
-        }
-
-        return innerResult.WithReasons(result.Reasons);
-    }
-
     public static async Task<Result<T>> SafeCallAsync<T>(this Result result, Func<Task<T>> func, Error error)
     {
         if (typeof(T) == typeof(ResultBase) ||
@@ -68,10 +53,6 @@ public static class FluentResultsExtensions
             .Set(executionResult.ValueOrDefault)
             .WithReasons(executionResult.Reasons);
     }
-
-    public static Result<T> SafeCall<T>(this Result result, Func<T> func, string errorMessage, Error? innerError = null) => 
-        result.SafeCallAsync(() => Task.FromResult(func()), innerError is null ? new(errorMessage) : new(errorMessage, innerError))
-              .GetAwaiter().GetResult();
 
     public static IEnumerable<ErrorInfo> GetErrorsInfo(this IReadOnlyList<IError> errors, int depth = 0)
     {
