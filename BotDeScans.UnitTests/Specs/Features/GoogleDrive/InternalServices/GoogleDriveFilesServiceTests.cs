@@ -1,12 +1,14 @@
 ﻿using BotDeScans.App.Features.GoogleDrive.InternalServices;
 using BotDeScans.App.Services;
 using BotDeScans.App.Services.Wrappers;
+using FluentAssertions;
 using FluentAssertions.Execution;
 using FluentResults;
 using Google.Apis.Download;
 using Google.Apis.Drive.v3;
 using static Google.Apis.Drive.v3.FilesResource;
 using File = Google.Apis.Drive.v3.Data.File;
+
 namespace BotDeScans.UnitTests.Specs.Features.GoogleDrive.InternalServices;
 
 public class GoogleDriveFilesServiceTests : UnitTest
@@ -198,7 +200,7 @@ public class GoogleDriveFilesServiceTests : UnitTest
         [Fact]
         public async Task GivenExecutionShouldFillUploadRequestFields()
         {
-            await service.UploadAsync(filePath, parentId, withPublicUrl: true, cancellationToken);
+            await service.UploadAsync(filePath, parentId, cancellationToken);
 
             A.CallTo(() => fixture
                 .FreezeFake<GoogleWrapper>()
@@ -209,32 +211,6 @@ public class GoogleDriveFilesServiceTests : UnitTest
         }
 
         [Fact]
-        public async Task GivenSuccessExecutionWithPublicUrlShouldReturnSuccessResult()
-        {
-            var result = await service.UploadAsync(filePath, parentId, withPublicUrl: true, cancellationToken);
-
-            result.Should().BeSuccess().And.HaveValue(fixture.FreezeFake<File>());
-
-            A.CallTo(() => fixture
-                .FreezeFake<GoogleDrivePermissionsService>()
-                .CreatePublicReaderPermissionAsync(fixture.FreezeFake<File>().Id, cancellationToken))
-                .MustHaveHappenedOnceExactly();
-        }
-
-        [Fact]
-        public async Task GivenSuccessExecutionWithoutPublicUrlShouldReturnSuccessResult()
-        {
-            var result = await service.UploadAsync(filePath, parentId, withPublicUrl: false, cancellationToken);
-
-            result.Should().BeSuccess().And.HaveValue(fixture.FreezeFake<File>());
-
-            A.CallTo(() => fixture
-                .FreezeFake<GoogleDrivePermissionsService>()
-                .CreatePublicReaderPermissionAsync(A<string>.Ignored, cancellationToken))
-                .MustNotHaveHappened();
-        }
-
-        [Fact]
         public async Task GivenErrorToUploadFileShouldReturnFailResult()
         {
             A.CallTo(() => fixture
@@ -242,20 +218,7 @@ public class GoogleDriveFilesServiceTests : UnitTest
                 .UploadAsync(fixture.FreezeFake<CreateMediaUpload>(), cancellationToken))
                 .Returns(Result.Fail("some error"));
 
-            var result = await service.UploadAsync(filePath, parentId, default, cancellationToken);
-
-            result.Should().BeFailure().And.HaveError("some error");
-        }
-
-        [Fact]
-        public async Task GivenErrorToCreatePublicReaderPermissionShouldReturnFailResult()
-        {
-            A.CallTo(() => fixture
-                .FreezeFake<GoogleDrivePermissionsService>()
-                .CreatePublicReaderPermissionAsync(fixture.FreezeFake<File>().Id, cancellationToken))
-                .Returns(Result.Fail("some error"));
-
-            var result = await service.UploadAsync(filePath, parentId, withPublicUrl: true, cancellationToken);
+            var result = await service.UploadAsync(filePath, parentId, cancellationToken);
 
             result.Should().BeFailure().And.HaveError("some error");
         }
@@ -350,9 +313,9 @@ public class GoogleDriveFilesServiceTests : UnitTest
                 .Returns(fixture.FreezeFake<Stream>());
 
             A.CallTo(() => fixture
-                .FreezeFake<GetRequest>()
-                .DownloadAsync(fixture.FreezeFake<Stream>(), cancellationToken))
-                .Returns(fixture.FreezeFake<IDownloadProgress>());
+                .FreezeFake<GoogleWrapper>()
+                .ExecuteAsync(A<Func<Task<IDownloadProgress>>>._, cancellationToken))
+                .Returns(Result.Ok(fixture.FreezeFake<IDownloadProgress>()));
 
             A.CallTo(() => fixture
                 .FreezeFake<IDownloadProgress>().Status)
@@ -362,9 +325,12 @@ public class GoogleDriveFilesServiceTests : UnitTest
         [Fact]
         public async Task GivenSuccessfulExecutionShouldReturnOkResult()
         {
+            var reason = string.Format(GoogleDriveFilesService.DOWNLOAD_STATUS, DownloadStatus.Completed);
+
             var result = await service.DownloadAsync(file, targetDirectory, cancellationToken);
 
-            result.Should().BeSuccess();
+            result.Should().BeSuccess().And
+                  .HaveReason(reason);
         }
 
         [Theory]
@@ -373,10 +339,50 @@ public class GoogleDriveFilesServiceTests : UnitTest
         [InlineData(DownloadStatus.NotStarted)]
         public async Task GivenErrorExecutionShouldReturnFailResult(DownloadStatus downloadStatus)
         {
-            var exception = new Exception("some exception error");
+            var reason = string.Format(GoogleDriveFilesService.DOWNLOAD_STATUS, downloadStatus);
+
             A.CallTo(() => fixture
                 .FreezeFake<IDownloadProgress>().Status)
                 .Returns(downloadStatus);
+
+            var result = await service.DownloadAsync(file, targetDirectory, cancellationToken);
+
+            result.Should().BeFailure().And
+                  .HaveError(reason);
+        }
+
+        [Fact]
+        public async Task GivenFailDownloadExecutionShouldReturnFailResult()
+        {
+            const string ERROR_MESSAGE = "some error.";
+            var reason = string.Format(GoogleDriveFilesService.DOWNLOAD_STATUS, DownloadStatus.Failed);
+
+            A.CallTo(() => fixture
+                .FreezeFake<GoogleWrapper>()
+                .ExecuteAsync(A<Func<Task<IDownloadProgress>>>._, cancellationToken))
+                .Returns(Result.Fail(ERROR_MESSAGE));
+
+            var result = await service.DownloadAsync(file, targetDirectory, cancellationToken);
+
+            result.Should().BeFailure().And
+                  .HaveError(ERROR_MESSAGE).And
+                  .HaveError(reason);
+        }
+
+        [Fact]
+        public async Task GivenExceptionExecutionShouldReturnFailResult()
+        {
+            var reason = string.Format(GoogleDriveFilesService.DOWNLOAD_STATUS, DownloadStatus.Failed);
+            var exception = new InvalidOperationException("some error.");
+
+            A.CallTo(() => fixture
+                .FreezeFake<GoogleWrapper>()
+                .ExecuteAsync(A<Func<Task<IDownloadProgress>>>._, cancellationToken))
+                .Returns(Result.Ok(fixture.FreezeFake<IDownloadProgress>()));
+
+            A.CallTo(() => fixture
+                .FreezeFake<IDownloadProgress>().Status)
+                .Returns(DownloadStatus.Failed);
 
             A.CallTo(() => fixture
                 .FreezeFake<IDownloadProgress>().Exception)
@@ -384,14 +390,31 @@ public class GoogleDriveFilesServiceTests : UnitTest
 
             var result = await service.DownloadAsync(file, targetDirectory, cancellationToken);
 
-            using var _ = new AssertionScope();
             result.Should().BeFailure();
-            result.Should().HaveError($"Ocorreu um erro ao tentar baixar o arquivo {file.Name} do Google Drive.");
             result.Errors.Should().HaveCount(1);
-            result.Errors.FirstOrDefault()?.Reasons.Should().HaveCount(1);
-            result.Errors.FirstOrDefault()?.Reasons.FirstOrDefault()?.Should().BeOfType<ExceptionalError>();
-            result.Errors.FirstOrDefault()?.Reasons.FirstOrDefault(x => x is ExceptionalError)?
-                  .As<ExceptionalError>().Exception.Should().Be(exception);
+            result.Errors[0].Message.Should().Be(reason);
+            result.Errors[0].Reasons.Should().HaveCount(1);
+            result.Errors[0].Reasons[0].Should().BeOfType<ExceptionalError>();
+            result.Errors[0].Reasons[0].As<ExceptionalError>().Exception.Should().Be(exception);
+        }
+
+        [Fact]
+        public async Task GivenSuccessShouldReturnDownloadReasons()
+        {
+            const string SUCCESS_MESSAGE = "success.";
+            var reason = string.Format(GoogleDriveFilesService.DOWNLOAD_STATUS, DownloadStatus.Completed);
+
+            A.CallTo(() => fixture
+                .FreezeFake<GoogleWrapper>()
+                .ExecuteAsync(A<Func<Task<IDownloadProgress>>>._, cancellationToken))
+                .Returns(Result.Ok(fixture
+                    .FreezeFake<IDownloadProgress>())
+                    .WithSuccess(SUCCESS_MESSAGE));
+
+            var result = await service.DownloadAsync(file, targetDirectory, cancellationToken);
+
+            result.Should().BeSuccess().And.HaveReason(reason);
+            result.Should().BeSuccess().And.HaveReason(SUCCESS_MESSAGE);
         }
     }
 }

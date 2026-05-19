@@ -70,7 +70,23 @@ public class RoleTests : UnitTest
             var expectedText = $"<@&{titleRoleId.Value}>";
 
             var result = await ping.GetPingAsTextAsync(cancellationToken);
-            result.Should().Be(expectedText);
+            result.Should().BeSuccess().And.HaveValue(expectedText);
+        }
+
+        [Fact]
+        public async Task ShouldReturnFailResult()
+        {
+            const string ERROR_MESSAGE = "some error";
+
+            A.CallTo(() => fixture
+                .FreezeFake<RolesService>()
+                .GetRoleAsync(
+                    fixture.Freeze<State>().Title.DiscordRoleId!.Value.ToString(),
+                    cancellationToken))
+                .Returns(Result.Fail(ERROR_MESSAGE));
+
+            var result = await ping.GetPingAsTextAsync(cancellationToken);
+            result.Should().BeFailure().And.HaveError(ERROR_MESSAGE);
         }
     }
 }

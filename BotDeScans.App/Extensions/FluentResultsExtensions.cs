@@ -18,6 +18,16 @@ public static class FluentResultsExtensions
         return string.Join("; ", errorMessages);
     }
 
+    public static Result<Out> Map<In, Out>(this Result<In> result, Out value) =>
+        result.Map(_ => value);
+
+    public static Result<T> SetValueOnSuccess<T>(this ResultBase result, Func<T> factory) =>
+        result.IsSuccess
+             ? Result.Ok(factory.Invoke())
+                     .WithReasons(result.Reasons)
+             : Result.Fail(result.Errors)
+                     .WithSuccesses(result.Successes);
+
     public static Remora.Results.Result ToDiscordResult(this ResultBase result)
     {
         if (result.IsSuccess)
@@ -29,10 +39,44 @@ public static class FluentResultsExtensions
         return Remora.Results.Result.FromError(remoraError);
     }
 
-    public static Result FailIf(this Result result, Func<bool> condition, string message) =>
-        condition.Invoke()
-            ? result.WithError(message)
-            : result;
+    public static Task<Result<T>> SafeCallAsync<T>(this Result result, Func<Task<Result<T>>> func, Error error) =>
+        SafeCallAsync<T>(result, func, error);
+
+    public static async Task<Result<T>> SafeCallAsync<T>(this Result result, Func<Task<T>> func, Error error)
+    {
+        var executionResult = await Result.Try(
+            action: () => func(),
+            catchHandler: error.CausedBy);
+
+        if (typeof(T) != typeof(ResultBase))
+            return executionResult;
+
+        var funcResult = (Result?)(dynamic)executionResult!.ValueOrDefault!;
+        var funcResultReasons = funcResult?.Reasons ?? [];
+
+        return executionResult.WithReasons([
+            .. result.Reasons,
+            .. funcResultReasons]);
+    }
+
+    public static Result<T> SafeCall<T>(this Result result, Func<T> func, string errorMessage, Error? innerError = null)
+    {
+        var executionResult = Result.Try(
+            action: () => func(),
+            catchHandler: ex => innerError is null
+                ? new Error(errorMessage)
+                : new Error(errorMessage, innerError));
+
+        if (typeof(T) == typeof(ResultBase))
+            return executionResult;
+
+        var funcResult = (Result?)(dynamic)executionResult!.ValueOrDefault!;
+        var funcResultReasons = funcResult?.Reasons ?? [];
+
+        return executionResult.WithReasons([
+            .. result.Reasons,
+            .. funcResultReasons]);
+    }
 
     public static IEnumerable<ErrorInfo> GetErrorsInfo(this IReadOnlyList<IError> errors, int depth = 0)
     {
@@ -74,3 +118,4 @@ public static class FluentResultsExtensions
 public record ErrorInfo(string Message, int Number, int Depth, ErrorType Type);
 
 public enum ErrorType { Regular, Exception }
+

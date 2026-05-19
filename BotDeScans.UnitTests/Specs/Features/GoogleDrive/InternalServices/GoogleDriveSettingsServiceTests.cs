@@ -138,6 +138,66 @@ public class GoogleDriveSettingsServiceTests : UnitTest
 
             result.Should().BeFailure().And.HaveError(ERROR_MESSAGE);
         }
+
+        [Fact]
+        public async Task GivenSuccessExecutionReturnReasons()
+        {
+            const string REASON_1 = "reason 1";
+            const string REASON_2 = "reason 2";
+
+            A.CallTo(() => fixture
+                .FreezeFake<GoogleDriveFoldersService>()
+                .GetAsync(
+                    GoogleDriveSettingsService.BASE_FOLDER_NAME,
+                    GoogleDriveSettingsService.ROOT_FOLDER_NAME,
+                    cancellationToken))
+                .Returns(Result.Ok<File?>(default).WithSuccess(REASON_1));
+
+            A.CallTo(() => fixture
+                .FreezeFake<GoogleDriveFoldersService>()
+                .CreateAsync(
+                    GoogleDriveSettingsService.BASE_FOLDER_NAME,
+                    GoogleDriveSettingsService.ROOT_FOLDER_NAME,
+                    cancellationToken))
+                .Returns(Result.Ok(fixture.FreezeFake<File>()).WithSuccess(REASON_2));
+
+            var result = await service.SetUpBaseFolderAsync(cancellationToken);
+
+            using var _ = new AssertionScope();
+            result.Should().BeSuccess().And
+                  .HaveReason(REASON_1).And
+                  .HaveReason(REASON_2);
+        }
+
+        [Fact]
+        public async Task GivenErrorExecutionReturnReasons()
+        {
+            const string REASON = "reason";
+            const string ERROR = "error";
+
+            A.CallTo(() => fixture
+                .FreezeFake<GoogleDriveFoldersService>()
+                .GetAsync(
+                    GoogleDriveSettingsService.BASE_FOLDER_NAME,
+                    GoogleDriveSettingsService.ROOT_FOLDER_NAME,
+                    cancellationToken))
+                .Returns(Result.Ok<File?>(default).WithSuccess(REASON));
+
+            A.CallTo(() => fixture
+                .FreezeFake<GoogleDriveFoldersService>()
+                .CreateAsync(
+                    GoogleDriveSettingsService.BASE_FOLDER_NAME,
+                    GoogleDriveSettingsService.ROOT_FOLDER_NAME,
+                    cancellationToken))
+                .Returns(Result.Fail(ERROR));
+
+            var result = await service.SetUpBaseFolderAsync(cancellationToken);
+
+            using var _ = new AssertionScope();
+            result.Should().BeFailure().And
+                  .HaveReason(REASON).And
+                  .HaveError(ERROR);
+        }
     }
 
     public class GetConsumptionDataAsync : GoogleDriveSettingsServiceTests

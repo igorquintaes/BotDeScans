@@ -3,7 +3,6 @@ using BotDeScans.App.Features.Publish.Interaction.Models;
 using BotDeScans.App.Features.Publish.Interaction.Steps;
 using BotDeScans.App.Features.Publish.Interaction.Steps.Enums;
 using BotDeScans.App.Models.Entities.Enums;
-using FluentAssertions.Execution;
 using FluentResults;
 
 namespace BotDeScans.UnitTests.Specs.Features.Publish.Interaction;
@@ -16,11 +15,6 @@ public class HandlerTests : UnitTest
     public HandlerTests()
     {
         fixture.FreezeFake<DiscordPublisher>();
-
-        A.CallTo(() => fixture
-            .FreezeFake<DiscordPublisher>()
-            .UpdateTrackingMessageAsync(A<State>._, A<CancellationToken>._))
-            .ReturnsLazily((State s, CancellationToken _) => Result.Ok(s));
 
         A.CallTo(() => fixture
             .FreezeFake<DiscordPublisher>()
@@ -99,17 +93,11 @@ public class HandlerTests : UnitTest
         {
             await handler.ExecuteAsync(testState, cancellationToken);
 
-            // 2 management + 2 validation + 2 publish = 6 synchronized calls
+            // initial tracking call + 2 management + 2 validation + 2 publish = 6 synchronized calls
             A.CallTo(() => fixture
                 .FreezeFake<DiscordPublisher>()
                 .SynchronizedUpdateTrackingMessageAsync(A<State>._, cancellationToken))
-                .MustHaveHappened(6, Times.Exactly);
-
-            // 1 initial tracking call (non-synchronized)
-            A.CallTo(() => fixture
-                .FreezeFake<DiscordPublisher>()
-                .UpdateTrackingMessageAsync(A<State>._, cancellationToken))
-                .MustHaveHappenedOnceExactly();
+                .MustHaveHappened(7, Times.Exactly);
         }
 
         [Fact]
@@ -316,7 +304,7 @@ public class HandlerTests : UnitTest
         {
             A.CallTo(() => fixture
                 .FreezeFake<DiscordPublisher>()
-                .UpdateTrackingMessageAsync(A<State>._, cancellationToken))
+                .SynchronizedUpdateTrackingMessageAsync(A<State>._, cancellationToken))
                 .Returns(Result.Fail<State>("tracking error"));
 
             var result = await handler.ExecuteAsync(testState, cancellationToken);
@@ -332,7 +320,7 @@ public class HandlerTests : UnitTest
         [Fact]
         public async Task GivenManagementStepStatePropagationShouldPassUpdatedStateToNextStep()
         {
-            var updatedState = state with { Pings = "updated" };
+            var updatedState = state with { PingText = "updated" };
 
             A.CallTo(() => managementStep1.ExecuteAsync(A<State>.Ignored, cancellationToken))
                 .Returns(Result.Ok(updatedState));
@@ -340,7 +328,7 @@ public class HandlerTests : UnitTest
             await handler.ExecuteAsync(testState, cancellationToken);
 
             A.CallTo(() => managementStep2.ExecuteAsync(
-                A<State>.That.Matches(s => s.Pings == "updated"),
+                A<State>.That.Matches(s => s.PingText == "updated"),
                 cancellationToken))
                 .MustHaveHappenedOnceExactly();
         }

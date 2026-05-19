@@ -11,17 +11,17 @@ public static class ServiceCollectionExtensions
         this IServiceCollection services)
         where TClient : class
         where TFactory : ClientFactory<TClient> =>
-        services
-            .AddScoped<TFactory>()
-            .AddSingleton(GetExternalClientFromProvider<TClient, TFactory>);
+            services
+                .AddScoped<TFactory>()
+                .AddSingleton(GetExternalClientFromProvider<TClient, TFactory>);
 
     public static IServiceCollection AddExternalClientAsScoped<TClient, TFactory>(
         this IServiceCollection services)
         where TClient : class
         where TFactory : ClientFactory<TClient> =>
-        services
-            .AddScoped<TFactory>()
-            .AddScoped(GetExternalClientFromProvider<TClient, TFactory>);
+            services
+                .AddScoped<TFactory>()
+                .AddScoped(GetExternalClientFromProvider<TClient, TFactory>);
 
     private static TClient GetExternalClientFromProvider<TClient, TFactory>(
         IServiceProvider serviceProvider)

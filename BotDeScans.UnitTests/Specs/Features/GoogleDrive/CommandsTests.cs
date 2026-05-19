@@ -125,7 +125,8 @@ public class CommandsTests : UnitTest
                 .SendContextualEmbedAsync(A<Embed>.Ignored, A<FeedbackMessageOptions>.Ignored, cancellationToken))
                 .Invokes((Embed embed, FeedbackMessageOptions _, CancellationToken _) => embedResult = embed);
 
-            await commands.DeleteFile(fixture.Create<string>(), fixture.Create<string>());
+            const string FILE_NAME = "some file name";
+            await commands.DeleteFile(FILE_NAME, fixture.Create<string>());
 
             await Verify(embedResult);
         }

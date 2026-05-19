@@ -1,4 +1,5 @@
-﻿using BotDeScans.App.Features.GoogleDrive;
+﻿using BotDeScans.App.Extensions;
+using BotDeScans.App.Features.GoogleDrive;
 using BotDeScans.App.Features.Publish.Interaction.Steps.Enums;
 using BotDeScans.App.Models.Entities.Enums;
 using FluentResults;
@@ -22,15 +23,14 @@ public class UploadZipGoogleDriveStep(
         if (titleFolderResult.IsFailed)
             return titleFolderResult.ToResult<State>();
 
-        var fileResult = await googleDriveService.CreateFileAsync(
+        var fileResult = await googleDriveService.UpdateOrCreateFileAsync(
             filePath: state.ZipFilePath!,
             parentId: titleFolderResult.Value.Id,
             publicAccess: true,
             cancellationToken);
 
-        if (fileResult.IsFailed)
-            return fileResult.ToResult<State>();
+        var updatedState = state with { DriveZipLink = fileResult.ValueOrDefault?.WebViewLink };
 
-        return Result.Ok(state with { DriveZipLink = fileResult.Value.WebViewLink });
+        return fileResult.Map(updatedState);
     }
 }

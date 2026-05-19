@@ -81,7 +81,85 @@ public class GlobalTests : UnitTest
             var expectedText = $"<@&{globalRoleId.Value}>, <@&{titleRoleId.Value}>";
 
             var result = await ping.GetPingAsTextAsync(cancellationToken);
-            result.Should().Be(expectedText);
+            result.Should().BeSuccess().And.HaveValue(expectedText);
+        }
+
+        [Fact]
+        public async Task ShouldReturnFailResultWhenGetGlobalRole()
+        {
+            const string ERROR_MESSAGE = "some error.";
+            var titleRole = A.Fake<IRole>();
+
+            A.CallTo(() => fixture
+                .FreezeFake<RolesService>()
+                .GetRoleAsync(A<string>._, cancellationToken))
+                .ReturnsNextFromSequence(
+                    Result.Fail(ERROR_MESSAGE),
+                    Result.Ok(titleRole));
+
+            var result = await ping.GetPingAsTextAsync(cancellationToken);
+            result.Should().BeFailure().And.HaveError(ERROR_MESSAGE);
+        }
+
+        [Fact]
+        public async Task ShouldReturnFailResultWhenGetTitleRole()
+        {
+            const string ERROR_MESSAGE = "some error.";
+
+            var globalRole = A.Fake<IRole>();
+            A.CallTo(() => globalRole.ID).Returns(globalRoleId);
+
+            A.CallTo(() => fixture
+                .FreezeFake<RolesService>()
+                .GetRoleAsync(A<string>._, cancellationToken))
+                .ReturnsNextFromSequence(
+                    Result.Ok(globalRole), 
+                    Result.Fail(ERROR_MESSAGE));
+
+            var result = await ping.GetPingAsTextAsync(cancellationToken);
+            result.Should().BeFailure().And.HaveError(ERROR_MESSAGE);
+        }
+
+        [Fact]
+        public async Task ShouldMergeResultReasonsIfSuccess()
+        {
+            const string REASON_1 = "1";
+            const string REASON_2 = "2";
+
+            A.CallTo(() => fixture
+                .FreezeFake<RolesService>()
+                .GetRoleAsync(A<string>._, cancellationToken))
+                .ReturnsNextFromSequence(
+                    Result.Ok(A.Fake<IRole>()).WithReason(new Success(REASON_1)),
+                    Result.Ok(A.Fake<IRole>()).WithReason(new Success(REASON_2)));
+
+            var result = await ping.GetPingAsTextAsync(cancellationToken);
+
+            result.Should().BeSuccess()
+                  .And.HaveReason(REASON_1)
+                  .And.HaveReason(REASON_2)
+                  .Which.Reasons.Should().HaveCount(2);
+        }
+
+        [Fact]
+        public async Task ShouldMergeResultReasonsIfFail()
+        {
+            const string REASON_1 = "1";
+            const string REASON_2 = "2";
+
+            A.CallTo(() => fixture
+                .FreezeFake<RolesService>()
+                .GetRoleAsync(A<string>._, cancellationToken))
+                .ReturnsNextFromSequence(
+                    Result.Ok(A.Fake<IRole>()).WithReason(new Success(REASON_1)),
+                    Result.Ok(A.Fake<IRole>()).WithReason(new Error(REASON_2)));
+
+            var result = await ping.GetPingAsTextAsync(cancellationToken);
+
+            result.Should().BeFailure()
+                  .And.HaveReason(REASON_1)
+                  .And.HaveReason(REASON_2)
+                  .Which.Reasons.Should().HaveCount(2);
         }
     }
 }

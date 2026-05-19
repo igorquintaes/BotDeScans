@@ -44,7 +44,7 @@ public class Commands(
     {
         var deleteResult = await googleDriveService.DeleteFileByNameAndParentNameAsync(fileName, folderName, CancellationToken);
         var embed = deleteResult.IsSuccess
-            ? EmbedBuilder.CreateSuccessEmbed($"Arquivo deletado com sucesso!")
+            ? EmbedBuilder.CreateSuccessEmbed($"Arquivo '{fileName}' excluído com sucesso!")
             : EmbedBuilder.CreateErrorEmbed(deleteResult);
 
         return await feedbackService.SendContextualEmbedAsync(embed, ct: CancellationToken);
@@ -83,21 +83,26 @@ public class Commands(
     {
         var dataUsageResult = await googleDriveSettingsService.GetConsumptionDataAsync(CancellationToken);
         if (dataUsageResult.IsFailed)
-            return await feedbackService
-                .SendContextualEmbedAsync(EmbedBuilder
-                .CreateErrorEmbed(dataUsageResult), ct: CancellationToken);
+            return await feedbackService.SendContextualEmbedAsync(
+                embed: EmbedBuilder.CreateErrorEmbed(dataUsageResult), 
+                ct: CancellationToken);
 
         var usageInfo = dataUsageResult.Value;
         await using var chartStream = chartService.CreatePieChart(usageInfo);
 
         var fileName = $"{nameof(DataUsage)}.png";
+
+        var embed = EmbedBuilder.CreateSuccessEmbed(
+            title: "Uso de dados do Google Drive:",
+            image: new EmbedImage($"attachment://{fileName}"));
+
+        var options = new FeedbackMessageOptionsBuilder()
+            .WithAttachment(fileName, chartStream)
+            .Build();
+
         return await feedbackService.SendContextualEmbedAsync(
-            embed: EmbedBuilder.CreateSuccessEmbed(
-                title: "Uso de dados do Google Drive:",
-                image: new EmbedImage($"attachment://{fileName}")),
-            options: new FeedbackMessageOptionsBuilder()
-                .WithAttachment(fileName, chartStream)
-                .Build(),
+            embed: embed,
+            options: options,
             ct: CancellationToken);
     }
 
@@ -118,7 +123,11 @@ public class Commands(
         public async Task<IResult> DownloadFiles(string url)
         {
             var googleDriveUrl = new GoogleDriveUrl(url);
-            var downloadResult = await googleDriveService.SaveFilesAsync(googleDriveUrl.Id, Directory.GetCurrentDirectory(), CancellationToken);
+            var downloadResult = await googleDriveService.SaveFilesAsync(
+                googleDriveUrl.Id, 
+                Directory.GetCurrentDirectory(), 
+                CancellationToken);
+
             var embed = downloadResult.IsSuccess
                 ? EmbedBuilder.CreateSuccessEmbed($"Success.")
                 : EmbedBuilder.CreateErrorEmbed(downloadResult);
@@ -133,7 +142,9 @@ public class Commands(
         {
             const string DEBUG_NAME_FOLDER = "debug";
             const string DEBUG_NAME_FILE = "debug.zip";
-            var createFolderResult = await googleDriveService.GetOrCreateFolderAsync(DEBUG_NAME_FOLDER, default, CancellationToken);
+            var createFolderResult = await googleDriveService
+                .GetOrCreateFolderAsync(DEBUG_NAME_FOLDER, default, CancellationToken);
+
             if (createFolderResult.IsFailed)
                 return await feedbackService.SendContextualEmbedAsync(
                     embed: EmbedBuilder.CreateErrorEmbed(createFolderResult),
@@ -141,11 +152,13 @@ public class Commands(
 
             var parentId = createFolderResult.Value.Id;
             var filePath = Path.Combine(Directory.GetCurrentDirectory(), DEBUG_NAME_FILE);
-            var createFileResult = await googleDriveService.CreateFileAsync(filePath, parentId, false, CancellationToken);
+            var createFileResult = await googleDriveService
+                .UpdateOrCreateFileAsync(filePath, parentId, false, CancellationToken);
 
             var embed = createFileResult.IsSuccess
                 ? EmbedBuilder.CreateSuccessEmbed($"Success.")
-                : EmbedBuilder.CreateErrorEmbed(createFileResult);
+                : EmbedBuilder.CreateErrorEmbed(createFileResult
+                              .WithReasons(createFolderResult.Reasons));
 
             return await feedbackService.SendContextualEmbedAsync(embed, ct: CancellationToken);
         }

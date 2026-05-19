@@ -1,4 +1,5 @@
-﻿using FluentResults;
+﻿using BotDeScans.App.Extensions;
+using FluentResults;
 using Google.Apis.Requests;
 using Google.Apis.Upload;
 using System.Diagnostics.CodeAnalysis;
@@ -11,21 +12,34 @@ Maybe we should consider integration testing with real Google API.
 -> It is due Google SDK not providing an emulator to Drive, Blogger, BQ etc.")]
 public class GoogleWrapper
 {
+    public const string GENERIC_ERROR = "Não foi possível realizar a operação com o GoogleDrive.";
+
     public virtual Task<Result<TResponse>> ExecuteAsync<TResponse>(
         IClientServiceRequest<TResponse> request,
-        CancellationToken cancellationToken)
-            => Result.Try(() => request.ExecuteAsync(cancellationToken),
-                          ex => new Error("Não foi possível realizar a operação com o GoogleDrive.")
-                                   .CausedBy(ex));
+        CancellationToken cancellationToken) => 
+        ExecuteAsync(() => request.ExecuteAsync(cancellationToken), cancellationToken);
+
+    public virtual Task<Result<TResponse>> ExecuteAsync<TResponse>(
+        Func<Task<TResponse>> requestFunc,
+        CancellationToken cancellationToken) => 
+        new Result().SafeCallAsync(
+            func: () => requestFunc(),
+            new Error(GENERIC_ERROR));
 
     public virtual async Task<Result<TResponse>> UploadAsync<TRequest, TResponse>(
         ResumableUpload<TRequest, TResponse> resumableUpload,
         CancellationToken cancellationToken)
     {
-        var uploadProgress = await resumableUpload.UploadAsync(cancellationToken);
-        return uploadProgress.Status == UploadStatus.Completed
-            ? Result.Ok(resumableUpload.ResponseBody)
-            : Result.Fail(new Error("Não foi possível realizar o upload.")
-                    .CausedBy(uploadProgress.Exception));
+        const string ERROR_MESSAGE = "Não foi possível realizar o upload.";
+        const string ERROR_DETAILS_MESSAGE = "Detalhes do erro no log.";
+
+        var result = await new Result().SafeCallAsync(
+            func: () => resumableUpload.UploadAsync(cancellationToken),
+            new Error(ERROR_MESSAGE));
+
+        return result.IsSuccess && result.Value.Status == UploadStatus.Completed
+             ? Result.Ok(resumableUpload.ResponseBody)
+             : Result.Fail(new Error(ERROR_DETAILS_MESSAGE)
+                     .CausedBy(result.Value.Exception));
     }
 }

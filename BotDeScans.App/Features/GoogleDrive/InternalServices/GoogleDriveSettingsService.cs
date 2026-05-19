@@ -26,12 +26,9 @@ public class GoogleDriveSettingsService(
             ROOT_FOLDER_NAME,
             cancellationToken);
 
-        if (folderResult.IsFailed)
-            return folderResult.ToResult();
-
-        if (folderResult.Value is not null)
+        if (folderResult.IsFailed || folderResult.ValueOrDefault is not null)
         {
-            BaseFolderId = folderResult.Value.Id;
+            BaseFolderId = folderResult.ValueOrDefault?.Id!;
             return folderResult.ToResult();
         }
 
@@ -40,11 +37,11 @@ public class GoogleDriveSettingsService(
             ROOT_FOLDER_NAME,
             cancellationToken);
 
-        if (createFolderResult.IsFailed)
-            return createFolderResult.ToResult();
+        BaseFolderId = createFolderResult.ValueOrDefault?.Id!;
 
-        BaseFolderId = createFolderResult.Value.Id;
-        return Result.Ok();
+        return createFolderResult
+            .WithReasons(folderResult.Reasons)
+            .ToResult();
     }
 
     public virtual async Task<Result<ConsumptionData>> GetConsumptionDataAsync(CancellationToken cancellationToken)
@@ -58,7 +55,8 @@ public class GoogleDriveSettingsService(
 
         var usedSpace = aboutResult.Value.StorageQuota.Usage!.Value;
         var freeSpace = aboutResult.Value.StorageQuota.Limit!.Value - usedSpace;
+        var consumption = new ConsumptionData(usedSpace, freeSpace);
 
-        return Result.Ok(new ConsumptionData(usedSpace, freeSpace));
+        return aboutResult.Map(_ => consumption);
     }
 }

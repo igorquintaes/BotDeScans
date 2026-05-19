@@ -109,58 +109,6 @@ public abstract class FluentResultsExtensionsTests : UnitTest
         }
     }
 
-    public class FailIf : FluentResultsExtensionsTests
-    {
-        [Fact]
-        public void GivenConditionTrueShouldAddError()
-        {
-            const string ERROR_MESSAGE = "Condition failed";
-
-            var result = Result.Ok().FailIf(() => true, ERROR_MESSAGE);
-
-            result.Should().BeFailure().And.HaveError(ERROR_MESSAGE);
-        }
-
-        [Fact]
-        public void GivenConditionFalseShouldNotAddError()
-        {
-            const string ERROR_MESSAGE = "Condition failed";
-
-            var result = Result.Ok().FailIf(() => false, ERROR_MESSAGE);
-
-            result.Should().BeSuccess();
-        }
-
-        [Fact]
-        public void GivenMultipleConditionsShouldAccumulateErrors()
-        {
-            const string ERROR_1 = "First error";
-            const string ERROR_2 = "Second error";
-
-            var result = Result.Ok()
-                .FailIf(() => true, ERROR_1)
-                .FailIf(() => true, ERROR_2);
-
-            result.Should().BeFailure();
-            result.Errors.Should().HaveCount(2);
-            result.Errors.Select(e => e.Message).Should().BeEquivalentTo([ERROR_1, ERROR_2]);
-        }
-
-        [Fact]
-        public void GivenAlreadyFailedResultShouldPreserveExistingErrors()
-        {
-            const string EXISTING_ERROR = "Existing error";
-            const string NEW_ERROR = "New error";
-
-            var result = Result.Fail(EXISTING_ERROR)
-                .FailIf(() => true, NEW_ERROR);
-
-            result.Should().BeFailure();
-            result.Errors.Should().HaveCount(2);
-            result.Errors.Select(e => e.Message).Should().BeEquivalentTo([EXISTING_ERROR, NEW_ERROR]);
-        }
-    }
-
     public class GetErrorsInfo : FluentResultsExtensionsTests
     {
         [Fact]

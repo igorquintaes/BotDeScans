@@ -26,9 +26,7 @@ public class GoogleDriveFoldersService(
             maxResult: 1,
             cancellationToken);
 
-        return resourcesResult.IsFailed
-             ? resourcesResult.ToResult()
-             : resourcesResult.Value.SingleOrDefault();
+        return resourcesResult.Map(files => files.SingleOrDefault());
     }
 
     public virtual Task<Result<File>> CreateAsync(

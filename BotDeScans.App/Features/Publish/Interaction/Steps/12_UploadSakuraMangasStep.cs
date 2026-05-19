@@ -1,4 +1,5 @@
-﻿using BotDeScans.App.Features.Publish.Interaction.Steps.Enums;
+﻿using BotDeScans.App.Extensions;
+using BotDeScans.App.Features.Publish.Interaction.Steps.Enums;
 using BotDeScans.App.Models.Entities;
 using BotDeScans.App.Models.Entities.Enums;
 using BotDeScans.App.Services;
@@ -29,9 +30,8 @@ public class UploadSakuraMangasStep(
             state.ZipFilePath!,
             cancellationToken);
 
-        if (uploadResult.IsFailed)
-            return uploadResult.ToResult<State>();
+        var updatedState = state with { SakuraMangasLink = uploadResult.ValueOrDefault };
 
-        return Result.Ok(state with { SakuraMangasLink = uploadResult.Value });
+        return uploadResult.Map(updatedState);
     }
 }

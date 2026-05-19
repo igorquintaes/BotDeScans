@@ -31,7 +31,8 @@ public class GoogleDriveClientFactoryTests : UnitTest
             "config",
             GoogleDriveClientFactory.CREDENTIALS_FILE_NAME);
 
-        // Fake key from https://github.com/googleapis/google-api-dotnet-client/blob/main/Src/Support/Google.Apis.Auth.Tests/OAuth2/GoogleCredentialTests.cs
+        // Fake key from google apis dotnet repo
+        // https://github.com/googleapis/google-api-dotnet-client/blob/main/Src/Support/Google.Apis.Auth.Tests/OAuth2/GoogleCredentialTests.cs
         private const string fakeCredentials = @"{
 ""private_key_id"": ""PRIVATE_KEY_ID"",
 ""private_key"": ""-----BEGIN PRIVATE KEY-----
@@ -96,7 +97,7 @@ ZUp8AsbVqF6rbLiiUfJMo2btGclQu4DEVyS+ymFA65tXDLUuR9EDqJYdqHNZJ5B8
             A.CallTo(() => fixture
                 .FreezeFake<GoogleWrapper>()
                 .ExecuteAsync(fixture.FreezeFake<FilesResource.ListRequest>(), cancellationToken))
-                .Returns(Result.Ok<FileList>(default!));
+                .Returns(Result.Ok<FileList?>(default));
         }
 
         [Fact]

@@ -1,4 +1,5 @@
-﻿using BotDeScans.App.Features.Publish.Interaction.Steps.Enums;
+﻿using BotDeScans.App.Extensions;
+using BotDeScans.App.Features.Publish.Interaction.Steps.Enums;
 using BotDeScans.App.Models.Entities.Enums;
 using BotDeScans.App.Services;
 using FluentResults;
@@ -21,9 +22,8 @@ public class ZipFilesStep(
             destinationDirectory: fileReleaseService.CreateScopedDirectory(),
             cancellationToken: cancellationToken);
 
-        if (zipFileResult.IsFailed)
-            return zipFileResult.ToResult<State>();
+        var updatedState = state with { ZipFilePath = zipFileResult.ValueOrDefault };
 
-        return Result.Ok(state with { ZipFilePath = zipFileResult.Value });
+        return zipFileResult.Map(updatedState);
     }
 }

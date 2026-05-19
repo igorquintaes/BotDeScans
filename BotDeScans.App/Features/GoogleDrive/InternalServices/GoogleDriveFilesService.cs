@@ -4,16 +4,18 @@ using FluentResults;
 using Google.Apis.Download;
 using Google.Apis.Drive.v3;
 using File = Google.Apis.Drive.v3.Data.File;
+
 namespace BotDeScans.App.Features.GoogleDrive.InternalServices;
 
 public class GoogleDriveFilesService(
     DriveService driveService,
     GoogleDriveResourcesService googleDriveResourcesService,
-    GoogleDrivePermissionsService googleDrivePermissionsService,
     FileService fileService,
     StreamWrapper streamWrapper,
     GoogleWrapper googleWrapper)
 {
+    public const string DOWNLOAD_STATUS = "Status de execução: {0}.";
+
     public virtual async Task<Result<File?>> GetAsync(
         string fileName,
         string? parentId,
@@ -28,8 +30,7 @@ public class GoogleDriveFilesService(
             maxResult: 1,
             cancellationToken);
 
-        return Result.Ok(resourcesResult.ValueOrDefault?.SingleOrDefault())
-                     .WithReasons(resourcesResult.Reasons);
+        return resourcesResult.Map(files => files.SingleOrDefault());
     }
 
     public virtual Task<Result<IList<File>>> GetManyAsync(
@@ -51,27 +52,17 @@ public class GoogleDriveFilesService(
     public virtual async Task<Result<File>> UploadAsync(
         string filePath,
         string parentId,
-        bool withPublicUrl,
         CancellationToken cancellationToken = default)
     {
         var mimeType = fileService.GetMimeType(filePath);
         var fileName = Path.GetFileName(filePath);
         var file = googleDriveResourcesService.CreateResourceObject(mimeType, fileName, parentId);
+
         await using var stream = streamWrapper.CreateFileStream(filePath, FileMode.Open);
         var uploadRequest = driveService.Files.Create(file, stream, mimeType);
         uploadRequest.Fields = "webViewLink, id";
-        var uploadResult = await googleWrapper.UploadAsync(uploadRequest, cancellationToken);
-        if (uploadResult.IsFailed)
-            return uploadResult;
 
-        if (withPublicUrl)
-        {
-            var permissionResult = await googleDrivePermissionsService.CreatePublicReaderPermissionAsync(uploadResult.Value.Id, cancellationToken);
-            if (permissionResult.IsFailed)
-                return permissionResult.ToResult();
-        }
-
-        return uploadResult;
+        return await googleWrapper.UploadAsync(uploadRequest, cancellationToken);
     }
 
     public virtual async Task<Result<File>> UpdateAsync(
@@ -79,10 +70,11 @@ public class GoogleDriveFilesService(
         string oldFileId,
         CancellationToken cancellationToken = default)
     {
-        var mimeType = fileService.GetMimeType(filePath);
         await using var stream = streamWrapper.CreateFileStream(filePath, FileMode.Open);
+        var mimeType = fileService.GetMimeType(filePath);
         var uploadRequest = driveService.Files.Update(new(), oldFileId, stream, mimeType);
         uploadRequest.Fields = "webViewLink, id";
+
         return await googleWrapper.UploadAsync(uploadRequest, cancellationToken);
     }
 
@@ -91,17 +83,28 @@ public class GoogleDriveFilesService(
         string targetDirectory,
         CancellationToken cancellationToken = default)
     {
-        const string ERROR_MESSAGE = "Ocorreu um erro ao tentar baixar o arquivo {0} do Google Drive.";
-
         var filePath = Path.Combine(targetDirectory, file.Name);
+        var fileName = Path.GetFileName(filePath);
         var getRequest = driveService.Files.Get(file.Id);
 
         await using var stream = streamWrapper.CreateFileStream(filePath, FileMode.Create);
-        var downloadProgress = await getRequest.DownloadAsync(stream, cancellationToken);
+        var executionResult = await googleWrapper.ExecuteAsync(() => 
+            getRequest.DownloadAsync(stream, cancellationToken), 
+            cancellationToken);
 
-        return Result.OkIf(
-               isSuccess: downloadProgress.Status == DownloadStatus.Completed,
-               error: new Error(string.Format(ERROR_MESSAGE, file.Name))
-                               .CausedBy(downloadProgress.Exception));
+        var executionStatus = executionResult.ValueOrDefault?.Status ?? DownloadStatus.Failed;
+        var executionMessage = string.Format(DOWNLOAD_STATUS, executionStatus);
+
+        if (executionResult.IsSuccess && executionStatus == DownloadStatus.Completed)
+            return executionResult
+                .ToResult()
+                .WithSuccess(executionMessage);
+
+        var executionException = executionResult.ValueOrDefault?.Exception;
+        var error = executionException is null
+            ? new Error(executionMessage)
+            : new Error(executionMessage).CausedBy(executionException);
+
+        return executionResult.ToResult().WithError(error);
     }
 }

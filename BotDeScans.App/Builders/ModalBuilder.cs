@@ -14,7 +14,7 @@ public class ModalBuilder(string ModalId, string Title) : List<ActionRowComponen
         TextInputStyle style = TextInputStyle.Short,
         string? value = null)
     {
-        if (Count == 5)
+        if (Count >= 5)
             throw new InvalidOperationException("A modal can have at most 5 fields.");
 
         Add(new ActionRowComponent([

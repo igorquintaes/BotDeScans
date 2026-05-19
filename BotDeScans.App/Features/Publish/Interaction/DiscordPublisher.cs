@@ -30,6 +30,7 @@ public class DiscordPublisher(
         CancellationToken cancellationToken)
     {
         await _trackingLock.WaitAsync(cancellationToken);
+
         try
         {
             return await UpdateTrackingMessageAsync(state, cancellationToken);
@@ -40,43 +41,39 @@ public class DiscordPublisher(
         }
     }
 
-    public virtual async Task<FluentResults.Result<State>> UpdateTrackingMessageAsync(
+    private async Task<FluentResults.Result<State>> UpdateTrackingMessageAsync(
         State state,
         CancellationToken cancellationToken)
     {
         var interactionContext = context as InteractionContext;
-        var steps = state.Steps;
-        var embed = new Embed(steps.MessageStatus, Description: steps.Details, Colour: steps.ColorStatus);
-        var trackingMessage = state.TrackingMessage;
 
-        var result = trackingMessage is null
+        var steps = state.Steps;
+        var trackingMessage = state.TrackingMessage;
+        var embed = new Embed(steps.MessageStatus, Description: steps.Details, Colour: steps.ColorStatus);
+
+        var remoraResult = trackingMessage is null
             ? await feedbackService.SendContextualEmbedAsync(embed, ct: cancellationToken)
             : await discordRestInteractionAPI.EditFollowupMessageAsync(
-                trackingMessage.AuthorId,
-                interactionContext!.Interaction.Token,
-                messageID: trackingMessage.MessageId,
-                embeds: new List<Embed> { embed },
-                ct: cancellationToken);
+                    trackingMessage.AuthorId,
+                    interactionContext!.Interaction.Token,
+                    messageID: trackingMessage.MessageId,
+                    embeds: new List<Embed> { embed },
+                    ct: cancellationToken);
 
-        if (result.IsSuccess is false)
-            return FluentResults.Result
-                .Fail("Error to update Discord message.")
-                .WithError(result.Error.Message);
-
-        var updatedState = state with
-        {
+        return remoraResult.ToFluentResult(() => state with 
+        { 
             TrackingMessage = new TrackingMessage(
-                result.Entity.Author.ID,
-                result.Entity.ID)
-        };
-
-        return FluentResults.Result.Ok(updatedState);
+                remoraResult.Entity.Author.ID, 
+                remoraResult.Entity.ID) 
+        });
     }
 
     public virtual async Task<IResult<IMessage>> ErrorReleaseMessageAsync(
         FluentResults.Result errorResult,
         CancellationToken cancellationToken)
     {
+        errorResult.LogIfFailed();
+
         var interactionContext = context as InteractionContext;
         var channel = interactionContext!.Interaction.Channel!.Value.ID!.Value;
         var embed = EmbedBuilder.CreateErrorEmbed(errorResult);
@@ -88,17 +85,28 @@ public class DiscordPublisher(
         State publishState,
         CancellationToken cancellationToken)
     {
-        var interactionContext = context as InteractionContext;
-        var releaseChannel = new Snowflake(configuration.GetRequiredValue<ulong>("Discord:ReleaseChannel"));
-        var coverFileName = Path.GetFileName(publishState.CoverFilePath);
+        // Image as Attachment
         using var cover = new FileStream(publishState.CoverFilePath, FileMode.Open);
+        var coverFileName = Path.GetFileName(publishState.CoverFilePath);
+        var fileFata = new FileData(coverFileName, cover);
+        var attachment = OneOf<FileData, IPartialAttachment>.FromT0(fileFata);
+        
+        // Discord Context Data
+        var interactionContext = context as InteractionContext;
+        var releaseChannelId = configuration.GetRequiredValue<ulong>("Discord:ReleaseChannel");
+        var releaseChannel = new Snowflake(releaseChannelId);
+
+        // Content
+        var promotedComponent = new ActionRowComponent([PromotedButton]);
+        var embed = PublishEmbed(interactionContext!, coverFileName, publishState);
+        var pingText = publishState.PingText;
 
         return await discordRestChannelAPI.CreateMessageAsync(
             channelID: releaseChannel,
-            content: publishState.Pings!,
-            embeds: new[] { PublishEmbed(interactionContext!, coverFileName, publishState) },
-            attachments: new[] { OneOf<FileData, IPartialAttachment>.FromT0(new FileData(coverFileName, cover)) },
-            components: new[] { new ActionRowComponent([PromotedButton]) },
+            content: pingText!,
+            embeds: new[] { embed },
+            attachments: new[] { attachment },
+            components: new[] { promotedComponent },
             ct: cancellationToken);
     }
 
@@ -107,30 +115,36 @@ public class DiscordPublisher(
         string coverFileName,
         State publishState)
     {
-        var message = string.IsNullOrWhiteSpace(publishState.ChapterInfo.Message)
-            ? string.Empty
-            : textReplacer.Replace(publishState.ChapterInfo.Message, publishState);
+        var title = $"#{publishState.ChapterInfo.ChapterNumber} {publishState.Title.Name}";
+        var image = new EmbedImage($"attachment://{coverFileName}");
+        var message = string.IsNullOrWhiteSpace(publishState.ChapterInfo.Message) is false
+            ? textReplacer.Replace(publishState.ChapterInfo.Message, publishState)
+            : string.Empty;
 
-        return new(
-            Title: $"#{publishState.ChapterInfo.ChapterNumber} {publishState.Title.Name}",
-            Image: new EmbedImage($"attachment://{coverFileName}"),
-            Description: message,
-            Colour: Color.Green,
-            Fields: CreatePublishLinkFields(publishState),
-            Author: new EmbedAuthor(
-                Name: interactionContext!.GetUserName(),
-                IconUrl: interactionContext!.GetUserAvatarUrl()));
+        return new(Title: title,
+                   Image: image,
+                   Description: message!,
+                   Colour: Color.Green,
+                   Fields: CreatePublishLinkFields(publishState),
+                   Author: interactionContext.GetAuthor());
     }
 
-    private static List<EmbedField> CreatePublishLinkFields(State publishState) => [.. typeof(State)
-        .GetProperties()
-        .Where(property => property.GetCustomAttribute<ReleaseLinkAttribute>() is not null)
-        .Select(property => new
-        { property.GetCustomAttribute<ReleaseLinkAttribute>()!.Label,
-            Link = property.GetValue(publishState, null)?.ToString()
-        })
-        .Where(x => !string.IsNullOrWhiteSpace(x.Link))
-        .Select(x => new EmbedField(x.Label, $":white_check_mark:  [Acesse]({x.Link})", true))];
+    private static EmbedField[] CreatePublishLinkFields(State publishState)
+    {
+        const string LINK_TEXT = ":white_check_mark:  [Acesse]({0})";
+
+        return 
+        [.. 
+            typeof(State)
+                .GetProperties()
+                .Where(property => property.GetCustomAttribute<ReleaseLinkAttribute>() is not null
+                                && property.GetValue(publishState, null) is not null)
+                .Select(x => new EmbedField(
+                    Name: x.GetCustomAttribute<ReleaseLinkAttribute>()!.Label,
+                    Value: string.Format(LINK_TEXT, x.GetValue(publishState, null)!.ToString()),
+                    IsInline: true))
+        ];
+    }
 
     private static readonly ButtonComponent PromotedButton = new(
         ButtonComponentStyle.Link,

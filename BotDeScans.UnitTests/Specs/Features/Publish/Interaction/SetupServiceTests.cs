@@ -112,7 +112,7 @@ public class SetupServiceTests : UnitTest
 
             var result = await service.SetupAsync(fixture.Create<Info>(), cancellationToken);
 
-            result.Value.Pings.Should().Be(ping);
+            result.Value.PingText.Should().Be(ping);
         }
 
         [Fact]
