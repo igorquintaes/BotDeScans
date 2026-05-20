@@ -76,7 +76,6 @@ public class UploadZipGoogleDriveStepTests : UnitTest
                 .UpdateOrCreateFileAsync(
                     state.ZipFilePath!,
                     titleFolder.Id,
-                    true,
                     cancellationToken))
                 .Returns(Result.Ok(titleFile));
         }
@@ -125,7 +124,6 @@ public class UploadZipGoogleDriveStepTests : UnitTest
                 .UpdateOrCreateFileAsync(
                     A<string>.Ignored,
                     A<string>.Ignored,
-                    A<bool>.Ignored,
                     cancellationToken))
                 .Returns(Result.Fail(ERROR_MESSAGE));
 

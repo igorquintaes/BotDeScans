@@ -171,12 +171,10 @@ public class GoogleDriveServiceTests : UnitTest
         private readonly string fileName = "file.zip";
 
         private readonly string parentId;
-        private readonly bool publicAccess;
 
         public CreateFileAsync()
         {
             parentId = fixture.Create<string>();
-            publicAccess = fixture.Create<bool>();
 
             A.CallTo(() => fixture
                 .FreezeFake<GoogleDriveFilesService>()
@@ -199,7 +197,7 @@ public class GoogleDriveServiceTests : UnitTest
         [Fact]
         public async Task GivenExecutionSuccessfulForANewFileShouldReturnSuccessResultAndNewFileValue()
         {
-            var result = await service.UpdateOrCreateFileAsync(filePath, parentId, publicAccess, cancellationToken);
+            var result = await service.UpdateOrCreateFileAsync(filePath, parentId, cancellationToken);
 
             result.Should().BeSuccess().And.HaveValue(fixture.FreezeFake<File>());
 
@@ -222,7 +220,7 @@ public class GoogleDriveServiceTests : UnitTest
                 .GetAsync(fileName, parentId, cancellationToken))
                 .Returns(fixture.FreezeFake<File>());
 
-            var result = await service.UpdateOrCreateFileAsync(filePath, parentId, publicAccess, cancellationToken);
+            var result = await service.UpdateOrCreateFileAsync(filePath, parentId, cancellationToken);
 
             result.Should().BeSuccess().And.HaveValue(fixture.FreezeFake<File>());
 
@@ -247,7 +245,7 @@ public class GoogleDriveServiceTests : UnitTest
                 .GetAsync(fileName, parentId, cancellationToken))
                 .Returns(fixture.FreezeFake<File>());
 
-            var result = await service.UpdateOrCreateFileAsync(filePath, parentId, publicAccess, cancellationToken);
+            var result = await service.UpdateOrCreateFileAsync(filePath, parentId, cancellationToken);
 
             result.Should().BeFailure().And.HaveError($"Já existe um arquivo com o nome especificado. Se desejar sobrescrever o arquivo existente, altere a configuração {GoogleDriveService.REWRITE_KEY} para permitir.");
         }
@@ -262,7 +260,7 @@ public class GoogleDriveServiceTests : UnitTest
                 .GetAsync(fileName, parentId, cancellationToken))
                 .Returns(fixture.FreezeFake<File>());
 
-            var result = await service.UpdateOrCreateFileAsync(filePath, parentId, publicAccess, cancellationToken);
+            var result = await service.UpdateOrCreateFileAsync(filePath, parentId, cancellationToken);
 
             result.Should().BeFailure().And.HaveError($"Já existe um arquivo com o nome especificado. Se desejar sobrescrever o arquivo existente, altere a configuração {GoogleDriveService.REWRITE_KEY} para permitir.");
         }
@@ -277,7 +275,7 @@ public class GoogleDriveServiceTests : UnitTest
                 .GetAsync(fileName, parentId, cancellationToken))
                 .Returns(Result.Fail(ERROR_MESSAGE));
 
-            var result = await service.UpdateOrCreateFileAsync(filePath, parentId, publicAccess, cancellationToken);
+            var result = await service.UpdateOrCreateFileAsync(filePath, parentId, cancellationToken);
 
             result.Should().BeFailure().And.HaveError(ERROR_MESSAGE);
         }
@@ -292,7 +290,7 @@ public class GoogleDriveServiceTests : UnitTest
                 .UploadAsync(filePath, parentId, cancellationToken))
                 .Returns(Result.Fail(ERROR_MESSAGE));
 
-            var result = await service.UpdateOrCreateFileAsync(filePath, parentId, publicAccess, cancellationToken);
+            var result = await service.UpdateOrCreateFileAsync(filePath, parentId, cancellationToken);
 
             result.Should().BeFailure().And.HaveError(ERROR_MESSAGE);
         }
@@ -312,7 +310,7 @@ public class GoogleDriveServiceTests : UnitTest
                 .UpdateAsync(filePath, fixture.FreezeFake<File>().Id, cancellationToken))
                 .Returns(Result.Fail(ERROR_MESSAGE));
 
-            var result = await service.UpdateOrCreateFileAsync(filePath, parentId, publicAccess, cancellationToken);
+            var result = await service.UpdateOrCreateFileAsync(filePath, parentId, cancellationToken);
 
             result.Should().BeFailure().And.HaveError(ERROR_MESSAGE);
         }

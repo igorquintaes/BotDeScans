@@ -26,7 +26,6 @@ public class UploadZipGoogleDriveStep(
         var fileResult = await googleDriveService.UpdateOrCreateFileAsync(
             filePath: state.ZipFilePath!,
             parentId: titleFolderResult.Value.Id,
-            publicAccess: true,
             cancellationToken);
 
         var updatedState = state with { DriveZipLink = fileResult.ValueOrDefault?.WebViewLink };

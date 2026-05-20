@@ -26,7 +26,6 @@ public class UploadPdfGoogleDriveStep(
         var fileResult = await googleDriveService.UpdateOrCreateFileAsync(
             filePath: state.PdfFilePath!,
             parentId: titleFolderResult.Value.Id,
-            publicAccess: true,
             cancellationToken);
 
         var updatedState = state with { DrivePdfLink = fileResult.ValueOrDefault?.WebViewLink };

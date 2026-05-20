@@ -36,7 +36,6 @@ public class GoogleDriveService(
     public virtual async Task<Result<File>> UpdateOrCreateFileAsync(
         string filePath,
         string parentId,
-        bool publicAccess,
         CancellationToken cancellationToken)
     {
 

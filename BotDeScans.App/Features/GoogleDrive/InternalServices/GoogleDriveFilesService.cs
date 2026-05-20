@@ -3,6 +3,7 @@ using BotDeScans.App.Services.Wrappers;
 using FluentResults;
 using Google.Apis.Download;
 using Google.Apis.Drive.v3;
+using Google.Apis.Drive.v3.Data;
 using File = Google.Apis.Drive.v3.Data.File;
 
 namespace BotDeScans.App.Features.GoogleDrive.InternalServices;
@@ -57,6 +58,14 @@ public class GoogleDriveFilesService(
         var mimeType = fileService.GetMimeType(filePath);
         var fileName = Path.GetFileName(filePath);
         var file = googleDriveResourcesService.CreateResourceObject(mimeType, fileName, parentId);
+        file.Permissions =
+        [
+            new()
+            {
+                Type = "anyone",
+                Role = "reader"
+            }
+        ];
 
         await using var stream = streamWrapper.CreateFileStream(filePath, FileMode.Open);
         var uploadRequest = driveService.Files.Create(file, stream, mimeType);
@@ -71,8 +80,20 @@ public class GoogleDriveFilesService(
         CancellationToken cancellationToken = default)
     {
         await using var stream = streamWrapper.CreateFileStream(filePath, FileMode.Open);
-        var mimeType = fileService.GetMimeType(filePath);
-        var uploadRequest = driveService.Files.Update(new(), oldFileId, stream, mimeType);
+        var mimeType = fileService.GetMimeType(filePath); 
+        var file = new File
+        {
+            Permissions =
+            [
+                new()
+                {
+                    Type = "anyone",
+                    Role = "reader"
+                }
+            ]
+        };
+
+        var uploadRequest = driveService.Files.Update(file, oldFileId, stream, mimeType);
         uploadRequest.Fields = "webViewLink, id";
 
         return await googleWrapper.UploadAsync(uploadRequest, cancellationToken);

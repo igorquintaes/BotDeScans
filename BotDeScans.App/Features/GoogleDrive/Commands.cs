@@ -153,7 +153,7 @@ public class Commands(
             var parentId = createFolderResult.Value.Id;
             var filePath = Path.Combine(Directory.GetCurrentDirectory(), DEBUG_NAME_FILE);
             var createFileResult = await googleDriveService
-                .UpdateOrCreateFileAsync(filePath, parentId, false, CancellationToken);
+                .UpdateOrCreateFileAsync(filePath, parentId, CancellationToken);
 
             var embed = createFileResult.IsSuccess
                 ? EmbedBuilder.CreateSuccessEmbed($"Success.")
