@@ -2,6 +2,7 @@
 using BotDeScans.App.Services.Wrappers;
 using FluentResults;
 using Google.Apis.Drive.v3;
+
 namespace BotDeScans.App.Features.GoogleDrive.InternalServices;
 
 public class GoogleDriveSettingsService(
@@ -41,7 +42,9 @@ public class GoogleDriveSettingsService(
             cancellationToken);
 
         if (createFolderResult.IsFailed)
-            return createFolderResult.ToResult();
+            return createFolderResult
+                .ToResult()
+                .WithReasons(folderResult.Reasons);
 
         BaseFolderId = createFolderResult.Value.Id;
 
