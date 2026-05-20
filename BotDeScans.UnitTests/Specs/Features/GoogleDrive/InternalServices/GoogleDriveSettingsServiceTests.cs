@@ -198,6 +198,27 @@ public class GoogleDriveSettingsServiceTests : UnitTest
                   .HaveReason(REASON).And
                   .HaveError(ERROR);
         }
+
+        [Fact]
+        public async Task GivenCreateFolderErrorShouldNotSetBaseFolderId()
+        {
+            typeof(GoogleDriveSettingsService)
+                .GetField("_baseFolderId", BindingFlags.NonPublic | BindingFlags.Static)!
+                .SetValue(null, null);
+
+            A.CallTo(() => fixture
+                .FreezeFake<GoogleDriveFoldersService>()
+                .CreateAsync(
+                    GoogleDriveSettingsService.BASE_FOLDER_NAME,
+                    GoogleDriveSettingsService.ROOT_FOLDER_NAME,
+                    cancellationToken))
+                .Returns(Result.Fail("error"));
+
+            await service.SetUpBaseFolderAsync(cancellationToken);
+
+            Func<string> call = () => GoogleDriveSettingsService.BaseFolderId;
+            call.Should().Throw<InvalidOperationException>().WithMessage("Base folder not set.");
+        }
     }
 
     public class GetConsumptionDataAsync : GoogleDriveSettingsServiceTests

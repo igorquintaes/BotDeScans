@@ -325,7 +325,7 @@ public class GoogleDriveFilesServiceTests : UnitTest
         [Fact]
         public async Task GivenSuccessfulExecutionShouldReturnOkResult()
         {
-            var reason = string.Format(GoogleDriveFilesService.DOWNLOAD_STATUS, DownloadStatus.Completed);
+            var reason = string.Format(GoogleDriveFilesService.DOWNLOAD_STATUS, DownloadStatus.Completed, file.Name);
 
             var result = await service.DownloadAsync(file, targetDirectory, cancellationToken);
 
@@ -339,7 +339,7 @@ public class GoogleDriveFilesServiceTests : UnitTest
         [InlineData(DownloadStatus.NotStarted)]
         public async Task GivenErrorExecutionShouldReturnFailResult(DownloadStatus downloadStatus)
         {
-            var reason = string.Format(GoogleDriveFilesService.DOWNLOAD_STATUS, downloadStatus);
+            var reason = string.Format(GoogleDriveFilesService.DOWNLOAD_STATUS, downloadStatus, file.Name);
 
             A.CallTo(() => fixture
                 .FreezeFake<IDownloadProgress>().Status)
@@ -355,7 +355,7 @@ public class GoogleDriveFilesServiceTests : UnitTest
         public async Task GivenFailDownloadExecutionShouldReturnFailResult()
         {
             const string ERROR_MESSAGE = "some error.";
-            var reason = string.Format(GoogleDriveFilesService.DOWNLOAD_STATUS, DownloadStatus.Failed);
+            var reason = string.Format(GoogleDriveFilesService.DOWNLOAD_STATUS, DownloadStatus.Failed, file.Name);
 
             A.CallTo(() => fixture
                 .FreezeFake<GoogleWrapper>()
@@ -372,7 +372,7 @@ public class GoogleDriveFilesServiceTests : UnitTest
         [Fact]
         public async Task GivenExceptionExecutionShouldReturnFailResult()
         {
-            var reason = string.Format(GoogleDriveFilesService.DOWNLOAD_STATUS, DownloadStatus.Failed);
+            var reason = string.Format(GoogleDriveFilesService.DOWNLOAD_STATUS, DownloadStatus.Failed, file.Name);
             var exception = new InvalidOperationException("some error.");
 
             A.CallTo(() => fixture
@@ -402,7 +402,7 @@ public class GoogleDriveFilesServiceTests : UnitTest
         public async Task GivenSuccessShouldReturnDownloadReasons()
         {
             const string SUCCESS_MESSAGE = "success.";
-            var reason = string.Format(GoogleDriveFilesService.DOWNLOAD_STATUS, DownloadStatus.Completed);
+            var reason = string.Format(GoogleDriveFilesService.DOWNLOAD_STATUS, DownloadStatus.Completed, file.Name);
 
             A.CallTo(() => fixture
                 .FreezeFake<GoogleWrapper>()
@@ -415,6 +415,30 @@ public class GoogleDriveFilesServiceTests : UnitTest
 
             result.Should().BeSuccess().And.HaveReason(reason);
             result.Should().BeSuccess().And.HaveReason(SUCCESS_MESSAGE);
+        }
+
+        [Fact]
+        public async Task GivenFailureShouldPropagateExecuteReasons()
+        {
+            const string SUCCESS_MESSAGE = "success.";
+            var reason = string.Format(GoogleDriveFilesService.DOWNLOAD_STATUS, DownloadStatus.Failed, file.Name);
+
+            A.CallTo(() => fixture
+                .FreezeFake<GoogleWrapper>()
+                .ExecuteAsync(A<Func<Task<IDownloadProgress>>>._, cancellationToken))
+                .Returns(Result.Ok(fixture
+                    .FreezeFake<IDownloadProgress>())
+                    .WithSuccess(SUCCESS_MESSAGE));
+
+            A.CallTo(() => fixture
+                .FreezeFake<IDownloadProgress>().Status)
+                .Returns(DownloadStatus.Failed);
+
+            var result = await service.DownloadAsync(file, targetDirectory, cancellationToken);
+
+            result.Should().BeFailure().And
+                  .HaveReason(SUCCESS_MESSAGE).And
+                  .HaveError(reason);
         }
     }
 }
