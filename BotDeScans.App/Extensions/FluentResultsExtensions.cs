@@ -1,5 +1,6 @@
 ﻿using FluentResults;
 using Google;
+using System.Collections.Frozen;
 using System.Text.Json;
 
 namespace BotDeScans.App.Extensions;
@@ -37,12 +38,7 @@ public static class FluentResultsExtensions
 
     public static async Task<Result<T>> SafeCallAsync<T>(this Result result, Func<Task<T>> func, Error error)
     {
-        if (typeof(T) == typeof(ResultBase) ||
-            typeof(T) == typeof(ResultBase<>) ||
-            typeof(T) == typeof(Result) ||
-            typeof(T) == typeof(Result<>) ||
-            typeof(T) == typeof(IResult<>) ||
-            typeof(T) == typeof(IResultBase))
+        if (IsForbiddenResultType(typeof(T)))
             throw new ArgumentException("O tipo genérico de retorno do método não deve ser um tipo de resultado do FluentResults.");
             // After all, a Result func should handle errors itself.
 
@@ -93,6 +89,24 @@ public static class FluentResultsExtensions
 
             return false;
         }
+    }
+
+    private static readonly FrozenSet<Type> _forbiddenResultTypes =
+    [
+        typeof(ResultBase),
+        typeof(Result),
+        typeof(IResultBase)
+    ];
+
+    private static bool IsForbiddenResultType(Type type)
+    {
+        if (_forbiddenResultTypes.Contains(type))
+            return true;
+
+        var definition = type.IsGenericType ? type.GetGenericTypeDefinition() : null;
+        return definition == typeof(ResultBase<>) ||
+               definition == typeof(Result<>) ||
+               definition == typeof(IResult<>);
     }
 }
 

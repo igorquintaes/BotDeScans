@@ -34,9 +34,15 @@ public class GoogleWrapper
             func: () => resumableUpload.UploadAsync(cancellationToken),
             new Error(ERROR_MESSAGE));
 
-        return result.IsSuccess && result.Value.Status == UploadStatus.Completed
-             ? Result.Ok(resumableUpload.ResponseBody)
-             : Result.Fail(new Error(ERROR_DETAILS_MESSAGE)
-                     .CausedBy(result.ValueOrDefault?.Exception));
+        if (result.IsSuccess && result.Value.Status == UploadStatus.Completed)
+            return result.Map(resumableUpload.ResponseBody);
+
+        if (result.IsSuccess && result.Value.Exception is not null)
+            return result.WithError(new Error(ERROR_DETAILS_MESSAGE)
+                         .CausedBy(result.Value.Exception))
+                         .ToResult();
+
+        return result.WithError(new Error(ERROR_DETAILS_MESSAGE))
+                     .ToResult();
     }
 }
