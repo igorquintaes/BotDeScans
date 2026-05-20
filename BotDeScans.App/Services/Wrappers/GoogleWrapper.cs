@@ -38,11 +38,12 @@ public class GoogleWrapper
             return result.Map(resumableUpload.ResponseBody);
 
         if (result.IsSuccess && result.Value.Exception is not null)
-            return result.WithError(new Error(ERROR_DETAILS_MESSAGE)
+            return result.WithError(new Error(ERROR_MESSAGE)
                          .CausedBy(result.Value.Exception))
                          .ToResult();
 
         return result.WithError(new Error(ERROR_DETAILS_MESSAGE))
+                     .WithError(new Error($"UploadStatus: {result.Value.Status}"))
                      .ToResult();
     }
 }
