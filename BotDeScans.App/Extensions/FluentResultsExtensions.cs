@@ -44,6 +44,7 @@ public static class FluentResultsExtensions
             typeof(T) == typeof(IResult<>) ||
             typeof(T) == typeof(IResultBase))
             throw new ArgumentException("O tipo genérico de retorno do método não deve ser um tipo de resultado do FluentResults.");
+            // After all, a Result func should handle errors itself.
 
         var executionResult = await Result.Try(
             action: () => func(),

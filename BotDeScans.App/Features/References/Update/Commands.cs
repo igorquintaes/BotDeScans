@@ -21,16 +21,13 @@ public class Commands(
     [Description("Adiciona ou atualiza referências externas para a obra.")]
     public async Task<IResult> ExecuteAsync(
         [AutocompleteProvider(AutocompleteTitles.ID)]
-        [Description("Nome da obra")]
-        int title,
-        [Description("Nome da referência")]
-        ExternalReference reference,
-        [Description("Valor da referência")]
-        string value)
+        [Description("Nome da obra")] int title,
+        [Description("Nome da referência")] ExternalReference reference,
+        [Description("Valor da referência")] string value)
     {
         var request = new Request(title, reference, value);
-
         var result = await handler.ExecuteAsync(request, CancellationToken);
+
         var embed = result.IsSuccess
             ? EmbedBuilder.CreateSuccessEmbed($"Referência atualizada!")
             : EmbedBuilder.CreateErrorEmbed(result);

@@ -6,6 +6,7 @@ using FluentResults;
 using FluentValidation;
 using Microsoft.Extensions.Configuration;
 using Remora.Rest.Core;
+
 namespace BotDeScans.App.Services.Initializations;
 
 public class SetupDiscordService(

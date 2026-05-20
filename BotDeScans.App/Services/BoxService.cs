@@ -36,10 +36,12 @@ public class BoxService(
 
         if (folder is not null && folder.FolderMini is not null)
             return folder.FolderMini;
-        
-        return await new Result().SafeCallAsync<FolderMini>(
+
+        var createFolderResult = await new Result().SafeCallAsync<FolderMini>(
                async () => await boxClient.Folders.CreateFolderAsync(new(folderName, new(ROOT_ID)), cancellationToken: cancellationToken),
                new Error(GENERIC_ERROR));
+
+        return createFolderResult.WithReasons(getFolderItems.Reasons);
     }
 
     public virtual async Task<Result<File>> CreateFileAsync(string filePath, string parentFolderId, CancellationToken cancellationToken = default)

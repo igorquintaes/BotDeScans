@@ -12,12 +12,13 @@ public class Handler(TitleRepository titleRepository)
         const string NO_REFERENCES_MESSAGE = "A obra não contém referências.";
 
         var title = await titleRepository.GetTitleAsync(titleId, cancellationToken);
-        return title is not null
-             ? title.References
-                    .Select(GetReferences)
-                    .DefaultIfEmpty(NO_REFERENCES_MESSAGE)
-                    .ToArray()
-             : Result.Fail(NOT_FOUND_ERROR);
+        var references = title?.References
+            .Select(GetReferences)
+            .DefaultIfEmpty(NO_REFERENCES_MESSAGE)
+            .ToArray();
+
+        return Result.OkIf(references is not null, NOT_FOUND_ERROR)
+                     .Bind(() => Result.Ok(references!));
 
         static string GetReferences(TitleReference reference, int index) =>
             string.Format("{0}. {1}{2}{3}{2}",

@@ -6,11 +6,7 @@ using System.Diagnostics.CodeAnalysis;
 
 namespace BotDeScans.App.Services.Wrappers;
 
-[ExcludeFromCodeCoverage(Justification = @"
-Needs a lot of inner wrappers to mock real Google calls. 
-This class itself works a wrapper for mostly method calls.
-Maybe we should consider integration testing with real Google API.
--> It is due Google SDK not providing an emulator to Drive, Blogger, BQ etc.")]
+[ExcludeFromCodeCoverage(Justification = "Safe call wrapper")]
 public class GoogleWrapper
 {
     public const string GENERIC_ERROR = "Não foi possível realizar a operação com o GoogleDrive.";
