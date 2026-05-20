@@ -26,9 +26,12 @@ public class GoogleDriveSettingsService(
             ROOT_FOLDER_NAME,
             cancellationToken);
 
-        if (folderResult.IsFailed || folderResult.ValueOrDefault is not null)
+        if (folderResult.IsFailed)
+            return folderResult.ToResult();
+
+        if (folderResult.Value is not null)
         {
-            BaseFolderId = folderResult.ValueOrDefault?.Id!;
+            BaseFolderId = folderResult.Value.Id;
             return folderResult.ToResult();
         }
 
@@ -37,7 +40,10 @@ public class GoogleDriveSettingsService(
             ROOT_FOLDER_NAME,
             cancellationToken);
 
-        BaseFolderId = createFolderResult.ValueOrDefault?.Id!;
+        if (createFolderResult.IsFailed)
+            return createFolderResult.ToResult();
+
+        BaseFolderId = createFolderResult.Value.Id;
 
         return createFolderResult
             .WithReasons(folderResult.Reasons)
