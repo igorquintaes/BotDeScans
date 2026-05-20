@@ -23,7 +23,7 @@ public class Interactions(
         string state)
     {
         var info = new Info(driveUrl, chapterName, chapterNumber, chapterVolume, message, int.Parse(state));
-        
+
         var setupResult = await setupService.SetupAsync(info, CancellationToken);
         if (setupResult.IsFailed)
             return await discordPublisher.ErrorReleaseMessageAsync(setupResult.ToResult(), CancellationToken);

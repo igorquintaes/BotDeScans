@@ -13,12 +13,12 @@ public class GoogleWrapper
 
     public virtual Task<Result<TResponse>> ExecuteAsync<TResponse>(
         IClientServiceRequest<TResponse> request,
-        CancellationToken cancellationToken) => 
+        CancellationToken cancellationToken) =>
         ExecuteAsync(() => request.ExecuteAsync(cancellationToken), cancellationToken);
 
     public virtual Task<Result<TResponse>> ExecuteAsync<TResponse>(
         Func<Task<TResponse>> requestFunc,
-        CancellationToken cancellationToken) => 
+        CancellationToken cancellationToken) =>
         new Result().SafeCallAsync(
             func: () => requestFunc(),
             new Error(GENERIC_ERROR));

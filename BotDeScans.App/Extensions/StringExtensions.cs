@@ -23,8 +23,8 @@ public static partial class StringExtensions
         return textWithoutDuplicateHyphens;
     }
 
-    private static string RemoveDiacritics(string text) => 
-        new([.. text.Where(c => CharUnicodeInfo.GetUnicodeCategory(c) 
+    private static string RemoveDiacritics(string text) =>
+        new([.. text.Where(c => CharUnicodeInfo.GetUnicodeCategory(c)
                              != UnicodeCategory.NonSpacingMark)]);
 
     [GeneratedRegex(@"[^a-z0-9\s-]")]

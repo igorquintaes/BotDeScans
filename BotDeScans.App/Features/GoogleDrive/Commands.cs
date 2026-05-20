@@ -84,7 +84,7 @@ public class Commands(
         var dataUsageResult = await googleDriveSettingsService.GetConsumptionDataAsync(CancellationToken);
         if (dataUsageResult.IsFailed)
             return await feedbackService.SendContextualEmbedAsync(
-                embed: EmbedBuilder.CreateErrorEmbed(dataUsageResult), 
+                embed: EmbedBuilder.CreateErrorEmbed(dataUsageResult),
                 ct: CancellationToken);
 
         var usageInfo = dataUsageResult.Value;
@@ -124,8 +124,8 @@ public class Commands(
         {
             var googleDriveUrl = new GoogleDriveUrl(url);
             var downloadResult = await googleDriveService.SaveFilesAsync(
-                googleDriveUrl.Id, 
-                Directory.GetCurrentDirectory(), 
+                googleDriveUrl.Id,
+                Directory.GetCurrentDirectory(),
                 CancellationToken);
 
             var embed = downloadResult.IsSuccess

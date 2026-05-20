@@ -28,7 +28,7 @@ public class GoogleDrivePermissionsService(
             cancellationToken);
 
         return permissionsResult.ValueOrDefault?.Permissions
-              .Where(permission => permission.EmailAddress.Equals(email, COMPARER) 
+              .Where(permission => permission.EmailAddress.Equals(email, COMPARER)
                                 && permission.Type.Equals(USER_PERMISSION_TYPE, COMPARER))
               .ToResult()
             ?? permissionsResult.ToResult();

@@ -1,6 +1,5 @@
 ﻿using BotDeScans.App.Features.GoogleDrive.InternalServices;
 using FluentResults;
-using iText.Layout.Element;
 using Microsoft.Extensions.Configuration;
 using System.Collections.Concurrent;
 using File = Google.Apis.Drive.v3.Data.File;
@@ -56,8 +55,8 @@ public class GoogleDriveService(
                              .WithReasons(fileResult.Reasons);
 
         var uploadResult = await googleDriveFilesService.UploadAsync(
-            filePath, 
-            parentId, 
+            filePath,
+            parentId,
             cancellationToken);
 
         return uploadResult.WithReasons(fileResult.Reasons);
@@ -135,7 +134,7 @@ public class GoogleDriveService(
         var getPermissionsResult = await googleDrivePermissionsService
             .GetUserPermissionsAsync(email, resourceId, cancellationToken);
 
-        if (getPermissionsResult.IsFailed || 
+        if (getPermissionsResult.IsFailed ||
             getPermissionsResult.Value.Any())
             return getPermissionsResult.ToResult();
 

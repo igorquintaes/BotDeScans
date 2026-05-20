@@ -40,12 +40,12 @@ public static class FluentResultsExtensions
     {
         if (IsForbiddenResultType(typeof(T)))
             throw new ArgumentException("O tipo genérico de retorno do método não deve ser um tipo de resultado do FluentResults.");
-            // After all, a Result func should handle errors itself.
+        // After all, a Result func should handle errors itself.
 
         var executionResult = await Result.Try(
             action: () => func(),
             catchHandler: error.CausedBy);
-        
+
         return result
             .Set(executionResult.ValueOrDefault)
             .WithReasons(executionResult.Reasons);

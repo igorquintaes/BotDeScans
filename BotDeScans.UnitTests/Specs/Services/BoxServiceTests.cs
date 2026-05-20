@@ -440,9 +440,9 @@ public class BoxServiceTests : UnitTest
             A.CallTo(() => fixture
                 .FreezeFake<IUploadsManager>()
                 .UploadFileAsync(
-                    A<UploadFileRequestBody>._, 
-                    A<UploadFileQueryParams>._, 
-                    A<UploadFileHeaders>._, 
+                    A<UploadFileRequestBody>._,
+                    A<UploadFileQueryParams>._,
+                    A<UploadFileHeaders>._,
                     cancellationToken))
                 .Throws(exception);
 

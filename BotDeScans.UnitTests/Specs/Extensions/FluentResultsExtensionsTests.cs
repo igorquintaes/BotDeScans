@@ -200,7 +200,7 @@ public abstract class FluentResultsExtensionsTests : UnitTest
         {
             var statusCode = HttpStatusCode.NotFound;
             var googleException = new GoogleApiException(
-                serviceName: "Google", 
+                serviceName: "Google",
                 message: "Test Google error")
             {
                 HttpStatusCode = statusCode
@@ -219,7 +219,7 @@ public abstract class FluentResultsExtensionsTests : UnitTest
                   .Which.Should().BeEquivalentTo(expectedErrorInfo,
                       options => options.Excluding(x => x.Message))
                   .And.Match<ErrorInfo>(x =>
-                       x.Message.Contains(nameof(HttpStatusCode.NotFound)) && 
+                       x.Message.Contains(nameof(HttpStatusCode.NotFound)) &&
                        x.Message.Contains(HttpStatusCode.NotFound.ToString()));
         }
 
@@ -242,14 +242,14 @@ public abstract class FluentResultsExtensionsTests : UnitTest
     public class Map : FluentResultsExtensionsTests
     {
         [Fact]
-        public void GivenSuccessResultShouldMapToNewValue() => 
+        public void GivenSuccessResultShouldMapToNewValue() =>
             Result.Ok(1)
                   .Map(VALUE)
                   .Should().BeSuccess()
                   .And.HaveValue(VALUE);
 
         [Fact]
-        public void GivenFailedResultShouldPreserveFailure() => 
+        public void GivenFailedResultShouldPreserveFailure() =>
             Result.Fail<int>(ERROR_MESSAGE)
                   .Map("mapped-value")
                   .Should()
@@ -257,7 +257,7 @@ public abstract class FluentResultsExtensionsTests : UnitTest
                   .And.HaveError(ERROR_MESSAGE);
 
         [Fact]
-        public void GivenSuccessResultWithReasonsShouldPreserveReasons() => 
+        public void GivenSuccessResultWithReasonsShouldPreserveReasons() =>
             Result.Ok(1)
                   .WithSuccess(SUCCESS_MESSAGE)
                   .Map(VALUE)
@@ -269,14 +269,14 @@ public abstract class FluentResultsExtensionsTests : UnitTest
     public class Set : FluentResultsExtensionsTests
     {
         [Fact]
-        public void GivenSuccessResultShouldReturnOkWithFactoryValue() => 
+        public void GivenSuccessResultShouldReturnOkWithFactoryValue() =>
             Result.Ok()
                   .Set(VALUE)
                   .Should().BeSuccess()
                   .And.HaveValue(VALUE);
 
         [Fact]
-        public void GivenSuccessResultWithReasonsShouldPreserveReasons() => 
+        public void GivenSuccessResultWithReasonsShouldPreserveReasons() =>
             Result.Ok()
                   .WithSuccess(SUCCESS_MESSAGE)
                   .Set(VALUE)
@@ -285,14 +285,14 @@ public abstract class FluentResultsExtensionsTests : UnitTest
                   .And.HaveReason(SUCCESS_MESSAGE);
 
         [Fact]
-        public void GivenFailedResultShouldReturnFailWithErrors() => 
+        public void GivenFailedResultShouldReturnFailWithErrors() =>
             Result.Fail(ERROR_MESSAGE)
                   .Set(VALUE)
                   .Should().BeFailure()
                   .And.HaveError(ERROR_MESSAGE);
 
         [Fact]
-        public void GivenFailedResultWithSuccessesShouldPreserveBothReasons() => 
+        public void GivenFailedResultWithSuccessesShouldPreserveBothReasons() =>
             Result.Ok()
                   .WithSuccess(SUCCESS_MESSAGE)
                   .WithError(ERROR_MESSAGE)
@@ -308,7 +308,7 @@ public abstract class FluentResultsExtensionsTests : UnitTest
         public async Task GivenSuccessfulFuncShouldReturnOkWithValue()
         {
             var result = await new Result().SafeCallAsync(
-                func:  () => Task.FromResult(VALUE),
+                func: () => Task.FromResult(VALUE),
                 error: new Error(ERROR_MESSAGE));
 
             result.Should().BeSuccess()
@@ -319,7 +319,7 @@ public abstract class FluentResultsExtensionsTests : UnitTest
         public async Task GivenThrowingFuncShouldReturnFailWithError()
         {
             var result = await new Result().SafeCallAsync<int>(
-                func:  () => throw new InvalidOperationException(EXCEPTION_MESSAGE),
+                func: () => throw new InvalidOperationException(EXCEPTION_MESSAGE),
                 error: new Error(ERROR_MESSAGE));
 
             result.Should().BeFailure()
@@ -369,7 +369,7 @@ public abstract class FluentResultsExtensionsTests : UnitTest
             var result = new Result();
 
             var act = () => result.SafeCallAsync(
-                func:  () => Task.FromResult<ResultBase>(Result.Ok()),
+                func: () => Task.FromResult<ResultBase>(Result.Ok()),
                 error: new Error(ERROR_MESSAGE));
 
             await act.Should().ThrowAsync<ArgumentException>();
@@ -381,7 +381,7 @@ public abstract class FluentResultsExtensionsTests : UnitTest
             var result = new Result();
 
             var act = () => result.SafeCallAsync(
-                func:  () => Task.FromResult<Result>(Result.Ok()),
+                func: () => Task.FromResult<Result>(Result.Ok()),
                 error: new Error(ERROR_MESSAGE));
 
             await act.Should().ThrowAsync<ArgumentException>();
@@ -393,7 +393,7 @@ public abstract class FluentResultsExtensionsTests : UnitTest
             var result = new Result();
 
             var act = () => result.SafeCallAsync(
-                func:  () => Task.FromResult<IResultBase>(Result.Ok()),
+                func: () => Task.FromResult<IResultBase>(Result.Ok()),
                 error: new Error(ERROR_MESSAGE));
 
             await act.Should().ThrowAsync<ArgumentException>();

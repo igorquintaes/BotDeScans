@@ -30,9 +30,12 @@ public class UploadMangaDexStep(
             state.OriginContentFolder,
             cancellationToken);
 
-        var updatedState = state with { MangaDexLink = uploadResult.ValueOrDefault is not null
+        var updatedState = state with
+        {
+            MangaDexLink = uploadResult.ValueOrDefault is not null
             ? $"https://mangadex.org/chapter/{uploadResult.Value.Id}/1"
-            : null};
+            : null
+        };
 
         return uploadResult.Map(updatedState);
     }

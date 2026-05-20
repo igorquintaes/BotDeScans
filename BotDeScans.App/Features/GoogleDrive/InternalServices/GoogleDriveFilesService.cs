@@ -88,8 +88,8 @@ public class GoogleDriveFilesService(
         var getRequest = driveService.Files.Get(file.Id);
 
         await using var stream = streamWrapper.CreateFileStream(filePath, FileMode.Create);
-        var executionResult = await googleWrapper.ExecuteAsync(() => 
-            getRequest.DownloadAsync(stream, cancellationToken), 
+        var executionResult = await googleWrapper.ExecuteAsync(() =>
+            getRequest.DownloadAsync(stream, cancellationToken),
             cancellationToken);
 
         var executionStatus = executionResult.ValueOrDefault?.Status ?? DownloadStatus.Failed;

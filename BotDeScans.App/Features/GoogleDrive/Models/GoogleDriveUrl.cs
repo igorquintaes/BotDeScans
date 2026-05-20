@@ -26,13 +26,13 @@ public class GoogleDriveUrlValidator : AbstractValidator<GoogleDriveUrl>
         var filesResult = new Result<IList<File>>();
 
         RuleFor(model => model)
-            .Must(prop => Uri.TryCreate(prop.Url, UriKind.Absolute, out var uri) 
+            .Must(prop => Uri.TryCreate(prop.Url, UriKind.Absolute, out var uri)
                        && uri.Authority == "drive.google.com"
                        && prop.Id.Length == 33)
             .WithMessage("O link informado é inválido.");
 
         RuleFor(model => model)
-            .MustAsync(async (_, prop, context, cancellationToken) => 
+            .MustAsync(async (_, prop, context, cancellationToken) =>
                        await BeAbleToGetGoogleDriveFilesInfo(prop, context, cancellationToken));
 
         RuleFor(_ => filesResult.Value)

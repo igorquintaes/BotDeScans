@@ -60,11 +60,11 @@ public class DiscordPublisher(
                     embeds: new List<Embed> { embed },
                     ct: cancellationToken);
 
-        return remoraResult.ToFluentResult(() => state with 
-        { 
+        return remoraResult.ToFluentResult(() => state with
+        {
             TrackingMessage = new TrackingMessage(
-                remoraResult.Entity.Author.ID, 
-                remoraResult.Entity.ID) 
+                remoraResult.Entity.Author.ID,
+                remoraResult.Entity.ID)
         });
     }
 
@@ -90,7 +90,7 @@ public class DiscordPublisher(
         var coverFileName = Path.GetFileName(publishState.CoverFilePath);
         var fileData = new FileData(coverFileName, cover);
         var attachment = OneOf<FileData, IPartialAttachment>.FromT0(fileData);
-        
+
         // Discord Context Data
         var interactionContext = context as InteractionContext;
         var releaseChannelId = configuration.GetRequiredValue<ulong>("Discord:ReleaseChannel");
@@ -133,8 +133,8 @@ public class DiscordPublisher(
     {
         const string LINK_TEXT = ":white_check_mark:  [Acesse]({0})";
 
-        return 
-        [.. 
+        return
+        [..
             typeof(State)
                 .GetProperties()
                 .Where(property => property.GetCustomAttribute<ReleaseLinkAttribute>() is not null

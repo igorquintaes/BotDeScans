@@ -1,7 +1,6 @@
 ﻿using BotDeScans.App.Features.GoogleDrive.InternalServices;
 using BotDeScans.App.Services;
 using BotDeScans.App.Services.Wrappers;
-using FluentAssertions;
 using FluentAssertions.Execution;
 using FluentResults;
 using Google.Apis.Download;

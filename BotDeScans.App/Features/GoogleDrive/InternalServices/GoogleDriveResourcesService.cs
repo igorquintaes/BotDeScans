@@ -31,7 +31,7 @@ public class GoogleDriveResourcesService(
         listRequest.Fields = "files(*)";
 
         var requestResult = await googleWrapper.ExecuteAsync(
-            listRequest, 
+            listRequest,
             cancellationToken);
 
         if (requestResult.IsFailed)

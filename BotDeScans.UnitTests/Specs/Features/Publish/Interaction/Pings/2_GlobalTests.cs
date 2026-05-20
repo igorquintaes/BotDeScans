@@ -113,7 +113,7 @@ public class GlobalTests : UnitTest
                 .FreezeFake<RolesService>()
                 .GetRoleAsync(A<string>._, cancellationToken))
                 .ReturnsNextFromSequence(
-                    Result.Ok(globalRole), 
+                    Result.Ok(globalRole),
                     Result.Fail(ERROR_MESSAGE));
 
             var result = await ping.GetPingAsTextAsync(cancellationToken);

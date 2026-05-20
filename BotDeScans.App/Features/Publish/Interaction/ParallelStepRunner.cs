@@ -26,8 +26,8 @@ public class ParallelStepRunner(DiscordPublisher discordPublisher)
             items.Select(item => ExecuteStepAsync((item.Step, item.Info), state, tracker, cancellationToken)));
 
         var aggregateResult = Result.Merge([
-            currentResult, 
-            .. results, 
+            currentResult,
+            .. results,
             tracker.AggregateTrackingResult]);
 
         var hasFatalFailure = results
