@@ -48,12 +48,12 @@ public class GoogleDriveService(
 
         var rewriteFile = configuration.GetValue<bool?>(REWRITE_KEY) ?? false;
 
-        if (fileResult.ValueOrDefault is { })
+        if (fileResult.Value is { })
             return rewriteFile
-                ? await UpdateFileFuncion(fileResult.Reasons)
-                : fileResult.ToResult()
-                            .WithError(DUPLICATE_FILE_ERROR)
-                            .WithReasons(fileResult.Reasons);
+                 ? await UpdateFileFuncion(fileResult.Reasons)
+                 : fileResult.ToResult()
+                             .WithError(DUPLICATE_FILE_ERROR)
+                             .WithReasons(fileResult.Reasons);
 
         var uploadResult = await googleDriveFilesService.UploadAsync(
             filePath, 
@@ -79,12 +79,18 @@ public class GoogleDriveService(
         var resourceId = GoogleDriveSettingsService.BaseFolderId;
 
         var folderResult = await googleDriveFoldersService.GetAsync(parentFolderName, resourceId, cancellationToken);
-        if (folderResult.IsFailed || folderResult.Value is null)
+        if (folderResult.IsFailed)
+            return folderResult.ToResult();
+
+        if (folderResult.Value is null)
             return folderResult.WithError(FOLDER_NOT_FOUND)
                                .ToResult();
 
         var fileResult = await googleDriveFilesService.GetAsync(fileName, folderResult.Value.Id, cancellationToken);
-        if (fileResult.IsFailed || fileResult.Value is null)
+        if (fileResult.IsFailed)
+            return fileResult.ToResult();
+
+        if (fileResult.Value is null)
             return fileResult.WithError(FILE_NOT_FOUND)
                              .WithReasons(folderResult.Reasons)
                              .ToResult();
