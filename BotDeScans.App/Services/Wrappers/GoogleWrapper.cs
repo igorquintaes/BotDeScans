@@ -21,7 +21,7 @@ public class GoogleWrapper
         CancellationToken cancellationToken) =>
         new Result().SafeCallAsync(
             func: () => requestFunc(),
-            new Error(GENERIC_ERROR));
+            error: new Error(GENERIC_ERROR));
 
     public virtual async Task<Result<TResponse>> UploadAsync<TRequest, TResponse>(
         ResumableUpload<TRequest, TResponse> resumableUpload,
@@ -32,7 +32,7 @@ public class GoogleWrapper
 
         var result = await new Result().SafeCallAsync(
             func: () => resumableUpload.UploadAsync(cancellationToken),
-            new Error(ERROR_MESSAGE));
+            error: new Error(ERROR_MESSAGE));
 
         if (result.IsSuccess && result.Value.Status == UploadStatus.Completed)
             return result.Map(resumableUpload.ResponseBody);
