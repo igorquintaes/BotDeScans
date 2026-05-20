@@ -13,8 +13,8 @@ public static partial class StringExtensions
     {
         if (text is null) return text;
 
-        var textWithNormalizdCharacters = text.Normalize(NormalizationForm.FormD);
-        var textWithoutDiacritics = RemoveDiacritics(textWithNormalizdCharacters);
+        var textWithNormalizedCharacters = text.Normalize(NormalizationForm.FormD);
+        var textWithoutDiacritics = RemoveDiacritics(textWithNormalizedCharacters);
         var textInLowerCase = textWithoutDiacritics.ToLowerInvariant();
         var textWithValidCharacters = GetValidCharacters().Replace(textInLowerCase, "");
         var textWithSpacesReplaced = GetSpaces().Replace(textWithValidCharacters, "-").Trim();

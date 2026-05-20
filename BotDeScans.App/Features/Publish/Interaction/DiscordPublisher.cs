@@ -88,8 +88,8 @@ public class DiscordPublisher(
         // Image as Attachment
         using var cover = new FileStream(publishState.CoverFilePath, FileMode.Open);
         var coverFileName = Path.GetFileName(publishState.CoverFilePath);
-        var fileFata = new FileData(coverFileName, cover);
-        var attachment = OneOf<FileData, IPartialAttachment>.FromT0(fileFata);
+        var fileData = new FileData(coverFileName, cover);
+        var attachment = OneOf<FileData, IPartialAttachment>.FromT0(fileData);
         
         // Discord Context Data
         var interactionContext = context as InteractionContext;
