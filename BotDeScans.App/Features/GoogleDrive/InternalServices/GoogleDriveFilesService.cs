@@ -14,7 +14,7 @@ public class GoogleDriveFilesService(
     StreamWrapper streamWrapper,
     GoogleWrapper googleWrapper)
 {
-    public const string DOWNLOAD_STATUS = "Status de execução: {0}.";
+    public const string DOWNLOAD_STATUS = "Status de execução: {0}. Arquivo: {1}";
 
     public virtual async Task<Result<File?>> GetAsync(
         string fileName,
@@ -93,7 +93,7 @@ public class GoogleDriveFilesService(
             cancellationToken);
 
         var executionStatus = executionResult.ValueOrDefault?.Status ?? DownloadStatus.Failed;
-        var executionMessage = string.Format(DOWNLOAD_STATUS, executionStatus);
+        var executionMessage = string.Format(DOWNLOAD_STATUS, executionStatus, fileName);
 
         if (executionResult.IsSuccess && executionStatus == DownloadStatus.Completed)
             return executionResult

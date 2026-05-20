@@ -73,13 +73,13 @@ public static class FluentResultsExtensions
             {
                 if (exceptionalError.Exception is GoogleApiException googleException)
                 {
-                    // precisamos adicionar mensagems da exception abaixo em um inner error
-                    var TODO = googleException.Message;
-                    var TODO2 = googleException.ServiceName;
-
                     var code = googleException.HttpStatusCode;
                     var intCode = (int)code;
-                    exceptionMessage = $"O Google retornou o HTTP Status Code [{code} ({intCode})](https://http.cat/{intCode})";
+
+                    exceptionMessage =
+                         $"O Google retornou o HTTP Status Code [{code} ({intCode})](https://http.cat/{intCode})" +
+                         $"; Serviço: {googleException.ServiceName}" +
+                         $"; Detalhes: {googleException.Message}";
                 }
                 else
                     exceptionMessage = exceptionalError.Exception.Message;
