@@ -3,7 +3,6 @@ using BotDeScans.App.Services.Wrappers;
 using FluentResults;
 using Google.Apis.Download;
 using Google.Apis.Drive.v3;
-using Google.Apis.Drive.v3.Data;
 using File = Google.Apis.Drive.v3.Data.File;
 
 namespace BotDeScans.App.Features.GoogleDrive.InternalServices;
@@ -80,7 +79,7 @@ public class GoogleDriveFilesService(
         CancellationToken cancellationToken = default)
     {
         await using var stream = streamWrapper.CreateFileStream(filePath, FileMode.Open);
-        var mimeType = fileService.GetMimeType(filePath); 
+        var mimeType = fileService.GetMimeType(filePath);
         var file = new File
         {
             Permissions =
