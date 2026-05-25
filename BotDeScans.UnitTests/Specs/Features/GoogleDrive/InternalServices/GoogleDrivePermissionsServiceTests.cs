@@ -106,6 +106,52 @@ public class GoogleDrivePermissionsServiceTests : UnitTest
         }
     }
 
+    public class CreatePublicReaderPermissionAsync : GoogleDrivePermissionsServiceTests
+    {
+        private readonly string resourceId;
+
+        public CreatePublicReaderPermissionAsync()
+        {
+            resourceId = fixture.Create<string>();
+
+            A.CallTo(() => fixture
+                .FreezeFake<PermissionsResource>()
+                .Create(A<Permission>.That.Matches(permission =>
+                    permission.Type == GoogleDrivePermissionsService.PUBLIC_PERMISSION_TYPE &&
+                    permission.Role == GoogleDrivePermissionsService.READER_ROLE),
+                    resourceId))
+                .Returns(fixture.FreezeFake<CreateRequest>());
+        }
+
+        [Fact]
+        public async Task GivenSuccessfulExecutionShouldReturnSuccessResultAndPermissionData()
+        {
+            A.CallTo(() => fixture
+                .FreezeFake<GoogleWrapper>()
+                .ExecuteAsync(fixture.FreezeFake<CreateRequest>(), cancellationToken))
+                .Returns(fixture.FreezeFake<Permission>());
+
+            var result = await service.CreatePublicReaderPermissionAsync(resourceId, cancellationToken);
+
+            result.Should().BeSuccess().And.HaveValue(fixture.FreezeFake<Permission>());
+        }
+
+        [Fact]
+        public async Task GivenErrorWhenCreatingPermissionShouldReturnFailResult()
+        {
+            const string ERROR_MESSAGE = "some error";
+
+            A.CallTo(() => fixture
+                .FreezeFake<GoogleWrapper>()
+                .ExecuteAsync(fixture.FreezeFake<CreateRequest>(), cancellationToken))
+                .Returns(Result.Fail(ERROR_MESSAGE));
+
+            var result = await service.CreatePublicReaderPermissionAsync(resourceId, cancellationToken);
+
+            result.Should().BeFailure().And.HaveError(ERROR_MESSAGE);
+        }
+    }
+
     public class CreateUserReaderPermissionAsync : GoogleDrivePermissionsServiceTests
     {
         private readonly string email;

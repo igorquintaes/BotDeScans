@@ -5,6 +5,7 @@ using FluentAssertions.Execution;
 using FluentResults;
 using Google.Apis.Download;
 using Google.Apis.Drive.v3;
+using Google.Apis.Drive.v3.Data;
 using static Google.Apis.Drive.v3.FilesResource;
 using File = Google.Apis.Drive.v3.Data.File;
 
@@ -194,6 +195,11 @@ public class GoogleDriveFilesServiceTests : UnitTest
                 .FreezeFake<GoogleWrapper>()
                 .UploadAsync(fixture.FreezeFake<CreateMediaUpload>(), cancellationToken))
                 .Returns(fixture.FreezeFake<File>());
+
+            A.CallTo(() => fixture
+                .FreezeFake<GoogleDrivePermissionsService>()
+                .CreatePublicReaderPermissionAsync(fixture.FreezeFake<File>().Id, cancellationToken))
+                .Returns(fixture.FreezeFake<Permission>());
         }
 
         [Fact]
@@ -220,6 +226,32 @@ public class GoogleDriveFilesServiceTests : UnitTest
             var result = await service.UploadAsync(filePath, parentId, cancellationToken);
 
             result.Should().BeFailure().And.HaveError("some error");
+        }
+
+        [Fact]
+        public async Task GivenSuccessfulUploadShouldCreatePublicPermission()
+        {
+            await service.UploadAsync(filePath, parentId, cancellationToken);
+
+            A.CallTo(() => fixture
+                .FreezeFake<GoogleDrivePermissionsService>()
+                .CreatePublicReaderPermissionAsync(fixture.FreezeFake<File>().Id, cancellationToken))
+                .MustHaveHappenedOnceExactly();
+        }
+
+        [Fact]
+        public async Task GivenErrorToCreatePermissionShouldReturnFailResult()
+        {
+            const string ERROR_MESSAGE = "some permission error";
+
+            A.CallTo(() => fixture
+                .FreezeFake<GoogleDrivePermissionsService>()
+                .CreatePublicReaderPermissionAsync(fixture.FreezeFake<File>().Id, cancellationToken))
+                .Returns(Result.Fail(ERROR_MESSAGE));
+
+            var result = await service.UploadAsync(filePath, parentId, cancellationToken);
+
+            result.Should().BeFailure().And.HaveError(ERROR_MESSAGE);
         }
     }
 

@@ -34,6 +34,15 @@ public class GoogleDrivePermissionsService(
             ?? permissionsResult.ToResult();
     }
 
+    public virtual Task<Result<Permission>> CreatePublicReaderPermissionAsync(
+        string resourceId,
+        CancellationToken cancellationToken)
+    {
+        var permission = new Permission { Type = PUBLIC_PERMISSION_TYPE, Role = READER_ROLE };
+        var createRequest = driveService.Permissions.Create(permission, resourceId);
+        return googleWrapper.ExecuteAsync(createRequest, cancellationToken);
+    }
+
     public virtual Task<Result<Permission>> CreateUserReaderPermissionAsync(
         string email,
         string resourceId,

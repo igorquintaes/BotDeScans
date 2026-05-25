@@ -10,6 +10,7 @@ namespace BotDeScans.App.Features.GoogleDrive.InternalServices;
 public class GoogleDriveFilesService(
     DriveService driveService,
     GoogleDriveResourcesService googleDriveResourcesService,
+    GoogleDrivePermissionsService googleDrivePermissionsService,
     FileService fileService,
     StreamWrapper streamWrapper,
     GoogleWrapper googleWrapper)
@@ -57,20 +58,20 @@ public class GoogleDriveFilesService(
         var mimeType = fileService.GetMimeType(filePath);
         var fileName = Path.GetFileName(filePath);
         var file = googleDriveResourcesService.CreateResourceObject(mimeType, fileName, parentId);
-        file.Permissions =
-        [
-            new()
-            {
-                Type = "anyone",
-                Role = "reader"
-            }
-        ];
 
         await using var stream = streamWrapper.CreateFileStream(filePath, FileMode.Open);
         var uploadRequest = driveService.Files.Create(file, stream, mimeType);
         uploadRequest.Fields = "webViewLink, id";
 
-        return await googleWrapper.UploadAsync(uploadRequest, cancellationToken);
+        var uploadResult = await googleWrapper.UploadAsync(uploadRequest, cancellationToken);
+        if (uploadResult.IsFailed)
+            return uploadResult;
+
+        var permissionResult = await googleDrivePermissionsService.CreatePublicReaderPermissionAsync(uploadResult.Value.Id, cancellationToken);
+        if (permissionResult.IsFailed)
+            return permissionResult.ToResult();
+
+        return uploadResult;
     }
 
     public virtual async Task<Result<File>> UpdateAsync(
@@ -80,19 +81,7 @@ public class GoogleDriveFilesService(
     {
         await using var stream = streamWrapper.CreateFileStream(filePath, FileMode.Open);
         var mimeType = fileService.GetMimeType(filePath);
-        var file = new File
-        {
-            Permissions =
-            [
-                new()
-                {
-                    Type = "anyone",
-                    Role = "reader"
-                }
-            ]
-        };
-
-        var uploadRequest = driveService.Files.Update(file, oldFileId, stream, mimeType);
+        var uploadRequest = driveService.Files.Update(new(), oldFileId, stream, mimeType);
         uploadRequest.Fields = "webViewLink, id";
 
         return await googleWrapper.UploadAsync(uploadRequest, cancellationToken);
