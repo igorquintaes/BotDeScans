@@ -113,12 +113,14 @@ public class Program
 
     private static void LogErrors(Result result)
     {
-        var errorAsJson = JsonSerializer.Serialize(result.Errors);
+        var errorsInfo = result.Errors.GetErrorsInfo().Select(x => x.Message);
+        var errorsText = string.Join("; ", errorsInfo);
+
         var defaultConsoleForegroundColor = Console.ForegroundColor;
         Console.ForegroundColor = ConsoleColor.Red;
 
-        Console.WriteLine(errorAsJson);
-        Log.Error(errorAsJson);
+        Console.WriteLine(errorsText);
+        Log.Error(errorsText);
 
         Console.ForegroundColor = defaultConsoleForegroundColor;
         Console.ReadLine();

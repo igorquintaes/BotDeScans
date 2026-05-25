@@ -42,8 +42,9 @@ public class GoogleWrapper
                          .CausedBy(result.Value.Exception))
                          .ToResult();
 
+        var uploadStatus = result.ValueOrDefault?.Status.ToString() ?? "unknown";
         return result.WithError(new Error(ERROR_DETAILS_MESSAGE))
-                     .WithError(new Error($"UploadStatus: {result.Value.Status}"))
+                     .WithError(new Error($"UploadStatus: {uploadStatus}"))
                      .ToResult();
     }
 }

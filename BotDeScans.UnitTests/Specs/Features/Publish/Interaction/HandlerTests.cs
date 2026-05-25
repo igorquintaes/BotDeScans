@@ -93,7 +93,7 @@ public class HandlerTests : UnitTest
         {
             await handler.ExecuteAsync(testState, cancellationToken);
 
-            // initial tracking call + 2 management + 2 validation + 2 publish = 6 synchronized calls
+            // initial tracking call + 2 management + 2 validation + 2 publish = 7 synchronized calls
             A.CallTo(() => fixture
                 .FreezeFake<DiscordPublisher>()
                 .SynchronizedUpdateTrackingMessageAsync(A<State>._, cancellationToken))
