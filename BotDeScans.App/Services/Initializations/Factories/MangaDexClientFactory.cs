@@ -41,7 +41,15 @@ public class MangaDexClientFactory(
         var me = await mangaDex.User.Me(accessToken.Value);
         if (me.ErrorOccurred)
         {
-            var errors = me.Errors.Select(x => $"{x.Status} {x.Title}: {x.Detail}");
+            var errorResult = new Result();
+            var response = me.Response ?? "No response. ";
+            var data = me.Result ?? "No result. ";
+            var errors = me.Errors
+               .Select(x => $"{x.Status} {x.Title}: {x.Detail}")
+               .Append($"Response: {response}")
+               .Append($"Data: {data}")
+               .ToList();
+
             return Result.Fail(errors);
         }
 

@@ -15,7 +15,6 @@ using Microsoft.Extensions.Logging;
 using Remora.Discord.Interactivity.Extensions;
 using Serilog;
 using System.Diagnostics.CodeAnalysis;
-using System.Text.Json;
 
 namespace BotDeScans.App;
 
@@ -31,6 +30,8 @@ public class Program
             cts.Cancel();
             @event.Cancel = true;
         };
+
+        Console.WriteLine("Starting...");
 
         var host = Host
             .CreateDefaultBuilder(args)
@@ -68,30 +69,33 @@ public class Program
         var warmupResult = Result.Ok();
         using (var scope = host.Services.CreateScope())
         {
+            Console.WriteLine("Database Warming Up...");
             if (File.Exists(DatabaseContext.DbPath) is false)
                 File.WriteAllBytes(DatabaseContext.DbPath, []);
 
             var db = scope.ServiceProvider.GetRequiredService<DatabaseContext>();
             await db.Database.MigrateAsync(cts.Token);
+            Console.WriteLine("Database OK!");
 
-            var validationsResult = Result.Ok();
-
+            Console.WriteLine("Discord Validation Warming Up...");
             // todo: abstrair lógica em dois métodos (validação/execução), dentro de classe isolada para warmup
             var setupDiscordService = scope.ServiceProvider.GetRequiredService<SetupDiscordService>();
             var setupDiscordValidator = scope.ServiceProvider.GetRequiredService<IValidator<SetupDiscordService>>();
             var setupDiscordValidationResult = await setupDiscordValidator.ValidateAsync(setupDiscordService, cts.Token);
             if (setupDiscordValidationResult.IsValid is false)
-                validationsResult.WithErrors(setupDiscordValidationResult.ToResult().Errors);
+                warmupResult.WithErrors(setupDiscordValidationResult.ToResult().Errors);
 
-            if (validationsResult.IsFailed)
+            Console.WriteLine("Discord Validation OK!");
+            if (warmupResult.IsFailed)
             {
                 LogErrors(warmupResult);
                 return;
             }
 
-
+            Console.WriteLine("Discord Commands Updating...");
             var discordUpdateResult = await setupDiscordService.SetupAsync(cts.Token);
             warmupResult.WithReasons(discordUpdateResult.Reasons);
+            Console.WriteLine("Discord Commands Updated OK!");
 
             var setupClientsService = scope.ServiceProvider.GetRequiredService<SetupStepsService>();
             var setupClientsResult = setupClientsService.Setup();

@@ -77,8 +77,8 @@ public class SetupDiscordServiceValidator : AbstractValidator<SetupDiscordServic
         var rolesResult = await rolesService.GetRoleAsync(roleValue, cancellationToken);
         if (rolesResult.IsSuccess)
             return true;
-
+        
         context.AddFailure(rolesResult.ToValidationErrorMessage());
-        return true;
+        return false;
     }
 }

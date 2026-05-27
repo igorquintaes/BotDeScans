@@ -102,18 +102,10 @@ public class GoogleDriveFilesService(
             cancellationToken);
 
         var executionStatus = executionResult.ValueOrDefault?.Status ?? DownloadStatus.Failed;
-        var executionMessage = string.Format(DOWNLOAD_STATUS, executionStatus, fileName);
+        IReason executionReason = executionResult.IsSuccess
+            ? new Success(string.Format(DOWNLOAD_STATUS, executionStatus, fileName))
+            : new Error(string.Format(DOWNLOAD_STATUS, executionStatus, fileName));
 
-        if (executionResult.IsSuccess && executionStatus == DownloadStatus.Completed)
-            return executionResult
-                .ToResult()
-                .WithSuccess(executionMessage);
-
-        var executionException = executionResult.ValueOrDefault?.Exception;
-        var error = executionException is null
-            ? new Error(executionMessage)
-            : new Error(executionMessage).CausedBy(executionException);
-
-        return executionResult.ToResult().WithError(error);
+        return executionResult.ToResult().WithReason(executionReason);
     }
 }
