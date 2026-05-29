@@ -1,8 +1,6 @@
 ﻿using BotDeScans.App.Services;
 using Microsoft.Extensions.Configuration;
-using SixLabors.ImageSharp;
-using SixLabors.ImageSharp.PixelFormats;
-using SixLabors.ImageSharp.Processing;
+using SkiaSharp;
 using System.Reflection;
 
 namespace BotDeScans.UnitTests.Specs.Services;
@@ -23,56 +21,44 @@ public class ImageServiceTests : UnitTest, IDisposable
 
     public class IsGrayscale : ImageServiceTests
     {
-        private static readonly Color grey = Color.FromPixel(new Rgba32(5, 5, 5));
-        private static readonly Color notGrey = Color.FromPixel(new Rgba32(5, 5, 6));
+        private static readonly SKColor grey = new SKColor(5, 5, 5);
+        private static readonly SKColor notGrey = new SKColor(5, 5, 6);
 
         [Fact]
-        public async Task GivenGreyImageShouldReturnTrue()
+        public void GivenGreyImageShouldReturnTrue()
         {
-            using (var image = new Image<Rgba32>(1, 1))
-            {
-                image.Mutate(x => x.BackgroundColor(grey));
-                await image.SaveAsync(imagePath, cancellationToken);
-            }
+            SaveImage(imagePath, 1, 1, grey);
 
             service.IsGrayscale(imagePath, threshold: 0)
                    .Should().BeTrue();
         }
 
         [Fact]
-        public async Task GivenNotAGreyImageShouldReturnFalse()
+        public void GivenNotAGreyImageShouldReturnFalse()
         {
-            using (var image = new Image<Rgba32>(1, 1))
-            {
-                image.Mutate(x => x.BackgroundColor(notGrey));
-                await image.SaveAsync(imagePath, cancellationToken);
-            }
+            SaveImage(imagePath, 1, 1, notGrey);
 
             service.IsGrayscale(imagePath, threshold: 0)
                    .Should().BeFalse();
         }
 
         [Fact]
-        public async Task GivenNotAGreyImageButInsideThresholdDifferenteShouldReturnTrue()
+        public void GivenNotAGreyImageButInsideThresholdDifferenteShouldReturnTrue()
         {
-            using (var image = new Image<Rgba32>(1, 1))
-            {
-                image.Mutate(x => x.BackgroundColor(notGrey));
-                await image.SaveAsync(imagePath, cancellationToken);
-            }
+            SaveImage(imagePath, 1, 1, notGrey);
 
             service.IsGrayscale(imagePath, threshold: 2)
                    .Should().BeTrue();
         }
 
         [Fact]
-        public async Task GivenImageWithGreyAndColouredPixelsShouldReturnFalse()
+        public void GivenImageWithGreyAndColouredPixelsShouldReturnFalse()
         {
-            using (var image = new Image<Rgba32>(2, 1))
+            using (var bitmap = new SKBitmap(2, 1))
             {
-                image.Mutate(x => x.BackgroundColor(grey, new Rectangle(0, 0, 1, 1)));
-                image.Mutate(x => x.BackgroundColor(notGrey, new Rectangle(1, 0, 1, 1)));
-                await image.SaveAsync(imagePath, cancellationToken);
+                bitmap.SetPixel(0, 0, grey);
+                bitmap.SetPixel(1, 0, notGrey);
+                SaveBitmap(imagePath, bitmap);
             }
 
             service.IsGrayscale(imagePath, threshold: 0)
@@ -88,11 +74,7 @@ public class ImageServiceTests : UnitTest, IDisposable
         public async Task GivenImageShouldGenerateBase64ImageAsExpected(bool isGrayScale)
         {
             const string expectedResult = "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAMAAAAoyzS7AAAAA1BMVEUFBQWsrP/7AAAACklEQVR4nGNgAAAAAgABSK+kcQAAAABJRU5ErkJggg==";
-            using (var image = new Image<Rgba32>(1, 1))
-            {
-                image.Mutate(x => x.BackgroundColor(Color.FromPixel(new Rgba32(5, 5, 5))));
-                await image.SaveAsync(imagePath, cancellationToken);
-            }
+            SaveImage(imagePath, 1, 1, new SKColor(5, 5, 5));
 
             var result = await service.CreateBase64StringAsync(imagePath, 1, 1, isGrayScale, cancellationToken);
             result.Should().Be(expectedResult);
@@ -106,11 +88,7 @@ public class ImageServiceTests : UnitTest, IDisposable
         [InlineData(false)]
         public async Task GivenImageShouldCompress(bool isGrayScale)
         {
-            using (var image = new Image<Rgba32>(100, 100))
-            {
-                image.Mutate(x => x.BackgroundColor(Color.FromPixel(new Rgba32(5, 5, 5))));
-                await image.SaveAsync(imagePath, cancellationToken);
-            }
+            SaveImage(imagePath, 100, 100, new SKColor(5, 5, 5));
 
             var oldFileBytes = File.ReadAllBytes(imagePath);
 
@@ -124,16 +102,27 @@ public class ImageServiceTests : UnitTest, IDisposable
         public async Task GivenNotAPngImageShouldDeleteOriginalFile()
         {
             var jpgImagePath = Path.ChangeExtension(imagePath, ".jpg");
-            using (var image = new Image<Rgba32>(1, 1))
-            {
-                image.Mutate(x => x.BackgroundColor(Color.FromPixel(new Rgba32(5, 5, 5))));
-                await image.SaveAsync(jpgImagePath, cancellationToken);
-            }
+            SaveImage(jpgImagePath, 1, 1, new SKColor(5, 5, 5));
 
             await service.CompressImageAsync(jpgImagePath, default, cancellationToken);
 
             File.Exists(jpgImagePath).Should().BeFalse();
         }
+    }
+
+    private static void SaveImage(string path, int width, int height, SKColor color)
+    {
+        using var bitmap = new SKBitmap(width, height);
+        bitmap.Erase(color);
+        SaveBitmap(path, bitmap);
+    }
+
+    private static void SaveBitmap(string path, SKBitmap bitmap)
+    {
+        using var image = SKImage.FromBitmap(bitmap);
+        using var data = image.Encode(SKEncodedImageFormat.Png, 100);
+        using var stream = File.Create(path);
+        data.SaveTo(stream);
     }
 
     public void Dispose()

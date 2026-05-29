@@ -1,7 +1,6 @@
 ﻿using BotDeScans.App.Models.DTOs;
 using BotDeScans.App.Services;
-using SixLabors.ImageSharp;
-using SixLabors.ImageSharp.PixelFormats;
+using SkiaSharp;
 using System.Globalization;
 using System.Reflection;
 
@@ -19,14 +18,14 @@ public class ChartServiceTests : UnitTest
             var service = new ChartService();
             var data = new ConsumptionData(500, 100);
             using var resultChartStream = service.CreatePieChart(data);
-            using var resultChartImage = Image.Load<Rgba32>(resultChartStream);
+            using var resultChartImage = SKBitmap.Decode(resultChartStream);
 
             var expectedImagePath = Path.Combine(
                 Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)!,
                 "Resources",
                 "chart.png");
 
-            using var expectedChartImage = Image.Load<Rgba32>(expectedImagePath);
+            using var expectedChartImage = SKBitmap.Decode(expectedImagePath);
 
             resultChartImage.Width.Should().Be(expectedChartImage.Width);
             resultChartImage.Height.Should().Be(expectedChartImage.Height);
@@ -41,8 +40,8 @@ public class ChartServiceTests : UnitTest
             {
                 for (int y = 0; y < resultChartImage.Height; y++)
                 {
-                    var resultPixel = resultChartImage[x, y];
-                    var expectedPixel = expectedChartImage[x, y];
+                    var resultPixel = resultChartImage.GetPixel(x, y);
+                    var expectedPixel = expectedChartImage.GetPixel(x, y);
 
                     if (!ArePixelsSimilar(resultPixel, expectedPixel, colorTolerance))
                     {
@@ -56,12 +55,12 @@ public class ChartServiceTests : UnitTest
                 because: $"{differentPixels} pixels are different a total of {totalPixels} pixels ({differencePercentage:P2})");
         }
 
-        private static bool ArePixelsSimilar(Rgba32 pixel1, Rgba32 pixel2, int tolerance)
+        private static bool ArePixelsSimilar(SKColor pixel1, SKColor pixel2, int tolerance)
         {
-            return Math.Abs(pixel1.R - pixel2.R) <= tolerance &&
-                   Math.Abs(pixel1.G - pixel2.G) <= tolerance &&
-                   Math.Abs(pixel1.B - pixel2.B) <= tolerance &&
-                   Math.Abs(pixel1.A - pixel2.A) <= tolerance;
+            return Math.Abs(pixel1.Red - pixel2.Red) <= tolerance &&
+                   Math.Abs(pixel1.Green - pixel2.Green) <= tolerance &&
+                   Math.Abs(pixel1.Blue - pixel2.Blue) <= tolerance &&
+                   Math.Abs(pixel1.Alpha - pixel2.Alpha) <= tolerance;
         }
     }
 }
