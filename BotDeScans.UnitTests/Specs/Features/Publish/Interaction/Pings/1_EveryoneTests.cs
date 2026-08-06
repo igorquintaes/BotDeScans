@@ -42,7 +42,7 @@ public class EveryoneTests : UnitTest
         [Fact]
         public async Task ShouldReturnExpectedText()
         {
-            var result = await ping.GetPingAsTextAsync(cancellationToken);
+            var result = await ping.GetPingAsTextAsync(null!, cancellationToken);
 
             result.Should()
                   .BeSuccess().And

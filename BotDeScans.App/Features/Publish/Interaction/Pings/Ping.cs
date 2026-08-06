@@ -13,5 +13,5 @@ public abstract class Ping(IConfiguration configuration)
 
     public virtual bool IsApplicable => configuration.GetValue(PING_TYPE_KEY, PingType.None) == Type;
 
-    public abstract Task<Result<string>> GetPingAsTextAsync(CancellationToken cancellationToken);
+    public abstract Task<Result<string>> GetPingAsTextAsync(State state, CancellationToken cancellationToken);
 }

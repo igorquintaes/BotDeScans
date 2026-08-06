@@ -59,7 +59,7 @@ public class GoogleDriveFilesService(
         var fileName = Path.GetFileName(filePath);
         var file = googleDriveResourcesService.CreateResourceObject(mimeType, fileName, parentId);
 
-        await using var stream = streamWrapper.CreateFileStream(filePath, FileMode.Open);
+        await using var stream = streamWrapper.CreateFileStream(filePath, FileMode.Open, FileShare.Read);
         var uploadRequest = driveService.Files.Create(file, stream, mimeType);
         uploadRequest.Fields = "webViewLink, id";
 
@@ -79,7 +79,7 @@ public class GoogleDriveFilesService(
         string oldFileId,
         CancellationToken cancellationToken = default)
     {
-        await using var stream = streamWrapper.CreateFileStream(filePath, FileMode.Open);
+        await using var stream = streamWrapper.CreateFileStream(filePath, FileMode.Open, FileShare.Read);
         var mimeType = fileService.GetMimeType(filePath);
         var uploadRequest = driveService.Files.Update(new(), oldFileId, stream, mimeType);
         uploadRequest.Fields = "webViewLink, id";

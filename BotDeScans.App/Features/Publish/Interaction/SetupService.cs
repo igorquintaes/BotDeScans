@@ -38,7 +38,7 @@ public class SetupService(
             return initialValidation.ToResult();
 
         var ping = pings.Single(x => x.IsApplicable);
-        var pingAsTextResult = await ping.GetPingAsTextAsync(cancellationToken);
+        var pingAsTextResult = await ping.GetPingAsTextAsync(state, cancellationToken);
 
         return pingAsTextResult.IsSuccess
              ? pingAsTextResult.Map(_ => state with { PingText = pingAsTextResult.Value })
