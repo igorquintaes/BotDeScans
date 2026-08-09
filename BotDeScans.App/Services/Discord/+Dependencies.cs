@@ -23,7 +23,11 @@ internal static class AddDependencies
         .AddScoped<ScopedRoleCache>()
         .AddScoped<ExtendedFeedbackService>();
 
-    internal static IHostBuilder AddDiscordToHost(this IHostBuilder hostBuilder) => hostBuilder
-        .AddDiscordService(services => services
-        .GetRequiredService<IConfiguration>().GetRequiredValue<string>("Discord:Token"));
+    internal static IHostBuilder AddDiscordToHost(
+        this IHostBuilder hostBuilder,
+        Action<IHttpClientBuilder>? buildClient = null) => hostBuilder
+        .AddDiscordService(
+            services => services
+                .GetRequiredService<IConfiguration>().GetRequiredValue<string>("Discord:Token"),
+            buildClient ?? (_ => { }));
 }

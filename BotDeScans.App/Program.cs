@@ -97,11 +97,14 @@ public class Program
         await host.RunAsync();
     }
 
-    public static IHostBuilder CreateHostBuilder(string[] args, bool enableDiscord = true)
+    public static IHostBuilder CreateHostBuilder(
+        string[] args,
+        bool enableDiscord = true,
+        Action<IHttpClientBuilder>? buildDiscordClient = null)
     {
         var hostBuilder = Host.CreateDefaultBuilder(args);
         if (enableDiscord)
-            hostBuilder.AddDiscordToHost();
+            hostBuilder.AddDiscordToHost(buildDiscordClient);
 
         return hostBuilder
             .AddLoggingToHost()
@@ -118,11 +121,11 @@ public class Program
                     services.AddInteractivity();
             })
             .ConfigureAppConfiguration(config => config
-                .AddEnvironmentVariables()
                 .AddJsonFile("config.json", optional: true, reloadOnChange: true)
                 .AddJsonFile("config.local.json", optional: true, reloadOnChange: true)
                 .AddJsonFile(Path.Combine("config", "config.json"), optional: true, reloadOnChange: true)
-                .AddJsonFile(Path.Combine("config", "config.local.json"), optional: true, reloadOnChange: true))
+                .AddJsonFile(Path.Combine("config", "config.local.json"), optional: true, reloadOnChange: true)
+                .AddEnvironmentVariables())
             .UseConsoleLifetime();
     }
 
