@@ -6,7 +6,6 @@ using Microsoft.Extensions.Configuration;
 namespace BotDeScans.App.Features.Publish.Interaction.Pings;
 
 public class GlobalPing(
-    State state,
     RolesService rolesService,
     IConfiguration configuration) : Ping(configuration)
 {
@@ -14,7 +13,7 @@ public class GlobalPing(
 
     protected override PingType Type => PingType.Global;
 
-    public override async Task<Result<string>> GetPingAsTextAsync(CancellationToken cancellationToken)
+    public override async Task<Result<string>> GetPingAsTextAsync(State state,CancellationToken cancellationToken)
     {
         var globalRoleName = configuration.GetRequiredValue<string>(GLOBAL_ROLE_KEY);
         var globalRoleAsPingResult = await rolesService.GetRoleAsync(globalRoleName, cancellationToken);

@@ -69,7 +69,7 @@ public class RoleTests : UnitTest
         {
             var expectedText = $"<@&{titleRoleId.Value}>";
 
-            var result = await ping.GetPingAsTextAsync(cancellationToken);
+            var result = await ping.GetPingAsTextAsync(null!, cancellationToken);
             result.Should().BeSuccess().And.HaveValue(expectedText);
         }
 
@@ -85,7 +85,7 @@ public class RoleTests : UnitTest
                     cancellationToken))
                 .Returns(Result.Fail(ERROR_MESSAGE));
 
-            var result = await ping.GetPingAsTextAsync(cancellationToken);
+            var result = await ping.GetPingAsTextAsync(null!, cancellationToken);
             result.Should().BeFailure().And.HaveError(ERROR_MESSAGE);
         }
     }

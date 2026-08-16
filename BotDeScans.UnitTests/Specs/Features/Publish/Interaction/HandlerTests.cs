@@ -131,6 +131,18 @@ public class HandlerTests : UnitTest
         }
 
         [Fact]
+        public async Task GivenIOExceptionDuringParallelPublishExecutionShouldReturnFailResult()
+        {
+            A.CallTo(() => publishStep1.ExecuteAsync(A<State>.Ignored, cancellationToken))
+                .Throws(new IOException("file is in use"));
+
+            var result = await handler.ExecuteAsync(testState, cancellationToken);
+
+            result.Should().BeFailure().And.HaveError("Fatal error occurred. More information inside log file.");
+            A.CallTo(() => publishStep2.ExecuteAsync(A<State>.Ignored, cancellationToken)).MustNotHaveHappened();
+        }
+
+        [Fact]
         public async Task GivenErrorUpdateTrackingMessageShouldReturnFailResult()
         {
             const string ERROR_MESSAGE = "some error message";
@@ -141,6 +153,27 @@ public class HandlerTests : UnitTest
 
             var result = await handler.ExecuteAsync(testState, cancellationToken);
             result.Should().BeFailure().And.HaveError(ERROR_MESSAGE);
+        }
+
+        [Fact]
+        public async Task GivenExceptionDuringParallelTrackingUpdateShouldReturnFailResult()
+        {
+            var updateCount = 0;
+            A.CallTo(() => fixture
+                .FreezeFake<DiscordPublisher>()
+                .SynchronizedUpdateTrackingMessageAsync(A<State>._, cancellationToken))
+                .ReturnsLazily((State currentState, CancellationToken _) =>
+                {
+                    if (++updateCount == 6)
+                        throw new IOException("tracking error");
+
+                    return Result.Ok(currentState);
+                });
+
+            var result = await handler.ExecuteAsync(testState, cancellationToken);
+
+            result.Should().BeFailure().And.HaveError("Fatal error occurred. More information inside log file.");
+            A.CallTo(() => publishStep2.ExecuteAsync(A<State>.Ignored, cancellationToken)).MustNotHaveHappened();
         }
 
         [Fact]

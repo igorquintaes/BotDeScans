@@ -7,6 +7,6 @@ public class EveryonePing(IConfiguration configuration) : Ping(configuration)
 {
     protected override PingType Type => PingType.Everyone;
 
-    public override Task<Result<string>> GetPingAsTextAsync(CancellationToken cancellationToken) =>
+    public override Task<Result<string>> GetPingAsTextAsync(State state, CancellationToken cancellationToken) =>
         Task.FromResult(Result.Ok("@everyone"));
 }

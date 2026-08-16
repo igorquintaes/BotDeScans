@@ -23,7 +23,7 @@ public class ParallelStepRunner(DiscordPublisher discordPublisher)
         var tracker = new ParallelStepsTracker(state, discordPublisher.SynchronizedUpdateTrackingMessageAsync);
 
         var results = await Task.WhenAll(
-            items.Select(item => ExecuteStepAsync((item.Step, item.Info), state, tracker, cancellationToken)));
+            items.Select(item => ExecuteStepSafelyAsync((item.Step, item.Info), state, tracker, cancellationToken)));
 
         var aggregateResult = Result.Merge([
             currentResult,
@@ -58,7 +58,7 @@ public class ParallelStepRunner(DiscordPublisher discordPublisher)
 
             var results = await Task.WhenAll(
                 groupItems.Select(item =>
-                    ExecuteStepAsync((item.Step, item.Info), state, tracker, cancellationToken)));
+                    ExecuteStepSafelyAsync((item.Step, item.Info), state, tracker, cancellationToken)));
 
             foreach (var stepResult in results)
                 aggregate = Result.Merge(aggregate, stepResult);
@@ -76,6 +76,27 @@ public class ParallelStepRunner(DiscordPublisher discordPublisher)
         }
 
         return (aggregate, state);
+    }
+
+    private static async Task<Result> ExecuteStepSafelyAsync(
+        (IStep Step, StepInfo Info) data,
+        State initialState,
+        ParallelStepsTracker tracker,
+        CancellationToken cancellationToken)
+    {
+        try
+        {
+            return await ExecuteStepAsync(data, initialState, tracker, cancellationToken);
+        }
+        catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
+        {
+            throw;
+        }
+        catch (Exception ex)
+        {
+            Log.Error(ex, "Publish step '{StepName}' failed with an unhandled exception.", data.Step.Name);
+            return Result.Fail(new Error("Fatal error occurred. More information inside log file.").CausedBy(ex));
+        }
     }
 
     // Executes the step without a lock (the slow part), then atomically merges its output
@@ -100,7 +121,12 @@ public class ParallelStepRunner(DiscordPublisher discordPublisher)
             result.IsSuccess ? "Success" : "Failure");
 
         var stepSnapshot = result.IsSuccess ? result.Value : initialState;
-        await tracker.ApplyAndNotifyAsync(result.ToResult(), data.Step, stepSnapshot, cancellationToken);
-        return result.ToResult();
+        var trackingResult = await tracker.SafeCallAsync(x => x.ApplyAndNotifyAsync(
+            result.ToResult(),
+            data.Step,
+            stepSnapshot,
+            cancellationToken));
+
+        return Result.Merge(result.ToResult(), trackingResult);
     }
 }

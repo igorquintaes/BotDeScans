@@ -25,7 +25,7 @@ public class MegaFilesService(
 
     public virtual async Task<Uri> UploadAsync(string filePath, INode parentNode, CancellationToken cancellationToken)
     {
-        await using var stream = streamWrapper.CreateFileStream(filePath, FileMode.Open);
+        await using var stream = streamWrapper.CreateFileStream(filePath, FileMode.Open, FileShare.Read);
 
         var newFile = await megaApiClient.UploadAsync(
             stream,

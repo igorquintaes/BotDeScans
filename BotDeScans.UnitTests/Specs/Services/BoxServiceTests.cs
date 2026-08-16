@@ -334,7 +334,7 @@ public class BoxServiceTests : UnitTest
 
             A.CallTo(() => fixture
                 .FreezeFake<StreamWrapper>()
-                .CreateFileStream(filePath, FileMode.Open))
+                .CreateFileStream(filePath, FileMode.Open, FileShare.Read))
                 .Returns(stream);
         }
         [Fact]
@@ -410,7 +410,7 @@ public class BoxServiceTests : UnitTest
 
             A.CallTo(() => fixture
                 .FreezeFake<StreamWrapper>()
-                .CreateFileStream(filePath, FileMode.Open))
+                .CreateFileStream(filePath, FileMode.Open, FileShare.Read))
                 .MustHaveHappenedOnceExactly();
         }
 

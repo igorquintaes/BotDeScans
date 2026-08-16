@@ -107,7 +107,7 @@ public class SetupServiceTests : UnitTest
 
             A.CallTo(() => fixture
                 .FreezeFake<Ping>()
-                .GetPingAsTextAsync(cancellationToken))
+                .GetPingAsTextAsync(null!, cancellationToken))
                 .Returns(ping);
 
             var result = await service.SetupAsync(fixture.Create<Info>(), cancellationToken);

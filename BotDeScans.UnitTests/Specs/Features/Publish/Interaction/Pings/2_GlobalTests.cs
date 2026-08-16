@@ -80,7 +80,7 @@ public class GlobalTests : UnitTest
         {
             var expectedText = $"<@&{globalRoleId.Value}>, <@&{titleRoleId.Value}>";
 
-            var result = await ping.GetPingAsTextAsync(cancellationToken);
+            var result = await ping.GetPingAsTextAsync(null!, cancellationToken);
             result.Should().BeSuccess().And.HaveValue(expectedText);
         }
 
@@ -97,7 +97,7 @@ public class GlobalTests : UnitTest
                     Result.Fail(ERROR_MESSAGE),
                     Result.Ok(titleRole));
 
-            var result = await ping.GetPingAsTextAsync(cancellationToken);
+            var result = await ping.GetPingAsTextAsync(null!, cancellationToken);
             result.Should().BeFailure().And.HaveError(ERROR_MESSAGE);
         }
 
@@ -116,7 +116,7 @@ public class GlobalTests : UnitTest
                     Result.Ok(globalRole),
                     Result.Fail(ERROR_MESSAGE));
 
-            var result = await ping.GetPingAsTextAsync(cancellationToken);
+            var result = await ping.GetPingAsTextAsync(null!, cancellationToken);
             result.Should().BeFailure().And.HaveError(ERROR_MESSAGE);
         }
 
@@ -133,7 +133,7 @@ public class GlobalTests : UnitTest
                     Result.Ok(A.Fake<IRole>()).WithReason(new Success(REASON_1)),
                     Result.Ok(A.Fake<IRole>()).WithReason(new Success(REASON_2)));
 
-            var result = await ping.GetPingAsTextAsync(cancellationToken);
+            var result = await ping.GetPingAsTextAsync(null!, cancellationToken);
 
             result.Should().BeSuccess()
                   .And.HaveReason(REASON_1)
@@ -154,7 +154,7 @@ public class GlobalTests : UnitTest
                     Result.Ok(A.Fake<IRole>()).WithReason(new Success(REASON_1)),
                     Result.Ok(A.Fake<IRole>()).WithReason(new Error(REASON_2)));
 
-            var result = await ping.GetPingAsTextAsync(cancellationToken);
+            var result = await ping.GetPingAsTextAsync(null!, cancellationToken);
 
             result.Should().BeFailure()
                   .And.HaveReason(REASON_1)

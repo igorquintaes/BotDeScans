@@ -48,7 +48,7 @@ public class BoxService(
     {
         var fileName = Path.GetFileName(filePath);
 
-        await using var stream = streamWrapper.CreateFileStream(filePath, FileMode.Open);
+        await using var stream = streamWrapper.CreateFileStream(filePath, FileMode.Open, FileShare.Read);
         var parentField = new UploadFileRequestBodyAttributesParentField(parentFolderId);
         var attributes = new UploadFileRequestBodyAttributesField(fileName, parentField);
         var request = new UploadFileRequestBody(attributes, stream);
