@@ -3,9 +3,7 @@ using BotDeScans.App.Features.Publish.Interaction.Steps;
 using BotDeScans.App.Features.Publish.Interaction.Steps.Enums;
 using BotDeScans.App.Models.Entities.Enums;
 using BotDeScans.App.Services;
-using SixLabors.ImageSharp;
-using SixLabors.ImageSharp.PixelFormats;
-using SixLabors.ImageSharp.Processing;
+using SkiaSharp;
 using System.Reflection;
 
 namespace BotDeScans.UnitTests.Specs.Features.Publish.Interaction.Steps;
@@ -56,9 +54,12 @@ public class CompressFilesStepTests : UnitTest
             var secondFilePath = Path.Combine(resourcesDirectory, "02.png");
             foreach (var filePath in new[] { firstFilePath, secondFilePath })
             {
-                using var image = new Image<Rgba32>(1, 1);
-                image.Mutate(x => x.BackgroundColor(Color.FromPixel(new Rgba32(5, 5, 5))));
-                await image.SaveAsync(filePath, cancellationToken);
+                using var bitmap = new SKBitmap(1, 1);
+                bitmap.Erase(new SKColor(5, 5, 5));
+                using var image = SKImage.FromBitmap(bitmap);
+                using var data = image.Encode(SKEncodedImageFormat.Png, 100);
+                using var stream = File.Create(filePath);
+                data.SaveTo(stream);
             }
 
             var state = new State

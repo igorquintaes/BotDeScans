@@ -4,7 +4,6 @@ using BotDeScans.App.Services.Initializations.Factories.Base;
 using FluentResults;
 using MangaDexSharp;
 using Microsoft.Extensions.Configuration;
-using SixLabors.ImageSharp;
 
 namespace BotDeScans.App.Services.Initializations.Factories;
 

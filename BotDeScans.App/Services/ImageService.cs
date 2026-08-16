@@ -1,8 +1,6 @@
 ﻿using Imageflow.Fluent;
 using Microsoft.Extensions.Configuration;
-using SixLabors.ImageSharp;
-using SixLabors.ImageSharp.Advanced;
-using SixLabors.ImageSharp.PixelFormats;
+using SkiaSharp;
 
 namespace BotDeScans.App.Services;
 
@@ -47,12 +45,12 @@ public class ImageService(IConfiguration configuration)
     /// <returns></returns>
     public virtual bool IsGrayscale(string filePath, int threshold = 20)
     {
-        // Load image
-        using var image = Image.Load<Rgba32>(filePath);
-        foreach (var row in image.GetPixelMemoryGroup())
-            foreach (var pixel in row.Span)
+        using var bitmap = SKBitmap.Decode(filePath);
+        for (var y = 0; y < bitmap.Height; y++)
+            for (var x = 0; x < bitmap.Width; x++)
             {
-                if (GetRgbDelta(pixel.R, pixel.G, pixel.B) > threshold)
+                var pixel = bitmap.GetPixel(x, y);
+                if (GetRgbDelta(pixel.Red, pixel.Green, pixel.Blue) > threshold)
                     return false;
             }
 
