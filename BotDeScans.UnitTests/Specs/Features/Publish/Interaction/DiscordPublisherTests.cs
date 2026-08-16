@@ -57,7 +57,7 @@ public class DiscordPublisherTests : UnitTest, IDisposable
             ChapterInfo = chapterInfo,
             MegaZipLink = "https://mega.nz/sample",
             CoverFilePath = coverFilePath,
-            Pings = "@everyone"
+            PingText = "@everyone"
         };
 
         var fakeStep = A.Fake<IManagementStep>();
@@ -83,7 +83,7 @@ public class DiscordPublisherTests : UnitTest, IDisposable
         GC.SuppressFinalize(this);
     }
 
-    public class UpdateTrackingMessageAsync : DiscordPublisherTests
+    public class SynchronizedUpdateTrackingMessageAsync : DiscordPublisherTests
     {
         [Fact]
         public async Task GivenFirstTrackingUpdateShouldSendContextualEmbed()
@@ -93,7 +93,7 @@ public class DiscordPublisherTests : UnitTest, IDisposable
                 .SendContextualEmbedAsync(A<Embed>.Ignored, A<FeedbackMessageOptions>.Ignored, cancellationToken))
                 .Returns(Remora.Results.Result<IMessage>.FromSuccess(A.Fake<IMessage>()));
 
-            var result = await publisher.UpdateTrackingMessageAsync(state, cancellationToken);
+            var result = await publisher.SynchronizedUpdateTrackingMessageAsync(state, cancellationToken);
 
             result.Should().BeSuccess();
             A.CallTo(() => fixture
@@ -122,8 +122,8 @@ public class DiscordPublisherTests : UnitTest, IDisposable
                 .WithReturnType<Task<Remora.Results.Result<IMessage>>>()
                 .Returns(Remora.Results.Result<IMessage>.FromSuccess(trackedMessage));
 
-            var firstResult = await publisher.UpdateTrackingMessageAsync(state, cancellationToken);
-            await publisher.UpdateTrackingMessageAsync(firstResult.Value, cancellationToken);
+            var firstResult = await publisher.SynchronizedUpdateTrackingMessageAsync(state, cancellationToken);
+            await publisher.SynchronizedUpdateTrackingMessageAsync(firstResult.Value, cancellationToken);
 
             Fake.GetCalls(fixture.FreezeFake<IDiscordRestInteractionAPI>())
                 .Count(call => call.Method.Name == nameof(IDiscordRestInteractionAPI.EditFollowupMessageAsync))
@@ -138,10 +138,10 @@ public class DiscordPublisherTests : UnitTest, IDisposable
                 .SendContextualEmbedAsync(A<Embed>.Ignored, A<FeedbackMessageOptions>.Ignored, cancellationToken))
                 .Returns(Remora.Results.Result<IMessage>.FromError(new Remora.Results.InvalidOperationError("send failed")));
 
-            var result = await publisher.UpdateTrackingMessageAsync(state, cancellationToken);
+            var result = await publisher.SynchronizedUpdateTrackingMessageAsync(state, cancellationToken);
 
             result.Should().BeFailure()
-                .And.HaveError("Error to update Discord message.")
+                .And.HaveError("Error in Discord communication.")
                 .And.HaveError("send failed");
         }
     }

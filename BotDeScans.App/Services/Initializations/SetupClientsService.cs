@@ -17,20 +17,31 @@ public class SetupClientsService(IServiceProvider serviceProvider)
         var aggregatedResult = Result.Ok();
         foreach (var (factory, factoryValidator) in GetEnabledFactoriesData())
         {
+            Console.WriteLine("Validating " + factory.GetType().Name);
             var validationResult = await factoryValidator.ValidateAsync(new ValidationContext<IClientFactory>(factory), cancellationToken);
-            aggregatedResult = aggregatedResult.WithReasons(FluentValidationExtensions.ToResult(validationResult).Reasons);
-            if (aggregatedResult.IsFailed)
+            var validationFluentResult = FluentValidationExtensions.ToResult(validationResult);
+            aggregatedResult = aggregatedResult.WithReasons(validationFluentResult.Reasons);
+            if (validationFluentResult.IsFailed)
+            {
+                aggregatedResult = aggregatedResult.WithError($"Validation failed for {factory.GetType().Name}");
                 continue;
+            }
 
+            Console.WriteLine("Creating " + factory.GetType().Name);
             var clientResult = await factory.SafeCreateObjectAsync(cancellationToken);
             aggregatedResult = aggregatedResult.WithReasons(clientResult.Reasons);
-            if (aggregatedResult.IsFailed)
+            if (clientResult.IsFailed)
+            {
+                aggregatedResult = aggregatedResult.WithError($"Object creation failed for {factory.GetType().Name}");
                 continue;
+            }
 
+            Console.WriteLine("Testing " + factory.GetType().Name);
             var healthCheckResult = await factory.HealthCheckAsync(clientResult.Value, cancellationToken);
             aggregatedResult = aggregatedResult.WithReasons(healthCheckResult.Reasons);
-            if (aggregatedResult.IsFailed)
-                continue;
+            if (healthCheckResult.IsFailed)
+                aggregatedResult = aggregatedResult.WithError($"Health check failed for {factory.GetType().Name}");
+
         }
 
         if (aggregatedResult.IsFailed)

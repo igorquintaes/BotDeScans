@@ -1,6 +1,6 @@
 ﻿{
   Title: {
-    Value: Arquivo deletado com sucesso!,
+    Value: Arquivo 'some file name' excluído com sucesso!,
     HasValue: true
   },
   Colour: {

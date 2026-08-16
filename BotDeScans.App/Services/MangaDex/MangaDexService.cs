@@ -4,6 +4,7 @@ using BotDeScans.App.Services.MangaDex.InternalServices;
 using FluentResults;
 using MangaDexSharp;
 using Microsoft.Extensions.Configuration;
+
 namespace BotDeScans.App.Services.MangaDex;
 
 public partial class MangaDexService(
@@ -21,20 +22,21 @@ public partial class MangaDexService(
             return existingSessionResult.ToResult();
 
         var existingSession = existingSessionResult.ValueOrDefault;
+        var abandonSessionResult = new Result();
         if (string.IsNullOrWhiteSpace(existingSession?.Id) is false)
         {
-            var abandonSessionResult = await mangaDexUploadService.AbandonSessionAsync(existingSession.Id);
+            abandonSessionResult = await mangaDexUploadService.AbandonSessionAsync(existingSession.Id);
             if (abandonSessionResult.IsFailed)
-                return abandonSessionResult;
+                return abandonSessionResult.WithReasons(existingSessionResult.Reasons);
         }
 
         var groupId = configuration.GetRequiredValue<string>("Mangadex:GroupId");
 
-        return await mangaDexUploadService.UploadFilesAsync(
-            filesDirectory,
-            titleId,
-            groupId,
-            info,
-            cancellationToken);
+        var uploadFilesResult = await mangaDexUploadService
+            .UploadFilesAsync(filesDirectory, titleId, groupId, info, cancellationToken);
+
+        return Result.Ok(uploadFilesResult)
+            .WithReasons(existingSessionResult.Reasons)
+            .WithReasons(abandonSessionResult.Reasons);
     }
 }

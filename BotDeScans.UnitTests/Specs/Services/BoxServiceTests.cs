@@ -3,6 +3,7 @@ using BotDeScans.App.Services.Wrappers;
 using Box.Sdk.Gen;
 using Box.Sdk.Gen.Managers;
 using Box.Sdk.Gen.Schemas;
+using FluentResults;
 using Task = System.Threading.Tasks.Task;
 
 namespace BotDeScans.UnitTests.Specs.Services;
@@ -55,7 +56,6 @@ public class BoxServiceTests : UnitTest
         [Fact]
         public async Task GivenExistingFolderShouldReturnIt()
         {
-
             var otherFolder = fixture.CreateCustom<FolderMini>(f => f
                 .With(x => x.Name, fixture.Create<string>()));
 
@@ -75,7 +75,7 @@ public class BoxServiceTests : UnitTest
 
             var result = await service.GetOrCreateFolderAsync(folderName, cancellationToken);
 
-            result.Should().BeEquivalentTo(folderItem.FolderMini);
+            result.Should().BeSuccess().And.HaveValue(folderItem.FolderMini!);
 
             A.CallTo(() => fixture
                 .FreezeFake<IFoldersManager>()
@@ -123,7 +123,8 @@ public class BoxServiceTests : UnitTest
 
             var result = await service.GetOrCreateFolderAsync(folderName, cancellationToken);
 
-            result.Should().BeEquivalentTo(newFolder, options => options.Including(x => x.Name));
+            result.Should().BeSuccess().Which.Value.Should()
+                           .BeEquivalentTo(newFolder, options => options.Including(x => x.Name));
         }
 
         [Fact]
@@ -155,8 +156,8 @@ public class BoxServiceTests : UnitTest
 
             var result = await service.GetOrCreateFolderAsync(folderName, cancellationToken);
 
-            result.Should().Be(firstMatch);
-            result.Id.Should().Be("first-id");
+            result.Should().BeSuccess().And.HaveValue(firstMatch);
+            result.Value.Id.Should().Be("first-id");
         }
 
         [Fact]
@@ -188,8 +189,8 @@ public class BoxServiceTests : UnitTest
 
             var result = await service.GetOrCreateFolderAsync(folderName, cancellationToken);
 
-            result.Should().BeEquivalentTo(newFolder, options => options
-                .Including(x => x.Name));
+            result.Should().BeSuccess().Which.Value.Should()
+                           .BeEquivalentTo(newFolder, options => options.Including(x => x.Name));
         }
 
         [Fact]
@@ -221,8 +222,65 @@ public class BoxServiceTests : UnitTest
 
             var result = await service.GetOrCreateFolderAsync(folderName, cancellationToken);
 
-            result.Should().BeEquivalentTo(newFolder, options => options
-                .Including(x => x.Name));
+            result.Should().BeSuccess().Which.Value.Should()
+                           .BeEquivalentTo(newFolder, options => options.Including(x => x.Name));
+        }
+
+        [Fact]
+        public async Task GivenExceptionToGetItemsShouldReturnFailResult()
+        {
+            const string ERROR_MESSAGE = "some error.";
+            var exception = new InvalidOperationException(ERROR_MESSAGE);
+
+            A.CallTo(() => fixture
+                .FreezeFake<IFoldersManager>()
+                .GetFolderItemsAsync(
+                    BoxService.ROOT_ID,
+                    A<GetFolderItemsQueryParams?>.Ignored,
+                    A<GetFolderItemsHeaders?>.Ignored,
+                    cancellationToken))
+                .Throws(exception);
+
+            var result = await service.GetOrCreateFolderAsync(folderName, cancellationToken);
+
+            result.Should().BeFailure().And.HaveError(BoxService.GENERIC_ERROR);
+            result.Errors.Should().HaveCount(1);
+            result.Errors[0].Reasons.Should().HaveCount(1);
+            result.Errors[0].Reasons[0].Should().BeOfType<ExceptionalError>();
+            result.Errors[0].Reasons[0].As<ExceptionalError>().Exception.Should().Be(exception);
+        }
+
+        [Fact]
+        public async Task GivenExceptionToCreateItemShouldReturnFailResult()
+        {
+            const string ERROR_MESSAGE = "some error.";
+            var exception = new InvalidOperationException(ERROR_MESSAGE);
+
+            A.CallTo(() => fixture
+                .FreezeFake<IFoldersManager>()
+                .GetFolderItemsAsync(
+                    BoxService.ROOT_ID,
+                    A<GetFolderItemsQueryParams?>.Ignored,
+                    A<GetFolderItemsHeaders?>.Ignored,
+                    cancellationToken))
+                .Returns(new Items());
+
+            A.CallTo(() => fixture
+                .FreezeFake<IFoldersManager>()
+                .CreateFolderAsync(
+                    A<CreateFolderRequestBody>.Ignored,
+                    A<CreateFolderQueryParams?>.Ignored,
+                    A<CreateFolderHeaders?>.Ignored,
+                    cancellationToken))
+                .Throws(exception);
+
+            var result = await service.GetOrCreateFolderAsync(folderName, cancellationToken);
+
+            result.Should().BeFailure().And.HaveError(BoxService.GENERIC_ERROR);
+            result.Errors.Should().HaveCount(1);
+            result.Errors[0].Reasons.Should().HaveCount(1);
+            result.Errors[0].Reasons[0].Should().BeOfType<ExceptionalError>();
+            result.Errors[0].Reasons[0].As<ExceptionalError>().Exception.Should().Be(exception);
         }
     }
 
@@ -231,16 +289,31 @@ public class BoxServiceTests : UnitTest
         private readonly string filePath;
         private readonly string fileName;
         private readonly string parentFolderId;
+        private readonly string downloadUrl;
         private readonly Stream stream;
 
         public CreateFileAsync()
         {
+            downloadUrl = "https://example.com/download";
             fileName = "test-file.zip";
             filePath = Path.Combine("directory", fileName);
             parentFolderId = fixture.Create<string>();
             stream = fixture.FreezeFake<Stream>();
             fixture.FreezeFake<IUploadsManager>();
             fixture.FreezeFake<IFilesManager>();
+
+            var uploadedFile = fixture.CreateCustom<FileFull>(f => f
+                .With(x => x.Id, fixture.Create<string>()));
+
+            var uploadedFiles = fixture.CreateCustom<Files>(f => f
+                .With(x => x.Entries, [uploadedFile]));
+
+            var sharedLink = fixture.CreateCustom<FileSharedLinkField>(f => f
+                .With(x => x.DownloadUrl, downloadUrl));
+
+            var fileWithSharedLink = fixture.CreateCustom<FileFull>(f => f
+                .With(x => x.Id, uploadedFile.Id)
+                .With(x => x.SharedLink, sharedLink));
 
             A.CallTo(() => fixture
                 .FreezeFake<IBoxClient>().Uploads)
@@ -251,29 +324,6 @@ public class BoxServiceTests : UnitTest
                 .Returns(fixture.FreezeFake<IFilesManager>());
 
             A.CallTo(() => fixture
-                .FreezeFake<StreamWrapper>()
-                .CreateFileStream(filePath, FileMode.Open))
-                .Returns(stream);
-        }
-
-        [Fact]
-        public async Task GivenSuccessfulExecutionShouldReturnFileWithSharedLink()
-        {
-            var uploadedFileId = fixture.Create<string>();
-            var uploadedFile = fixture.CreateCustom<FileFull>(f => f
-                .With(x => x.Id, uploadedFileId));
-
-            var uploadedFiles = fixture.CreateCustom<Files>(f => f
-                .With(x => x.Entries, [uploadedFile]));
-
-            var sharedLink = fixture.CreateCustom<FileSharedLinkField>(f => f
-                .With(x => x.DownloadUrl, "https://example.com/download"));
-
-            var fileWithSharedLink = fixture.CreateCustom<FileFull>(f => f
-                .With(x => x.Id, uploadedFileId)
-                .With(x => x.SharedLink, sharedLink));
-
-            A.CallTo(() => fixture
                 .FreezeFake<IUploadsManager>()
                 .UploadFileAsync(
                     A<UploadFileRequestBody>.Ignored,
@@ -283,9 +333,27 @@ public class BoxServiceTests : UnitTest
                 .Returns(uploadedFiles);
 
             A.CallTo(() => fixture
+                .FreezeFake<StreamWrapper>()
+                .CreateFileStream(filePath, FileMode.Open))
+                .Returns(stream);
+        }
+        [Fact]
+        public async Task GivenSuccessfulExecutionShouldReturnSuccessResult()
+        {
+            var result = await service.CreateFileAsync(filePath, parentFolderId, cancellationToken);
+
+            result.Should().BeSuccess();
+        }
+
+        [Fact]
+        public async Task GivenSuccessfulExecutionShouldReturnFileWithSharedLink()
+        {
+            var fileWithSharedLink = fixture.Create<FileFull>();
+
+            A.CallTo(() => fixture
                 .FreezeFake<IFilesManager>()
                 .UpdateFileByIdAsync(
-                    uploadedFileId,
+                    A<string>._,
                     A<UpdateFileByIdRequestBody>.Ignored,
                     A<UpdateFileByIdQueryParams?>.Ignored,
                     A<UpdateFileByIdHeaders?>.Ignored,
@@ -294,40 +362,12 @@ public class BoxServiceTests : UnitTest
 
             var result = await service.CreateFileAsync(filePath, parentFolderId, cancellationToken);
 
-            result.Should().Be(fileWithSharedLink);
+            result.Should().BeSuccess().And.HaveValue(fileWithSharedLink);
         }
 
         [Fact]
         public async Task GivenSuccessfulExecutionShouldUploadFileWithCorrectRequest()
         {
-            var uploadedFileId = fixture.Create<string>();
-            var uploadedFile = fixture.CreateCustom<FileFull>(f => f
-                .With(x => x.Id, uploadedFileId));
-
-            var uploadedFiles = fixture.CreateCustom<Files>(f => f
-                .With(x => x.Entries, [uploadedFile]));
-
-            var fileWithSharedLink = fixture.Create<FileFull>();
-
-            A.CallTo(() => fixture
-                .FreezeFake<IUploadsManager>()
-                .UploadFileAsync(
-                    A<UploadFileRequestBody>.Ignored,
-                    A<UploadFileQueryParams?>.Ignored,
-                    A<UploadFileHeaders?>.Ignored,
-                    cancellationToken))
-                .Returns(uploadedFiles);
-
-            A.CallTo(() => fixture
-                .FreezeFake<IFilesManager>()
-                .UpdateFileByIdAsync(
-                    uploadedFileId,
-                    A<UpdateFileByIdRequestBody>.Ignored,
-                    A<UpdateFileByIdQueryParams?>.Ignored,
-                    A<UpdateFileByIdHeaders?>.Ignored,
-                    cancellationToken))
-                .Returns(fileWithSharedLink);
-
             await service.CreateFileAsync(filePath, parentFolderId, cancellationToken);
 
             A.CallTo(() => fixture
@@ -346,40 +386,12 @@ public class BoxServiceTests : UnitTest
         [Fact]
         public async Task GivenSuccessfulExecutionShouldCreateSharedLinkWithCorrectPermissions()
         {
-            var uploadedFileId = fixture.Create<string>();
-            var uploadedFile = fixture.CreateCustom<FileFull>(f => f
-                .With(x => x.Id, uploadedFileId));
-
-            var uploadedFiles = fixture.CreateCustom<Files>(f => f
-                .With(x => x.Entries, [uploadedFile]));
-
-            var fileWithSharedLink = fixture.Create<FileFull>();
-
-            A.CallTo(() => fixture
-                .FreezeFake<IUploadsManager>()
-                .UploadFileAsync(
-                    A<UploadFileRequestBody>.Ignored,
-                    A<UploadFileQueryParams?>.Ignored,
-                    A<UploadFileHeaders?>.Ignored,
-                    cancellationToken))
-                .Returns(uploadedFiles);
-
-            A.CallTo(() => fixture
-                .FreezeFake<IFilesManager>()
-                .UpdateFileByIdAsync(
-                    uploadedFileId,
-                    A<UpdateFileByIdRequestBody>.Ignored,
-                    A<UpdateFileByIdQueryParams?>.Ignored,
-                    A<UpdateFileByIdHeaders?>.Ignored,
-                    cancellationToken))
-                .Returns(fileWithSharedLink);
-
             await service.CreateFileAsync(filePath, parentFolderId, cancellationToken);
 
             A.CallTo(() => fixture
                 .FreezeFake<IFilesManager>()
                 .UpdateFileByIdAsync(
-                    uploadedFileId,
+                    A<string>._,
                     A<UpdateFileByIdRequestBody>.That.Matches(x =>
                         x.SharedLink != null &&
                         x.SharedLink.Access!.Value == UpdateFileByIdRequestBodySharedLinkAccessField.Open &&
@@ -394,33 +406,6 @@ public class BoxServiceTests : UnitTest
         [Fact]
         public async Task GivenSuccessfulExecutionShouldOpenFileStreamCorrectly()
         {
-            var uploadedFile = fixture.CreateCustom<FileFull>(f => f
-                .With(x => x.Id, fixture.Create<string>()));
-
-            var uploadedFiles = fixture.CreateCustom<Files>(f => f
-                .With(x => x.Entries, [uploadedFile]));
-
-            var fileWithSharedLink = fixture.Create<FileFull>();
-
-            A.CallTo(() => fixture
-                .FreezeFake<IUploadsManager>()
-                .UploadFileAsync(
-                    A<UploadFileRequestBody>.Ignored,
-                    A<UploadFileQueryParams?>.Ignored,
-                    A<UploadFileHeaders?>.Ignored,
-                    cancellationToken))
-                .Returns(uploadedFiles);
-
-            A.CallTo(() => fixture
-                .FreezeFake<IFilesManager>()
-                .UpdateFileByIdAsync(
-                    A<string>.Ignored,
-                    A<UpdateFileByIdRequestBody>.Ignored,
-                    A<UpdateFileByIdQueryParams?>.Ignored,
-                    A<UpdateFileByIdHeaders?>.Ignored,
-                    cancellationToken))
-                .Returns(fileWithSharedLink);
-
             await service.CreateFileAsync(filePath, parentFolderId, cancellationToken);
 
             A.CallTo(() => fixture
@@ -432,54 +417,67 @@ public class BoxServiceTests : UnitTest
         [Fact]
         public async Task GivenFilePathShouldExtractCorrectFileName()
         {
-            var complexPath = Path.Combine("C:", "Users", "Test", "Documents", "my-file.pdf");
-            var expectedFileName = "my-file.pdf";
-            var complexStream = fixture.Create<Stream>();
-
-            var uploadedFile = fixture.CreateCustom<FileFull>(f => f
-                .With(x => x.Id, fixture.Create<string>()));
-
-            var uploadedFiles = fixture.CreateCustom<Files>(f => f
-                .With(x => x.Entries, [uploadedFile]));
-
-            var fileWithSharedLink = fixture.Create<FileFull>();
-
-            A.CallTo(() => fixture
-                .FreezeFake<StreamWrapper>()
-                .CreateFileStream(complexPath, FileMode.Open))
-                .Returns(complexStream);
-
-            A.CallTo(() => fixture
-                .FreezeFake<IUploadsManager>()
-                .UploadFileAsync(
-                    A<UploadFileRequestBody>.Ignored,
-                    A<UploadFileQueryParams?>.Ignored,
-                    A<UploadFileHeaders?>.Ignored,
-                    cancellationToken))
-                .Returns(uploadedFiles);
-
-            A.CallTo(() => fixture
-                .FreezeFake<IFilesManager>()
-                .UpdateFileByIdAsync(
-                    A<string>.Ignored,
-                    A<UpdateFileByIdRequestBody>.Ignored,
-                    A<UpdateFileByIdQueryParams?>.Ignored,
-                    A<UpdateFileByIdHeaders?>.Ignored,
-                    cancellationToken))
-                .Returns(fileWithSharedLink);
-
-            await service.CreateFileAsync(complexPath, parentFolderId, cancellationToken);
+            await service.CreateFileAsync(filePath, parentFolderId, cancellationToken);
 
             A.CallTo(() => fixture
                 .FreezeFake<IUploadsManager>()
                 .UploadFileAsync(
                     A<UploadFileRequestBody>.That.Matches(x =>
-                        x.Attributes.Name == expectedFileName &&
-                        x.File == complexStream),
+                        x.Attributes.Name == fileName &&
+                        x.File == stream),
                     A<UploadFileQueryParams?>.Ignored,
                     A<UploadFileHeaders?>.Ignored,
                     cancellationToken))
                 .MustHaveHappenedOnceExactly();
+        }
+
+        [Fact]
+        public async Task GivenExceptionToUploadFileShouldReturnFailResult()
+        {
+            const string ERROR_MESSAGE = "some error.";
+            var exception = new InvalidOperationException(ERROR_MESSAGE);
+
+            A.CallTo(() => fixture
+                .FreezeFake<IUploadsManager>()
+                .UploadFileAsync(
+                    A<UploadFileRequestBody>._,
+                    A<UploadFileQueryParams>._,
+                    A<UploadFileHeaders>._,
+                    cancellationToken))
+                .Throws(exception);
+
+            var result = await service.CreateFileAsync(filePath, parentFolderId, cancellationToken);
+
+            result.Should().BeFailure().And.HaveError(BoxService.GENERIC_ERROR);
+            result.Errors.Should().HaveCount(1);
+            result.Errors[0].Reasons.Should().HaveCount(1);
+            result.Errors[0].Reasons[0].Should().BeOfType<ExceptionalError>();
+            result.Errors[0].Reasons[0].As<ExceptionalError>().Exception.Should().Be(exception);
+        }
+
+        [Fact]
+        public async Task GivenExceptionToUpdateFileShouldReturnFailResult()
+        {
+            const string ERROR_MESSAGE = "some error.";
+            var exception = new InvalidOperationException(ERROR_MESSAGE);
+
+            A.CallTo(() => fixture
+                .FreezeFake<IFilesManager>()
+                .UpdateFileByIdAsync(
+                    A<string>._,
+                    A<UpdateFileByIdRequestBody>._,
+                    A<UpdateFileByIdQueryParams>._,
+                    A<UpdateFileByIdHeaders>._,
+                    cancellationToken))
+                .Throws(exception);
+
+            var result = await service.CreateFileAsync(filePath, parentFolderId, cancellationToken);
+
+            result.Should().BeFailure().And.HaveError(BoxService.GENERIC_ERROR);
+            result.Errors.Should().HaveCount(1);
+            result.Errors[0].Reasons.Should().HaveCount(1);
+            result.Errors[0].Reasons[0].Should().BeOfType<ExceptionalError>();
+            result.Errors[0].Reasons[0].As<ExceptionalError>().Exception.Should().Be(exception);
         }
     }
 }

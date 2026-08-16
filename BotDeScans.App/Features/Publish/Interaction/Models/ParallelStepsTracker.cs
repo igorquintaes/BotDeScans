@@ -44,7 +44,6 @@ public class ParallelStepsTracker(
 
             var trackingResult = await sendTrackingUpdate(stateToSend, cancellationToken);
             AggregateTrackingResult = Result.Merge(AggregateTrackingResult, trackingResult.ToResult());
-
             CurrentState = trackingResult.IsSuccess ? trackingResult.Value : stateToSend;
 
             return AggregateTrackingResult;

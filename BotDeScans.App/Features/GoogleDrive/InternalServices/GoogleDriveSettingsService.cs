@@ -2,6 +2,7 @@
 using BotDeScans.App.Services.Wrappers;
 using FluentResults;
 using Google.Apis.Drive.v3;
+
 namespace BotDeScans.App.Features.GoogleDrive.InternalServices;
 
 public class GoogleDriveSettingsService(
@@ -41,10 +42,15 @@ public class GoogleDriveSettingsService(
             cancellationToken);
 
         if (createFolderResult.IsFailed)
-            return createFolderResult.ToResult();
+            return createFolderResult
+                .ToResult()
+                .WithReasons(folderResult.Reasons);
 
         BaseFolderId = createFolderResult.Value.Id;
-        return Result.Ok();
+
+        return createFolderResult
+            .WithReasons(folderResult.Reasons)
+            .ToResult();
     }
 
     public virtual async Task<Result<ConsumptionData>> GetConsumptionDataAsync(CancellationToken cancellationToken)
@@ -58,7 +64,8 @@ public class GoogleDriveSettingsService(
 
         var usedSpace = aboutResult.Value.StorageQuota.Usage!.Value;
         var freeSpace = aboutResult.Value.StorageQuota.Limit!.Value - usedSpace;
+        var consumption = new ConsumptionData(usedSpace, freeSpace);
 
-        return Result.Ok(new ConsumptionData(usedSpace, freeSpace));
+        return aboutResult.Map(_ => consumption);
     }
 }

@@ -14,7 +14,7 @@ public class ParallelStepRunner(DiscordPublisher discordPublisher)
     // Each step reads from State.OriginContentFolder (read-only) and writes to its own isolated
     // directory, so there are no write conflicts between concurrent tasks.
     public async Task<(Result Result, State State, bool ShouldStop)> RunConversionAsync(
-        Result aggregate,
+        Result currentResult,
         State state,
         IEnumerable<(IConversionStep Step, StepInfo Info)> conversionSteps,
         CancellationToken cancellationToken)
@@ -25,17 +25,17 @@ public class ParallelStepRunner(DiscordPublisher discordPublisher)
         var results = await Task.WhenAll(
             items.Select(item => ExecuteStepAsync((item.Step, item.Info), state, tracker, cancellationToken)));
 
-        foreach (var stepResult in results)
-            aggregate = Result.Merge(aggregate, stepResult);
-
-        aggregate = Result.Merge(aggregate, tracker.AggregateTrackingResult);
+        var aggregateResult = Result.Merge([
+            currentResult,
+            .. results,
+            tracker.AggregateTrackingResult]);
 
         var hasFatalFailure = results
             .Zip(items, (r, item) => (Result: r, Step: (IStep)item.Step))
             .Any(x => x.Result.IsFailed && !x.Step.ContinueOnError)
             || tracker.AggregateTrackingResult.IsFailed;
 
-        return (aggregate, tracker.CurrentState, hasFatalFailure);
+        return (aggregateResult, tracker.CurrentState, hasFatalFailure);
     }
 
     // Runs publish steps grouped by Dependency, each group in parallel, groups sequentially.

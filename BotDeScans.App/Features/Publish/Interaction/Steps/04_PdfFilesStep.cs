@@ -1,4 +1,5 @@
-﻿using BotDeScans.App.Features.Publish.Interaction.Steps.Enums;
+﻿using BotDeScans.App.Extensions;
+using BotDeScans.App.Features.Publish.Interaction.Steps.Enums;
 using BotDeScans.App.Models.Entities.Enums;
 using BotDeScans.App.Services;
 using FluentResults;
@@ -20,9 +21,8 @@ public class PdfFilesStep(
             resourcesDirectory: state.OriginContentFolder,
             destinationDirectory: fileReleaseService.CreateScopedDirectory());
 
-        if (pdfFileResult.IsFailed)
-            return pdfFileResult.ToResult<State>();
+        var updatedState = state with { PdfFilePath = pdfFileResult.ValueOrDefault };
 
-        return Result.Ok(state with { PdfFilePath = pdfFileResult.Value });
+        return pdfFileResult.Map(updatedState);
     }
 }

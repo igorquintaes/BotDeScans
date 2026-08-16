@@ -73,10 +73,9 @@ public class UploadZipGoogleDriveStepTests : UnitTest
 
             A.CallTo(() => fixture
                 .FreezeFake<GoogleDriveService>()
-                .CreateFileAsync(
+                .UpdateOrCreateFileAsync(
                     state.ZipFilePath!,
                     titleFolder.Id,
-                    true,
                     cancellationToken))
                 .Returns(Result.Ok(titleFile));
         }
@@ -122,10 +121,9 @@ public class UploadZipGoogleDriveStepTests : UnitTest
 
             A.CallTo(() => fixture
                 .FreezeFake<GoogleDriveService>()
-                .CreateFileAsync(
+                .UpdateOrCreateFileAsync(
                     A<string>.Ignored,
                     A<string>.Ignored,
-                    A<bool>.Ignored,
                     cancellationToken))
                 .Returns(Result.Fail(ERROR_MESSAGE));
 

@@ -1,4 +1,5 @@
-﻿using BotDeScans.App.Features.Publish.Interaction.Steps.Enums;
+﻿using BotDeScans.App.Extensions;
+using BotDeScans.App.Features.Publish.Interaction.Steps.Enums;
 using BotDeScans.App.Models.Entities;
 using BotDeScans.App.Models.Entities.Enums;
 using BotDeScans.App.Services.MangaDex;
@@ -29,9 +30,13 @@ public class UploadMangaDexStep(
             state.OriginContentFolder,
             cancellationToken);
 
-        if (uploadResult.IsFailed)
-            return uploadResult.ToResult<State>();
+        var updatedState = state with
+        {
+            MangaDexLink = uploadResult.ValueOrDefault is not null
+            ? $"https://mangadex.org/chapter/{uploadResult.Value.Id}/1"
+            : null
+        };
 
-        return Result.Ok(state with { MangaDexLink = $"https://mangadex.org/chapter/{uploadResult.Value.Id}/1" });
+        return uploadResult.Map(updatedState);
     }
 }

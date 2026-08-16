@@ -29,7 +29,10 @@ public class GoogleDriveResourcesService(
         listRequest.Q = query;
         listRequest.PageSize = 1000;
         listRequest.Fields = "files(*)";
-        var requestResult = await googleWrapper.ExecuteAsync(listRequest, cancellationToken);
+
+        var requestResult = await googleWrapper.ExecuteAsync(
+            listRequest,
+            cancellationToken);
 
         if (requestResult.IsFailed)
             return requestResult.ToResult();
@@ -39,8 +42,9 @@ public class GoogleDriveResourcesService(
             minResult,
             maxResult);
 
-        return Result.Ok(requestResult.Value.Files)
-              .WithReasons(validationResult.Reasons);
+        return requestResult
+            .Map(files => files.Files)
+            .WithReasons(validationResult.Reasons);
     }
 
     private static Result ValidateResultCount(int count, int? minResult, int? maxResult)
@@ -61,7 +65,8 @@ public class GoogleDriveResourcesService(
             Name = name,
             Description = name,
             MimeType = mimeType,
-            Parents = [parentId ?? GoogleDriveSettingsService.BaseFolderId]
+            Parents = [parentId ?? GoogleDriveSettingsService.BaseFolderId],
+            WritersCanShare = true,
         };
 
     public virtual Task<Result<string>> DeleteResource(

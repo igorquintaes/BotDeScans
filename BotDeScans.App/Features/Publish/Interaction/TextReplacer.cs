@@ -45,7 +45,6 @@ public class TextReplacer
                 text = text.Replace(startRemoveIfEmptyKey, string.Empty)
                            .Replace(endRemoveIfEmptyKey, string.Empty);
             }
-
         }
 
         return text;

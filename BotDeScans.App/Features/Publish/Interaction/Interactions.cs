@@ -22,18 +22,16 @@ public class Interactions(
         string message,
         string state)
     {
-        var setupResult = await setupService.SetupAsync(
-            new Info(driveUrl, chapterName, chapterNumber, chapterVolume, message, int.Parse(state)),
-            CancellationToken);
-        setupResult.LogIfFailed();
+        var info = new Info(driveUrl, chapterName, chapterNumber, chapterVolume, message, int.Parse(state));
+
+        var setupResult = await setupService.SetupAsync(info, CancellationToken);
         if (setupResult.IsFailed)
             return await discordPublisher.ErrorReleaseMessageAsync(setupResult.ToResult(), CancellationToken);
 
-        var result = await handler.ExecuteAsync(setupResult.Value, CancellationToken);
-        result.LogIfFailed();
+        var executeResult = await handler.ExecuteAsync(setupResult.Value, CancellationToken);
 
-        return result.IsSuccess
-            ? await discordPublisher.SuccessReleaseMessageAsync(result.Value, CancellationToken)
-            : await discordPublisher.ErrorReleaseMessageAsync(result.ToResult(), CancellationToken);
+        return executeResult.IsSuccess
+            ? await discordPublisher.SuccessReleaseMessageAsync(executeResult.Value, CancellationToken)
+            : await discordPublisher.ErrorReleaseMessageAsync(executeResult.ToResult(), CancellationToken);
     }
 }

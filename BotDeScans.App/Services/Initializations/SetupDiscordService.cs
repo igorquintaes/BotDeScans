@@ -6,6 +6,7 @@ using FluentResults;
 using FluentValidation;
 using Microsoft.Extensions.Configuration;
 using Remora.Rest.Core;
+
 namespace BotDeScans.App.Services.Initializations;
 
 public class SetupDiscordService(
@@ -76,8 +77,8 @@ public class SetupDiscordServiceValidator : AbstractValidator<SetupDiscordServic
         var rolesResult = await rolesService.GetRoleAsync(roleValue, cancellationToken);
         if (rolesResult.IsSuccess)
             return true;
-
+        
         context.AddFailure(rolesResult.ToValidationErrorMessage());
-        return true;
+        return false;
     }
 }

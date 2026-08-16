@@ -13,12 +13,12 @@ internal static class AddDependencies
         this IServiceCollection services) =>
         services
             .AddInteractionGroup<Interactions>()
-            .AddPublishSteps()
-            .AddPings()
             .AddScoped<Handler>()
             .AddScoped<SequentialStepRunner>()
             .AddScoped<ParallelStepRunner>()
             .AddScoped<SetupService>()
             .AddScoped<TextReplacer>()
-            .AddScoped<DiscordPublisher>();
+            .AddScoped<DiscordPublisher>()
+            .AddPublishSteps()
+            .AddPings();
 }

@@ -2,6 +2,7 @@
 using FluentResults;
 using FluentValidation;
 using File = Google.Apis.Drive.v3.Data.File;
+
 namespace BotDeScans.App.Features.GoogleDrive.Models;
 
 public record GoogleDriveUrl(string Url)
@@ -20,25 +21,38 @@ public class GoogleDriveUrlValidator : AbstractValidator<GoogleDriveUrl>
         GoogleDriveFilesService googleDriveFilesService,
         IValidator<IList<File>> driveFilesValidator)
     {
-        Result<IList<File>> filesResult = Result.Ok();
-        RuleFor(model => model)
-            .Cascade(CascadeMode.Stop)
-            .Must(prop => Uri.TryCreate(prop.Url, UriKind.Absolute, out var uri) && uri.Authority == "drive.google.com")
-            .WithMessage("O link informado é inválido.")
-            .Must(prop => prop.Id.Length == 33)
-            .WithMessage("O link informado é inválido.")
-            .MustAsync(async (_, prop, context, cancellationToken) =>
-            {
-                filesResult = await googleDriveFilesService.GetManyAsync(prop.Id, cancellationToken);
-                if (filesResult.IsSuccess)
-                    return true;
+        ClassLevelCascadeMode = CascadeMode.Stop;
 
-                context.AddFailure(string.Join("; ", filesResult.Errors.Select(error => error.Message)));
-                return false;
-            });
+        var filesResult = new Result<IList<File>>();
+
+        RuleFor(model => model)
+            .Must(prop => Uri.TryCreate(prop.Url, UriKind.Absolute, out var uri)
+                       && uri.Authority == "drive.google.com"
+                       && prop.Id.Length == 33)
+            .WithMessage("O link informado é inválido.");
+
+        RuleFor(model => model)
+            .MustAsync(async (_, prop, context, cancellationToken) =>
+                       await BeAbleToGetGoogleDriveFilesInfo(prop, context, cancellationToken));
 
         RuleFor(_ => filesResult.Value)
             .SetValidator(driveFilesValidator)
             .When(x => filesResult.IsSuccess);
+
+        async Task<bool> BeAbleToGetGoogleDriveFilesInfo(
+            GoogleDriveUrl googleDriveUrl,
+            ValidationContext<GoogleDriveUrl> validationContext,
+            CancellationToken cancellationToken)
+        {
+            filesResult = await googleDriveFilesService.GetManyAsync(googleDriveUrl.Id, cancellationToken);
+            if (filesResult.IsSuccess)
+                return true;
+
+            var errors = string.Join("; ", filesResult.Errors.Select(error => error.Message));
+            validationContext.AddFailure(errors);
+
+            return false;
+        }
+
     }
 }

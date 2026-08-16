@@ -1,4 +1,5 @@
-﻿using BotDeScans.App.Features.Mega;
+﻿using BotDeScans.App.Extensions;
+using BotDeScans.App.Features.Mega;
 using BotDeScans.App.Features.Mega.InternalServices;
 using BotDeScans.App.Features.Publish.Interaction.Steps.Enums;
 using BotDeScans.App.Models.Entities.Enums;
@@ -29,9 +30,8 @@ public class UploadZipMegaStep(
             parentNode: titleFolder.Value,
             cancellationToken);
 
-        if (fileResult.IsFailed)
-            return fileResult.ToResult<State>();
+        var updatedState = state with { MegaZipLink = fileResult.ValueOrDefault?.AbsoluteUri };
 
-        return Result.Ok(state with { MegaZipLink = fileResult.Value.AbsoluteUri });
+        return fileResult.Map(updatedState);
     }
 }

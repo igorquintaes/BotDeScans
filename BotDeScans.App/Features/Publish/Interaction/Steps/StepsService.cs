@@ -24,8 +24,8 @@ public class StepsService(IConfiguration configuration, IEnumerable<IStep> allSt
 
         var enabledSteps = allSteps
             .Where(step => configuredNames.Contains(step.Name)
-                     || dependencyNames.Contains(step.Name)
-                     || (step is IManagementStep m && m.IsMandatory))
+                        || dependencyNames.Contains(step.Name)
+                        || (step is IManagementStep m && m.IsMandatory))
             .OrderBy(step => step.Name)
             .ToList();
 

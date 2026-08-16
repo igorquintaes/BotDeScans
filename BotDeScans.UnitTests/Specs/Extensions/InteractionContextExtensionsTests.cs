@@ -7,7 +7,7 @@ namespace BotDeScans.UnitTests.Specs.Extensions;
 
 public abstract class InteractionContextExtensionsTests : UnitTest
 {
-    public class GetUserAvatarUrl : InteractionContextExtensionsTests
+    public class GetAuthor : InteractionContextExtensionsTests
     {
         [Fact]
         public void GivenUserWithAvatarShouldReturnExpectedUrl()
@@ -16,45 +16,25 @@ public abstract class InteractionContextExtensionsTests : UnitTest
             var avatarHash = fixture.Create<string>();
             var expectedUrl = $"https://cdn.discordapp.com/avatars/{userId}/{avatarHash}.png";
 
-            var user = fixture.FreezeFake<IUser>();
-            A.CallTo(() => user.ID).Returns(userId);
-            A.CallTo(() => user.Avatar).Returns(fixture.FreezeFake<IImageHash>());
-            A.CallTo(() => user.Avatar!.Value!).Returns(avatarHash);
+            SetupUserAvatarUrl(userId, avatarHash);
 
-            var member = fixture.FreezeFake<IGuildMember>();
-            A.CallTo(() => member.User).Returns(new Optional<IUser>(user));
+            var context = new InteractionContext(fixture
+                .FreezeFake<IInteraction>())
+                .GetAuthor();
 
-            var interaction = fixture.FreezeFake<IInteraction>();
-            A.CallTo(() => interaction.Member).Returns(new Optional<IGuildMember>(member));
-
-            var context = new InteractionContext(interaction);
-
-            var result = context.GetUserAvatarUrl();
-
-            result.HasValue.Should().BeTrue();
-            result.Value.Should().Be(expectedUrl);
+            context.IconUrl.Value.Should().Be(expectedUrl);
         }
 
         [Fact]
         public void GivenUserWithoutAvatarShouldReturnEmptyOptional()
         {
-            var userId = new Snowflake(fixture.Create<ulong>());
+            SetupUserAvatarUrl(new(), null);
 
-            var user = fixture.FreezeFake<IUser>();
-            A.CallTo(() => user.ID).Returns(userId);
-            A.CallTo(() => user.Avatar).Returns(null);
+            var context = new InteractionContext(fixture
+                .FreezeFake<IInteraction>())
+                .GetAuthor();
 
-            var member = fixture.FreezeFake<IGuildMember>();
-            A.CallTo(() => member.User).Returns(new Optional<IUser>(user));
-
-            var interaction = fixture.FreezeFake<IInteraction>();
-            A.CallTo(() => interaction.Member).Returns(new Optional<IGuildMember>(member));
-
-            var context = new InteractionContext(interaction);
-
-            var result = context.GetUserAvatarUrl();
-
-            result.HasValue.Should().BeFalse();
+            context.IconUrl.HasValue.Should().BeFalse();
         }
     }
 
@@ -63,22 +43,42 @@ public abstract class InteractionContextExtensionsTests : UnitTest
         [Fact]
         public void GivenUserWithUsernameShouldReturnUsername()
         {
-            var expectedUsername = fixture.Create<string>();
+            var userName = fixture.Create<string>();
+            SetupUserName(userName);
 
-            var user = fixture.FreezeFake<IUser>();
-            A.CallTo(() => user.Username).Returns(expectedUsername);
+            var context = new InteractionContext(fixture
+                .FreezeFake<IInteraction>())
+                .GetUserName();
 
-            var member = fixture.FreezeFake<IGuildMember>();
-            A.CallTo(() => member.User).Returns(new Optional<IUser>(user));
-
-            var interaction = fixture.FreezeFake<IInteraction>();
-            A.CallTo(() => interaction.Member).Returns(new Optional<IGuildMember>(member));
-
-            var context = new InteractionContext(interaction);
-
-            var result = context.GetUserName();
-
-            result.Should().Be(expectedUsername);
+            context.Should().Be(userName);
         }
+    }
+
+    private void SetupUserName(string userName)
+    {
+        var user = fixture.FreezeFake<IUser>();
+        A.CallTo(() => user.Username).Returns(userName);
+
+        var member = fixture.FreezeFake<IGuildMember>();
+        A.CallTo(() => member.User).Returns(new Optional<IUser>(user));
+
+        var interaction = fixture.FreezeFake<IInteraction>();
+        A.CallTo(() => interaction.Member).Returns(new Optional<IGuildMember>(member));
+    }
+
+    private string SetupUserAvatarUrl(Snowflake userId, string? avatarHash)
+    {
+        var user = fixture.FreezeFake<IUser>();
+        A.CallTo(() => user.ID).Returns(userId);
+        A.CallTo(() => user.Avatar).Returns(fixture.FreezeFake<IImageHash>());
+        A.CallTo(() => user.Avatar!.Value).Returns(avatarHash!);
+
+        var member = fixture.FreezeFake<IGuildMember>();
+        A.CallTo(() => member.User).Returns(new Optional<IUser>(user));
+
+        var interaction = fixture.FreezeFake<IInteraction>();
+        A.CallTo(() => interaction.Member).Returns(new Optional<IGuildMember>(member));
+
+        return $"https://cdn.discordapp.com/avatars/{userId}/{avatarHash}.png";
     }
 }

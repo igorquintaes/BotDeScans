@@ -21,7 +21,7 @@ public record State
     public string? PdfFilePath { get; init; }
     public string? BloggerImageAsBase64 { get; init; }
     public string? BoxPdfReaderKey { get; init; }
-    public string? Pings { get; init; }
+    public string? PingText { get; init; }
     public TrackingMessage? TrackingMessage { get; init; }
 
     [ReleaseLink("Mega [Zip]")]

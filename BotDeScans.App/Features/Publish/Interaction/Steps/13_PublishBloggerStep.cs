@@ -1,4 +1,5 @@
-﻿using BotDeScans.App.Features.Publish.Interaction.Steps.Enums;
+﻿using BotDeScans.App.Extensions;
+using BotDeScans.App.Features.Publish.Interaction.Steps.Enums;
 using BotDeScans.App.Models.Entities.Enums;
 using BotDeScans.App.Services;
 using FluentResults;
@@ -18,21 +19,20 @@ public class PublishBloggerStep(
 
     public async Task<Result<State>> ExecuteAsync(State state, CancellationToken cancellationToken)
     {
-        var updatedState = state with { BloggerImageAsBase64 = await googleBloggerService.CreatePostCoverAsync(state.CoverFilePath, cancellationToken) };
+        var stateWithBloggerImage = state with { BloggerImageAsBase64 = await googleBloggerService.CreatePostCoverAsync(state.CoverFilePath, cancellationToken) };
         var template = googleBloggerService.GetPostTemplate();
-        var htmlContent = textReplacer.Replace(template, updatedState);
+        var htmlContent = textReplacer.Replace(template, stateWithBloggerImage);
 
         // todo: parametrizar valores de title abaixo no futuro
         var post = await googleBloggerService.PostAsync(
-            title: $"[{updatedState.Title.Name}] Capítulo {updatedState.ChapterInfo.ChapterNumber}",
+            title: $"[{stateWithBloggerImage.Title.Name}] Capítulo {stateWithBloggerImage.ChapterInfo.ChapterNumber}",
             htmlContent: htmlContent,
-            label: updatedState.Title.Name,
-            chapterNumber: updatedState.ChapterInfo.ChapterNumber,
+            label: stateWithBloggerImage.Title.Name,
+            chapterNumber: stateWithBloggerImage.ChapterInfo.ChapterNumber,
             cancellationToken);
 
-        if (post.IsFailed)
-            return post.ToResult<State>();
+        var updatedState = stateWithBloggerImage with { BloggerLink = post.ValueOrDefault?.Url };
 
-        return Result.Ok(updatedState with { BloggerLink = post.Value.Url });
+        return post.Map(updatedState);
     }
 }

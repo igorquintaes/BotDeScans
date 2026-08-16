@@ -16,7 +16,7 @@ public class MangaDexUploadService(
     {
         const int NOT_FOUND = 404;
         var sessionResponse = await mangaDex.Upload.Get(default, mangaDexAccessToken.Value);
-        return sessionResponse.AsResult(allowedStatusCodes: NOT_FOUND);
+        return sessionResponse.AsResult(ignoreErrorStatus: NOT_FOUND);
     }
 
     public virtual async Task<Result> AbandonSessionAsync(

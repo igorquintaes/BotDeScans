@@ -1,4 +1,5 @@
-﻿using BotDeScans.App.Features.Publish.Interaction.Steps;
+﻿using BotDeScans.App.Extensions;
+using BotDeScans.App.Features.Publish.Interaction.Steps;
 using FluentResults;
 
 namespace BotDeScans.App.Features.Publish.Interaction;
@@ -14,7 +15,7 @@ public class Handler(
         var conversionSteps = state.Steps.ConversionSteps.ToList();
         var publishSteps = state.Steps.PublishSteps.ToList();
 
-        var trackingResult = await discordPublisher.UpdateTrackingMessageAsync(state, cancellationToken);
+        var trackingResult = await discordPublisher.SynchronizedUpdateTrackingMessageAsync(state, cancellationToken);
         if (trackingResult.IsFailed)
             return trackingResult;
 
@@ -27,8 +28,9 @@ public class Handler(
             currentState,
             managementSteps.Select(data => ((IStep)data.Step, data.Info)),
             cancellationToken);
+
         if (managementExecution.ShouldStop)
-            return ToFinalResult(managementExecution.Result, managementExecution.State);
+            return managementExecution.Result.Set(managementExecution.State);
 
         currentState = managementExecution.State;
         currentResult = managementExecution.Result;
@@ -39,8 +41,9 @@ public class Handler(
             currentState,
             conversionSteps,
             cancellationToken);
+
         if (conversionExecution.ShouldStop)
-            return ToFinalResult(conversionExecution.Result, conversionExecution.State);
+            return conversionExecution.Result.Set(conversionExecution.State);
 
         currentState = conversionExecution.State;
         currentResult = conversionExecution.Result;
@@ -51,8 +54,9 @@ public class Handler(
             currentState,
             publishSteps.Select(data => ((IStep)data.Step, data.Info)),
             cancellationToken);
+
         if (validationExecution.ShouldStop)
-            return ToFinalResult(validationExecution.Result, validationExecution.State);
+            return validationExecution.Result.Set(validationExecution.State);
 
         // Phase 4: Publish steps — grouped by Dependency, each group in parallel.
         var publishExecution = await parallelRunner.RunDagAsync(
@@ -61,9 +65,6 @@ public class Handler(
             publishSteps,
             cancellationToken);
 
-        return ToFinalResult(publishExecution.Result, publishExecution.State);
+        return publishExecution.Result.Set(publishExecution.State);
     }
-
-    private static Result<State> ToFinalResult(Result result, State state) =>
-        result.IsFailed ? result.ToResult<State>() : Result.Ok(state);
 }

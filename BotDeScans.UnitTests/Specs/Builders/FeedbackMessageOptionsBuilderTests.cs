@@ -53,7 +53,7 @@ public abstract class FeedbackMessageOptionsBuilderTests : UnitTest
 
             var options = builder.Build();
 
-            options.Attachments.Value.Should().BeNull();
+            options.Attachments.Value.Should().BeEmpty();
         }
 
         [Fact]

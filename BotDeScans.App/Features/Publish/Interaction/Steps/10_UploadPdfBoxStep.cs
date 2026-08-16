@@ -1,4 +1,5 @@
-﻿using BotDeScans.App.Features.Publish.Interaction.Steps.Enums;
+﻿using BotDeScans.App.Extensions;
+using BotDeScans.App.Features.Publish.Interaction.Steps.Enums;
 using BotDeScans.App.Models.Entities.Enums;
 using BotDeScans.App.Services;
 using FluentResults;
@@ -17,21 +18,22 @@ public class UploadPdfBoxStep(
 
     public async Task<Result<State>> ExecuteAsync(State state, CancellationToken cancellationToken)
     {
-        var titleFolder = await boxService.GetOrCreateFolderAsync(state.Title.Name, cancellationToken);
-        var file = await boxService.CreateFileAsync(
+        var titleFolderResult = await boxService.GetOrCreateFolderAsync(state.Title.Name, cancellationToken);
+        if (titleFolderResult.IsFailed)
+            return titleFolderResult.ToResult();
+
+        var fileResult = await boxService.CreateFileAsync(
             filePath: state.PdfFilePath!,
-            parentFolderId: titleFolder.Id,
+            parentFolderId: titleFolderResult.Value.Id,
             cancellationToken: cancellationToken);
 
         var updatedState = state with
         {
-            BoxPdfLink = file.SharedLink!.DownloadUrl!,
-            BoxPdfReaderKey = file.SharedLink!.DownloadUrl!
-                .Split("/")
-                .Last()
-                .Replace(".pdf", "", StringComparison.InvariantCultureIgnoreCase)
+            BoxPdfLink = fileResult.ValueOrDefault?.SharedLink!.DownloadUrl!,
+            BoxPdfReaderKey = fileResult.ValueOrDefault?.SharedLink!.DownloadUrl!
+                .Split("/").Last().Replace(".pdf", "", StringComparison.InvariantCultureIgnoreCase)
         };
 
-        return Result.Ok(updatedState);
+        return fileResult.Map(updatedState);
     }
 }

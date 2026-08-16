@@ -5,24 +5,15 @@ namespace BotDeScans.App.Extensions;
 
 public static class MangaDexResponseExtensions
 {
-    public static Result AsResult(this MangaDexRoot mangaDexResponse, params int[] allowedStatusCodes)
-    {
-        var errors = GetErrors(mangaDexResponse, allowedStatusCodes);
+    public static Result AsResult(this MangaDexRoot response, params int[] ignoreErrorStatus) =>
+        Result.Ok().WithErrors(GetErrors(response, ignoreErrorStatus));
 
-        return Result.Ok().WithErrors(errors);
-    }
+    public static Result<T> AsResult<T>(this MangaDexRoot<T> response, params int[] ignoreErrorStatus)
+        where T : new() =>
+        Result.Ok(response.Data).WithErrors(GetErrors(response, ignoreErrorStatus));
 
-    public static Result<T> AsResult<T>(this MangaDexRoot<T> mangaDexResponse, params int[] allowedStatusCodes)
-        where T : new()
-    {
-        var errors = GetErrors(mangaDexResponse, allowedStatusCodes);
-
-        return Result.Ok(mangaDexResponse.Data).WithErrors(errors);
-    }
-
-    private static IEnumerable<IError> GetErrors(MangaDexRoot mangaDexResponse, params int[] allowedStatusCodes)
-    {
-        var mangaDexErrors = mangaDexResponse.Errors.Where(x => allowedStatusCodes.Contains(x.Status) is false);
-        return mangaDexErrors.Select(x => new Error($"{x.Status} - {x.Title} - {x.Detail}"));
-    }
+    private static IEnumerable<IError> GetErrors(MangaDexRoot response, params int[] ignoreErrorStatus) =>
+        response.Errors
+            .Where(x => ignoreErrorStatus.Contains(x.Status) is false)
+            .Select(x => new Error($"{x.Status} - {x.Title} - {x.Detail}"));
 }

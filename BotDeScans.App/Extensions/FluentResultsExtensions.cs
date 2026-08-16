@@ -1,5 +1,6 @@
 ﻿using FluentResults;
 using Google;
+using System.Collections.Frozen;
 using System.Text.Json;
 
 namespace BotDeScans.App.Extensions;
@@ -18,6 +19,12 @@ public static class FluentResultsExtensions
         return string.Join("; ", errorMessages);
     }
 
+    public static Result<Out> Set<Out>(this Result result, Out value) =>
+        new Result<Out>().Map(_ => value).WithReasons(result.Reasons);
+
+    public static Result<Out> Map<In, Out>(this Result<In> result, Out value) =>
+        result.Map(_ => value);
+
     public static Remora.Results.Result ToDiscordResult(this ResultBase result)
     {
         if (result.IsSuccess)
@@ -29,10 +36,20 @@ public static class FluentResultsExtensions
         return Remora.Results.Result.FromError(remoraError);
     }
 
-    public static Result FailIf(this Result result, Func<bool> condition, string message) =>
-        condition.Invoke()
-            ? result.WithError(message)
-            : result;
+    public static async Task<Result<T>> SafeCallAsync<T>(this Result result, Func<Task<T>> func, Error error)
+    {
+        if (IsForbiddenResultType(typeof(T)))
+            throw new ArgumentException("O tipo genérico de retorno do método não deve ser um tipo de resultado do FluentResults.");
+        // After all, a Result func should handle errors itself.
+
+        var executionResult = await Result.Try(
+            action: () => func(),
+            catchHandler: error.CausedBy);
+
+        return result
+            .Set(executionResult.ValueOrDefault)
+            .WithReasons(executionResult.Reasons);
+    }
 
     public static IEnumerable<ErrorInfo> GetErrorsInfo(this IReadOnlyList<IError> errors, int depth = 0)
     {
@@ -58,7 +75,11 @@ public static class FluentResultsExtensions
                 {
                     var code = googleException.HttpStatusCode;
                     var intCode = (int)code;
-                    exceptionMessage = $"O Google retornou o HTTP Status Code [{code} ({intCode})](https://http.cat/{intCode})";
+
+                    exceptionMessage =
+                         $"O Google retornou o HTTP Status Code [{code} ({intCode})](https://http.cat/{intCode})" +
+                         $"; Serviço: {googleException.ServiceName}" +
+                         $"; Detalhes: {googleException.Message}";
                 }
                 else
                     exceptionMessage = exceptionalError.Exception.Message;
@@ -69,8 +90,27 @@ public static class FluentResultsExtensions
             return false;
         }
     }
+
+    private static readonly FrozenSet<Type> _forbiddenResultTypes =
+    [
+        typeof(ResultBase),
+        typeof(Result),
+        typeof(IResultBase)
+    ];
+
+    private static bool IsForbiddenResultType(Type type)
+    {
+        if (_forbiddenResultTypes.Contains(type))
+            return true;
+
+        var definition = type.IsGenericType ? type.GetGenericTypeDefinition() : null;
+        return definition == typeof(ResultBase<>) ||
+               definition == typeof(Result<>) ||
+               definition == typeof(IResult<>);
+    }
 }
 
 public record ErrorInfo(string Message, int Number, int Depth, ErrorType Type);
 
 public enum ErrorType { Regular, Exception }
+
