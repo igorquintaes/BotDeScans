@@ -17,8 +17,12 @@ namespace BotDeScans.App.Services;
 [ExcludeFromCodeCoverage]
 internal static class AddDependencies
 {
-    internal static IServiceCollection AddServices(this IServiceCollection services) => services
-        .AddDiscordServices()
+    internal static IServiceCollection AddServices(this IServiceCollection services, bool enableDiscord = true)
+    {
+        if (enableDiscord)
+            services.AddDiscordServices();
+
+        return services
         .AddPublishServices()
         .AddMangaDexServices()
         .AddGoogleDrive()
@@ -36,4 +40,5 @@ internal static class AddDependencies
         .AddScoped<FileReleaseService>()
         .AddScoped<GoogleBloggerService>()
         .AddValidatorsFromAssemblyContaining<Program>();
+    }
 }

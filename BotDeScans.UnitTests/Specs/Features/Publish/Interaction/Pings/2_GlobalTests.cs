@@ -32,16 +32,16 @@ public class GlobalTests : UnitTest
         }
 
         [Theory]
-        [InlineData(PingType.Everyone)]
-        [InlineData(PingType.None)]
-        [InlineData(PingType.Role)]
-        [InlineData((PingType)999)]
+        [MemberData(nameof(GetInvalidPingTypes))]
         public void GivenUnexpectedPingTypeShouldReturnFalse(PingType pingType)
         {
             fixture.FreezeFakeConfiguration(Ping.PING_TYPE_KEY, pingType.ToString());
 
             ping.IsApplicable.Should().BeFalse();
         }
+
+        public static TheoryData<PingType> GetInvalidPingTypes() =>
+            [.. Enum.GetValues<PingType>().Where(p => p != PingType.Global)];
     }
 
     public class GetPingAsTextAsync : GlobalTests
@@ -54,6 +54,9 @@ public class GlobalTests : UnitTest
             var globalRoleName = fixture.Create<string>();
             globalRoleId = new(fixture.Create<ulong>());
             titleRoleId = new(fixture.Create<ulong>());
+
+            var state = fixture.Create<State>();
+            fixture.Inject(state);
 
             var globalRole = A.Fake<IRole>();
             var titleRole = A.Fake<IRole>();
@@ -80,7 +83,7 @@ public class GlobalTests : UnitTest
         {
             var expectedText = $"<@&{globalRoleId.Value}>, <@&{titleRoleId.Value}>";
 
-            var result = await ping.GetPingAsTextAsync(null!, cancellationToken);
+            var result = await ping.GetPingAsTextAsync(fixture.Freeze<State>(), cancellationToken);
             result.Should().BeSuccess().And.HaveValue(expectedText);
         }
 
@@ -97,7 +100,7 @@ public class GlobalTests : UnitTest
                     Result.Fail(ERROR_MESSAGE),
                     Result.Ok(titleRole));
 
-            var result = await ping.GetPingAsTextAsync(null!, cancellationToken);
+            var result = await ping.GetPingAsTextAsync(fixture.Freeze<State>(), cancellationToken);
             result.Should().BeFailure().And.HaveError(ERROR_MESSAGE);
         }
 
@@ -116,7 +119,7 @@ public class GlobalTests : UnitTest
                     Result.Ok(globalRole),
                     Result.Fail(ERROR_MESSAGE));
 
-            var result = await ping.GetPingAsTextAsync(null!, cancellationToken);
+            var result = await ping.GetPingAsTextAsync(fixture.Freeze<State>(), cancellationToken);
             result.Should().BeFailure().And.HaveError(ERROR_MESSAGE);
         }
 
@@ -133,7 +136,7 @@ public class GlobalTests : UnitTest
                     Result.Ok(A.Fake<IRole>()).WithReason(new Success(REASON_1)),
                     Result.Ok(A.Fake<IRole>()).WithReason(new Success(REASON_2)));
 
-            var result = await ping.GetPingAsTextAsync(null!, cancellationToken);
+            var result = await ping.GetPingAsTextAsync(fixture.Freeze<State>(), cancellationToken);
 
             result.Should().BeSuccess()
                   .And.HaveReason(REASON_1)
@@ -154,7 +157,7 @@ public class GlobalTests : UnitTest
                     Result.Ok(A.Fake<IRole>()).WithReason(new Success(REASON_1)),
                     Result.Ok(A.Fake<IRole>()).WithReason(new Error(REASON_2)));
 
-            var result = await ping.GetPingAsTextAsync(null!, cancellationToken);
+            var result = await ping.GetPingAsTextAsync(fixture.Freeze<State>(), cancellationToken);
 
             result.Should().BeFailure()
                   .And.HaveReason(REASON_1)

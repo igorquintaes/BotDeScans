@@ -45,8 +45,9 @@ public abstract class ClientFactory<TClient> : IClientFactory
     async Task<Result<object>> IClientFactory.SafeCreateObjectAsync(CancellationToken cancellationToken)
     {
         var result = await SafeCreateAsync(cancellationToken);
+
         return result.IsSuccess
-            ? Result.Ok<object>(result.Value!)
+            ? Result.Ok<object>(result.Value!).WithReasons(result.Reasons)
             : result.ToResult<object>();
     }
 

@@ -18,9 +18,13 @@ public class DatabaseContext : DbContext
     public DatabaseContext(DbContextOptions options)
         : base(options) { }
 
-    protected override void OnConfiguring(DbContextOptionsBuilder options) =>
-        options.UseSqlite($"Data Source={DbPath}")
-               .ConfigureWarnings(w => w.Ignore(RelationalEventId.PendingModelChangesWarning));
+    protected override void OnConfiguring(DbContextOptionsBuilder options)
+    {
+        if (options.IsConfigured is false)
+            options.UseSqlite($"Data Source={DbPath}");
+
+        options.ConfigureWarnings(w => w.Ignore(RelationalEventId.PendingModelChangesWarning));
+    }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

@@ -33,25 +33,7 @@ public class Program
 
         Console.WriteLine("Starting...");
 
-        var host = Host
-            .CreateDefaultBuilder(args)
-            .AddDiscordToHost()
-            .AddLoggingToHost()
-            .ConfigureServices(services => services
-                .AddServices()
-                .AddInfraDependencies()
-                .AddInteractivity()
-                .AddLazyCache()
-                .AddMangaDex()
-                .AddMangaDexUtils())
-            .ConfigureAppConfiguration(config => config
-                .AddEnvironmentVariables()
-                .AddJsonFile("config.json", optional: true, reloadOnChange: true)
-                .AddJsonFile("config.local.json", optional: true, reloadOnChange: true)
-                .AddJsonFile(Path.Combine("config", "config.json"), optional: true, reloadOnChange: true)
-                .AddJsonFile(Path.Combine("config", "config.local.json"), optional: true, reloadOnChange: true))
-            .UseConsoleLifetime()
-            .Build();
+        var host = CreateHostBuilder(args).Build();
 
         Result.Setup(cfg =>
         {
@@ -113,6 +95,38 @@ public class Program
         }
 
         await host.RunAsync();
+    }
+
+    public static IHostBuilder CreateHostBuilder(
+        string[] args,
+        bool enableDiscord = true,
+        Action<IHttpClientBuilder>? buildDiscordClient = null)
+    {
+        var hostBuilder = Host.CreateDefaultBuilder(args);
+        if (enableDiscord)
+            hostBuilder.AddDiscordToHost(buildDiscordClient);
+
+        return hostBuilder
+            .AddLoggingToHost()
+            .ConfigureServices(services =>
+            {
+                services
+                    .AddServices(enableDiscord)
+                    .AddInfraDependencies()
+                    .AddLazyCache()
+                    .AddMangaDex()
+                    .AddMangaDexUtils();
+
+                if (enableDiscord)
+                    services.AddInteractivity();
+            })
+            .ConfigureAppConfiguration(config => config
+                .AddJsonFile("config.json", optional: true, reloadOnChange: true)
+                .AddJsonFile("config.local.json", optional: true, reloadOnChange: true)
+                .AddJsonFile(Path.Combine("config", "config.json"), optional: true, reloadOnChange: true)
+                .AddJsonFile(Path.Combine("config", "config.local.json"), optional: true, reloadOnChange: true)
+                .AddEnvironmentVariables())
+            .UseConsoleLifetime();
     }
 
     private static void LogErrors(Result result)

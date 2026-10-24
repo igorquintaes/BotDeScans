@@ -63,7 +63,7 @@ public class SetupDiscordServiceValidator : AbstractValidator<SetupDiscordServic
                 .WithMessage(globalPingResult.ToValidationErrorMessage());
 
             RuleFor(service => service)
-                .MustAsync(async (_, _, context, ct) => await RoleMustExists(globalPingResult.Value, rolesService, context, ct))
+                .CustomAsync(async (_, context, ct) => await RoleMustExists(globalPingResult.Value, rolesService, context, ct))
                 .When(_ => globalPingResult.IsSuccess);
         });
     }

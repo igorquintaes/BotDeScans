@@ -97,15 +97,24 @@ public class GoogleDriveFilesService(
         var getRequest = driveService.Files.Get(file.Id);
 
         await using var stream = streamWrapper.CreateFileStream(filePath, FileMode.Create);
-        var executionResult = await googleWrapper.ExecuteAsync(() =>
+        var downloadResult = await googleWrapper.ExecuteAsync(() =>
             getRequest.DownloadAsync(stream, cancellationToken),
             cancellationToken);
 
-        var executionStatus = executionResult.ValueOrDefault?.Status ?? DownloadStatus.Failed;
-        IReason executionReason = executionResult.IsSuccess
-            ? new Success(string.Format(DOWNLOAD_STATUS, executionStatus, fileName))
-            : new Error(string.Format(DOWNLOAD_STATUS, executionStatus, fileName));
+        if (downloadResult.IsFailed)
+            return downloadResult.ToResult();
 
-        return executionResult.ToResult().WithReason(executionReason);
+        var exception = downloadResult.ValueOrDefault?.Exception;
+        var executionStatus = downloadResult.ValueOrDefault?.Status ?? DownloadStatus.Failed;
+        var reasonMessage = string.Format(DOWNLOAD_STATUS, executionStatus, fileName);
+
+        IReason executionReason = executionStatus is DownloadStatus.Completed
+            ? new Success(reasonMessage)
+            : new Error(reasonMessage);
+
+        if (exception != null)
+            ((Error)executionReason).CausedBy(exception);
+
+        return downloadResult.WithReason(executionReason).ToResult();
     }
 }

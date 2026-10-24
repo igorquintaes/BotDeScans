@@ -89,7 +89,7 @@ public class MegaFilesServiceTests : UnitTest
 
             A.CallTo(() => fixture
                 .FreezeFake<StreamWrapper>()
-                .CreateFileStream(filePath, FileMode.Open))
+                .CreateFileStream(filePath, FileMode.Open, FileShare.Read))
                 .Returns(fixture.FreezeFake<Stream>());
 
             A.CallTo(() => fixture
