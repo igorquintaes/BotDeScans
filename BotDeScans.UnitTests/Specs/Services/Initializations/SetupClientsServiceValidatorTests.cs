@@ -33,9 +33,7 @@ public class SetupClientsServiceValidatorTests : UnitTest
     }
 
     [Theory]
-    [InlineData(PingType.Everyone)]
-    [InlineData(PingType.None)]
-    [InlineData(PingType.Role)]
+    [MemberData(nameof(NonGlobalPingType))]
     public async Task GivenNotGlobalPingTypeShouldNotCheckGlobalRoleExistence(PingType pingType)
     {
         fixture.FreezeFakeConfiguration(Ping.PING_TYPE_KEY, pingType.ToString());
@@ -51,6 +49,9 @@ public class SetupClientsServiceValidatorTests : UnitTest
             .GetRoleAsync(A<string>.Ignored, cancellationToken))
             .MustNotHaveHappened();
     }
+
+    public static TheoryData<PingType> NonGlobalPingType() =>
+        [.. Enum.GetValues<PingType>().Where(p => p != PingType.Global)];
 
     [Theory]
     [InlineData("Discord:Token")]

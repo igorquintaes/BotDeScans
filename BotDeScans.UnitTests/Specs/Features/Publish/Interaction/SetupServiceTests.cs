@@ -6,6 +6,7 @@ using BotDeScans.App.Infra.Repositories;
 using BotDeScans.App.Models.DTOs;
 using BotDeScans.App.Models.Entities;
 using BotDeScans.App.Models.Entities.Enums;
+using FluentResults;
 using FluentValidation;
 using FluentValidation.Results;
 
@@ -27,8 +28,24 @@ public class SetupServiceTests : UnitTest
 
     public class SetupAsync : SetupServiceTests
     {
+        const string PING_TEXT = "some ping text.";
+
         public SetupAsync()
         {
+            var title = fixture.Create<Title>();
+            var enabledSteps = fixture.Create<EnabledSteps>();
+
+            A.CallTo(() => fixture
+                .FreezeFake<TitleRepository>()
+                .GetTitleAsync(A<int>._, cancellationToken))
+                .Returns(title);
+
+            A.CallTo(() => fixture
+                .FreezeFake<StepsService>()
+                .GetEnabledSteps(A<IReadOnlyCollection<StepName>>.That
+                    .IsSameSequenceAs(title.SkipSteps.Select(s => s.Step))))
+                .Returns(enabledSteps);
+
             A.CallTo(() => fixture
                 .FreezeFake<IValidator<State>>()
                 .ValidateAsync(A<State>._, cancellationToken))
@@ -37,6 +54,14 @@ public class SetupServiceTests : UnitTest
             A.CallTo(() => fixture
                 .FreezeFake<Ping>().IsApplicable)
                 .Returns(true);
+
+            A.CallTo(() => fixture
+                .FreezeFake<Ping>().GetPingAsTextAsync(
+                    A<State>.That.Matches(x => 
+                        x.Title == title && 
+                        x.Steps == enabledSteps), 
+                    cancellationToken))
+                .Returns(Result.Ok(PING_TEXT));
         }
 
         [Fact]
@@ -54,6 +79,14 @@ public class SetupServiceTests : UnitTest
             var result = await service.SetupAsync(info, cancellationToken);
 
             result.Value.ChapterInfo.Should().Be(info);
+        }
+
+        [Fact]
+        public async Task GivenSuccessfulExecutionShouldSetPing()
+        {
+            var result = await service.SetupAsync(fixture.Create<Info>(), cancellationToken);
+
+            result.Value.PingText.Should().Be(PING_TEXT);
         }
 
         [Fact]
@@ -101,21 +134,6 @@ public class SetupServiceTests : UnitTest
         }
 
         [Fact]
-        public async Task GivenSuccessfulExecutionShouldSetPing()
-        {
-            var ping = fixture.Create<string>();
-
-            A.CallTo(() => fixture
-                .FreezeFake<Ping>()
-                .GetPingAsTextAsync(null!, cancellationToken))
-                .Returns(ping);
-
-            var result = await service.SetupAsync(fixture.Create<Info>(), cancellationToken);
-
-            result.Value.PingText.Should().Be(ping);
-        }
-
-        [Fact]
         public async Task GivenNullTitleShouldReturnErrorResult()
         {
             A.CallTo(() => fixture
@@ -137,6 +155,21 @@ public class SetupServiceTests : UnitTest
                 .FreezeFake<IValidator<State>>()
                 .ValidateAsync(A<State>._, cancellationToken))
                 .Returns(new ValidationResult([new ValidationFailure("prop", ERROR_MESSAGE)]));
+
+            var result = await service.SetupAsync(fixture.Create<Info>(), cancellationToken);
+
+            result.Should().BeFailure().And.HaveError(ERROR_MESSAGE);
+        }
+
+        [Fact]
+        public async Task GivenPingErrorShouldReturnFailResult()
+        {
+            const string ERROR_MESSAGE = "some error.";
+
+            A.CallTo(() => fixture
+                .FreezeFake<Ping>()
+                .GetPingAsTextAsync(A<State>._, cancellationToken))
+                .Returns(Result.Fail(ERROR_MESSAGE));
 
             var result = await service.SetupAsync(fixture.Create<Info>(), cancellationToken);
 

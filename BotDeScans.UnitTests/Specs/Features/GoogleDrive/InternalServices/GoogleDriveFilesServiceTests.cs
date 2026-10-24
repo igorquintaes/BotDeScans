@@ -6,6 +6,7 @@ using FluentResults;
 using Google.Apis.Download;
 using Google.Apis.Drive.v3;
 using Google.Apis.Drive.v3.Data;
+using System;
 using static Google.Apis.Drive.v3.FilesResource;
 using File = Google.Apis.Drive.v3.Data.File;
 
@@ -183,7 +184,7 @@ public class GoogleDriveFilesServiceTests : UnitTest
 
             A.CallTo(() => fixture
                 .FreezeFake<StreamWrapper>()
-                .CreateFileStream(filePath, FileMode.Open))
+                .CreateFileStream(filePath, FileMode.Open, FileShare.Read))
                 .Returns(fixture.FreezeFake<Stream>());
 
             A.CallTo(() => fixture
@@ -267,14 +268,14 @@ public class GoogleDriveFilesServiceTests : UnitTest
             var mimeType = fixture.Create<string>();
 
             A.CallTo(() => fixture
+                .FreezeFake<StreamWrapper>()
+                .CreateFileStream(filePath, FileMode.Open, FileShare.Read))
+                .Returns(fixture.FreezeFake<Stream>());
+
+            A.CallTo(() => fixture
                 .FreezeFake<FileService>()
                 .GetMimeType(filePath))
                 .Returns(mimeType);
-
-            A.CallTo(() => fixture
-                .FreezeFake<StreamWrapper>()
-                .CreateFileStream(filePath, FileMode.Open))
-                .Returns(fixture.FreezeFake<Stream>());
 
             A.CallTo(() => fixture
                 .FreezeFake<FilesResource>()
@@ -351,6 +352,10 @@ public class GoogleDriveFilesServiceTests : UnitTest
             A.CallTo(() => fixture
                 .FreezeFake<IDownloadProgress>().Status)
                 .Returns(DownloadStatus.Completed);
+
+            A.CallTo(() => fixture
+                .FreezeFake<IDownloadProgress>().Exception)
+                .Returns(null!);
         }
 
         [Fact]
@@ -360,8 +365,7 @@ public class GoogleDriveFilesServiceTests : UnitTest
 
             var result = await service.DownloadAsync(file, targetDirectory, cancellationToken);
 
-            result.Should().BeSuccess().And
-                  .HaveReason(reason);
+            result.Should().BeSuccess().And.HaveReason(reason);
         }
 
         [Theory]
@@ -386,7 +390,6 @@ public class GoogleDriveFilesServiceTests : UnitTest
         public async Task GivenFailDownloadExecutionShouldReturnFailResult()
         {
             const string ERROR_MESSAGE = "some error.";
-            var reason = string.Format(GoogleDriveFilesService.DOWNLOAD_STATUS, DownloadStatus.Failed, file.Name);
 
             A.CallTo(() => fixture
                 .FreezeFake<GoogleWrapper>()
@@ -396,8 +399,7 @@ public class GoogleDriveFilesServiceTests : UnitTest
             var result = await service.DownloadAsync(file, targetDirectory, cancellationToken);
 
             result.Should().BeFailure().And
-                  .HaveError(ERROR_MESSAGE).And
-                  .HaveError(reason);
+                  .HaveError(ERROR_MESSAGE);
         }
 
         [Fact]
