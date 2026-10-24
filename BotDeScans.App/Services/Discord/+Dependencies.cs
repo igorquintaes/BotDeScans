@@ -9,6 +9,7 @@ using Remora.Commands.Extensions;
 using Remora.Discord.Commands.Extensions;
 using Remora.Discord.Hosting.Extensions;
 using System.Diagnostics.CodeAnalysis;
+using System.Text.Json;
 namespace BotDeScans.App.Services.Discord;
 
 [ExcludeFromCodeCoverage]
@@ -21,7 +22,9 @@ internal static class AddDependencies
         .AddCondition<RoleAuthorizeCondition>()
         .AddScoped<RolesService>()
         .AddScoped<ScopedRoleCache>()
-        .AddScoped<ExtendedFeedbackService>();
+        .AddScoped<ExtendedFeedbackService>()
+        .Configure<JsonSerializerOptions>("Discord", options =>
+            options.Converters.Insert(0, new NullSafeHeartbeatConverter()));
 
     internal static IHostBuilder AddDiscordToHost(
         this IHostBuilder hostBuilder,
