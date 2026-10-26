@@ -51,6 +51,9 @@ public static class FluentResultsExtensions
             .WithReasons(executionResult.Reasons);
     }
 
+    public static IEnumerable<SuccessInfo> GetSuccessesInfo(this IReadOnlyList<ISuccess> successes) =>
+        successes.Select((success, index) => new SuccessInfo(success.Message, index + 1));
+
     public static IEnumerable<ErrorInfo> GetErrorsInfo(this IReadOnlyList<IError> errors, int depth = 0)
     {
         for (var index = 0; index < errors.Count; index++)
@@ -110,7 +113,20 @@ public static class FluentResultsExtensions
     }
 }
 
-public record ErrorInfo(string Message, int Number, int Depth, ErrorType Type);
+public record SuccessInfo(string Message, int Number)
+{
+    public override string ToString() => $"SUCCESS {Number}: {Message}";
+}
+
+public record ErrorInfo(string Message, int Number, int Depth, ErrorType Type)
+{
+    public override string ToString()
+    {
+        var indent = new string(' ', Depth * 2);
+        var typeLabel = Type == ErrorType.Exception ? "EXCEPTION" : "ERROR";
+        return $"{indent}{typeLabel} {Number}: {Message}";
+    }
+}
 
 public enum ErrorType { Regular, Exception }
 
