@@ -2,12 +2,10 @@
 using BotDeScans.App.Infra;
 using BotDeScans.App.Services;
 using BotDeScans.App.Services.Discord;
-using BotDeScans.App.Services.Initializations;
 using BotDeScans.App.Services.Logging;
+using BotDeScans.App.Warmup;
 using FluentResults;
-using FluentValidation;
 using MangaDexSharp;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -21,7 +19,7 @@ namespace BotDeScans.App;
 [ExcludeFromCodeCoverage]
 public class Program
 {
-    public static async Task Main(string[] args)
+    public static async Task<int> Main(string[] args)
     {
         var cts = new CancellationTokenSource();
         Console.CancelKeyPress += (_, @event) =>
@@ -48,53 +46,16 @@ public class Program
             };
         });
 
-        var warmupResult = Result.Ok();
-        using (var scope = host.Services.CreateScope())
+        var setupResult = await Setup.Run(host.Services, cts.Token);
+        LogSetup(setupResult);
+
+        if (setupResult.IsFailed)
         {
-            Console.WriteLine("Database Warming Up...");
-            if (File.Exists(DatabaseContext.DbPath) is false)
-                File.WriteAllBytes(DatabaseContext.DbPath, []);
-
-            var db = scope.ServiceProvider.GetRequiredService<DatabaseContext>();
-            await db.Database.MigrateAsync(cts.Token);
-            Console.WriteLine("Database OK!");
-
-            Console.WriteLine("Discord Validation Warming Up...");
-            // todo: abstrair lógica em dois métodos (validação/execução), dentro de classe isolada para warmup
-            var setupDiscordService = scope.ServiceProvider.GetRequiredService<SetupDiscordService>();
-            var setupDiscordValidator = scope.ServiceProvider.GetRequiredService<IValidator<SetupDiscordService>>();
-            var setupDiscordValidationResult = await setupDiscordValidator.ValidateAsync(setupDiscordService, cts.Token);
-            if (setupDiscordValidationResult.IsValid is false)
-                warmupResult.WithErrors(setupDiscordValidationResult.ToResult().Errors);
-
-            Console.WriteLine("Discord Validation OK!");
-            if (warmupResult.IsFailed)
-            {
-                LogErrors(warmupResult);
-                return;
-            }
-
-            Console.WriteLine("Discord Commands Updating...");
-            var discordUpdateResult = await setupDiscordService.SetupAsync(cts.Token);
-            warmupResult.WithReasons(discordUpdateResult.Reasons);
-            Console.WriteLine("Discord Commands Updated OK!");
-
-            var setupClientsService = scope.ServiceProvider.GetRequiredService<SetupStepsService>();
-            var setupClientsResult = setupClientsService.Setup();
-            warmupResult.WithReasons(setupClientsResult.Reasons);
-
-            var setupPublishStepsService = scope.ServiceProvider.GetRequiredService<SetupClientsService>();
-            var setupPublishStepsResult = await setupPublishStepsService.SetupAsync(cts.Token);
-            warmupResult.WithReasons(setupPublishStepsResult.Reasons);
-        }
-
-        if (warmupResult.IsFailed)
-        {
-            LogErrors(warmupResult);
-            return;
+            return 1;
         }
 
         await host.RunAsync();
+        return 0;
     }
 
     public static IHostBuilder CreateHostBuilder(
@@ -129,18 +90,46 @@ public class Program
             .UseConsoleLifetime();
     }
 
-    private static void LogErrors(Result result)
+    private static void LogSetup(Result result)
     {
-        var errorsInfo = result.Errors.GetErrorsInfo().Select(x => x.Message);
-        var errorsText = string.Join("; ", errorsInfo);
+        LogSuccesses(result);
+        LogErrors(result);
+    }
+
+    private static void LogSuccesses(Result result)
+    {
+        var successesInfo = result.Successes.GetSuccessesInfo().Select(x => x.ToString());
+        var SuccessesText = string.Join(Environment.NewLine, successesInfo);
+        Log.Information(SuccessesText);
 
         var defaultConsoleForegroundColor = Console.ForegroundColor;
-        Console.ForegroundColor = ConsoleColor.Red;
+        var defaultBackgroundForegroundColor = Console.BackgroundColor;
+        Console.ForegroundColor = ConsoleColor.Green;
 
-        Console.WriteLine(errorsText);
-        Log.Error(errorsText);
+        Console.WriteLine(SuccessesText);
 
         Console.ForegroundColor = defaultConsoleForegroundColor;
+        Console.WriteLine();
+    }
+
+    private static void LogErrors(Result result)
+    {
+        if (result.IsSuccess)
+            return;
+
+        var errorsInfo = result.Errors.GetErrorsInfo().Select(x => x.ToString());
+        var errorsText = string.Join(Environment.NewLine, errorsInfo);
+        Log.Error(errorsText);
+
+        var defaultConsoleForegroundColor = Console.ForegroundColor;
+        var defaultBackgroundForegroundColor = Console.BackgroundColor;
+        Console.ForegroundColor = ConsoleColor.Yellow;
+        Console.BackgroundColor = ConsoleColor.Red;
+
+        Console.WriteLine(errorsText);
+
+        Console.ForegroundColor = defaultConsoleForegroundColor;
+        Console.BackgroundColor = defaultBackgroundForegroundColor;
         Console.ReadLine();
     }
 }
