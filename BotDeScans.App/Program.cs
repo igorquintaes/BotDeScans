@@ -19,7 +19,7 @@ namespace BotDeScans.App;
 [ExcludeFromCodeCoverage]
 public class Program
 {
-    public static async Task Main(string[] args)
+    public static async Task<int> Main(string[] args)
     {
         var cts = new CancellationTokenSource();
         Console.CancelKeyPress += (_, @event) =>
@@ -50,9 +50,12 @@ public class Program
         LogSetup(setupResult);
 
         if (setupResult.IsFailed)
-            return;
+        {
+            return 1;
+        }
 
         await host.RunAsync();
+        return 0;
     }
 
     public static IHostBuilder CreateHostBuilder(
