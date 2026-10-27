@@ -1,16 +1,15 @@
-﻿using BotDeScans.App.Extensions;
-using BotDeScans.App.Models.DTOs;
+﻿using BotDeScans.App.Models.DTOs;
 using FluentResults;
-using Microsoft.Extensions.Configuration;
 using System.Collections.Immutable;
 using System.Globalization;
 using System.Net.Http.Headers;
 using System.Net.Http.Json;
 using System.Text.Json;
+using static BotDeScans.App.Services.CapivaraTradutor.CapivaraTradutorService;
 
 namespace BotDeScans.App.Services.CapivaraTradutor.InternalServices;
 
-public class CapivaraTradutorUploadService(IConfiguration configuration)
+public class CapivaraTradutorUploadService
 {
     private readonly JsonSerializerOptions jsonSerializerOptions = new()
     {
@@ -39,7 +38,7 @@ public class CapivaraTradutorUploadService(IConfiguration configuration)
         if (httpResponse.IsSuccessStatusCode is false)
             return Result.Fail(await httpResponse.Content.ReadAsStringAsync(cancellationToken));
 
-        var response = await httpResponse.Content.ReadFromJsonAsync<RequestForUploadResponse>(jsonSerializerOptions, cancellationToken);
+        var response = await httpResponse.Content.ReadFromJsonAsync<ResponseDataBase<RequestForUploadDataResponse>>(jsonSerializerOptions, cancellationToken);
         if (response!.Status is false)
         {
             var contentBody = await httpResponse.Content.ReadAsStringAsync(cancellationToken);
@@ -82,11 +81,11 @@ public class CapivaraTradutorUploadService(IConfiguration configuration)
         HttpClient httpClient,
         IEnumerable<UploadData> uploadData,
         Info info,
-        string referenceId,
+        Work work,
         CancellationToken cancellationToken)
     {;
         const string COMMIT_URL = "https://capivaratradutor.com/api/v1/works/{0}/chapters";
-        const string CHAPTER_URL = "https://capivaratradutor.com/{0}/manga/{1}/chapters/{2}?page=1";
+
         var culture = CultureInfo.InvariantCulture;
 
         var chapterNumberParsed = decimal.TryParse(info.ChapterNumber, culture, out var chapterNumber);
@@ -99,32 +98,37 @@ public class CapivaraTradutorUploadService(IConfiguration configuration)
             chapterNumber = decimal.Parse(sanitedChapterNumber, culture);
         }
 
+        var volume = info.ChapterVolume is null
+            ? default(int?)
+            : int.Parse(info.ChapterVolume);
+
         var commitRequest = new CommitRequest(
             Number: chapterNumber,
             Title: info.ChapterName,
             Pages: [.. uploadData.Select(x => x.Key)],
-            VolumeNumber: info.ChapterVolume);
+            VolumeNumber: volume);
 
-        var commitUrl = string.Format(COMMIT_URL, referenceId);
+        var commitUrl = string.Format(COMMIT_URL, work.Id);
 
         var httpResponse = await httpClient.PostAsJsonAsync(commitUrl, commitRequest, jsonSerializerOptions, cancellationToken);
         if (httpResponse.IsSuccessStatusCode is false)
             return Result.Fail(await httpResponse.Content.ReadAsStringAsync(cancellationToken));
 
-        var groupId = configuration.GetRequiredValue<string>("Capivara:GroupId");
-        var chapterUrl = string.Format(CHAPTER_URL, groupId, referenceId, chapterNumber.ToString(culture));
+        var commitResponse = await httpResponse.Content.ReadFromJsonAsync<ResponseDataBase<CommitResponse>>(jsonSerializerOptions, cancellationToken);
+        if (commitResponse!.Status is false)
+            return Result.Fail(await httpResponse.Content.ReadAsStringAsync(cancellationToken));
 
-        return Result.Ok(chapterUrl);
+        return Result.Ok(commitResponse.Data.Url);
     }
 
     public record UploadData(string UploadUrl, string Key, string Path);
-
-    private record RequestForUploadResponse(bool Status, RequestForUploadDataResponse Data);
 
     private record RequestForUploadDataResponse(RequestForUploadsLinksResponse[] Uploads);
 
     private record RequestForUploadsLinksResponse(string Key, string UploadUrl);
 
-    private record CommitRequest(decimal Number, string? Title, string[] Pages, string? VolumeNumber);
+    private record CommitRequest(decimal Number, string? Title, string[] Pages, int? VolumeNumber);
+
+    private record CommitResponse(string Url);
 }
 

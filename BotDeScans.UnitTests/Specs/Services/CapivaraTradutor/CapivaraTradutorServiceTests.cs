@@ -5,6 +5,8 @@ using BotDeScans.UnitTests.FakeObjects;
 using FluentResults;
 using System.Collections.Immutable;
 using System.Net;
+using static BotDeScans.App.Services.CapivaraTradutor.CapivaraTradutorService;
+using static BotDeScans.App.Services.CapivaraTradutor.InternalServices.CapivaraTradutorUploadService;
 
 namespace BotDeScans.UnitTests.Specs.Services.CapivaraTradutor;
 
@@ -23,12 +25,14 @@ public class CapivaraTradutorServiceTests : UnitTest
     public class UploadAsync : CapivaraTradutorServiceTests
     {
         private readonly string titleId;
+        private readonly Work work;
         private readonly string filesDirectory;
         private readonly string chapterUrl;
 
         public UploadAsync()
         {
             titleId = fixture.Create<string>();
+            work = fixture.Create<Work>();
             filesDirectory = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "test-files-upload");
             if (Directory.Exists(filesDirectory))
                 Directory.Delete(filesDirectory, true);
@@ -39,7 +43,7 @@ public class CapivaraTradutorServiceTests : UnitTest
             chapterUrl = fixture.Create<string>();
 
             var uploadData = ImmutableArray.Create(
-                new CapivaraTradutorUploadService.UploadData(
+                new UploadData(
                     "https://example.com/upload1",
                     "key1",
                     "path1"));
@@ -56,7 +60,7 @@ public class CapivaraTradutorServiceTests : UnitTest
                 .FreezeFake<CapivaraTradutorUploadService>()
                 .UploadFilesAsync(
                     A<HttpClient>.Ignored,
-                    A<IEnumerable<CapivaraTradutorUploadService.UploadData>>.Ignored,
+                    A<IEnumerable<UploadData>>.Ignored,
                     cancellationToken))
                 .Returns(Result.Ok());
 
@@ -64,9 +68,9 @@ public class CapivaraTradutorServiceTests : UnitTest
                 .FreezeFake<CapivaraTradutorUploadService>()
                 .CommitAsync(
                     A<HttpClient>.Ignored,
-                    A<IEnumerable<CapivaraTradutorUploadService.UploadData>>.Ignored,
+                    A<IEnumerable<UploadData>>.Ignored,
                     A<Info>.Ignored,
-                    A<string>.Ignored,
+                    A<Work>.Ignored,
                     cancellationToken))
                 .Returns(Result.Ok(chapterUrl));
         }
@@ -76,7 +80,7 @@ public class CapivaraTradutorServiceTests : UnitTest
         {
             var result = await service.UploadAsync(
                 fixture.Freeze<Info>(),
-                titleId,
+                work,
                 filesDirectory,
                 cancellationToken);
 
@@ -98,7 +102,7 @@ public class CapivaraTradutorServiceTests : UnitTest
 
             var result = await service.UploadAsync(
                 fixture.Freeze<Info>(),
-                titleId,
+                work,
                 filesDirectory,
                 cancellationToken);
 
@@ -114,13 +118,13 @@ public class CapivaraTradutorServiceTests : UnitTest
                 .FreezeFake<CapivaraTradutorUploadService>()
                 .UploadFilesAsync(
                     A<HttpClient>.Ignored,
-                    A<IEnumerable<CapivaraTradutorUploadService.UploadData>>.Ignored,
+                    A<IEnumerable<UploadData>>.Ignored,
                     cancellationToken))
                 .Returns(Result.Fail(ERROR_MESSAGE));
 
             var result = await service.UploadAsync(
                 fixture.Freeze<Info>(),
-                titleId,
+                work,
                 filesDirectory,
                 cancellationToken);
 
@@ -136,15 +140,15 @@ public class CapivaraTradutorServiceTests : UnitTest
                 .FreezeFake<CapivaraTradutorUploadService>()
                 .CommitAsync(
                     A<HttpClient>.Ignored,
-                    A<IEnumerable<CapivaraTradutorUploadService.UploadData>>.Ignored,
+                    A<IEnumerable<UploadData>>.Ignored,
                     A<Info>.Ignored,
-                    A<string>.Ignored,
+                    A<Work>.Ignored,
                     cancellationToken))
                 .Returns(Result.Fail(ERROR_MESSAGE));
 
             var result = await service.UploadAsync(
                 fixture.Freeze<Info>(),
-                titleId,
+                work,
                 filesDirectory,
                 cancellationToken);
 
@@ -158,7 +162,7 @@ public class CapivaraTradutorServiceTests : UnitTest
             const string INFO_MESSAGE2 = "Files uploaded successfully";
 
             var uploadData = ImmutableArray.Create(
-                new CapivaraTradutorUploadService.UploadData(
+                new UploadData(
                     "https://example.com/upload1",
                     "key1",
                     "path1"));
@@ -178,13 +182,13 @@ public class CapivaraTradutorServiceTests : UnitTest
                 .FreezeFake<CapivaraTradutorUploadService>()
                 .UploadFilesAsync(
                     A<HttpClient>.Ignored,
-                    A<IEnumerable<CapivaraTradutorUploadService.UploadData>>.Ignored,
+                    A<IEnumerable<UploadData>>.Ignored,
                     cancellationToken))
                 .Returns(resultWithData2);
 
             var result = await service.UploadAsync(
                 fixture.Freeze<Info>(),
-                titleId,
+                work,
                 filesDirectory,
                 cancellationToken);
 
@@ -200,7 +204,7 @@ public class CapivaraTradutorServiceTests : UnitTest
             const string INFO_MESSAGE = "Request completed";
 
             var uploadData = ImmutableArray.Create(
-                new CapivaraTradutorUploadService.UploadData(
+                new UploadData(
                     "https://example.com/upload1",
                     "key1",
                     "path1"));
@@ -219,13 +223,13 @@ public class CapivaraTradutorServiceTests : UnitTest
                 .FreezeFake<CapivaraTradutorUploadService>()
                 .UploadFilesAsync(
                     A<HttpClient>.Ignored,
-                    A<IEnumerable<CapivaraTradutorUploadService.UploadData>>.Ignored,
+                    A<IEnumerable<UploadData>>.Ignored,
                     cancellationToken))
                 .Returns(Result.Fail(ERROR_MESSAGE));
 
             var result = await service.UploadAsync(
                 fixture.Freeze<Info>(),
-                titleId,
+                work,
                 filesDirectory,
                 cancellationToken);
 

@@ -3,6 +3,7 @@ using BotDeScans.App.Services.CapivaraTradutor.InternalServices;
 using BotDeScans.UnitTests.FakeObjects;
 using FluentResults;
 using System.Net;
+using static BotDeScans.App.Services.CapivaraTradutor.CapivaraTradutorService;
 using static BotDeScans.App.Services.CapivaraTradutor.InternalServices.CapivaraTradutorUploadService;
 
 namespace BotDeScans.UnitTests.Specs.Services.CapivaraTradutor.InternalServices;
@@ -240,7 +241,7 @@ public class CapivaraTradutorUploadServiceTests : UnitTest
 
             var uploadData = new[]
             {
-                new CapivaraTradutorUploadService.UploadData(
+                new UploadData(
                     "https://example.com/upload1",
                     "key1",
                     Path.Combine(filesDirectory, "1.png"))
@@ -258,20 +259,21 @@ public class CapivaraTradutorUploadServiceTests : UnitTest
     public class CommitAsync : CapivaraTradutorUploadServiceTests
     {
         private readonly HttpResponseMessage httpResponse;
-        private readonly string chapterUrl;
+        private readonly Work work;
+        private readonly Info info;
 
         public CommitAsync()
         {
-            chapterUrl = "https://capivaratradutor.com/group-slug/manga/reference-id/chapters/1?page=1";
+            work = fixture.Create<Work>();
+            info = CreateInfo();
 
             httpResponse = new HttpResponseMessage
             {
                 Content = new StringContent(@"{
                     ""status"": true,
                     ""data"": {
-                        ""chapterId"": 9001,
-                        ""previewUrl"": """ + chapterUrl + @"""
-                    }
+                        ""url"": ""sample-url""
+                    }   
                 }")
             };
 
@@ -289,11 +291,11 @@ public class CapivaraTradutorUploadServiceTests : UnitTest
             var result = await service.CommitAsync(
                 fixture.Freeze<HttpClient>(),
                 CreateUploadData(),
-                CreateInfo(),
-                "reference-id",
+                info,
+                work,
                 cancellationToken);
 
-            result.Should().BeSuccess().And.HaveValue(chapterUrl);
+            result.Should().BeSuccess().And.HaveValue("sample-url");
         }
 
         [Fact]
@@ -305,16 +307,17 @@ public class CapivaraTradutorUploadServiceTests : UnitTest
                 fixture.Freeze<HttpClient>(),
                 CreateUploadData(),
                 info,
-                "reference-id",
+                work,
                 cancellationToken);
 
-            result.Should().BeSuccess().And.HaveValue(
-                "https://capivaratradutor.com/group-slug/manga/reference-id/chapters/12.1?page=1");
+            result.Should().BeSuccess().And.HaveValue("sample-url");
 
             A.CallTo(() => fixture
                 .FreezeFake<FakeHttpMessageHandler>()
                 .FakeSendAsync(
-                    A<HttpRequestMessage>.That.Matches(x => x.Content != null),
+                    A<HttpRequestMessage>.That.Matches(x => 
+                        x.Content != null &&
+                        x.Content.ReadAsStringAsync().GetAwaiter().GetResult().Contains(@"12.1,")),
                     A<CancellationToken>.Ignored))
                 .MustHaveHappenedOnceExactly();
         }
@@ -338,7 +341,7 @@ public class CapivaraTradutorUploadServiceTests : UnitTest
                 fixture.Freeze<HttpClient>(),
                 CreateUploadData(),
                 CreateInfo(),
-                fixture.Create<string>(),
+                fixture.Create<Work>(),
                 cancellationToken);
 
             result.Should().BeFailure().And.HaveError("anything");
