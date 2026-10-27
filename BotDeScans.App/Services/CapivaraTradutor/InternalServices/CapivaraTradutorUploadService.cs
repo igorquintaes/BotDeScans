@@ -115,18 +115,14 @@ public class CapivaraTradutorUploadService(IConfiguration configuration)
         return Result.Ok(chapterUrl);
     }
 
+    public record UploadData(string UploadUrl, string Key, string Path);
+
     private record RequestForUploadResponse(bool Status, RequestForUploadDataResponse Data);
 
     private record RequestForUploadDataResponse(RequestForUploadsLinksResponse[] Uploads);
 
     private record RequestForUploadsLinksResponse(string Key, string UploadUrl);
 
-    public record UploadData(string UploadUrl, string Key, string Path);
-
-    private record CommitRequest(
-        decimal Number,        // obrigatório: número do capítulo (aceita decimais, ex.: 12.5).
-        string? Title,         // opcional, máx. 256 caracteres.
-        string[] Pages,        // chaves devolvidas por /uploads, em ordem de leitura (1 a 500). Só são aceitas chaves de capítulos do seu próprio scan. Cada uma pode ir como { "key", "single": true } para marcá-la como página simples.
-        string? VolumeNumber); // false = capítulo silencioso: sem avisos a seguidores, e-mails, webhooks, Discord nem La Charca (útil para enviar capítulos antigos). Padrão true. Não se combina com earlyAccess.
+    private record CommitRequest(decimal Number, string? Title, string[] Pages, string? VolumeNumber);
 }
 
