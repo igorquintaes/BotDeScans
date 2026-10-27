@@ -1,15 +1,25 @@
-﻿using BotDeScans.App.Models.DTOs;
+﻿using BotDeScans.App.Extensions;
+using BotDeScans.App.Models.DTOs;
 using FluentResults;
+using Microsoft.Extensions.Configuration;
 using System.Collections.Immutable;
+using System.Globalization;
 using System.Net.Http.Headers;
 using System.Net.Http.Json;
+using System.Text.Json;
 using File = System.IO.File;
 
 namespace BotDeScans.App.Services.CapivaraTradutor.InternalServices;
 
-public class CapivaraTradutorUploadService
+public class CapivaraTradutorUploadService(IConfiguration configuration)
 {
-    public async Task<Result<ImmutableArray<UploadData>>> RequestForUploadAsync(
+    private readonly JsonSerializerOptions jsonSerializerOptions = new()
+    {
+        PropertyNameCaseInsensitive = true,
+        PropertyNamingPolicy = JsonNamingPolicy.CamelCase
+    };
+
+    public virtual async Task<Result<ImmutableArray<UploadData>>> RequestForUploadAsync(
         HttpClient httpClient,
         IEnumerable<string> filesPaths,
         CancellationToken cancellationToken)
@@ -26,11 +36,11 @@ public class CapivaraTradutorUploadService
             size = new FileInfo(x).Length
         });
 
-        var httpResponse = await httpClient.PostAsJsonAsync(URL, new { files = uploadFilesContent }, cancellationToken);
+        var httpResponse = await httpClient.PostAsJsonAsync(URL, new { files = uploadFilesContent }, jsonSerializerOptions, cancellationToken);
         if (httpResponse.IsSuccessStatusCode is false)
             return Result.Fail(await httpResponse.Content.ReadAsStringAsync(cancellationToken));
 
-        var response = await httpResponse.Content.ReadFromJsonAsync<RequestForUploadResponse>(cancellationToken);
+        var response = await httpResponse.Content.ReadFromJsonAsync<RequestForUploadResponse>(jsonSerializerOptions, cancellationToken);
         if (response!.Status is false)
         {
             var contentBody = await httpResponse.Content.ReadAsStringAsync(cancellationToken);
@@ -46,7 +56,7 @@ public class CapivaraTradutorUploadService
             .ToImmutableArray();
     }
 
-    public async Task<Result> UploadFilesAsync(
+    public virtual async Task<Result> UploadFilesAsync(
         HttpClient httpClient,
         IEnumerable<UploadData> uploadData,
         CancellationToken cancellationToken)
@@ -66,44 +76,41 @@ public class CapivaraTradutorUploadService
         return Result.Ok();
     }
 
-    public async Task<Result<string>> CommitAsync(
+    public virtual async Task<Result<string>> CommitAsync(
         HttpClient httpClient,
         IEnumerable<UploadData> uploadData,
         Info info,
-        string titleId,
+        string referenceId,
         CancellationToken cancellationToken)
     {;
         const string COMMIT_URL = "https://capivaratradutor.com/api/v1/works/{0}/chapters";
         const string CHAPTER_URL = "https://capivaratradutor.com/{0}/manga/{1}/chapters/{2}?page=1";
+        var culture = CultureInfo.InvariantCulture;
 
-        var chapterNumberParsed = decimal.TryParse(info.ChapterNumber, out var chapterNumber);
+        var chapterNumberParsed = decimal.TryParse(info.ChapterNumber, culture, out var chapterNumber);
         if (chapterNumberParsed is false)
         {
             var sanitedChapterNumber = new string([.. info.ChapterNumber.Where(c => 
                 char.IsDigit(c) || 
                 char.IsPunctuation(c))]);
 
-            chapterNumber = decimal.Parse(sanitedChapterNumber);
+            chapterNumber = decimal.Parse(sanitedChapterNumber, culture);
         }
 
         var commitRequest = new CommitRequest(
             Number: chapterNumber,
             Title: info.ChapterName,
             Pages: [.. uploadData.Select(x => x.Key)],
-            VolumeNumber: info.ChapterVolume,
-            DisplayNumber: null,
-            AnnouncePage: null,
-            PublishAt: null,
-            Notify: null);
+            VolumeNumber: info.ChapterVolume);
 
-        var commitUrl = string.Format(COMMIT_URL, titleId);
+        var commitUrl = string.Format(COMMIT_URL, referenceId);
 
-        var httpResponse = await httpClient.PostAsJsonAsync(commitUrl, commitRequest, cancellationToken);
+        var httpResponse = await httpClient.PostAsJsonAsync(commitUrl, commitRequest, jsonSerializerOptions, cancellationToken);
         if (httpResponse.IsSuccessStatusCode is false)
             return Result.Fail(await httpResponse.Content.ReadAsStringAsync(cancellationToken));
 
-        var groupId = httpClient.DefaultRequestHeaders.GetValues("GroupId").Single();
-        var chapterUrl = string.Format(CHAPTER_URL, groupId, titleId, info.ChapterNumber);
+        var groupId = configuration.GetRequiredValue<string>("Capivara:GroupId");
+        var chapterUrl = string.Format(CHAPTER_URL, groupId, referenceId, chapterNumber.ToString(culture));
 
         return Result.Ok(chapterUrl);
     }
@@ -117,13 +124,9 @@ public class CapivaraTradutorUploadService
     public record UploadData(string UploadUrl, string Key, string Path);
 
     private record CommitRequest(
-        decimal Number,       // obrigatório: número do capítulo (aceita decimais, ex.: 12.5).
-        string? Title,        // opcional, máx. 256 caracteres.
-        string[] Pages,       // chaves devolvidas por /uploads, em ordem de leitura (1 a 500). Só são aceitas chaves de capítulos do seu próprio scan. Cada uma pode ir como { "key", "single": true } para marcá-la como página simples.
-        string? VolumeNumber, // número do volume (inteiro).
-        int? DisplayNumber,   // número exibido se não for o real.
-        int? AnnouncePage,    // página destacada: a que aparece como imagem grande nos avisos dos seus webhooks e na prévia da obra. Número da página (1 = a primeira) ou null para usar a capa. Sem o campo, usa a página padrão do scan.
-        DateTime? PublishAt,  // opcional: data ISO futura (máx. 1 ano) para agendar. Sem ela o capítulo é publicado na hora e saem os avisos de sempre (seguidores, webhooks, Discord), salvo com notify: false.
-        bool? Notify);        // false = capítulo silencioso: sem avisos a seguidores, e-mails, webhooks, Discord nem La Charca (útil para enviar capítulos antigos). Padrão true. Não se combina com earlyAccess.
+        decimal Number,        // obrigatório: número do capítulo (aceita decimais, ex.: 12.5).
+        string? Title,         // opcional, máx. 256 caracteres.
+        string[] Pages,        // chaves devolvidas por /uploads, em ordem de leitura (1 a 500). Só são aceitas chaves de capítulos do seu próprio scan. Cada uma pode ir como { "key", "single": true } para marcá-la como página simples.
+        string? VolumeNumber); // false = capítulo silencioso: sem avisos a seguidores, e-mails, webhooks, Discord nem La Charca (útil para enviar capítulos antigos). Padrão true. Não se combina com earlyAccess.
 }
 

@@ -3,12 +3,16 @@ using BotDeScans.App.Services.CapivaraTradutor.InternalServices;
 using FluentResults;
 using Serilog;
 using System.Text.Json;
-using System.Text.Json.Serialization;
 
 namespace BotDeScans.App.Services.CapivaraTradutor;
 
 public class CapivaraTradutorService(HttpClient httpClient, CapivaraTradutorUploadService capivaraTradutorUploadService)
 {
+    private readonly JsonSerializerOptions jsonSerializerOptions = new()
+    {
+        PropertyNameCaseInsensitive = true
+    };
+
     public virtual async Task<Result<string>> UploadAsync(
         Info info,
         string titleId,
@@ -47,17 +51,13 @@ public class CapivaraTradutorService(HttpClient httpClient, CapivaraTradutorUplo
     public virtual async Task<Result> PingCredentialsAsync(CancellationToken cancellationToken)
     {
         var response = await httpClient.GetAsync("https://capivaratradutor.com/api/v1/me", cancellationToken);
-        using var streamContent = await response.Content.ReadAsStreamAsync(cancellationToken);
-        using var streamReader = new StreamReader(streamContent);
-        var stringContent = await streamReader.ReadToEndAsync(cancellationToken);
+        var stringContent = await response.Content.ReadAsStringAsync(cancellationToken);
 
         if (response.IsSuccessStatusCode is false)
             return HandleError(stringContent);
 
-        using var jsonDoc = await JsonDocument.ParseAsync(streamContent, cancellationToken: cancellationToken);
-
-        var isStatusTrue = jsonDoc.RootElement.GetProperty("status").GetBoolean();
-        if (isStatusTrue is false)
+        var pingResponse = JsonSerializer.Deserialize<PingResponse>(stringContent, jsonSerializerOptions)!;
+        if (pingResponse.Status is false)
             return HandleError(stringContent);
 
         return Result.Ok();
@@ -75,4 +75,6 @@ public class CapivaraTradutorService(HttpClient httpClient, CapivaraTradutorUplo
                 causedBy: new Error(responseContent));
         }
     }
+
+    record PingResponse(bool Status);
 }
