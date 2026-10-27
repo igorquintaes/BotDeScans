@@ -76,15 +76,3 @@ public class CapivaraTradutorService(HttpClient httpClient, CapivaraTradutorUplo
         }
     }
 }
-
-public record SakuraRequestResponse
-{
-    [JsonPropertyName("id_capitulo")]
-    public int? IdCapitulo { get; set; }
-    [JsonPropertyName("message")]
-    public string? Message { get; set; }
-    [JsonPropertyName("error_code")]
-    public string? ErrorCode { get; set; }
-    [JsonPropertyName("chapter_url")]
-    public string? ChapterUrl { get; set; }
-}
