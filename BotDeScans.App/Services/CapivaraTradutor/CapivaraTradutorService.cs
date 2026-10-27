@@ -1,4 +1,5 @@
-﻿using BotDeScans.App.Models.DTOs;
+﻿using BotDeScans.App.Infra.Logging;
+using BotDeScans.App.Models.DTOs;
 using BotDeScans.App.Services.CapivaraTradutor.InternalServices;
 using FluentResults;
 using Serilog;
@@ -6,12 +7,17 @@ using System.Text.Json;
 
 namespace BotDeScans.App.Services.CapivaraTradutor;
 
-public class CapivaraTradutorService(HttpClient httpClient, CapivaraTradutorUploadService capivaraTradutorUploadService)
+public class CapivaraTradutorService(
+    HttpClient httpClient, 
+    CapivaraTradutorUploadService capivaraTradutorUploadService)
 {
     private readonly JsonSerializerOptions jsonSerializerOptions = new()
     {
         PropertyNameCaseInsensitive = true
     };
+
+    // Upload acontece na aws, não diretamente no capivara, e não podemos mandar o Bearer pra lá
+    private static readonly HttpClient uploadClient = new(new HttpLoggingHandler(new HttpClientHandler()));
 
     public virtual async Task<Result<string>> UploadAsync(
         Info info,
@@ -30,7 +36,7 @@ public class CapivaraTradutorService(HttpClient httpClient, CapivaraTradutorUplo
             return aggregateResult;
 
         var uploadFilesResult = await capivaraTradutorUploadService.UploadFilesAsync(
-            httpClient,
+            uploadClient,
             requestForUploadResult.Value,
             cancellationToken);
 

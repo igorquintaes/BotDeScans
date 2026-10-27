@@ -1,4 +1,5 @@
 ﻿using BotDeScans.App.Extensions;
+using BotDeScans.App.Infra.Logging;
 using BotDeScans.App.Models.Entities.Enums;
 using BotDeScans.App.Services.CapivaraTradutor;
 using BotDeScans.App.Services.CapivaraTradutor.InternalServices;
@@ -24,7 +25,7 @@ public class CapivaraTradutorClientFactory(IConfiguration configuration, Capivar
         var groupId = configuration.GetRequiredValue<string>("Capivara:GroupId");
         var apiKey = configuration.GetRequiredValue<string>("Capivara:ApiKey");
 
-        var httpClient = new HttpClient();
+        var httpClient = new HttpClient(new HttpLoggingHandler(new HttpClientHandler()));
         httpClient.DefaultRequestHeaders.Clear();
         httpClient.DefaultRequestHeaders.Add("GroupId", groupId);
         httpClient.DefaultRequestHeaders.Add("User-Agent", userAgent);

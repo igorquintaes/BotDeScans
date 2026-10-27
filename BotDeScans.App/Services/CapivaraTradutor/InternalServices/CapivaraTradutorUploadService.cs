@@ -7,7 +7,6 @@ using System.Globalization;
 using System.Net.Http.Headers;
 using System.Net.Http.Json;
 using System.Text.Json;
-using File = System.IO.File;
 
 namespace BotDeScans.App.Services.CapivaraTradutor.InternalServices;
 
@@ -63,11 +62,14 @@ public class CapivaraTradutorUploadService(IConfiguration configuration)
     {
         foreach (var data in uploadData)
         {
-            using var fileStream = File.OpenRead(data.Path);
-            using var content = new StreamContent(fileStream);
-            content.Headers.ContentType = new MediaTypeHeaderValue("image/png");
+            using var fileStream = new FileStream(
+            data.Path, FileMode.Open, FileAccess.Read, FileShare.Read, bufferSize: 4096, useAsync: true);
 
-            var response = await httpClient.PutAsync(data.UploadUrl, content, cancellationToken);
+            using var request = new HttpRequestMessage(HttpMethod.Put, data.UploadUrl);
+            request.Content = new StreamContent(fileStream);
+            request.Content.Headers.ContentType = new MediaTypeHeaderValue("image/png");
+
+            var response = await httpClient.SendAsync(request, cancellationToken);
 
             if (response.IsSuccessStatusCode is false)
                 return Result.Fail(await response.Content.ReadAsStringAsync(cancellationToken));
