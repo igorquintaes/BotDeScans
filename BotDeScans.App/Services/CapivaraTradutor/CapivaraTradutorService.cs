@@ -46,7 +46,7 @@ public class CapivaraTradutorService(HttpClient httpClient, CapivaraTradutorUplo
 
     public virtual async Task<Result> PingCredentialsAsync(CancellationToken cancellationToken)
     {
-        var response = await httpClient.GetAsync("https://capivara-tradutor.com.br/api/v1/me", cancellationToken);
+        var response = await httpClient.GetAsync("https://capivaratradutor.com/api/v1/me", cancellationToken);
         using var streamContent = await response.Content.ReadAsStreamAsync(cancellationToken);
         using var streamReader = new StreamReader(streamContent);
         var stringContent = await streamReader.ReadToEndAsync(cancellationToken);

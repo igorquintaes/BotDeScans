@@ -35,7 +35,7 @@ public enum StepName
     [Description("Publicar na Sakura Mangás")]
     UploadSakuraMangas = 13,
     [Description("Publicar no Capivara Tradutor")]
-    UploadTradutorCapivara = 14,
+    UploadCapivaraTradutor = 14,
     [Description("Publicar na Blogspot")]
     PublishBlogspot = 15
 }

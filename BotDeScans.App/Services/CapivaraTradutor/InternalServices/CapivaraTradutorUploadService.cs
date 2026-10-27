@@ -15,7 +15,10 @@ public class CapivaraTradutorUploadService
         CancellationToken cancellationToken)
     {
         const string URL = "https://capivaratradutor.com/api/v1/uploads";
-        const string CONTENT_TYPE = "image/png"; // image compression always creates a PNG file
+
+        // Image compression always creates a PNG file.
+        // Accepted Types: image/jpeg, image/png, image/webp, image/gif, image/avif
+        const string CONTENT_TYPE = "image/png";
 
         var uploadFilesContent = filesPaths.Select(x => new
         {
@@ -23,7 +26,7 @@ public class CapivaraTradutorUploadService
             size = new FileInfo(x).Length
         });
 
-        var httpResponse = await httpClient.PostAsJsonAsync(URL, new { file = uploadFilesContent }, cancellationToken);
+        var httpResponse = await httpClient.PostAsJsonAsync(URL, new { files = uploadFilesContent }, cancellationToken);
         if (httpResponse.IsSuccessStatusCode is false)
             return Result.Fail(await httpResponse.Content.ReadAsStringAsync(cancellationToken));
 

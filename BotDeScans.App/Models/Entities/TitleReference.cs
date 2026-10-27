@@ -18,4 +18,6 @@ public enum ExternalReference
     MangaDex,
     [Description("Sakura Mangás")]
     SakuraMangas,
+    [Description("Capivara Tradutor")]
+    CapivaraTradutor
 }

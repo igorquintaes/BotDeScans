@@ -14,7 +14,7 @@ public class CapivaraTradutorClientFactory(IConfiguration configuration, Capivar
 {
     public override bool Enabled => configuration
         .GetValues<StepName>("Settings:Publish:Steps")
-        .Any(x => x is StepName.UploadTradutorCapivara);
+        .Any(x => x is StepName.UploadCapivaraTradutor);
 
     public override Task<Result<CapivaraTradutorService>> CreateAsync(CancellationToken cancellationToken)
     {

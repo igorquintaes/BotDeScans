@@ -48,6 +48,9 @@ public record State
     [ReleaseLink("Sakura Mangás")]
     public string? SakuraMangasLink { get; init; }
 
+    [ReleaseLink("Capivara Tradutor")]
+    public string? CapivaraTradutorLink { get; init; }
+
     [ReleaseLink("Blogger")]
     public string? BloggerLink { get; init; }
 
@@ -69,7 +72,8 @@ public record State
         BoxPdfLink = other.BoxPdfLink ?? BoxPdfLink,
         MangaDexLink = other.MangaDexLink ?? MangaDexLink,
         SakuraMangasLink = other.SakuraMangasLink ?? SakuraMangasLink,
-        BloggerLink = other.BloggerLink ?? BloggerLink,
+        CapivaraTradutorLink = other.CapivaraTradutorLink ?? CapivaraTradutorLink,
+        BloggerLink = other.BloggerLink ?? BloggerLink
     };
 }
 
