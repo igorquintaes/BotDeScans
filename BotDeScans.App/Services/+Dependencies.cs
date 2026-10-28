@@ -3,6 +3,7 @@ using BotDeScans.App.Features.Mega;
 using BotDeScans.App.Features.Publish;
 using BotDeScans.App.Features.References;
 using BotDeScans.App.Features.Titles;
+using BotDeScans.App.Services.CapivaraTradutor;
 using BotDeScans.App.Services.Discord;
 using BotDeScans.App.Services.Initializations;
 using BotDeScans.App.Services.Initializations.Factories;
@@ -25,6 +26,7 @@ internal static class AddDependencies
         return services
         .AddPublishServices()
         .AddMangaDexServices()
+        .AddCapivaraTradutorServices()
         .AddGoogleDrive()
         .AddMega()
         .AddTitleServices()

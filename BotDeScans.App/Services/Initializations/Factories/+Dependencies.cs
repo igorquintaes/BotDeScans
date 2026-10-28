@@ -1,4 +1,5 @@
 ﻿using BotDeScans.App.Extensions;
+using BotDeScans.App.Services.CapivaraTradutor;
 using Box.Sdk.Gen;
 using CG.Web.MegaApiClient;
 using Google.Apis.Blogger.v3;
@@ -16,6 +17,7 @@ internal static class AddDependencies
         .AddExternalClientAsSingleton<BloggerService, GoogleBloggerClientFactory>()
         .AddExternalClientAsSingleton<DriveService, GoogleDriveClientFactory>()
         .AddExternalClientAsSingleton<SakuraMangasService, SakuraMangasClientFactory>()
+        .AddExternalClientAsSingleton<CapivaraTradutorService, CapivaraTradutorClientFactory>()
         .AddExternalClientAsScoped<IMegaApiClient, MegaClientFactory>()
         .AddExternalClientAsScoped<MangaDexAccessToken, MangaDexClientFactory>();
 }

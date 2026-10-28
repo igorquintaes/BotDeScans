@@ -21,8 +21,8 @@ public class ImageServiceTests : UnitTest, IDisposable
 
     public class IsGrayscale : ImageServiceTests
     {
-        private static readonly SKColor grey = new SKColor(5, 5, 5);
-        private static readonly SKColor notGrey = new SKColor(5, 5, 6);
+        private static readonly SKColor grey = new(5, 5, 5);
+        private static readonly SKColor notGrey = new(5, 5, 6);
 
         [Fact]
         public void GivenGreyImageShouldReturnTrue()

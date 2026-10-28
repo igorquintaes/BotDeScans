@@ -291,3 +291,6 @@ tools/**
 
 # Verify files
 *.received.*
+
+# Temporary files to not be versioned
+[Tt]emp/

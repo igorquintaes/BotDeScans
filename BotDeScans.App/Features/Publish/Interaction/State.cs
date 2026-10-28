@@ -48,6 +48,9 @@ public record State
     [ReleaseLink("Sakura Mangás")]
     public string? SakuraMangasLink { get; init; }
 
+    [ReleaseLink("Capivara Tradutor")]
+    public string? CapivaraTradutorLink { get; init; }
+
     [ReleaseLink("Blogger")]
     public string? BloggerLink { get; init; }
 
@@ -69,7 +72,8 @@ public record State
         BoxPdfLink = other.BoxPdfLink ?? BoxPdfLink,
         MangaDexLink = other.MangaDexLink ?? MangaDexLink,
         SakuraMangasLink = other.SakuraMangasLink ?? SakuraMangasLink,
-        BloggerLink = other.BloggerLink ?? BloggerLink,
+        CapivaraTradutorLink = other.CapivaraTradutorLink ?? CapivaraTradutorLink,
+        BloggerLink = other.BloggerLink ?? BloggerLink
     };
 }
 
@@ -96,6 +100,11 @@ public class StateValidator : AbstractValidator<State>
             .Must(prop => prop.References.Any(reference => reference.Key == ExternalReference.SakuraMangas))
             .When(prop => prop.Steps.Any(step => step.Key is UploadSakuraMangasStep))
             .WithMessage("Não foi definida uma referência para a publicação da obra na Sakura Mangás.");
+
+        RuleFor(model => model.Title)
+            .Must(prop => prop.References.Any(reference => reference.Key == ExternalReference.CapivaraTradutor))
+            .When(prop => prop.Steps.Any(step => step.Key is UploadCapivaraTradutorStep))
+            .WithMessage("Não foi definida uma referência para a publicação da obra no Capivara Tradutor.");
 
         var globalPingValue = configuration.GetValue<string?>(GlobalPing.GLOBAL_ROLE_KEY, null);
         var pingTypeAsString = configuration.GetValue<string?>(Ping.PING_TYPE_KEY, null);

@@ -63,6 +63,10 @@
     "User": "",
     "Pass": ""
   },
+  "Capivara": {
+    "GroupId": "",
+    "ApiKey": ""
+  },
   "UserAgent": "BotDeScans/0.0.1",
   "Compress": {
     "Grayscale": {

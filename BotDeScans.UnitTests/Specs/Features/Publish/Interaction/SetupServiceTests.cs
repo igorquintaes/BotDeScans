@@ -28,7 +28,7 @@ public class SetupServiceTests : UnitTest
 
     public class SetupAsync : SetupServiceTests
     {
-        const string PING_TEXT = "some ping text.";
+        private const string PING_TEXT = "some ping text.";
 
         public SetupAsync()
         {
@@ -57,9 +57,9 @@ public class SetupServiceTests : UnitTest
 
             A.CallTo(() => fixture
                 .FreezeFake<Ping>().GetPingAsTextAsync(
-                    A<State>.That.Matches(x => 
-                        x.Title == title && 
-                        x.Steps == enabledSteps), 
+                    A<State>.That.Matches(x =>
+                        x.Title == title &&
+                        x.Steps == enabledSteps),
                     cancellationToken))
                 .Returns(Result.Ok(PING_TEXT));
         }
