@@ -25,14 +25,14 @@ public class CapivaraTradutorServiceTests : UnitTest
     public class UploadAsync : CapivaraTradutorServiceTests
     {
         private readonly string titleId;
-        private readonly Work work;
+        private readonly string referenceId;
         private readonly string filesDirectory;
         private readonly string chapterUrl;
 
         public UploadAsync()
         {
             titleId = fixture.Create<string>();
-            work = fixture.Create<Work>();
+            referenceId = fixture.Create<string>();
             filesDirectory = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "test-files-upload");
             if (Directory.Exists(filesDirectory))
                 Directory.Delete(filesDirectory, true);
@@ -70,7 +70,7 @@ public class CapivaraTradutorServiceTests : UnitTest
                     A<HttpClient>.Ignored,
                     A<IEnumerable<UploadData>>.Ignored,
                     A<Info>.Ignored,
-                    A<Work>.Ignored,
+                    A<string>.Ignored,
                     cancellationToken))
                 .Returns(Result.Ok(chapterUrl));
         }
@@ -80,7 +80,7 @@ public class CapivaraTradutorServiceTests : UnitTest
         {
             var result = await service.UploadAsync(
                 fixture.Freeze<Info>(),
-                work,
+                referenceId,
                 filesDirectory,
                 cancellationToken);
 
@@ -102,7 +102,7 @@ public class CapivaraTradutorServiceTests : UnitTest
 
             var result = await service.UploadAsync(
                 fixture.Freeze<Info>(),
-                work,
+                referenceId,
                 filesDirectory,
                 cancellationToken);
 
@@ -124,7 +124,7 @@ public class CapivaraTradutorServiceTests : UnitTest
 
             var result = await service.UploadAsync(
                 fixture.Freeze<Info>(),
-                work,
+                referenceId,
                 filesDirectory,
                 cancellationToken);
 
@@ -142,13 +142,13 @@ public class CapivaraTradutorServiceTests : UnitTest
                     A<HttpClient>.Ignored,
                     A<IEnumerable<UploadData>>.Ignored,
                     A<Info>.Ignored,
-                    A<Work>.Ignored,
+                    A<string>.Ignored,
                     cancellationToken))
                 .Returns(Result.Fail(ERROR_MESSAGE));
 
             var result = await service.UploadAsync(
                 fixture.Freeze<Info>(),
-                work,
+                referenceId,
                 filesDirectory,
                 cancellationToken);
 
@@ -188,7 +188,7 @@ public class CapivaraTradutorServiceTests : UnitTest
 
             var result = await service.UploadAsync(
                 fixture.Freeze<Info>(),
-                work,
+                referenceId,
                 filesDirectory,
                 cancellationToken);
 
@@ -229,7 +229,7 @@ public class CapivaraTradutorServiceTests : UnitTest
 
             var result = await service.UploadAsync(
                 fixture.Freeze<Info>(),
-                work,
+                referenceId,
                 filesDirectory,
                 cancellationToken);
 

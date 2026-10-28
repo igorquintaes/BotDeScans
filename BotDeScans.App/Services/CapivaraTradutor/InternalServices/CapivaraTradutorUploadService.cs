@@ -11,7 +11,7 @@ namespace BotDeScans.App.Services.CapivaraTradutor.InternalServices;
 
 public class CapivaraTradutorUploadService
 {
-    private readonly JsonSerializerOptions jsonSerializerOptions = new()
+    private static readonly JsonSerializerOptions jsonSerializerOptions = new()
     {
         PropertyNameCaseInsensitive = true,
         PropertyNamingPolicy = JsonNamingPolicy.CamelCase
@@ -81,7 +81,7 @@ public class CapivaraTradutorUploadService
         HttpClient httpClient,
         IEnumerable<UploadData> uploadData,
         Info info,
-        Work work,
+        string referenceId,
         CancellationToken cancellationToken)
     {;
         const string COMMIT_URL = "https://capivaratradutor.com/api/v1/works/{0}/chapters";
@@ -108,7 +108,7 @@ public class CapivaraTradutorUploadService
             Pages: [.. uploadData.Select(x => x.Key)],
             VolumeNumber: volume);
 
-        var commitUrl = string.Format(COMMIT_URL, work.Id);
+        var commitUrl = string.Format(COMMIT_URL, referenceId);
 
         var httpResponse = await httpClient.PostAsJsonAsync(commitUrl, commitRequest, jsonSerializerOptions, cancellationToken);
         if (httpResponse.IsSuccessStatusCode is false)

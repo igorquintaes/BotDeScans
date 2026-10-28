@@ -3,7 +3,6 @@ using BotDeScans.App.Models.DTOs;
 using BotDeScans.App.Services.CapivaraTradutor.InternalServices;
 using FluentResults;
 using Serilog;
-using System.Net.Http.Json;
 using System.Text.Json;
 
 namespace BotDeScans.App.Services.CapivaraTradutor;
@@ -12,41 +11,18 @@ public class CapivaraTradutorService(
     HttpClient httpClient, 
     CapivaraTradutorUploadService capivaraTradutorUploadService)
 {
-    private readonly JsonSerializerOptions jsonSerializerOptions = new()
+    private static readonly JsonSerializerOptions jsonSerializerOptions = new()
     {
         PropertyNameCaseInsensitive = true
     };
 
     // Upload acontece na aws, não diretamente no capivara, e não podemos mandar o Bearer pra lá
+    // Criamos um client isolado para que trocas de headers não afetem o client principal
     private static readonly HttpClient uploadClient = new(new HttpLoggingHandler(new HttpClientHandler()));
-
-    private const string WORKS_URL = "https://capivaratradutor.com/api/v1/works";
-
-    public virtual async Task<Result<Work>> GetWorkAsync(string title, CancellationToken cancellationToken)
-    {
-        var httpResponse = await httpClient.GetAsync(WORKS_URL, cancellationToken);
-
-        if (httpResponse.IsSuccessStatusCode is false)
-            return Result.Fail(await httpResponse.Content.ReadAsStringAsync(cancellationToken));
-
-        var response = await httpResponse.Content.ReadFromJsonAsync<ResponseDataBase<Work[]>>(jsonSerializerOptions, cancellationToken);
-        if (response!.Status is false)
-        {
-            var contentBody = await httpResponse.Content.ReadAsStringAsync(cancellationToken);
-            var error = new Error("Failed to upload files").CausedBy(contentBody);
-            return error;
-        }
-
-        var work = response.Data.FirstOrDefault(w => w.Title == title);
-        if (work is null)
-            return Result.Fail($"Obra não encontrada no Capivara Tradutor, atendendo pelo nome '{title}'.");
-
-        return Result.Ok(work);
-    }
 
     public virtual async Task<Result<string>> UploadAsync(
         Info info,
-        Work work,
+        string referenceId,
         string filesDirectory,
         CancellationToken cancellationToken)
     {
@@ -73,7 +49,7 @@ public class CapivaraTradutorService(
             httpClient,
             requestForUploadResult.Value,
             info,
-            work,
+            referenceId,
             cancellationToken);
 
         return commitResult.WithReasons(aggregateResult.Reasons);
@@ -81,7 +57,9 @@ public class CapivaraTradutorService(
 
     public virtual async Task<Result> PingCredentialsAsync(CancellationToken cancellationToken)
     {
-        var response = await httpClient.GetAsync("https://capivaratradutor.com/api/v1/me", cancellationToken);
+        const string URL = "https://capivaratradutor.com/api/v1/me";
+
+        var response = await httpClient.GetAsync(URL, cancellationToken);
         var stringContent = await response.Content.ReadAsStringAsync(cancellationToken);
 
         if (response.IsSuccessStatusCode is false)
@@ -107,28 +85,7 @@ public class CapivaraTradutorService(
         }
     }
 
-    public record Work(
-        int Id,
-        string Title,
-        string Url
-        // string? Title,
-        // string? AlternativeTitle,
-        // string Language,
-        // string Type,
-        // string Status,
-        // bool IsPublic,
-        // bool InReview,
-        // bool IsOneShot,
-        // string? CoverUrl,
-        // string? BannerUrl,
-        // int Views,
-        // int Chapters,
-        // DateTime LastChapterAt,
-        // DateTime CreatedAt,
-        // string Url
-    );
-
     public record ResponseDataBase<T>(bool Status, T Data);
 
-    record PingResponse(bool Status);
+    private record PingResponse(bool Status);
 }

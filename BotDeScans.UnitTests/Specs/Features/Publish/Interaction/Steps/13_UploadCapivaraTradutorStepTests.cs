@@ -6,7 +6,6 @@ using BotDeScans.App.Models.Entities;
 using BotDeScans.App.Models.Entities.Enums;
 using BotDeScans.App.Services.CapivaraTradutor;
 using FluentResults;
-using static BotDeScans.App.Services.CapivaraTradutor.CapivaraTradutorService;
 
 namespace BotDeScans.UnitTests.Specs.Features.Publish.Interaction.Steps;
 
@@ -65,25 +64,18 @@ public class UploadCapivaraTradutorStepTests : UnitTest
     public class ExecuteAsync : UploadCapivaraTradutorStepTests
     {
         private readonly string link;
-        private readonly Work work;
+        private readonly string referenceId;
 
         public ExecuteAsync()
         {
             link = fixture.Create<string>();
-            work = fixture.Create<Work>();
-
-            A.CallTo(() => fixture
-                    .FreezeFake<CapivaraTradutorService>()
-                    .GetWorkAsync(
-                        state.Title.Name,
-                        cancellationToken))
-                .Returns(Result.Ok(work));
+            referenceId = fixture.Create<string>();
 
             A.CallTo(() => fixture
                     .FreezeFake<CapivaraTradutorService>()
                     .UploadAsync(
                         state.ChapterInfo,
-                        work,
+                        state.Title.References.Single(r => r.Key == ExternalReference.CapivaraTradutor).Value,
                         state.OriginContentFolder,
                         cancellationToken))
                 .Returns(Result.Ok(link));
@@ -102,14 +94,16 @@ public class UploadCapivaraTradutorStepTests : UnitTest
         }
 
         [Fact]
-        public async Task GivenErrorToGetWorkIdShouldReturnFailResult()
+        public async Task GivenErrorToUploadFileShouldReturnFailResult()
         {
             const string ERROR_MESSAGE = "some error.";
 
             A.CallTo(() => fixture
                     .FreezeFake<CapivaraTradutorService>()
-                    .GetWorkAsync(
-                        state.Title.Name,
+                    .UploadAsync(
+                        A<Info>.Ignored,
+                        A<string>.Ignored,
+                        A<string>.Ignored,
                         cancellationToken))
                 .Returns(Result.Fail(ERROR_MESSAGE));
 
@@ -117,24 +111,5 @@ public class UploadCapivaraTradutorStepTests : UnitTest
 
             result.Should().BeFailure().And.HaveError(ERROR_MESSAGE);
         }
-    }
-
-    [Fact]
-    public async Task GivenErrorToUploadFileShouldReturnFailResult()
-    {
-        const string ERROR_MESSAGE = "some error.";
-
-        A.CallTo(() => fixture
-                .FreezeFake<CapivaraTradutorService>()
-                .UploadAsync(
-                    A<Info>.Ignored,
-                    A<Work>.Ignored,
-                    A<string>.Ignored,
-                    cancellationToken))
-            .Returns(Result.Fail(ERROR_MESSAGE));
-
-        var result = await step.ExecuteAsync(state, cancellationToken);
-
-        result.Should().BeFailure().And.HaveError(ERROR_MESSAGE);
     }
 }

@@ -23,20 +23,19 @@ public class UploadCapivaraTradutorStep(
 
     public async Task<Result<State>> ExecuteAsync(State state, CancellationToken cancellationToken)
     {
-        var workResult = await capivaraTradutorService.GetWorkAsync(state.Title.Name, cancellationToken);
-        if (workResult.IsFailed)
-            return workResult.ToResult();
+        var referenceId = state.Title.References.Single(x => x.Key == ExternalReference.CapivaraTradutor).Value;
 
         var uploadResult = await capivaraTradutorService.UploadAsync(
             state.ChapterInfo,
-            workResult.Value,
+            referenceId,
             state.OriginContentFolder,
             cancellationToken);
 
-        var updatedState = state with { CapivaraTradutorLink = uploadResult.ValueOrDefault };
+        var updatedState = state with 
+        { 
+            CapivaraTradutorLink = uploadResult.ValueOrDefault 
+        };
         
-        return uploadResult
-            .WithReasons(workResult.Reasons)
-            .Map(updatedState);
+        return uploadResult.Map(updatedState);
     }
 }

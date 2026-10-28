@@ -3,7 +3,6 @@ using BotDeScans.App.Services.CapivaraTradutor.InternalServices;
 using BotDeScans.UnitTests.FakeObjects;
 using FluentResults;
 using System.Net;
-using static BotDeScans.App.Services.CapivaraTradutor.CapivaraTradutorService;
 using static BotDeScans.App.Services.CapivaraTradutor.InternalServices.CapivaraTradutorUploadService;
 
 namespace BotDeScans.UnitTests.Specs.Services.CapivaraTradutor.InternalServices;
@@ -259,12 +258,12 @@ public class CapivaraTradutorUploadServiceTests : UnitTest
     public class CommitAsync : CapivaraTradutorUploadServiceTests
     {
         private readonly HttpResponseMessage httpResponse;
-        private readonly Work work;
+        private readonly string referenceId;
         private readonly Info info;
 
         public CommitAsync()
         {
-            work = fixture.Create<Work>();
+            referenceId = fixture.Create<string>();
             info = CreateInfo();
 
             httpResponse = new HttpResponseMessage
@@ -292,7 +291,7 @@ public class CapivaraTradutorUploadServiceTests : UnitTest
                 fixture.Freeze<HttpClient>(),
                 CreateUploadData(),
                 info,
-                work,
+                referenceId,
                 cancellationToken);
 
             result.Should().BeSuccess().And.HaveValue("sample-url");
@@ -307,7 +306,7 @@ public class CapivaraTradutorUploadServiceTests : UnitTest
                 fixture.Freeze<HttpClient>(),
                 CreateUploadData(),
                 info,
-                work,
+                referenceId,
                 cancellationToken);
 
             result.Should().BeSuccess().And.HaveValue("sample-url");
@@ -341,7 +340,7 @@ public class CapivaraTradutorUploadServiceTests : UnitTest
                 fixture.Freeze<HttpClient>(),
                 CreateUploadData(),
                 CreateInfo(),
-                fixture.Create<Work>(),
+                referenceId,
                 cancellationToken);
 
             result.Should().BeFailure().And.HaveError("anything");
