@@ -8,7 +8,7 @@ using System.Text.Json;
 namespace BotDeScans.App.Services.CapivaraTradutor;
 
 public class CapivaraTradutorService(
-    HttpClient httpClient, 
+    HttpClient httpClient,
     CapivaraTradutorUploadService capivaraTradutorUploadService)
 {
     private static readonly JsonSerializerOptions jsonSerializerOptions = new()

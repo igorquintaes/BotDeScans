@@ -1,5 +1,4 @@
 using BotDeScans.App.Features.Titles.Create;
-using BotDeScans.App.Models.Entities;
 using FakeItEasy;
 using FluentAssertions;
 using Microsoft.Extensions.DependencyInjection;

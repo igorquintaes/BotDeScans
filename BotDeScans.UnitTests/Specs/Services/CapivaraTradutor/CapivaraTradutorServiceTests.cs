@@ -5,7 +5,6 @@ using BotDeScans.UnitTests.FakeObjects;
 using FluentResults;
 using System.Collections.Immutable;
 using System.Net;
-using static BotDeScans.App.Services.CapivaraTradutor.CapivaraTradutorService;
 using static BotDeScans.App.Services.CapivaraTradutor.InternalServices.CapivaraTradutorUploadService;
 
 namespace BotDeScans.UnitTests.Specs.Services.CapivaraTradutor;
@@ -39,7 +38,7 @@ public class CapivaraTradutorServiceTests : UnitTest
 
             Directory.CreateDirectory(filesDirectory);
             File.Create(Path.Combine(filesDirectory, "1.png")).Dispose();
-            
+
             chapterUrl = fixture.Create<string>();
 
             var uploadData = ImmutableArray.Create(

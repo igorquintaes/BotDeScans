@@ -13,7 +13,7 @@ public class GlobalPing(
 
     protected override PingType Type => PingType.Global;
 
-    public override async Task<Result<string>> GetPingAsTextAsync(State state,CancellationToken cancellationToken)
+    public override async Task<Result<string>> GetPingAsTextAsync(State state, CancellationToken cancellationToken)
     {
         var globalRoleName = configuration.GetRequiredValue<string>(GLOBAL_ROLE_KEY);
         var globalRoleAsPingResult = await rolesService.GetRoleAsync(globalRoleName, cancellationToken);

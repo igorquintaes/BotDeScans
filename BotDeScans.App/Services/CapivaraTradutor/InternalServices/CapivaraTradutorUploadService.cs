@@ -48,8 +48,8 @@ public class CapivaraTradutorUploadService
 
         return filesPaths
             .Zip(response.Data.Uploads, (path, upload) => new UploadData(
-                upload.UploadUrl, 
-                upload.Key, 
+                upload.UploadUrl,
+                upload.Key,
                 path))
             .ToImmutableArray();
     }
@@ -83,7 +83,7 @@ public class CapivaraTradutorUploadService
         Info info,
         string referenceId,
         CancellationToken cancellationToken)
-    {;
+    {
         const string COMMIT_URL = "https://capivaratradutor.com/api/v1/works/{0}/chapters";
 
         var culture = CultureInfo.InvariantCulture;
@@ -91,8 +91,8 @@ public class CapivaraTradutorUploadService
         var chapterNumberParsed = decimal.TryParse(info.ChapterNumber, culture, out var chapterNumber);
         if (chapterNumberParsed is false)
         {
-            var sanitedChapterNumber = new string([.. info.ChapterNumber.Where(c => 
-                char.IsDigit(c) || 
+            var sanitedChapterNumber = new string([.. info.ChapterNumber.Where(c =>
+                char.IsDigit(c) ||
                 char.IsPunctuation(c))]);
 
             chapterNumber = decimal.Parse(sanitedChapterNumber, culture);

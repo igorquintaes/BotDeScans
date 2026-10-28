@@ -314,7 +314,7 @@ public class CapivaraTradutorUploadServiceTests : UnitTest
             A.CallTo(() => fixture
                 .FreezeFake<FakeHttpMessageHandler>()
                 .FakeSendAsync(
-                    A<HttpRequestMessage>.That.Matches(x => 
+                    A<HttpRequestMessage>.That.Matches(x =>
                         x.Content != null &&
                         x.Content.ReadAsStringAsync().GetAwaiter().GetResult().Contains(@"12.1,")),
                     A<CancellationToken>.Ignored))
@@ -346,7 +346,7 @@ public class CapivaraTradutorUploadServiceTests : UnitTest
             result.Should().BeFailure().And.HaveError("anything");
         }
 
-        private static Info CreateInfo() => 
+        private static Info CreateInfo() =>
             new(googleDriveUrl: "https://drive.google.com/file/d/test",
                 chapterName: "Test",
                 chapterNumber: "1",
@@ -354,7 +354,7 @@ public class CapivaraTradutorUploadServiceTests : UnitTest
                 message: "Message",
                 titleId: 517);
 
-        private static UploadData[] CreateUploadData() => 
+        private static UploadData[] CreateUploadData() =>
         [
             new(UploadUrl: "https://example.com/upload1",
                 Key: "key1",

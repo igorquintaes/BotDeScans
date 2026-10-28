@@ -19,7 +19,7 @@ public class UploadCapivaraTradutorStep(
 
     // Todo: validate based on https://capivaratradutor.com/GROUP-SLUG/admin/api?tab=docs
     public Task<Result> ValidateAsync(State state, CancellationToken cancellationToken) =>
-        Task.FromResult(Result.Ok()); 
+        Task.FromResult(Result.Ok());
 
     public async Task<Result<State>> ExecuteAsync(State state, CancellationToken cancellationToken)
     {
@@ -31,11 +31,11 @@ public class UploadCapivaraTradutorStep(
             state.OriginContentFolder,
             cancellationToken);
 
-        var updatedState = state with 
-        { 
-            CapivaraTradutorLink = uploadResult.ValueOrDefault 
+        var updatedState = state with
+        {
+            CapivaraTradutorLink = uploadResult.ValueOrDefault
         };
-        
+
         return uploadResult.Map(updatedState);
     }
 }

@@ -1,5 +1,4 @@
 using BotDeScans.App.Infra;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Xunit;
 
@@ -20,11 +19,11 @@ public abstract class IntegrationTest(IntegrationTestFixture fixture) : IAsyncLi
         await Database.Database.EnsureCreatedAsync();
     }
 
-[CollectionDefinition(Name, DisableParallelization = true)]
-public sealed class IntegrationTestCollection : ICollectionFixture<IntegrationTestFixture>
-{
-    public const string Name = "Integration tests";
-}
+    [CollectionDefinition(Name, DisableParallelization = true)]
+    public sealed class IntegrationTestCollection : ICollectionFixture<IntegrationTestFixture>
+    {
+        public const string Name = "Integration tests";
+    }
 
     public async ValueTask DisposeAsync()
     {
