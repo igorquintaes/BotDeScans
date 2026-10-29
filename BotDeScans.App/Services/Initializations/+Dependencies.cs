@@ -1,5 +1,4 @@
-﻿using BotDeScans.App.Warmup;
-using Microsoft.Extensions.DependencyInjection;
+﻿using Microsoft.Extensions.DependencyInjection;
 using System.Diagnostics.CodeAnalysis;
 namespace BotDeScans.App.Services.Initializations;
 
@@ -9,10 +8,5 @@ internal static class AddDependencies
     internal static IServiceCollection AddInitializators(this IServiceCollection services) => services
         .AddScoped<SetupDiscordService>()
         .AddScoped<SetupStepsService>()
-        .AddScoped<SetupClientsService>()
-        .AddScoped<DatabaseSetupWrapper>()
-        .AddScoped<DiscordSetupWrapper>()
-        .AddScoped<StepsSetupWrapper>()
-        .AddScoped<ExternalServicesSetupWrapper>()
-        .AddScoped<SetupService>();
+        .AddScoped<SetupClientsService>();
 }

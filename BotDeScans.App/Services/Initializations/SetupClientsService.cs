@@ -15,34 +15,49 @@ public class SetupClientsService(IServiceProvider serviceProvider)
         Console.WriteLine("Initalizing External Clients...");
 
         var aggregatedResult = Result.Ok();
-        foreach (var (factory, factoryValidator) in GetEnabledFactoriesData())
+
+        var factoryDataList = GetEnabledFactoriesData();
+
+        await Parallel.ForEachAsync(factoryDataList, cancellationToken, async (factoryData, ct) =>
         {
-            Console.WriteLine("Validating " + factory.GetType().Name);
-            var validationResult = await factoryValidator.ValidateAsync(new ValidationContext<IClientFactory>(factory), cancellationToken);
-            var validationFluentResult = FluentValidationExtensions.ToResult(validationResult);
-            aggregatedResult.WithReasons(validationFluentResult.Reasons);
-            if (validationFluentResult.IsFailed)
+            var factoryName = factoryData.factory.GetType().Name;
+
+            try
             {
-                aggregatedResult.WithError($"Validation failed for {factory.GetType().Name}");
-                continue;
+                Console.WriteLine("Validating " + factoryName);
+                var validationResult = await factoryData.validator.ValidateAsync(new ValidationContext<IClientFactory>(factoryData.factory), cancellationToken);
+                var validationFluentResult = FluentValidationExtensions.ToResult(validationResult);
+                aggregatedResult.WithReasons(validationFluentResult.Reasons);
+                if (validationFluentResult.IsFailed)
+                {
+                    aggregatedResult.WithError($"Validation failed for {factoryData.GetType().Name}");
+                    return;
+                }
+
+                Console.WriteLine("Creating " + factoryData.GetType().Name);
+                var clientResult = await factoryData.factory.SafeCreateObjectAsync(cancellationToken);
+                aggregatedResult.WithReasons(clientResult.Reasons);
+                if (clientResult.IsFailed)
+                {
+                    aggregatedResult.WithError($"Object creation failed for {factoryData.GetType().Name}");
+                    return;
+                }
+
+                Console.WriteLine("Testing " + factoryData.GetType().Name);
+                var healthCheckResult = await factoryData.factory.HealthCheckAsync(clientResult.Value, cancellationToken);
+                aggregatedResult.WithReasons(healthCheckResult.Reasons);
+                if (healthCheckResult.IsFailed)
+                    aggregatedResult.WithError($"Health check failed for {factoryData.GetType().Name}");
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"{factoryName} EXCEPTIONAL ERROR!");
+
+                var error = new ExceptionalError($"An exceptional error occurred during {factoryName} execution.", ex);
+                aggregatedResult.WithError(error);
             }
 
-            Console.WriteLine("Creating " + factory.GetType().Name);
-            var clientResult = await factory.SafeCreateObjectAsync(cancellationToken);
-            aggregatedResult.WithReasons(clientResult.Reasons);
-            if (clientResult.IsFailed)
-            {
-                aggregatedResult.WithError($"Object creation failed for {factory.GetType().Name}");
-                continue;
-            }
-
-            Console.WriteLine("Testing " + factory.GetType().Name);
-            var healthCheckResult = await factory.HealthCheckAsync(clientResult.Value, cancellationToken);
-            aggregatedResult.WithReasons(healthCheckResult.Reasons);
-            if (healthCheckResult.IsFailed)
-                aggregatedResult.WithError($"Health check failed for {factory.GetType().Name}");
-
-        }
+        });
 
         if (aggregatedResult.IsFailed)
             return aggregatedResult;

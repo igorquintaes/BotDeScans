@@ -1,43 +1,37 @@
 using BotDeScans.App.Services.Initializations;
-using BotDeScans.App.Warmup;
+using BotDeScans.App.Startup.Setup;
 using FluentResults;
-using Microsoft.Extensions.DependencyInjection;
 
-namespace BotDeScans.UnitTests.Specs.Warmup;
+namespace BotDeScans.UnitTests.Specs.Startup.Setup;
 
 public class StepsSetupTests : UnitTest
 {
-    public class Run : StepsSetupTests, IDisposable
+    public class Run : StepsSetupTests
     {
-        private readonly IServiceScope serviceScope;
+        private readonly StepsSetup setup;
 
         public Run()
         {
-            var serviceProvider = new ServiceCollection()
-                .AddSingleton(fixture.FreezeFake<SetupStepsService>())
-                .BuildServiceProvider();
-
             A.CallTo(() => fixture
                 .FreezeFake<SetupStepsService>()
                 .Setup())
                 .Returns(Result.Ok());
 
-            serviceScope = serviceProvider.CreateScope();
+            setup = fixture.Create<StepsSetup>();
         }
 
         [Fact]
-        public void GivenSuccessfulExecutionShouldReturnSuccessResult()
+        public async Task GivenSuccessfulExecutionShouldReturnSuccessResult()
         {
-
-            var result = StepsSetup.Run(serviceScope, cancellationToken);
+            var result = await setup.ExecuteAsync(cancellationToken);
 
             result.Should().BeSuccess();
         }
 
         [Fact]
-        public void GivenSuccessfulExecutionShouldCallSetup()
+        public async Task GivenSuccessfulExecutionShouldCallSetup()
         {
-            StepsSetup.Run(serviceScope, cancellationToken);
+            var result = await setup.ExecuteAsync(cancellationToken);
 
             A.CallTo(() => fixture
                 .FreezeFake<SetupStepsService>()
@@ -46,7 +40,7 @@ public class StepsSetupTests : UnitTest
         }
 
         [Fact]
-        public void GivenSetupErrorShouldReturnFailResult()
+        public async Task GivenSetupErrorShouldReturnFailResult()
         {
             const string ERROR_MESSAGE = "setup error";
 
@@ -55,13 +49,13 @@ public class StepsSetupTests : UnitTest
                 .Setup())
                 .Returns(Result.Fail(ERROR_MESSAGE));
 
-            var result = StepsSetup.Run(serviceScope, cancellationToken);
+            var result = await setup.ExecuteAsync(cancellationToken);
 
             result.Should().BeFailure().And.HaveError(ERROR_MESSAGE);
         }
 
         [Fact]
-        public void GivenExceptionShouldReturnFailResult()
+        public async Task GivenExceptionShouldReturnFailResult()
         {
             const string ERROR_MESSAGE = "setup exception";
 
@@ -70,19 +64,13 @@ public class StepsSetupTests : UnitTest
                 .Setup())
                 .Throws(new Exception(ERROR_MESSAGE));
 
-            var result = StepsSetup.Run(serviceScope, cancellationToken);
+            var result = await setup.ExecuteAsync(cancellationToken);
 
             result.Should().BeFailure().And.HaveError("An exceptional error occurred during Steps setup.");
 
             result.Errors.Should().ContainSingle();
             result.Errors.Single().Should().BeOfType<ExceptionalError>();
             result.Errors.Single().As<ExceptionalError>().Exception.Message.Should().Be(ERROR_MESSAGE);
-        }
-
-        public void Dispose()
-        {
-            serviceScope.Dispose();
-            GC.SuppressFinalize(this);
         }
     }
 }

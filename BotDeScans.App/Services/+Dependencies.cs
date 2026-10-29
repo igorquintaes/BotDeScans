@@ -13,17 +13,14 @@ using BotDeScans.App.Services.Wrappers;
 using FluentValidation;
 using Microsoft.Extensions.DependencyInjection;
 using System.Diagnostics.CodeAnalysis;
+
 namespace BotDeScans.App.Services;
 
 [ExcludeFromCodeCoverage]
 internal static class AddDependencies
 {
-    internal static IServiceCollection AddServices(this IServiceCollection services, bool enableDiscord = true)
-    {
-        if (enableDiscord)
-            services.AddDiscordServices();
-
-        return services
+    internal static IServiceCollection AddServices(this IServiceCollection services) => services
+        .AddDiscordServices()
         .AddPublishServices()
         .AddMangaDexServices()
         .AddCapivaraTradutorServices()
@@ -42,5 +39,4 @@ internal static class AddDependencies
         .AddScoped<FileReleaseService>()
         .AddScoped<GoogleBloggerService>()
         .AddValidatorsFromAssemblyContaining<Program>();
-    }
 }

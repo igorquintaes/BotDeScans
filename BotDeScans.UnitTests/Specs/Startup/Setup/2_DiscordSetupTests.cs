@@ -1,43 +1,39 @@
 using BotDeScans.App.Services.Initializations;
-using BotDeScans.App.Warmup;
+using BotDeScans.App.Startup.Setup;
 using FluentResults;
 using FluentValidation;
 using FluentValidation.Results;
-using Microsoft.Extensions.DependencyInjection;
 
-namespace BotDeScans.UnitTests.Specs.Warmup;
+namespace BotDeScans.UnitTests.Specs.Startup.Setup;
 
 public class DiscordSetupTests : UnitTest
 {
-    public class RunAsync : DiscordSetupTests
+    public class ExecuteAsync : DiscordSetupTests
     {
-        private readonly IServiceScope serviceScope;
+        private readonly DiscordSetup setup;
 
-        public RunAsync()
+        public ExecuteAsync()
         {
-            var setupDiscordService = fixture.FreezeFake<SetupDiscordService>();
-            var validator = fixture.FreezeFake<IValidator<SetupDiscordService>>();
 
-            var serviceProvider = new ServiceCollection()
-                .AddSingleton(setupDiscordService)
-                .AddSingleton(validator)
-                .BuildServiceProvider();
-
-            serviceScope = serviceProvider.CreateScope();
-
-            A.CallTo(() => validator
-                .ValidateAsync(setupDiscordService, cancellationToken))
-                .Returns(new ValidationResult());
-
-            A.CallTo(() => setupDiscordService
+            A.CallTo(() => fixture
+                .FreezeFake<SetupDiscordService>()
                 .SetupAsync(cancellationToken))
                 .Returns(Result.Ok());
+
+            A.CallTo(() => fixture
+                .FreezeFake<IValidator<SetupDiscordService>>()
+                .ValidateAsync(
+                    fixture.FreezeFake<SetupDiscordService>(), 
+                    cancellationToken))
+                .Returns(new ValidationResult());
+
+            setup = fixture.Create<DiscordSetup>();
         }
 
         [Fact]
         public async Task GivenSuccessfulExecutionShouldReturnSuccessResult()
         {
-            var result = await DiscordSetup.RunAsync(serviceScope, cancellationToken);
+            var result = await setup.ExecuteAsync(cancellationToken);
 
             result.IsSuccess.Should().BeTrue();
         }
@@ -45,7 +41,7 @@ public class DiscordSetupTests : UnitTest
         [Fact]
         public async Task GivenSuccessfulExecutionShouldCallValidationSetup()
         {
-            await DiscordSetup.RunAsync(serviceScope, cancellationToken);
+            var result = await setup.ExecuteAsync(cancellationToken);
 
             A.CallTo(() => fixture
                 .FreezeFake<IValidator<SetupDiscordService>>()
@@ -56,7 +52,7 @@ public class DiscordSetupTests : UnitTest
         [Fact]
         public async Task GivenSuccessfulExecutionShouldCallCommandsSetup()
         {
-            await DiscordSetup.RunAsync(serviceScope, cancellationToken);
+            var result = await setup.ExecuteAsync(cancellationToken);
 
             A.CallTo(() => fixture.FreezeFake<SetupDiscordService>()
                 .SetupAsync(cancellationToken))
@@ -73,7 +69,7 @@ public class DiscordSetupTests : UnitTest
                 .ValidateAsync(fixture.FreezeFake<SetupDiscordService>(), cancellationToken))
                 .Returns(new ValidationResult([new ValidationFailure("prop", ERROR_MESSAGE)]));
 
-            var result = await DiscordSetup.RunAsync(serviceScope, cancellationToken);
+            var result = await setup.ExecuteAsync(cancellationToken);
 
             result.Should()
                 .BeFailure().And
@@ -92,7 +88,7 @@ public class DiscordSetupTests : UnitTest
                 .ValidateAsync(fixture.FreezeFake<SetupDiscordService>(), cancellationToken))
                 .Returns(new ValidationResult([new ValidationFailure("prop", ERROR_MESSAGE)]));
 
-            await DiscordSetup.RunAsync(serviceScope, cancellationToken);
+            var result = await setup.ExecuteAsync(cancellationToken);
 
             A.CallTo(() => fixture.FreezeFake<SetupDiscordService>()
                 .SetupAsync(cancellationToken))
@@ -108,7 +104,7 @@ public class DiscordSetupTests : UnitTest
                 .SetupAsync(cancellationToken))
                 .Returns(Result.Fail(ERROR_MESSAGE));
 
-            var result = await DiscordSetup.RunAsync(serviceScope, cancellationToken);
+            var result = await setup.ExecuteAsync(cancellationToken);
 
             result.Should().BeFailure().And.HaveError(ERROR_MESSAGE);
         }
@@ -123,7 +119,7 @@ public class DiscordSetupTests : UnitTest
                 .ValidateAsync(fixture.FreezeFake<SetupDiscordService>(), cancellationToken))
                 .Throws(new Exception(ERROR_MESSAGE));
 
-            var result = await DiscordSetup.RunAsync(serviceScope, cancellationToken);
+            var result = await setup.ExecuteAsync(cancellationToken);
 
             result.Should().BeFailure().And.HaveError("An exceptional error occurred during Discord setup.");
 
