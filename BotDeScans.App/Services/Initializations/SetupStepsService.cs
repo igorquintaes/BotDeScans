@@ -13,7 +13,7 @@ public class SetupStepsService(
 {
     public const string STEPS_KEY = "Settings:Publish:Steps";
 
-    public Result Setup()
+    public virtual Result Setup()
     {
         Console.WriteLine("Validating Publish Steps...");
 

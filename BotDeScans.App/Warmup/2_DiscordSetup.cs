@@ -1,4 +1,5 @@
-﻿using BotDeScans.App.Services.Initializations;
+﻿using BotDeScans.App.Extensions;
+using BotDeScans.App.Services.Initializations;
 using FluentResults;
 using FluentValidation;
 using Microsoft.Extensions.DependencyInjection;
@@ -46,5 +47,13 @@ public static class DiscordSetup
         var setupDiscordService = scope.ServiceProvider.GetRequiredService<SetupDiscordService>();
         var discordUpdateResult = await setupDiscordService.SetupAsync(cancellationToken);
         return discordUpdateResult.Reasons;
+    }
+}
+
+public class DiscordSetupWrapper : IDiscordSetup
+{
+    public virtual async Task<Result> RunAsync(IServiceScope scope, CancellationToken cancellationToken)
+    {
+        return await DiscordSetup.RunAsync(scope, cancellationToken);
     }
 }

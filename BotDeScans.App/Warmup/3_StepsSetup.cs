@@ -25,3 +25,11 @@ public static class StepsSetup
         }
     }
 }
+
+public class StepsSetupWrapper : IStepsSetup
+{
+    public virtual Result Run(IServiceScope scope, CancellationToken cancellationToken)
+    {
+        return StepsSetup.Run(scope, cancellationToken);
+    }
+}

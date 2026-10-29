@@ -23,3 +23,11 @@ public static class ExternalServicesSetup
         }
     }
 }
+
+public class ExternalServicesSetupWrapper : IExternalServicesSetup
+{
+    public virtual async Task<Result> RunAsync(IServiceScope scope, CancellationToken cancellationToken)
+    {
+        return await ExternalServicesSetup.RunAsync(scope, cancellationToken);
+    }
+}

@@ -30,3 +30,11 @@ public static class DatabaseSetup
         }
     }
 }
+
+public class DatabaseSetupWrapper : IDatabaseSetup
+{
+    public virtual async Task<Result> RunAsync(AsyncServiceScope scope, CancellationToken cancellationToken)
+    {
+        return await DatabaseSetup.RunAsync(scope, cancellationToken);
+    }
+}

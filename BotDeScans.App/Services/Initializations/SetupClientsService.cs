@@ -10,7 +10,7 @@ namespace BotDeScans.App.Services.Initializations;
 
 public class SetupClientsService(IServiceProvider serviceProvider)
 {
-    public async Task<Result> SetupAsync(CancellationToken cancellationToken)
+    public virtual async Task<Result> SetupAsync(CancellationToken cancellationToken)
     {
         Console.WriteLine("Initalizing External Clients...");
 
