@@ -52,9 +52,12 @@ public class SetupApplication(
         LogSetup(aggregateResult);
 
         if (aggregateResult.IsFailed)
+        {
             appLifetime.StopApplication();
+            return;
+        }
 
-        LogSuccesses("Application is running.");
+        LogSuccess("Application is running.");
     }
 
     public Task StopAsync(CancellationToken cancellationToken) => Task.CompletedTask;
@@ -69,10 +72,10 @@ public class SetupApplication(
     {
         var successesInfo = result.Successes.GetSuccessesInfo().Select(x => x.ToString());
         var successesText = string.Join(Environment.NewLine, successesInfo);
-        LogSuccesses(successesText);
+        LogSuccess(successesText);
     }
 
-    private static void LogSuccesses(string successesText)
+    private static void LogSuccess(string successesText)
     {
         Log.Information(successesText);
 
