@@ -38,7 +38,7 @@ public class Program
             });
 
             await CreateHostBuilder(args).Build().RunAsync();            
-            return 0;
+            return Environment.ExitCode;
         }
         catch (Exception ex)
         {
