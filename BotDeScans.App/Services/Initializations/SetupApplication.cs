@@ -4,6 +4,7 @@ using FluentResults;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Serilog;
+using System.Collections.Concurrent;
 
 namespace BotDeScans.App.Services.Initializations;
 
@@ -15,14 +16,13 @@ public class SetupApplication(
 {
     public async Task StartAsync(CancellationToken cancellationToken)
     {
-        var aggregateResult = new Result();
-
+        var results = new ConcurrentBag<Result>();
         await Parallel.ForEachAsync(setups, cancellationToken, async (setup, ct) =>
         {
             try
             {
                 var setupResult = await setup.ExecuteAsync(ct);
-                aggregateResult.WithReasons(setupResult.Reasons);
+                results.Add(setupResult);
 
                 // A inicialização do Google Drive depende da execução do setup de ClientsSetup,
                 // responsável por criar o client do Google Drive. De tal forma, o setup do Google Drive
@@ -33,7 +33,7 @@ public class SetupApplication(
                         .GetRequiredService<GoogleDriveInitializer>()
                         .ExecuteAsync(ct);
 
-                    aggregateResult.WithReasons(setupDriverResult.Reasons);
+                    results.Add(setupDriverResult);
                 }
             }
             catch (Exception ex)
@@ -43,9 +43,11 @@ public class SetupApplication(
                 Console.WriteLine($"{setupName} EXCEPTIONAL ERROR!");
 
                 var error = new ExceptionalError($"An exceptional error occurred during {setupName} execution.", ex);
-                aggregateResult.WithError(error);
+                results.Add(Result.Fail(error));
             }
         });
+
+        var aggregateResult = Result.Merge([.. results]);
 
         LogSetup(aggregateResult);
 
