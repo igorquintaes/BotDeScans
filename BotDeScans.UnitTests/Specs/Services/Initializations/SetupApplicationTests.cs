@@ -1,6 +1,7 @@
 ﻿using BotDeScans.App.Services.Initializations;
 using BotDeScans.App.Services.Initializations.Setups;
 using FluentResults;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 
 namespace BotDeScans.UnitTests.Specs.Services.Initializations;
@@ -10,18 +11,38 @@ public class SetupApplicationTests : UnitTest
     public class StartAsync : SetupApplicationTests
     {
         private readonly SetupApplication setup;
+        private readonly IServiceProvider scopedServiceProvider;
 
         public StartAsync()
         {
             fixture.FreezeFake<IHostApplicationLifetime>();
 
-            fixture.Inject<IEnumerable<ISetup>>([
-                fixture.FreezeFake<ClientsSetup>(),
-                fixture.FreezeFake<DatabaseSetup>(),
-                fixture.FreezeFake<DiscordSlashCommandsSetup>(),
-                fixture.FreezeFake<DiscordValidatorSetup>(),
-                fixture.FreezeFake<StepsSetup>()
-            ]);
+            scopedServiceProvider = A.Fake<IServiceProvider>();
+
+            A.CallTo(() => fixture.FreezeFake<IServiceProvider>()
+                .GetService(typeof(IServiceScopeFactory)))
+                .Returns(fixture.FreezeFake<IServiceScopeFactory>());
+
+            A.CallTo(() => fixture
+                .FreezeFake<IServiceScopeFactory>()
+                .CreateScope())
+                .Returns(fixture.FreezeFake<IServiceScope>());
+
+            A.CallTo(() => fixture
+                .FreezeFake<IServiceScope>()
+                .ServiceProvider)
+                .Returns(scopedServiceProvider);
+
+            A.CallTo(() => scopedServiceProvider
+                .GetService(typeof(IEnumerable<ISetup>)))
+                .Returns(new List<ISetup>() 
+                {
+                    fixture.FreezeFake<ClientsSetup>(),
+                    fixture.FreezeFake<DatabaseSetup>(),
+                    fixture.FreezeFake<DiscordSlashCommandsSetup>(),
+                    fixture.FreezeFake<DiscordValidatorSetup>(),
+                    fixture.FreezeFake<StepsSetup>()
+                });
 
             A.CallTo(() => fixture
                 .FreezeFake<ClientsSetup>()
@@ -48,8 +69,7 @@ public class SetupApplicationTests : UnitTest
                 .ExecuteAsync(A<CancellationToken>.Ignored))
                 .Returns(Result.Ok());
 
-            A.CallTo(() => fixture
-                .FreezeFake<IServiceProvider>()
+            A.CallTo(() => scopedServiceProvider
                 .GetService(typeof(GoogleDriveInitializer)))
                 .Returns(fixture.FreezeFake<GoogleDriveInitializer>());
 
@@ -241,12 +261,16 @@ public class SetupApplicationTests : UnitTest
         [Fact]
         public async Task GivenMissingClientsSetupShouldCallGoogleDriveInitializer()
         {
-            fixture.Inject<IEnumerable<ISetup>>([
-                fixture.FreezeFake<DatabaseSetup>(),
-                fixture.FreezeFake<DiscordSlashCommandsSetup>(),
-                fixture.FreezeFake<DiscordValidatorSetup>(),
-                fixture.FreezeFake<StepsSetup>()
-            ]);
+
+            A.CallTo(() => scopedServiceProvider
+                .GetService(typeof(IEnumerable<ISetup>)))
+                .Returns(new List<ISetup>()
+                {
+                    fixture.FreezeFake<DatabaseSetup>(),
+                    fixture.FreezeFake<DiscordSlashCommandsSetup>(),
+                    fixture.FreezeFake<DiscordValidatorSetup>(),
+                    fixture.FreezeFake<StepsSetup>()
+                });
 
             await setup.StartAsync(cancellationToken);
 

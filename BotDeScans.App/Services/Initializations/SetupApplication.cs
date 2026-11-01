@@ -9,13 +9,15 @@ using System.Collections.Concurrent;
 namespace BotDeScans.App.Services.Initializations;
 
 public class SetupApplication(
-    IEnumerable<ISetup> setups,
     IServiceProvider serviceProvider,
     IHostApplicationLifetime appLifetime)
     : IHostedService
 {
     public async Task StartAsync(CancellationToken cancellationToken)
     {
+        using var scope = serviceProvider.CreateScope();
+        var setups = scope.ServiceProvider.GetRequiredService<IEnumerable<ISetup>>();
+
         var results = new ConcurrentBag<Result>();
         await Parallel.ForEachAsync(setups, cancellationToken, async (setup, ct) =>
         {
@@ -29,7 +31,7 @@ public class SetupApplication(
                 // só pode ser executado se o setup de ClientsSetup for bem-sucedido.
                 if (setup is ClientsSetup && setupResult.IsSuccess)
                 {
-                    var setupDriverResult = await serviceProvider
+                    var setupDriverResult = await scope.ServiceProvider
                         .GetRequiredService<GoogleDriveInitializer>()
                         .ExecuteAsync(ct);
 
