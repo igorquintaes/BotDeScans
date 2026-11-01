@@ -1,8 +1,8 @@
 ﻿using BotDeScans.App.Infra;
 using BotDeScans.App.Services;
 using BotDeScans.App.Services.Discord;
+using BotDeScans.App.Services.Initializations;
 using BotDeScans.App.Services.Logging;
-using BotDeScans.App.Startup;
 using FluentResults;
 using MangaDexSharp;
 using Microsoft.Extensions.Configuration;
@@ -20,35 +20,24 @@ public class Program
 {
     public static async Task<int> Main(string[] args)
     {
-            Console.WriteLine("Starting...");
+        Console.WriteLine("Starting...");
 
-            Result.Setup(cfg =>
+        Result.Setup(cfg =>
+        {
+            cfg.Logger = new ResultLogger(Log.Logger);
+            cfg.ExceptionalErrorFactory = (message, ex) =>
             {
-                cfg.Logger = new ResultLogger(Log.Logger);
-                cfg.ExceptionalErrorFactory = (message, ex) =>
-                {
-                    var error = new Error(message).CausedBy(ex);
-                    var errorResult = new Result().WithError(error);
-                    cfg.Logger.Log(ex.Source, message, errorResult, LogLevel.Error);
+                var error = new Error(message).CausedBy(ex);
+                var errorResult = new Result().WithError(error);
+                cfg.Logger.Log(ex.Source, message, errorResult, LogLevel.Error);
 
-                    return new ExceptionalError(message, ex);
-                };
-            });
+                return new ExceptionalError(message, ex);
+            };
+        });
 
         try
         {
-            await CreateHostBuilder(args).Build().RunAsync();
-
-            //var setupResult = await Setup.Run(host.Services, cts.Token);
-            //LogSetup(setupResult);
-
-            //if (setupResult.IsFailed)
-            //{
-            //    return 1;
-            //}
-
-            //await host.RunAsync();
-            
+            await CreateHostBuilder(args).Build().RunAsync();            
             return 0;
         }
         catch (Exception ex)
@@ -68,7 +57,6 @@ public class Program
             .AddDiscordToHost(buildDiscordClient)
             .AddLoggingToHost()
             .ConfigureServices(services => services
-                .AddStartupDependencies()
                 .AddServices()
                 .AddInfraDependencies()
                 .AddLazyCache()

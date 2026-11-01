@@ -1,14 +1,16 @@
 ﻿using BotDeScans.App.Extensions;
-using BotDeScans.App.Startup.Setup;
+using BotDeScans.App.Services.Initializations.Setups;
 using FluentResults;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Serilog;
 
-namespace BotDeScans.App.Startup;
+namespace BotDeScans.App.Services.Initializations;
 
 public class SetupApplication(
-    IEnumerable<ISetup> setups, 
-    IHostApplicationLifetime appLifetime) 
+    IEnumerable<ISetup> setups,
+    IServiceProvider serviceProvider,
+    IHostApplicationLifetime appLifetime)
     : IHostedService
 {
     public async Task StartAsync(CancellationToken cancellationToken)
@@ -21,6 +23,18 @@ public class SetupApplication(
             {
                 var setupResult = await setup.ExecuteAsync(ct);
                 aggregateResult.WithReasons(setupResult.Reasons);
+
+                // A inicialização do Google Drive depende da execução do setup de ClientsSetup,
+                // responsável por criar o client do Google Drive. De tal forma, o setup do Google Drive
+                // só pode ser executado se o setup de ClientsSetup for bem-sucedido.
+                if (setup is ClientsSetup && setupResult.IsSuccess)
+                {
+                    var setupDriverResult = await serviceProvider
+                        .GetRequiredService<GoogleDriveInitializer>()
+                        .ExecuteAsync(ct);
+
+                    aggregateResult.WithReasons(setupDriverResult.Reasons);
+                }
             }
             catch (Exception ex)
             {
@@ -37,6 +51,8 @@ public class SetupApplication(
 
         if (aggregateResult.IsFailed)
             appLifetime.StopApplication();
+
+        LogSuccesses("Application is running.");
     }
 
     public Task StopAsync(CancellationToken cancellationToken) => Task.CompletedTask;
@@ -50,14 +66,18 @@ public class SetupApplication(
     private static void LogSuccesses(Result result)
     {
         var successesInfo = result.Successes.GetSuccessesInfo().Select(x => x.ToString());
-        var SuccessesText = string.Join(Environment.NewLine, successesInfo);
-        Log.Information(SuccessesText);
+        var successesText = string.Join(Environment.NewLine, successesInfo);
+        LogSuccesses(successesText);
+    }
+
+    private static void LogSuccesses(string successesText)
+    {
+        Log.Information(successesText);
 
         var defaultConsoleForegroundColor = Console.ForegroundColor;
-        var defaultBackgroundForegroundColor = Console.BackgroundColor;
         Console.ForegroundColor = ConsoleColor.Green;
 
-        Console.WriteLine(SuccessesText);
+        Console.WriteLine(successesText);
 
         Console.ForegroundColor = defaultConsoleForegroundColor;
         Console.WriteLine();
@@ -69,18 +89,7 @@ public class SetupApplication(
             return;
 
         var errorsInfo = result.Errors.GetErrorsInfo().Select(x => x.ToString());
-        var errorsText = string.Join(Environment.NewLine, errorsInfo);
+        var errorsText = string.Join(Environment.NewLine, errorsInfo); 
         Log.Error(errorsText);
-
-        var defaultConsoleForegroundColor = Console.ForegroundColor;
-        var defaultBackgroundForegroundColor = Console.BackgroundColor;
-        Console.ForegroundColor = ConsoleColor.Yellow;
-        Console.BackgroundColor = ConsoleColor.Red;
-
-        Console.WriteLine(errorsText);
-
-        Console.ForegroundColor = defaultConsoleForegroundColor;
-        Console.BackgroundColor = defaultBackgroundForegroundColor;
-        Console.ReadLine();
     }
 }

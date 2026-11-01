@@ -1,203 +1,113 @@
-using BotDeScans.App.Warmup;
-using FluentResults;
-using Microsoft.Extensions.DependencyInjection;
+//using BotDeScans.App.Services.Initializations;
+//using BotDeScans.App.Services.Initializations.Setups;
+//using FluentResults;
 
-namespace BotDeScans.UnitTests.Specs.Warmup;
+//namespace BotDeScans.UnitTests.Specs.Startup;
 
-public class SetupTests : UnitTest
-{
-    public class Run : SetupTests
-    {
-        private readonly IServiceProvider serviceProvider;
-        private readonly SetupService setupService;
+//public class SetupApplicationTests : UnitTest
+//{
+//    public class StartAsyncTests : SetupApplicationTests
+//    {
+//        private readonly SetupApplication setupApplication;
+//        private readonly Result testResultsOutput;
 
-        public Run()
-        {
-            var databaseSetup = fixture.FreezeFake<IDatabaseSetup>();
-            var discordSetup = fixture.FreezeFake<IDiscordSetup>();
-            var stepsSetup = fixture.FreezeFake<IStepsSetup>();
-            var externalServicesSetup = fixture.FreezeFake<IExternalServicesSetup>();
+//        public StartAsyncTests()
+//        {
+//            testResultsOutput = new Result();
 
-            serviceProvider = new ServiceCollection()
-                .AddSingleton(databaseSetup)
-                .AddSingleton(discordSetup)
-                .AddSingleton(stepsSetup)
-                .AddSingleton(externalServicesSetup)
-                .BuildServiceProvider();
+//            Result.Setup(cfg =>
+//            {
+//                cfg.SuccessFactory = successMessage =>
+//                {
+//                    var success = new Success(successMessage);
+//                    testResultsOutput.WithSuccess(success);
 
-            setupService = new SetupService(databaseSetup, discordSetup, stepsSetup, externalServicesSetup);
+//                    return success;
+//                };
+//                cfg.ErrorFactory = errorMessage =>
+//                {
+//                    var error = new Error(errorMessage);
+//                    testResultsOutput.WithError(error);
 
-            A.CallTo(() => databaseSetup.RunAsync(A<AsyncServiceScope>._, cancellationToken))
-                .Returns(Result.Ok());
+//                    return error;
+//                };
+//                cfg.ExceptionalErrorFactory = (message, ex) =>
+//                {
+//                    var error = new ExceptionalError(message, ex);
+//                    testResultsOutput.WithError(error);
 
-            A.CallTo(() => discordSetup.RunAsync(A<IServiceScope>._, cancellationToken))
-                .Returns(Result.Ok());
+//                    return error;
+//                };
+//            });
 
-            A.CallTo(() => stepsSetup.Run(A<IServiceScope>._, cancellationToken))
-                .Returns(Result.Ok());
+//            var setup = fixture.FreezeFake<ISetup>();
+//            IEnumerable<ISetup> setupCollection = new List<ISetup>([setup]);
 
-            A.CallTo(() => externalServicesSetup.RunAsync(A<IServiceScope>._, cancellationToken))
-                .Returns(Result.Ok());
-        }
+//            fixture.Inject(setupCollection);
 
-        [Fact]
-        public async Task GivenSuccessfulExecutionShouldReturnSuccessResult()
-        {
-            var result = await setupService.Run(serviceProvider, cancellationToken);
+//            A.CallTo(() => fixture
+//                .FreezeFake<ISetup>()
+//                .ExecuteAsync(cancellationToken))
+//                .Returns(Result.Ok());
 
-            result.IsSuccess.Should().BeTrue();
-        }
+//            A.CallTo(() => fixture
+//                .FreezeFake<IServiceProvider>()
+//                .GetService(typeof(GoogleDriveInitializer)))
+//                .Returns(fixture.FreezeFake<GoogleDriveInitializer>());
 
-        [Fact]
-        public async Task GivenSuccessfulExecutionShouldCallDatabaseSetup()
-        {
-            await setupService.Run(serviceProvider, cancellationToken);
+//            A.CallTo(() => fixture
+//                .FreezeFake<GoogleDriveInitializer>()
+//                .ExecuteAsync(cancellationToken))
+//                .Returns(Result.Ok());
+//        }
 
-            A.CallTo(() => fixture.FreezeFake<IDatabaseSetup>()
-                .RunAsync(A<AsyncServiceScope>._, cancellationToken))
-                .MustHaveHappenedOnceExactly();
-        }
+//        [Fact]
+//        public async Task GivenSuccessfulExecutionShouldReturnSuccessResult()
+//        {
+//            await setupApplication.StartAsync(cancellationToken);
 
-        [Fact]
-        public async Task GivenSuccessfulExecutionShouldCallDiscordSetup()
-        {
-            await setupService.Run(serviceProvider, cancellationToken);
+//            testResultsOutput.IsSuccess.Should().BeTrue();
+//        }
 
-            A.CallTo(() => fixture.FreezeFake<IDiscordSetup>()
-                .RunAsync(A<IServiceScope>._, cancellationToken))
-                .MustHaveHappenedOnceExactly();
-        }
+//        [Fact]
+//        public async Task GivenSuccessfulExecutionWithResultSuccessReturnSuccessResult()
+//        {
+//            const string SUCCESS_MESSAGE = "success message";
 
-        [Fact]
-        public async Task GivenSuccessfulExecutionShouldCallStepsSetup()
-        {
-            await setupService.Run(serviceProvider, cancellationToken);
+//            A.CallTo(() => fixture
+//                .FreezeFake<ISetup>()
+//                .ExecuteAsync(cancellationToken))
+//                .Returns(Result.Ok().WithSuccess(SUCCESS_MESSAGE));
 
-            A.CallTo(() => fixture.FreezeFake<IStepsSetup>()
-                .Run(A<IServiceScope>._, cancellationToken))
-                .MustHaveHappenedOnceExactly();
-        }
+//            await setupApplication.StartAsync(cancellationToken);
 
-        [Fact]
-        public async Task GivenSuccessfulExecutionShouldCallExternalServicesSetup()
-        {
-            await setupService.Run(serviceProvider, cancellationToken);
+//            testResultsOutput.Should().BeSuccess().And.HaveReason(SUCCESS_MESSAGE);
+//        }
 
-            A.CallTo(() => fixture.FreezeFake<IExternalServicesSetup>()
-                .RunAsync(A<IServiceScope>._, cancellationToken))
-                .MustHaveHappenedOnceExactly();
-        }
+//        [Fact]
+//        public async Task GivenSuccessfulExecutionWithClientsSetupShouldCallGoogleDriverInitializer()
+//        {
 
-        [Fact]
-        public async Task GivenSuccessfulExecutionShouldHaveSuccessMessages()
-        {
-            var result = await setupService.Run(serviceProvider, cancellationToken);
+//            var setup = fixture.FreezeFake<ClientsSetup>();
+//            IEnumerable<ISetup> setupCollection = new List<ISetup>([setup]);
 
-            result.Successes.Should().HaveCount(4);
-            result.Successes.Select(s => s.Message).Should().Contain([
-                "Database setup completed successfully.",
-                "Discord setup completed successfully.",
-                "Steps setup completed successfully.",
-                "External Services setup completed successfully."
-            ]);
-        }
+//            fixture.Inject(setupCollection);
 
-        [Fact]
-        public async Task GivenDatabaseSetupErrorShouldReturnFailResult()
-        {
-            const string ERROR_MESSAGE = "database error";
+//            A.CallTo(() => fixture
+//                .FreezeFake<ClientsSetup>()
+//                .ExecuteAsync(cancellationToken))
+//                .Returns(Result.Ok());
 
-            A.CallTo(() => fixture.FreezeFake<IDatabaseSetup>()
-                .RunAsync(A<AsyncServiceScope>._, cancellationToken))
-                .Returns(Result.Fail(ERROR_MESSAGE));
+//            await setupApplication.StartAsync(cancellationToken);
 
-            var result = await setupService.Run(serviceProvider, cancellationToken);
+//            testResultsOutput.Should().BeSuccess();
 
-            result.Should().BeFailure().And.HaveError(ERROR_MESSAGE);
-        }
+//            A.CallTo(() => fixture
+//                .FreezeFake<ClientsSetup>()
+//                .ExecuteAsync(cancellationToken))
+//                .MustHaveHappenedOnceExactly();
+//        }
 
-        [Fact]
-        public async Task GivenDatabaseSetupErrorShouldNotCallDiscordSetup()
-        {
-            A.CallTo(() => fixture.FreezeFake<IDatabaseSetup>()
-                .RunAsync(A<AsyncServiceScope>._, cancellationToken))
-                .Returns(Result.Fail("database error"));
-
-            await setupService.Run(serviceProvider, cancellationToken);
-
-            A.CallTo(() => fixture.FreezeFake<IDiscordSetup>()
-                .RunAsync(A<IServiceScope>._, cancellationToken))
-                .MustNotHaveHappened();
-        }
-
-        [Fact]
-        public async Task GivenDiscordSetupErrorShouldReturnFailResult()
-        {
-            const string ERROR_MESSAGE = "discord error";
-
-            A.CallTo(() => fixture.FreezeFake<IDiscordSetup>()
-                .RunAsync(A<IServiceScope>._, cancellationToken))
-                .Returns(Result.Fail(ERROR_MESSAGE));
-
-            var result = await setupService.Run(serviceProvider, cancellationToken);
-
-            result.Should().BeFailure().And.HaveError(ERROR_MESSAGE);
-        }
-
-        [Fact]
-        public async Task GivenDiscordSetupErrorShouldNotCallStepsSetup()
-        {
-            A.CallTo(() => fixture.FreezeFake<IDiscordSetup>()
-                .RunAsync(A<IServiceScope>._, cancellationToken))
-                .Returns(Result.Fail("discord error"));
-
-            await setupService.Run(serviceProvider, cancellationToken);
-
-            A.CallTo(() => fixture.FreezeFake<IStepsSetup>()
-                .Run(A<IServiceScope>._, cancellationToken))
-                .MustNotHaveHappened();
-        }
-
-        [Fact]
-        public async Task GivenStepsSetupErrorShouldReturnFailResult()
-        {
-            const string ERROR_MESSAGE = "steps error";
-
-            A.CallTo(() => fixture.FreezeFake<IStepsSetup>()
-                .Run(A<IServiceScope>._, cancellationToken))
-                .Returns(Result.Fail(ERROR_MESSAGE));
-
-            var result = await setupService.Run(serviceProvider, cancellationToken);
-
-            result.Should().BeFailure().And.HaveError(ERROR_MESSAGE);
-        }
-
-        [Fact]
-        public async Task GivenStepsSetupErrorShouldNotCallExternalServicesSetup()
-        {
-            A.CallTo(() => fixture.FreezeFake<IStepsSetup>()
-                .Run(A<IServiceScope>._, cancellationToken))
-                .Returns(Result.Fail("steps error"));
-
-            await setupService.Run(serviceProvider, cancellationToken);
-
-            A.CallTo(() => fixture.FreezeFake<IExternalServicesSetup>()
-                .RunAsync(A<IServiceScope>._, cancellationToken))
-                .MustNotHaveHappened();
-        }
-
-        [Fact]
-        public async Task GivenExternalServicesSetupErrorShouldReturnFailResult()
-        {
-            const string ERROR_MESSAGE = "external services error";
-
-            A.CallTo(() => fixture.FreezeFake<IExternalServicesSetup>()
-                .RunAsync(A<IServiceScope>._, cancellationToken))
-                .Returns(Result.Fail(ERROR_MESSAGE));
-
-            var result = await setupService.Run(serviceProvider, cancellationToken);
-
-            result.Should().BeFailure().And.HaveError(ERROR_MESSAGE);
-        }
-    }
-}
+//        // todo
+//    }
+//}

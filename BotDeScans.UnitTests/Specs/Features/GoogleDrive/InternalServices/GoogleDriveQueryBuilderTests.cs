@@ -1,4 +1,5 @@
-﻿using BotDeScans.App.Features.GoogleDrive.InternalServices;
+﻿using BotDeScans.App.Features.GoogleDrive;
+using BotDeScans.App.Features.GoogleDrive.InternalServices;
 
 namespace BotDeScans.UnitTests.Specs.Features.GoogleDrive.InternalServices;
 
@@ -6,12 +7,12 @@ public class GoogleDriveQueryBuilderTests : UnitTest, IDisposable
 {
     public GoogleDriveQueryBuilderTests()
     {
-        GoogleDriveSettingsService.BaseFolderId = fixture.Create<string>();
+        GoogleDriveService.BaseFolderId = fixture.Create<string>();
     }
 
     public void Dispose()
     {
-        GoogleDriveSettingsService.BaseFolderId = null!;
+        GoogleDriveService.BaseFolderId = null!;
         GC.SuppressFinalize(this);
     }
 
@@ -20,7 +21,7 @@ public class GoogleDriveQueryBuilderTests : UnitTest, IDisposable
         [Fact]
         public void GivenNoParametersShouldReturnQueryWithOnlyTrashedAndParentConditions()
         {
-            var expectedQuery = $"trashed = false and '{GoogleDriveSettingsService.BaseFolderId}' in parents";
+            var expectedQuery = $"trashed = false and '{GoogleDriveService.BaseFolderId}' in parents";
 
             var result = new GoogleDriveQueryBuilder().Build();
 
@@ -31,7 +32,7 @@ public class GoogleDriveQueryBuilderTests : UnitTest, IDisposable
         public void GivenMimeTypeShouldIncludeMimeTypeCondition()
         {
             var mimeType = fixture.Create<string>();
-            var expectedQuery = $"trashed = false and mimeType = '{mimeType}' and '{GoogleDriveSettingsService.BaseFolderId}' in parents";
+            var expectedQuery = $"trashed = false and mimeType = '{mimeType}' and '{GoogleDriveService.BaseFolderId}' in parents";
 
             var result = new GoogleDriveQueryBuilder()
                 .WithMimeType(mimeType)
@@ -44,7 +45,7 @@ public class GoogleDriveQueryBuilderTests : UnitTest, IDisposable
         public void GivenForbiddenMimeTypeShouldIncludeForbiddenMimeTypeCondition()
         {
             var forbiddenMimeType = fixture.Create<string>();
-            var expectedQuery = $"trashed = false and mimeType != '{forbiddenMimeType}' and '{GoogleDriveSettingsService.BaseFolderId}' in parents";
+            var expectedQuery = $"trashed = false and mimeType != '{forbiddenMimeType}' and '{GoogleDriveService.BaseFolderId}' in parents";
 
             var result = new GoogleDriveQueryBuilder()
                 .WithoutMimeType(forbiddenMimeType)
@@ -57,7 +58,7 @@ public class GoogleDriveQueryBuilderTests : UnitTest, IDisposable
         public void GivenNameShouldIncludeNameCondition()
         {
             var name = fixture.Create<string>();
-            var expectedQuery = $"trashed = false and name = '{name}' and '{GoogleDriveSettingsService.BaseFolderId}' in parents";
+            var expectedQuery = $"trashed = false and name = '{name}' and '{GoogleDriveService.BaseFolderId}' in parents";
 
             var result = new GoogleDriveQueryBuilder()
                 .WithName(name)
@@ -101,7 +102,7 @@ public class GoogleDriveQueryBuilderTests : UnitTest, IDisposable
         [Fact]
         public void GivenNullMimeTypeShouldNotIncludeMimeTypeCondition()
         {
-            var expectedQuery = $"trashed = false and '{GoogleDriveSettingsService.BaseFolderId}' in parents";
+            var expectedQuery = $"trashed = false and '{GoogleDriveService.BaseFolderId}' in parents";
 
             var result = new GoogleDriveQueryBuilder()
                 .WithMimeType(null)
@@ -113,7 +114,7 @@ public class GoogleDriveQueryBuilderTests : UnitTest, IDisposable
         [Fact]
         public void GivenNullForbiddenMimeTypeShouldNotIncludeForbiddenMimeTypeCondition()
         {
-            var expectedQuery = $"trashed = false and '{GoogleDriveSettingsService.BaseFolderId}' in parents";
+            var expectedQuery = $"trashed = false and '{GoogleDriveService.BaseFolderId}' in parents";
 
             var result = new GoogleDriveQueryBuilder()
                 .WithoutMimeType(null)
@@ -125,7 +126,7 @@ public class GoogleDriveQueryBuilderTests : UnitTest, IDisposable
         [Fact]
         public void GivenNullNameShouldNotIncludeNameCondition()
         {
-            var expectedQuery = $"trashed = false and '{GoogleDriveSettingsService.BaseFolderId}' in parents";
+            var expectedQuery = $"trashed = false and '{GoogleDriveService.BaseFolderId}' in parents";
 
             var result = new GoogleDriveQueryBuilder()
                 .WithName(null)
@@ -137,7 +138,7 @@ public class GoogleDriveQueryBuilderTests : UnitTest, IDisposable
         [Fact]
         public void GivenNullParentIdShouldUseBaseFolderIdAsDefault()
         {
-            var expectedQuery = $"trashed = false and '{GoogleDriveSettingsService.BaseFolderId}' in parents";
+            var expectedQuery = $"trashed = false and '{GoogleDriveService.BaseFolderId}' in parents";
 
             var result = new GoogleDriveQueryBuilder()
                 .WithParent(null)
@@ -165,7 +166,7 @@ public class GoogleDriveQueryBuilderTests : UnitTest, IDisposable
         {
             var mimeType = fixture.Create<string>();
             var name = fixture.Create<string>();
-            var expectedQuery = $"trashed = false and mimeType = '{mimeType}' and name = '{name}' and '{GoogleDriveSettingsService.BaseFolderId}' in parents";
+            var expectedQuery = $"trashed = false and mimeType = '{mimeType}' and name = '{name}' and '{GoogleDriveService.BaseFolderId}' in parents";
 
             var result = new GoogleDriveQueryBuilder()
                 .WithMimeType(mimeType)
@@ -197,7 +198,7 @@ public class GoogleDriveQueryBuilderTests : UnitTest, IDisposable
         {
             var mimeType = fixture.Create<string>();
             var forbiddenMimeType = fixture.Create<string>();
-            var expectedQuery = $"trashed = false and mimeType = '{mimeType}' and mimeType != '{forbiddenMimeType}' and '{GoogleDriveSettingsService.BaseFolderId}' in parents";
+            var expectedQuery = $"trashed = false and mimeType = '{mimeType}' and mimeType != '{forbiddenMimeType}' and '{GoogleDriveService.BaseFolderId}' in parents";
 
             var result = new GoogleDriveQueryBuilder()
                 .WithMimeType(mimeType)
@@ -248,7 +249,7 @@ public class GoogleDriveQueryBuilderTests : UnitTest, IDisposable
         {
             var value = "quinn's paper\\essay";
             var escapedValue = "quinn\\'s paper\\\\essay";
-            var expectedQuery = $"trashed = false and mimeType = '{escapedValue}' and '{GoogleDriveSettingsService.BaseFolderId}' in parents";
+            var expectedQuery = $"trashed = false and mimeType = '{escapedValue}' and '{GoogleDriveService.BaseFolderId}' in parents";
             var builder = new GoogleDriveQueryBuilder();
 
             var result = builder
@@ -263,7 +264,7 @@ public class GoogleDriveQueryBuilderTests : UnitTest, IDisposable
         {
             var mimeType1 = "type1";
             var mimeType2 = "type2";
-            var expectedQuery = $"trashed = false and mimeType = '{mimeType2}' and '{GoogleDriveSettingsService.BaseFolderId}' in parents";
+            var expectedQuery = $"trashed = false and mimeType = '{mimeType2}' and '{GoogleDriveService.BaseFolderId}' in parents";
 
             var result = new GoogleDriveQueryBuilder()
                 .WithMimeType(mimeType1)
@@ -302,7 +303,7 @@ public class GoogleDriveQueryBuilderTests : UnitTest, IDisposable
         {
             var value = "quinn's paper\\essay";
             var escapedValue = "quinn\\'s paper\\\\essay";
-            var expectedQuery = $"trashed = false and mimeType != '{escapedValue}' and '{GoogleDriveSettingsService.BaseFolderId}' in parents";
+            var expectedQuery = $"trashed = false and mimeType != '{escapedValue}' and '{GoogleDriveService.BaseFolderId}' in parents";
             var builder = new GoogleDriveQueryBuilder();
 
             var result = builder
@@ -317,7 +318,7 @@ public class GoogleDriveQueryBuilderTests : UnitTest, IDisposable
         {
             var forbiddenType1 = "type1";
             var forbiddenType2 = "type2";
-            var expectedQuery = $"trashed = false and mimeType != '{forbiddenType2}' and '{GoogleDriveSettingsService.BaseFolderId}' in parents";
+            var expectedQuery = $"trashed = false and mimeType != '{forbiddenType2}' and '{GoogleDriveService.BaseFolderId}' in parents";
 
             var result = new GoogleDriveQueryBuilder()
                 .WithoutMimeType(forbiddenType1)
@@ -356,7 +357,7 @@ public class GoogleDriveQueryBuilderTests : UnitTest, IDisposable
         {
             var value = "quinn's paper\\essay";
             var escapedValue = "quinn\\'s paper\\\\essay";
-            var expectedQuery = $"trashed = false and name = '{escapedValue}' and '{GoogleDriveSettingsService.BaseFolderId}' in parents";
+            var expectedQuery = $"trashed = false and name = '{escapedValue}' and '{GoogleDriveService.BaseFolderId}' in parents";
             var builder = new GoogleDriveQueryBuilder();
 
             var result = builder
@@ -371,7 +372,7 @@ public class GoogleDriveQueryBuilderTests : UnitTest, IDisposable
         {
             var name1 = "name1";
             var name2 = "name2";
-            var expectedQuery = $"trashed = false and name = '{name2}' and '{GoogleDriveSettingsService.BaseFolderId}' in parents";
+            var expectedQuery = $"trashed = false and name = '{name2}' and '{GoogleDriveService.BaseFolderId}' in parents";
 
             var result = new GoogleDriveQueryBuilder()
                 .WithName(name1)

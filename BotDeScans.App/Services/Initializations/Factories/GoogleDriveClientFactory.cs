@@ -11,6 +11,8 @@ public class GoogleDriveClientFactory(GoogleWrapper googleWrapper) : ClientFacto
 {
     public const string CREDENTIALS_FILE_NAME = "googledrive.json";
 
+    public override string Name => "Google Drive";
+
     public override bool Enabled => true;
 
     public override async Task<Result<DriveService>> CreateAsync(CancellationToken cancellationToken = default)

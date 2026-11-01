@@ -2,11 +2,11 @@
 using FluentResults;
 using Microsoft.EntityFrameworkCore;
 
-namespace BotDeScans.App.Startup.Setup;
+namespace BotDeScans.App.Services.Initializations.Setups;
 
 public class DatabaseSetup(DatabaseContext databaseContext) : ISetup
 {
-    public async Task<Result> ExecuteAsync(CancellationToken cancellationToken)
+    public virtual async Task<Result> ExecuteAsync(CancellationToken cancellationToken)
     {
         Console.WriteLine("Database Warming Up...");
 

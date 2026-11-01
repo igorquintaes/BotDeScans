@@ -15,10 +15,9 @@ internal static class AddDependencies
 
     internal static IHostBuilder AddLoggingToHost(this IHostBuilder hostBuilder) => hostBuilder
         .UseSerilog((context, services, configuration) => configuration
+            .Enrich.FromLogContext()
             .ReadFrom.Configuration(context.Configuration)
             .ReadFrom.Services(services)
-            .Enrich.FromLogContext()
-            .WriteTo.Console()
             .WriteTo.File("./log/log.txt", rollingInterval: RollingInterval.Day))
         .ConfigureLogging(logginBuilder => logginBuilder
             .AddConsole()

@@ -1,26 +1,24 @@
 ﻿using BotDeScans.App.Extensions;
-using BotDeScans.App.Features.GoogleDrive.InternalServices;
 using BotDeScans.App.Services.Initializations.Factories.Base;
 using FluentResults;
 using FluentValidation;
 using Microsoft.Extensions.DependencyInjection;
 using System.Reflection;
 
-namespace BotDeScans.App.Services.Initializations;
+namespace BotDeScans.App.Services.Initializations.Setups;
 
-public class SetupClientsService(IServiceProvider serviceProvider)
+public class ClientsSetup(IServiceProvider serviceProvider) : ISetup
 {
-    public virtual async Task<Result> SetupAsync(CancellationToken cancellationToken)
+    public virtual async Task<Result> ExecuteAsync(CancellationToken cancellationToken)
     {
         Console.WriteLine("Initalizing External Clients...");
 
         var aggregatedResult = Result.Ok();
-
         var factoryDataList = GetEnabledFactoriesData();
 
         await Parallel.ForEachAsync(factoryDataList, cancellationToken, async (factoryData, ct) =>
         {
-            var factoryName = factoryData.factory.GetType().Name;
+            var factoryName = factoryData.factory.Name;
 
             try
             {
@@ -30,24 +28,26 @@ public class SetupClientsService(IServiceProvider serviceProvider)
                 aggregatedResult.WithReasons(validationFluentResult.Reasons);
                 if (validationFluentResult.IsFailed)
                 {
-                    aggregatedResult.WithError($"Validation failed for {factoryData.GetType().Name}");
+                    aggregatedResult.WithError($"Validation failed for {factoryName}");
                     return;
                 }
 
-                Console.WriteLine("Creating " + factoryData.GetType().Name);
+                Console.WriteLine("Creating " + factoryName);
                 var clientResult = await factoryData.factory.SafeCreateObjectAsync(cancellationToken);
                 aggregatedResult.WithReasons(clientResult.Reasons);
                 if (clientResult.IsFailed)
                 {
-                    aggregatedResult.WithError($"Object creation failed for {factoryData.GetType().Name}");
+                    aggregatedResult.WithError($"Object creation failed for {factoryName}");
                     return;
                 }
 
-                Console.WriteLine("Testing " + factoryData.GetType().Name);
+                Console.WriteLine("Testing " + factoryName);
                 var healthCheckResult = await factoryData.factory.HealthCheckAsync(clientResult.Value, cancellationToken);
                 aggregatedResult.WithReasons(healthCheckResult.Reasons);
                 if (healthCheckResult.IsFailed)
-                    aggregatedResult.WithError($"Health check failed for {factoryData.GetType().Name}");
+                    aggregatedResult.WithError($"Health check failed for {factoryName}");
+
+                aggregatedResult.WithSuccess($"{factoryName} executed successfully.");
             }
             catch (Exception ex)
             {
@@ -56,17 +56,9 @@ public class SetupClientsService(IServiceProvider serviceProvider)
                 var error = new ExceptionalError($"An exceptional error occurred during {factoryName} execution.", ex);
                 aggregatedResult.WithError(error);
             }
-
         });
 
-        if (aggregatedResult.IsFailed)
-            return aggregatedResult;
-
-        Console.WriteLine("Setting up Google Drive Base Folder...");
-
-        return await serviceProvider
-            .GetRequiredService<GoogleDriveSettingsService>()
-            .SetUpBaseFolderAsync(cancellationToken);
+        return aggregatedResult;
     }
 
     private IEnumerable<(IClientFactory factory, IValidator validator)> GetEnabledFactoriesData()

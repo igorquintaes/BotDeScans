@@ -7,51 +7,8 @@ namespace BotDeScans.App.Features.GoogleDrive.InternalServices;
 
 public class GoogleDriveSettingsService(
     DriveService driveService,
-    GoogleWrapper googleWrapper,
-    GoogleDriveFoldersService googleDriveFoldersService)
+    GoogleWrapper googleWrapper)
 {
-    public const string ROOT_FOLDER_NAME = "root";
-    public const string BASE_FOLDER_NAME = "BOT_DIRECTORY";
-    private static string _baseFolderId = null!;
-
-    public static string BaseFolderId
-    {
-        get => _baseFolderId ?? throw new InvalidOperationException("Base folder not set.");
-        set => _baseFolderId = value;
-    }
-
-    public virtual async Task<Result> SetUpBaseFolderAsync(CancellationToken cancellationToken)
-    {
-        var folderResult = await googleDriveFoldersService.GetAsync(
-            BASE_FOLDER_NAME,
-            ROOT_FOLDER_NAME,
-            cancellationToken);
-
-        if (folderResult.IsFailed)
-            return folderResult.ToResult();
-
-        if (folderResult.Value is not null)
-        {
-            BaseFolderId = folderResult.Value.Id;
-            return folderResult.ToResult();
-        }
-
-        var createFolderResult = await googleDriveFoldersService.CreateAsync(
-            BASE_FOLDER_NAME,
-            ROOT_FOLDER_NAME,
-            cancellationToken);
-
-        if (createFolderResult.IsFailed)
-            return createFolderResult
-                .ToResult()
-                .WithReasons(folderResult.Reasons);
-
-        BaseFolderId = createFolderResult.Value.Id;
-
-        return createFolderResult
-            .WithReasons(folderResult.Reasons)
-            .ToResult();
-    }
 
     public virtual async Task<Result<ConsumptionData>> GetConsumptionDataAsync(CancellationToken cancellationToken)
     {

@@ -19,6 +19,8 @@ public class GoogleBloggerClientFactory(
 {
     public const string CREDENTIALS_FILE_NAME = "blogger.json";
 
+    public override string Name => "Blogger";
+
     public override bool Enabled => configuration
         .GetValues<StepName>("Settings:Publish:Steps")
         .Any(x => x == StepName.PublishBlogspot);

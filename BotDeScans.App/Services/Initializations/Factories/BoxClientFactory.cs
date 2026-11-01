@@ -9,6 +9,8 @@ namespace BotDeScans.App.Services.Initializations.Factories;
 
 public class BoxClientFactory(IConfiguration configuration) : ClientFactory<IBoxClient>
 {
+    public override string Name => "Box";
+
     public override bool Enabled => configuration
         .GetValues<StepName>("Settings:Publish:Steps")
         .Any(x => x is StepName.UploadPdfBox or StepName.UploadZipBox);

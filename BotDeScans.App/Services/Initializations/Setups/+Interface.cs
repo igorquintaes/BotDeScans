@@ -1,6 +1,6 @@
 ﻿using FluentResults;
 
-namespace BotDeScans.App.Startup.Setup;
+namespace BotDeScans.App.Services.Initializations.Setups;
 
 public interface ISetup
 {

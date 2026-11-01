@@ -13,12 +13,22 @@ public class GoogleDriveService(
     GoogleDrivePermissionsService googleDrivePermissionsService,
     IConfiguration configuration)
 {
+    public const string ROOT_FOLDER_NAME = "root";
+    public const string BASE_FOLDER_NAME = "BOT_DIRECTORY";
     public const string REWRITE_KEY = "GoogleDrive:RewriteExistingFile";
     public const string FOLDER_NOT_FOUND = "Não foi encontrada uma pasta com o nome especificado.";
     public const string FILE_NOT_FOUND = "Não foi encontrado um arquivo com o nome especificado.";
     public const string DUPLICATE_FILE_ERROR =
         $"Já existe um arquivo com o nome especificado. " +
         $"Se desejar sobrescrever o arquivo existente, altere a configuração {REWRITE_KEY} para permitir.";
+
+    private static string _baseFolderId = null!;
+
+    public static string BaseFolderId
+    {
+        get => _baseFolderId ?? throw new InvalidOperationException("Base folder not set.");
+        set => _baseFolderId = value;
+    }
 
     public virtual async Task<Result<File>> GetOrCreateFolderAsync(
         string folderName,
@@ -74,9 +84,7 @@ public class GoogleDriveService(
         string parentFolderName,
         CancellationToken cancellationToken)
     {
-        var resourceId = GoogleDriveSettingsService.BaseFolderId;
-
-        var folderResult = await googleDriveFoldersService.GetAsync(parentFolderName, resourceId, cancellationToken);
+        var folderResult = await googleDriveFoldersService.GetAsync(parentFolderName, BaseFolderId, cancellationToken);
         if (folderResult.IsFailed)
             return folderResult.ToResult();
 
@@ -128,17 +136,15 @@ public class GoogleDriveService(
         string email,
         CancellationToken cancellationToken)
     {
-        var resourceId = GoogleDriveSettingsService.BaseFolderId;
-
         var getPermissionsResult = await googleDrivePermissionsService
-            .GetUserPermissionsAsync(email, resourceId, cancellationToken);
+            .GetUserPermissionsAsync(email, BaseFolderId, cancellationToken);
 
         if (getPermissionsResult.IsFailed ||
             getPermissionsResult.Value.Any())
             return getPermissionsResult.ToResult();
 
         var setPermissionResult = await googleDrivePermissionsService
-            .CreateUserReaderPermissionAsync(email, resourceId, cancellationToken);
+            .CreateUserReaderPermissionAsync(email, BaseFolderId, cancellationToken);
 
         return setPermissionResult
             .WithReasons(getPermissionsResult.Reasons)
@@ -149,15 +155,14 @@ public class GoogleDriveService(
         string email,
         CancellationToken cancellationToken)
     {
-        var resourceId = GoogleDriveSettingsService.BaseFolderId;
         var getPermissionsResult = await googleDrivePermissionsService
-            .GetUserPermissionsAsync(email, resourceId, cancellationToken);
+            .GetUserPermissionsAsync(email, BaseFolderId, cancellationToken);
 
         if (getPermissionsResult.IsFailed)
             return getPermissionsResult.ToResult();
 
         var deletePermissionResult = await googleDrivePermissionsService
-            .DeleteUserReaderPermissionsAsync(getPermissionsResult.Value, resourceId, cancellationToken);
+            .DeleteUserReaderPermissionsAsync(getPermissionsResult.Value, BaseFolderId, cancellationToken);
 
         return deletePermissionResult
             .WithReasons(getPermissionsResult.Reasons);

@@ -5,13 +5,16 @@ namespace BotDeScans.App.Services.Initializations.Factories.Base;
 public interface IClientFactory
 {
     bool Enabled { get; }
+    string Name { get; }
     Task<Result<object>> SafeCreateObjectAsync(CancellationToken cancellationToken);
     Task<Result> HealthCheckAsync(object client, CancellationToken cancellationToken);
 }
 
 public abstract class ClientFactory<TClient> : IClientFactory
 {
+    public abstract string Name { get; }
     public abstract bool Enabled { get; }
+
     public abstract Task<Result<TClient>> CreateAsync(CancellationToken cancellationToken);
     public abstract Task<Result> HealthCheckAsync(TClient client, CancellationToken cancellationToken);
 

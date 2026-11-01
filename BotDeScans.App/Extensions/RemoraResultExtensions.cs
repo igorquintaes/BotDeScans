@@ -10,4 +10,9 @@ public static class RemoraResultExtensions
         result.IsSuccess
              ? valueFactory()
              : Result.Fail([DEFAULT_ERROR, result.Error.Message]);
+
+    public static Result ToFluentResult(this Remora.Results.IResult result) =>
+        result.IsSuccess
+             ? Result.Ok()
+             : Result.Fail([DEFAULT_ERROR, result.Error.Message]);
 }

@@ -10,6 +10,8 @@ namespace BotDeScans.App.Services.Initializations.Factories;
 
 public class MegaClientFactory(IConfiguration configuration) : ClientFactory<IMegaApiClient>
 {
+    public override string Name => "Mega";
+
     public override bool Enabled => configuration
         .GetValues<StepName>("Settings:Publish:Steps")
         .Any(x => x is StepName.UploadPdfMega or StepName.UploadZipMega);

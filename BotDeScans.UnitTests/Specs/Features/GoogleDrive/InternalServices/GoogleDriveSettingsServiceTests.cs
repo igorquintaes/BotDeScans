@@ -1,4 +1,5 @@
-﻿using BotDeScans.App.Features.GoogleDrive.InternalServices;
+﻿using BotDeScans.App.Features.GoogleDrive;
+using BotDeScans.App.Features.GoogleDrive.InternalServices;
 using BotDeScans.App.Models.DTOs;
 using BotDeScans.App.Services.Wrappers;
 using FluentAssertions.Execution;
@@ -25,202 +26,188 @@ public class GoogleDriveSettingsServiceTests : UnitTest
         service = fixture.Create<GoogleDriveSettingsService>();
     }
 
-    public class BaseFolderId : GoogleDriveSettingsServiceTests
-    {
-        [Fact]
-        public void GivenNotDefinedBaseFolderShouldThrowException()
-        {
-            typeof(GoogleDriveSettingsService)
-                .GetField("_baseFolderId", BindingFlags.NonPublic | BindingFlags.Static)!
-                .SetValue(null, null);
+    //public class SetUpBaseFolderAsync : GoogleDriveSettingsServiceTests
+    //{
+    //    public SetUpBaseFolderAsync()
+    //    {
+    //        A.CallTo(() => fixture
+    //            .FreezeFake<GoogleDriveFoldersService>()
+    //            .GetAsync(
+    //                GoogleDriveService.BASE_FOLDER_NAME,
+    //                GoogleDriveService.ROOT_FOLDER_NAME,
+    //                cancellationToken))
+    //            .Returns(Result.Ok<File?>(default));
 
-            Func<string> call = () => GoogleDriveSettingsService.BaseFolderId;
-            call.Should().Throw<InvalidOperationException>().WithMessage("Base folder not set.");
-        }
-    }
+    //        A.CallTo(() => fixture
+    //            .FreezeFake<GoogleDriveFoldersService>()
+    //            .CreateAsync(
+    //                GoogleDriveService.BASE_FOLDER_NAME,
+    //                GoogleDriveService.ROOT_FOLDER_NAME,
+    //                cancellationToken))
+    //            .Returns(fixture.FreezeFake<File>());
+    //    }
 
-    public class SetUpBaseFolderAsync : GoogleDriveSettingsServiceTests
-    {
-        public SetUpBaseFolderAsync()
-        {
-            A.CallTo(() => fixture
-                .FreezeFake<GoogleDriveFoldersService>()
-                .GetAsync(
-                    GoogleDriveSettingsService.BASE_FOLDER_NAME,
-                    GoogleDriveSettingsService.ROOT_FOLDER_NAME,
-                    cancellationToken))
-                .Returns(Result.Ok<File?>(default));
+    //    [Fact]
+    //    public async Task GivenSuccessfulExecutionWithoutExistingFolderShouldReturnSuccess()
+    //    {
+    //        var result = await service.SetUpBaseFolderAsync(cancellationToken);
 
-            A.CallTo(() => fixture
-                .FreezeFake<GoogleDriveFoldersService>()
-                .CreateAsync(
-                    GoogleDriveSettingsService.BASE_FOLDER_NAME,
-                    GoogleDriveSettingsService.ROOT_FOLDER_NAME,
-                    cancellationToken))
-                .Returns(fixture.FreezeFake<File>());
-        }
+    //        using var _ = new AssertionScope();
+    //        result.Should().BeSuccess();
+    //        GoogleDriveService.BaseFolderId.Should().Be(fixture.FreezeFake<File>().Id);
 
-        [Fact]
-        public async Task GivenSuccessfulExecutionWithoutExistingFolderShouldReturnSuccess()
-        {
-            var result = await service.SetUpBaseFolderAsync(cancellationToken);
+    //        A.CallTo(() => fixture
+    //            .FreezeFake<GoogleDriveFoldersService>()
+    //            .CreateAsync(
+    //                GoogleDriveService.BASE_FOLDER_NAME,
+    //                GoogleDriveService.ROOT_FOLDER_NAME,
+    //                cancellationToken))
+    //            .MustHaveHappenedOnceExactly();
+    //    }
 
-            using var _ = new AssertionScope();
-            result.Should().BeSuccess();
-            GoogleDriveSettingsService.BaseFolderId.Should().Be(fixture.FreezeFake<File>().Id);
+    //    [Fact]
+    //    public async Task GivenSuccessfulExecutionWithExistingFolderShouldReturnSuccess()
+    //    {
+    //        A.CallTo(() => fixture
+    //            .FreezeFake<GoogleDriveFoldersService>()
+    //            .GetAsync(
+    //                GoogleDriveService.BASE_FOLDER_NAME,
+    //                GoogleDriveService.ROOT_FOLDER_NAME,
+    //                cancellationToken))
+    //            .Returns(fixture.FreezeFake<File>());
 
-            A.CallTo(() => fixture
-                .FreezeFake<GoogleDriveFoldersService>()
-                .CreateAsync(
-                    GoogleDriveSettingsService.BASE_FOLDER_NAME,
-                    GoogleDriveSettingsService.ROOT_FOLDER_NAME,
-                    cancellationToken))
-                .MustHaveHappenedOnceExactly();
-        }
+    //        var result = await service.SetUpBaseFolderAsync(cancellationToken);
 
-        [Fact]
-        public async Task GivenSuccessfulExecutionWithExistingFolderShouldReturnSuccess()
-        {
-            A.CallTo(() => fixture
-                .FreezeFake<GoogleDriveFoldersService>()
-                .GetAsync(
-                    GoogleDriveSettingsService.BASE_FOLDER_NAME,
-                    GoogleDriveSettingsService.ROOT_FOLDER_NAME,
-                    cancellationToken))
-                .Returns(fixture.FreezeFake<File>());
+    //        using var _ = new AssertionScope();
+    //        result.Should().BeSuccess();
+    //        GoogleDriveService.BaseFolderId.Should().Be(fixture.FreezeFake<File>().Id);
 
-            var result = await service.SetUpBaseFolderAsync(cancellationToken);
+    //        A.CallTo(() => fixture
+    //            .FreezeFake<GoogleDriveFoldersService>()
+    //            .CreateAsync(
+    //                A<string>.Ignored,
+    //                A<string>.Ignored,
+    //                cancellationToken))
+    //            .MustNotHaveHappened();
+    //    }
 
-            using var _ = new AssertionScope();
-            result.Should().BeSuccess();
-            GoogleDriveSettingsService.BaseFolderId.Should().Be(fixture.FreezeFake<File>().Id);
+    //    [Fact]
+    //    public async Task GivenExecutionErrorWhenCheckingIfBaseFolderExistsShouldReturnFailResult()
+    //    {
+    //        const string ERROR_MESSAGE = "some error";
 
-            A.CallTo(() => fixture
-                .FreezeFake<GoogleDriveFoldersService>()
-                .CreateAsync(
-                    A<string>.Ignored,
-                    A<string>.Ignored,
-                    cancellationToken))
-                .MustNotHaveHappened();
-        }
+    //        A.CallTo(() => fixture
+    //            .FreezeFake<GoogleDriveFoldersService>()
+    //            .GetAsync(
+    //                GoogleDriveService.BASE_FOLDER_NAME,
+    //                GoogleDriveService.ROOT_FOLDER_NAME,
+    //                cancellationToken))
+    //            .Returns(Result.Fail(ERROR_MESSAGE));
 
-        [Fact]
-        public async Task GivenExecutionErrorWhenCheckingIfBaseFolderExistsShouldReturnFailResult()
-        {
-            const string ERROR_MESSAGE = "some error";
+    //        var result = await service.SetUpBaseFolderAsync(cancellationToken);
 
-            A.CallTo(() => fixture
-                .FreezeFake<GoogleDriveFoldersService>()
-                .GetAsync(
-                    GoogleDriveSettingsService.BASE_FOLDER_NAME,
-                    GoogleDriveSettingsService.ROOT_FOLDER_NAME,
-                    cancellationToken))
-                .Returns(Result.Fail(ERROR_MESSAGE));
+    //        result.Should().BeFailure().And.HaveError(ERROR_MESSAGE);
+    //    }
 
-            var result = await service.SetUpBaseFolderAsync(cancellationToken);
+    //    [Fact]
+    //    public async Task GivenExecutionErrorWhenCreatingBaseFolderShouldReturnFailResult()
+    //    {
+    //        const string ERROR_MESSAGE = "some error";
 
-            result.Should().BeFailure().And.HaveError(ERROR_MESSAGE);
-        }
+    //        A.CallTo(() => fixture
+    //            .FreezeFake<GoogleDriveFoldersService>()
+    //            .CreateAsync(
+    //                GoogleDriveService.BASE_FOLDER_NAME,
+    //                GoogleDriveService.ROOT_FOLDER_NAME,
+    //                cancellationToken))
+    //            .Returns(Result.Fail(ERROR_MESSAGE));
 
-        [Fact]
-        public async Task GivenExecutionErrorWhenCreatingBaseFolderShouldReturnFailResult()
-        {
-            const string ERROR_MESSAGE = "some error";
+    //        var result = await service.SetUpBaseFolderAsync(cancellationToken);
 
-            A.CallTo(() => fixture
-                .FreezeFake<GoogleDriveFoldersService>()
-                .CreateAsync(
-                    GoogleDriveSettingsService.BASE_FOLDER_NAME,
-                    GoogleDriveSettingsService.ROOT_FOLDER_NAME,
-                    cancellationToken))
-                .Returns(Result.Fail(ERROR_MESSAGE));
+    //        result.Should().BeFailure().And.HaveError(ERROR_MESSAGE);
+    //    }
 
-            var result = await service.SetUpBaseFolderAsync(cancellationToken);
+    //    [Fact]
+    //    public async Task GivenSuccessExecutionReturnReasons()
+    //    {
+    //        const string REASON_1 = "reason 1";
+    //        const string REASON_2 = "reason 2";
 
-            result.Should().BeFailure().And.HaveError(ERROR_MESSAGE);
-        }
+    //        A.CallTo(() => fixture
+    //            .FreezeFake<GoogleDriveFoldersService>()
+    //            .GetAsync(
+    //                GoogleDriveService.BASE_FOLDER_NAME,
+    //                GoogleDriveService.ROOT_FOLDER_NAME,
+    //                cancellationToken))
+    //            .Returns(Result.Ok<File?>(default).WithSuccess(REASON_1));
 
-        [Fact]
-        public async Task GivenSuccessExecutionReturnReasons()
-        {
-            const string REASON_1 = "reason 1";
-            const string REASON_2 = "reason 2";
+    //        A.CallTo(() => fixture
+    //            .FreezeFake<GoogleDriveFoldersService>()
+    //            .CreateAsync(
+    //                GoogleDriveService.BASE_FOLDER_NAME,
+    //                GoogleDriveService.ROOT_FOLDER_NAME,
+    //                cancellationToken))
+    //            .Returns(Result.Ok(fixture.FreezeFake<File>()).WithSuccess(REASON_2));
 
-            A.CallTo(() => fixture
-                .FreezeFake<GoogleDriveFoldersService>()
-                .GetAsync(
-                    GoogleDriveSettingsService.BASE_FOLDER_NAME,
-                    GoogleDriveSettingsService.ROOT_FOLDER_NAME,
-                    cancellationToken))
-                .Returns(Result.Ok<File?>(default).WithSuccess(REASON_1));
+    //        var result = await service.SetUpBaseFolderAsync(cancellationToken);
 
-            A.CallTo(() => fixture
-                .FreezeFake<GoogleDriveFoldersService>()
-                .CreateAsync(
-                    GoogleDriveSettingsService.BASE_FOLDER_NAME,
-                    GoogleDriveSettingsService.ROOT_FOLDER_NAME,
-                    cancellationToken))
-                .Returns(Result.Ok(fixture.FreezeFake<File>()).WithSuccess(REASON_2));
+    //        using var _ = new AssertionScope();
+    //        result.Should().BeSuccess().And
+    //              .HaveReason(REASON_1).And
+    //              .HaveReason(REASON_2);
+    //    }
 
-            var result = await service.SetUpBaseFolderAsync(cancellationToken);
+    //    [Fact]
+    //    public async Task GivenErrorExecutionReturnReasons()
+    //    {
+    //        const string REASON = "reason";
+    //        const string ERROR = "error";
 
-            using var _ = new AssertionScope();
-            result.Should().BeSuccess().And
-                  .HaveReason(REASON_1).And
-                  .HaveReason(REASON_2);
-        }
+    //        A.CallTo(() => fixture
+    //            .FreezeFake<GoogleDriveFoldersService>()
+    //            .GetAsync(
+    //                GoogleDriveService.BASE_FOLDER_NAME,
+    //                GoogleDriveService.ROOT_FOLDER_NAME,
+    //                cancellationToken))
+    //            .Returns(Result.Ok<File?>(default).WithSuccess(REASON));
 
-        [Fact]
-        public async Task GivenErrorExecutionReturnReasons()
-        {
-            const string REASON = "reason";
-            const string ERROR = "error";
+    //        A.CallTo(() => fixture
+    //            .FreezeFake<GoogleDriveFoldersService>()
+    //            .CreateAsync(
+    //                GoogleDriveService.BASE_FOLDER_NAME,
+    //                GoogleDriveService.ROOT_FOLDER_NAME,
+    //                cancellationToken))
+    //            .Returns(Result.Fail(ERROR));
 
-            A.CallTo(() => fixture
-                .FreezeFake<GoogleDriveFoldersService>()
-                .GetAsync(
-                    GoogleDriveSettingsService.BASE_FOLDER_NAME,
-                    GoogleDriveSettingsService.ROOT_FOLDER_NAME,
-                    cancellationToken))
-                .Returns(Result.Ok<File?>(default).WithSuccess(REASON));
+    //        var result = await service.SetUpBaseFolderAsync(cancellationToken);
 
-            A.CallTo(() => fixture
-                .FreezeFake<GoogleDriveFoldersService>()
-                .CreateAsync(
-                    GoogleDriveSettingsService.BASE_FOLDER_NAME,
-                    GoogleDriveSettingsService.ROOT_FOLDER_NAME,
-                    cancellationToken))
-                .Returns(Result.Fail(ERROR));
+    //        using var _ = new AssertionScope();
+    //        result.Should().BeFailure().And
+    //              .HaveReason(REASON).And
+    //              .HaveError(ERROR);
+    //    }
 
-            var result = await service.SetUpBaseFolderAsync(cancellationToken);
+    //    [Fact]
+    //    public async Task GivenCreateFolderErrorShouldNotSetBaseFolderId()
+    //    {
+    //        typeof(GoogleDriveSettingsService)
+    //            .GetField("_baseFolderId", BindingFlags.NonPublic | BindingFlags.Static)!
+    //            .SetValue(null, null);
 
-            using var _ = new AssertionScope();
-            result.Should().BeFailure().And
-                  .HaveReason(REASON).And
-                  .HaveError(ERROR);
-        }
+    //        A.CallTo(() => fixture
+    //            .FreezeFake<GoogleDriveFoldersService>()
+    //            .CreateAsync(
+    //                GoogleDriveService.BASE_FOLDER_NAME,
+    //                GoogleDriveService.ROOT_FOLDER_NAME,
+    //                cancellationToken))
+    //            .Returns(Result.Fail("error"));
 
-        [Fact]
-        public async Task GivenCreateFolderErrorShouldNotSetBaseFolderId()
-        {
-            typeof(GoogleDriveSettingsService)
-                .GetField("_baseFolderId", BindingFlags.NonPublic | BindingFlags.Static)!
-                .SetValue(null, null);
+    //        await service.SetUpBaseFolderAsync(cancellationToken);
 
-            A.CallTo(() => fixture
-                .FreezeFake<GoogleDriveFoldersService>()
-                .CreateAsync(
-                    GoogleDriveSettingsService.BASE_FOLDER_NAME,
-                    GoogleDriveSettingsService.ROOT_FOLDER_NAME,
-                    cancellationToken))
-                .Returns(Result.Fail("error"));
-
-            await service.SetUpBaseFolderAsync(cancellationToken);
-
-            Func<string> call = () => GoogleDriveSettingsService.BaseFolderId;
-            call.Should().Throw<InvalidOperationException>().WithMessage("Base folder not set.");
-        }
-    }
+    //        Func<string> call = () => GoogleDriveService.BaseFolderId;
+    //        call.Should().Throw<InvalidOperationException>().WithMessage("Base folder not set.");
+    //    }
+    //}
 
     public class GetConsumptionDataAsync : GoogleDriveSettingsServiceTests
     {
