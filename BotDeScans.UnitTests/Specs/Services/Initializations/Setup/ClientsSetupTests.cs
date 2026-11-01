@@ -38,14 +38,14 @@ public class ClientsSetupTests : UnitTest
                 .FreezeFake<IValidator<FakeClientFactoryA>>()
                     .ValidateAsync(A<ValidationContext<IClientFactory>>.That.Matches(x =>
                         x.InstanceToValidate == fixture.FreezeFake<FakeClientFactoryA>()),
-                        cancellationToken))
+                        A<CancellationToken>.That.IsNotCanceled()))
                     .Returns(new ValidationResult());
 
             A.CallTo(() => fixture
                 .FreezeFake<IValidator<FakeClientFactoryB>>()
                 .ValidateAsync(A<ValidationContext<IClientFactory>>.That.Matches(x =>
                     x.InstanceToValidate == fixture.FreezeFake<FakeClientFactoryB>()),
-                    cancellationToken))
+                        A<CancellationToken>.That.IsNotCanceled()))
                 .Returns(new ValidationResult());
 
             A.CallTo(() => fixture
@@ -83,7 +83,7 @@ public class ClientsSetupTests : UnitTest
                 .FreezeFake<IValidator<FakeClientFactoryA>>()
                 .ValidateAsync(A<ValidationContext<IClientFactory>>.That.Matches(x =>
                     x.InstanceToValidate == fixture.FreezeFake<FakeClientFactoryA>()),
-                    cancellationToken))
+                    A<CancellationToken>.That.IsNotCanceled()))
                 .Returns(new ValidationResult([new ValidationFailure("prop", ERROR_MESSAGE)]));
 
             var result = await setup.ExecuteAsync(cancellationToken);
@@ -94,12 +94,31 @@ public class ClientsSetupTests : UnitTest
         }
 
         [Fact]
+        public async Task GivenExceptionToValidateAsyncShouldReturnFailResult()
+        {
+            const string ERROR_MESSAGE = "some-error";
+            A.CallTo(() => fixture
+                .FreezeFake<IValidator<FakeClientFactoryA>>()
+                .ValidateAsync(A<ValidationContext<IClientFactory>>.That.Matches(x =>
+                    x.InstanceToValidate == fixture.FreezeFake<FakeClientFactoryA>()),
+                    A<CancellationToken>.That.IsNotCanceled()))
+                .Throws(new InvalidOperationException(ERROR_MESSAGE));
+
+            var result = await setup.ExecuteAsync(cancellationToken);
+
+            result.Errors.Should().ContainSingle();
+            result.Errors[0].Should().BeOfType<ExceptionalError>();
+            result.Errors[0].As<ExceptionalError>()!.Exception.Should().BeOfType<InvalidOperationException>();
+            result.Errors[0].As<ExceptionalError>()!.Exception.Message.Should().Be(ERROR_MESSAGE);
+        }
+
+        [Fact]
         public async Task GivenErrorToCreateAsyncShouldReturnFailResult()
         {
             const string ERROR_MESSAGE = "some-error";
             A.CallTo(() => fixture
                 .FreezeFake<FakeClientFactoryA>()
-                .CreateAsync(cancellationToken))
+                .CreateAsync(A<CancellationToken>.That.IsNotCanceled()))
                 .Returns(Result.Fail(ERROR_MESSAGE));
 
             var result = await setup.ExecuteAsync(cancellationToken);
@@ -116,7 +135,7 @@ public class ClientsSetupTests : UnitTest
 
             A.CallTo(() => fixture
                 .FreezeFake<FakeClientFactoryA>()
-                .CreateAsync(cancellationToken))
+                .CreateAsync(A<CancellationToken>.That.IsNotCanceled()))
                 .ThrowsAsync(new InvalidOperationException(ERROR_MESSAGE));
 
             var result = await setup.ExecuteAsync(cancellationToken);
@@ -126,10 +145,10 @@ public class ClientsSetupTests : UnitTest
                 .And.HaveError($"Object creation failed for Fake Client A");
 
             result.Errors.Should().HaveCount(2);
-            result.Errors[0].Reasons.Should().HaveCount(1);
-            result.Errors[0].Reasons.FirstOrDefault()?.Should().BeOfType<ExceptionalError>();
-            result.Errors[0].Reasons.FirstOrDefault()?.As<ExceptionalError?>()?.Exception.Should().BeOfType<InvalidOperationException>();
-            result.Errors[0].Reasons.FirstOrDefault()?.As<ExceptionalError?>()?.Exception.Message.Should().Be(ERROR_MESSAGE);
+            result.Errors[1].Reasons.Should().HaveCount(1);
+            result.Errors[1].Reasons.FirstOrDefault()?.Should().BeOfType<ExceptionalError>();
+            result.Errors[1].Reasons.FirstOrDefault()?.As<ExceptionalError?>()?.Exception.Should().BeOfType<InvalidOperationException>();
+            result.Errors[1].Reasons.FirstOrDefault()?.As<ExceptionalError?>()?.Exception.Message.Should().Be(ERROR_MESSAGE);
         }
 
         [Fact]
@@ -139,12 +158,12 @@ public class ClientsSetupTests : UnitTest
             var client = new object();
             A.CallTo(() => fixture
                 .FreezeFake<FakeClientFactoryA>()
-                .CreateAsync(cancellationToken))
+                .CreateAsync(A<CancellationToken>.That.IsNotCanceled()))
                 .Returns(Result.Ok(client));
 
             A.CallTo(() => fixture
                 .FreezeFake<FakeClientFactoryA>()
-                .HealthCheckAsync(client, cancellationToken))
+                .HealthCheckAsync(client, A<CancellationToken>.That.IsNotCanceled()))
                 .Returns(Result.Fail(ERROR_MESSAGE));
 
             var result = await setup.ExecuteAsync(cancellationToken);
@@ -152,6 +171,29 @@ public class ClientsSetupTests : UnitTest
             result.Should().BeFailure()
                 .And.HaveError(ERROR_MESSAGE)
                 .And.HaveError($"Health check failed for Fake Client A");
+        }
+
+        [Fact]
+        public async Task GivenExceptionToHealthCheckAsyncShouldReturnFailResult()
+        {
+            const string ERROR_MESSAGE = "some-error";
+            var client = new object();
+            A.CallTo(() => fixture
+                .FreezeFake<FakeClientFactoryA>()
+                .CreateAsync(A<CancellationToken>.That.IsNotCanceled()))
+                .Returns(Result.Ok(client));
+
+            A.CallTo(() => fixture
+                .FreezeFake<FakeClientFactoryA>()
+                .HealthCheckAsync(client, A<CancellationToken>.That.IsNotCanceled()))
+                .ThrowsAsync(new InvalidOperationException(ERROR_MESSAGE));
+
+            var result = await setup.ExecuteAsync(cancellationToken);
+
+            result.Errors.Should().ContainSingle();
+            result.Errors[0].Should().BeOfType<ExceptionalError>();
+            result.Errors[0].As<ExceptionalError>()!.Exception.Should().BeOfType<InvalidOperationException>();
+            result.Errors[0].As<ExceptionalError>()!.Exception.Message.Should().Be(ERROR_MESSAGE);
         }
 
         [Fact]
@@ -166,12 +208,12 @@ public class ClientsSetupTests : UnitTest
 
             A.CallTo(() => fixture
                 .FreezeFake<FakeClientFactoryA>()
-                .CreateAsync(A<CancellationToken>.Ignored))
+                .CreateAsync(A<CancellationToken>.That.IsNotCanceled()))
                 .MustNotHaveHappened();
 
             A.CallTo(() => fixture
                 .FreezeFake<FakeClientFactoryA>()
-                .HealthCheckAsync(A<object>.Ignored, A<CancellationToken>.Ignored))
+                .HealthCheckAsync(A<object>.Ignored, A<CancellationToken>.That.IsNotCanceled()))
                 .MustNotHaveHappened();
         }
 
@@ -193,19 +235,19 @@ public class ClientsSetupTests : UnitTest
                 .FreezeFake<IValidator<FakeClientFactoryA>>()
                 .ValidateAsync(A<ValidationContext<IClientFactory>>.That.Matches(x =>
                     x.InstanceToValidate == fixture.FreezeFake<FakeClientFactoryA>()),
-                    cancellationToken))
+                    A<CancellationToken>.That.IsNotCanceled()))
                 .Returns(new ValidationResult());
 
             const string CREATE_SUCCESS_MSG_FACTORY_A = "create-success-a";
             A.CallTo(() => fixture
                 .FreezeFake<FakeClientFactoryA>()
-                .CreateAsync(cancellationToken))
+                .CreateAsync(A<CancellationToken>.That.IsNotCanceled()))
                 .Returns(Result.Ok().WithSuccess(CREATE_SUCCESS_MSG_FACTORY_A));
 
             const string HEALTH_SUCCESS_MSG_FACTORY_A = "health-success-a";
             A.CallTo(() => fixture
                 .FreezeFake<FakeClientFactoryA>()
-                .HealthCheckAsync(A<object>.Ignored, cancellationToken))
+                .HealthCheckAsync(A<object>.Ignored, A<CancellationToken>.That.IsNotCanceled()))
                 .Returns(Result.Ok().WithSuccess(HEALTH_SUCCESS_MSG_FACTORY_A));
 
             // FakeClientFactoryB
@@ -223,7 +265,7 @@ public class ClientsSetupTests : UnitTest
                 .FreezeFake<IValidator<FakeClientFactoryB>>()
                 .ValidateAsync(A<ValidationContext<IClientFactory>>.That.Matches(x =>
                     x.InstanceToValidate == fixture.FreezeFake<FakeClientFactoryB>()),
-                    cancellationToken))
+                    A<CancellationToken>.That.IsNotCanceled()))
                 .Returns(new ValidationResult());
 
             A.CallTo(() => fixture
@@ -233,13 +275,13 @@ public class ClientsSetupTests : UnitTest
             const string CREATE_SUCCESS_MSG_FACTORY_B = "create-success-b";
             A.CallTo(() => fixture
                 .FreezeFake<FakeClientFactoryB>()
-                .CreateAsync(cancellationToken))
+                .CreateAsync(A<CancellationToken>.That.IsNotCanceled()))
                 .Returns(Result.Ok().WithSuccess(CREATE_SUCCESS_MSG_FACTORY_B));
 
             const string HEALTH_ERROR_MSG_FACTORY_B = "health-error-b";
             A.CallTo(() => fixture
                 .FreezeFake<FakeClientFactoryB>()
-                .HealthCheckAsync(A<object>.Ignored, cancellationToken))
+                .HealthCheckAsync(A<object>.Ignored, A<CancellationToken>.That.IsNotCanceled()))
                 .Returns(Result.Fail(HEALTH_ERROR_MSG_FACTORY_B));
 
             // Act
