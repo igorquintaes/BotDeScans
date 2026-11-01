@@ -46,27 +46,27 @@ public class SetupApplicationTests : UnitTest
 
             A.CallTo(() => fixture
                 .FreezeFake<ClientsSetup>()
-                .ExecuteAsync(A<CancellationToken>.Ignored))
+                .ExecuteAsync(A<CancellationToken>.That.IsNotCanceled()))
                 .Returns(Result.Ok());
 
             A.CallTo(() => fixture
                 .FreezeFake<DatabaseSetup>()
-                .ExecuteAsync(A<CancellationToken>.Ignored))
+                .ExecuteAsync(A<CancellationToken>.That.IsNotCanceled()))
                 .Returns(Result.Ok());
 
             A.CallTo(() => fixture
                 .FreezeFake<DiscordSlashCommandsSetup>()
-                .ExecuteAsync(A<CancellationToken>.Ignored))
+                .ExecuteAsync(A<CancellationToken>.That.IsNotCanceled()))
                 .Returns(Result.Ok());
 
             A.CallTo(() => fixture
                 .FreezeFake<DiscordValidatorSetup>()
-                .ExecuteAsync(A<CancellationToken>.Ignored))
+                .ExecuteAsync(A<CancellationToken>.That.IsNotCanceled()))
                 .Returns(Result.Ok());
 
             A.CallTo(() => fixture
                 .FreezeFake<StepsSetup>()
-                .ExecuteAsync(A<CancellationToken>.Ignored))
+                .ExecuteAsync(A<CancellationToken>.That.IsNotCanceled()))
                 .Returns(Result.Ok());
 
             A.CallTo(() => scopedServiceProvider
@@ -75,7 +75,7 @@ public class SetupApplicationTests : UnitTest
 
             A.CallTo(() => fixture
                 .FreezeFake<GoogleDriveInitializer>()
-                .ExecuteAsync(A<CancellationToken>.Ignored))
+                .ExecuteAsync(A<CancellationToken>.That.IsNotCanceled()))
                 .Returns(Result.Ok());
 
             setup = fixture.Create<SetupApplication>();
@@ -152,7 +152,7 @@ public class SetupApplicationTests : UnitTest
         {
             A.CallTo(() => fixture
                 .FreezeFake<ClientsSetup>()
-                .ExecuteAsync(A<CancellationToken>.Ignored))
+                .ExecuteAsync(A<CancellationToken>.That.IsNotCanceled()))
                 .Returns(Result.Fail("error"));
 
             await setup.StartAsync(cancellationToken);
@@ -168,7 +168,7 @@ public class SetupApplicationTests : UnitTest
         {
             A.CallTo(() => fixture
                 .FreezeFake<DatabaseSetup>()
-                .ExecuteAsync(A<CancellationToken>.Ignored))
+                .ExecuteAsync(A<CancellationToken>.That.IsNotCanceled()))
                 .Returns(Result.Fail("error"));
 
             await setup.StartAsync(cancellationToken);
@@ -184,7 +184,7 @@ public class SetupApplicationTests : UnitTest
         {
             A.CallTo(() => fixture
                 .FreezeFake<DiscordSlashCommandsSetup>()
-                .ExecuteAsync(A<CancellationToken>.Ignored))
+                .ExecuteAsync(A<CancellationToken>.That.IsNotCanceled()))
                 .Returns(Result.Fail("error"));
 
             await setup.StartAsync(cancellationToken);
@@ -204,7 +204,7 @@ public class SetupApplicationTests : UnitTest
 
             A.CallTo(() => fixture
                 .FreezeFake<DiscordValidatorSetup>()
-                .ExecuteAsync(A<CancellationToken>.Ignored))
+                .ExecuteAsync(A<CancellationToken>.That.IsNotCanceled()))
                 .Returns(Result.Fail("error"));
 
             await setup.StartAsync(cancellationToken);
@@ -220,7 +220,7 @@ public class SetupApplicationTests : UnitTest
         {
             A.CallTo(() => fixture
                 .FreezeFake<StepsSetup>()
-                .ExecuteAsync(A<CancellationToken>.Ignored))
+                .ExecuteAsync(A<CancellationToken>.That.IsNotCanceled()))
                 .Returns(Result.Fail("error"));
 
             await setup.StartAsync(cancellationToken);
@@ -247,7 +247,7 @@ public class SetupApplicationTests : UnitTest
         {
             A.CallTo(() => fixture
                 .FreezeFake<ClientsSetup>()
-                .ExecuteAsync(A<CancellationToken>.Ignored))
+                .ExecuteAsync(A<CancellationToken>.That.IsNotCanceled()))
                 .Returns(Result.Fail("error"));
 
             await setup.StartAsync(cancellationToken);
@@ -259,7 +259,7 @@ public class SetupApplicationTests : UnitTest
         }
 
         [Fact]
-        public async Task GivenMissingClientsSetupShouldCallGoogleDriveInitializer()
+        public async Task GivenMissingClientsSetupShouldNotCallGoogleDriveInitializer()
         {
 
             A.CallTo(() => scopedServiceProvider
@@ -276,7 +276,7 @@ public class SetupApplicationTests : UnitTest
 
             A.CallTo(() => fixture
                 .FreezeFake<GoogleDriveInitializer>()
-                .ExecuteAsync(cancellationToken))
+                .ExecuteAsync(A<CancellationToken>.Ignored))
                 .MustNotHaveHappened();
         }
     }
