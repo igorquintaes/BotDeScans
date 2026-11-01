@@ -259,6 +259,22 @@ public class SetupApplicationTests : UnitTest
         }
 
         [Fact]
+        public async Task GivenGoogleDriveInitializerErrorShouldStopApplication()
+        {
+            A.CallTo(() => fixture
+                .FreezeFake<GoogleDriveInitializer>()
+                .ExecuteAsync(A<CancellationToken>.That.IsNotCanceled()))
+                .Returns(Result.Fail("error"));
+
+            await setup.StartAsync(cancellationToken);
+
+            A.CallTo(() => fixture
+                .FreezeFake<IHostApplicationLifetime>()
+                .StopApplication())
+                .MustHaveHappenedOnceExactly();
+        }
+
+    [Fact]
         public async Task GivenMissingClientsSetupShouldNotCallGoogleDriveInitializer()
         {
 
