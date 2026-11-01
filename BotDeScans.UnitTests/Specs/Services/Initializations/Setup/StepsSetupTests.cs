@@ -1,4 +1,4 @@
-using BotDeScans.App.Features.Publish.Interaction.Steps;
+Ôªøusing BotDeScans.App.Features.Publish.Interaction.Steps;
 using BotDeScans.App.Features.Publish.Interaction.Steps.Enums;
 using BotDeScans.App.Models.Entities.Enums;
 using BotDeScans.App.Services.Initializations.Setups;
@@ -42,7 +42,7 @@ public class StepsSetupTests : UnitTest
 
             var result = await setup.ExecuteAsync(cancellationToken);
 
-            var errorMessage = "N„o foi encontrado nenhum passo de publicaÁ„o " +
+            var errorMessage = "N√£o foi encontrado nenhum passo de publica√ß√£o " +
                               $"em '{StepsSetup.STEPS_KEY}'.";
             result.Should().BeFailure().And.HaveError(errorMessage);
         }
@@ -56,8 +56,8 @@ public class StepsSetupTests : UnitTest
 
             var result = await setup.ExecuteAsync(cancellationToken);
 
-            var errorMessage = $"{StepsSetup.STEPS_KEY}: N„o foi possÌvel converter o tipo " +
-                               $"'{UNEXPECTED_STEP_KEY}' em um passo de publicaÁ„o v·lido.";
+            var errorMessage = $"{StepsSetup.STEPS_KEY}: N√£o foi poss√≠vel converter o tipo " +
+                               $"'{UNEXPECTED_STEP_KEY}' em um passo de publica√ß√£o v√°lido.";
             result.Should().BeFailure().And.HaveError(errorMessage);
         }
 
@@ -72,8 +72,8 @@ public class StepsSetupTests : UnitTest
 
             var result = await setup.ExecuteAsync(cancellationToken);
 
-            var errorMessage = $"{StepsSetup.STEPS_KEY}: N„o foi possÌvel converter o tipo " +
-                               $"'{UNEXPECTED_STEP_KEY}' em um passo de publicaÁ„o v·lido.";
+            var errorMessage = $"{StepsSetup.STEPS_KEY}: N√£o foi poss√≠vel converter o tipo " +
+                               $"'{UNEXPECTED_STEP_KEY}' em um passo de publica√ß√£o v√°lido.";
             result.Should().BeFailure().And.HaveError(errorMessage);
         }
 
@@ -103,8 +103,8 @@ public class StepsSetupTests : UnitTest
 
             var result = await setup.ExecuteAsync(cancellationToken);
 
-            var errorMessage = "N„o foi encontrado nenhum passo de upload de " +
-                              $"lanÁamentos em '{StepsSetup.STEPS_KEY}'.";
+            var errorMessage = "N√£o foi encontrado nenhum passo de upload de " +
+                              $"lan√ßamentos em '{StepsSetup.STEPS_KEY}'.";
             result.Should().BeFailure().And.HaveError(errorMessage);
         }
     }
