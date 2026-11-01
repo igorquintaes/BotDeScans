@@ -35,6 +35,15 @@ public class GoogleDriveInitializerTests : UnitTest
             initializer = fixture.Create<GoogleDriveInitializer>();
         }
 
+        public void Dispose()
+        {
+            typeof(GoogleDriveService)
+                .GetField("_baseFolderId", BindingFlags.NonPublic | BindingFlags.Static)!
+                .SetValue(null, null);
+
+            GC.SuppressFinalize(this);
+        }
+
         [Fact]
         public async Task GivenSuccessfulExecutionWithoutExistingFolderShouldReturnSuccess()
         {
@@ -190,15 +199,6 @@ public class GoogleDriveInitializerTests : UnitTest
 
             Func<string> call = () => GoogleDriveService.BaseFolderId;
             call.Should().Throw<InvalidOperationException>().WithMessage("Base folder not set.");
-        }
-
-        public void Dispose()
-        {
-            typeof(GoogleDriveService)
-                .GetField("_baseFolderId", BindingFlags.NonPublic | BindingFlags.Static)!
-                .SetValue(null, null);
-
-            GC.SuppressFinalize(this);
         }
     }
 }

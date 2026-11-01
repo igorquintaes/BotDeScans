@@ -10,7 +10,7 @@ using File = Google.Apis.Drive.v3.Data.File;
 
 namespace BotDeScans.UnitTests.Specs.Features.GoogleDrive;
 
-public class GoogleDriveServiceTests : UnitTest
+public class GoogleDriveServiceTests : UnitTest, IDisposable
 {
     private readonly GoogleDriveService service;
 
@@ -26,6 +26,15 @@ public class GoogleDriveServiceTests : UnitTest
         service = fixture.Create<GoogleDriveService>();
     }
 
+    public void Dispose()
+    {
+        typeof(GoogleDriveService)
+            .GetField("_baseFolderId", BindingFlags.NonPublic | BindingFlags.Static)!
+            .SetValue(null, null);
+
+        GC.SuppressFinalize(this);
+    }
+
     public class BaseFolderId : GoogleDriveServiceTests
     {
         [Fact]
@@ -38,21 +47,12 @@ public class GoogleDriveServiceTests : UnitTest
         [Fact]
         public void GivenDefinedBaseFolderShouldNotThrowException()
         {
-            try
-            {
-                typeof(GoogleDriveService)
-                    .GetField("_baseFolderId", BindingFlags.NonPublic | BindingFlags.Static)!
-                    .SetValue(null, fixture.Create<string>());
+            typeof(GoogleDriveService)
+                .GetField("_baseFolderId", BindingFlags.NonPublic | BindingFlags.Static)!
+                .SetValue(null, fixture.Create<string>());
 
-                Func<string> call = () => GoogleDriveService.BaseFolderId;
-                call.Should().NotThrow();
-            }
-            finally
-            {
-                typeof(GoogleDriveService)
-                    .GetField("_baseFolderId", BindingFlags.NonPublic | BindingFlags.Static)!
-                    .SetValue(null, null);
-            }
+            Func<string> call = () => GoogleDriveService.BaseFolderId;
+            call.Should().NotThrow();
         }
     }
 
