@@ -1,6 +1,5 @@
 ﻿using BotDeScans.App.Features.GoogleDrive;
 using BotDeScans.App.Features.GoogleDrive.InternalServices;
-using BotDeScans.UnitTests.Specs.Features.GoogleDrive.InternalServices;
 using FluentAssertions.Execution;
 using FluentResults;
 using FluentValidation;
@@ -27,7 +26,7 @@ public class GoogleDriveServiceTests : UnitTest
         service = fixture.Create<GoogleDriveService>();
     }
 
-    public class BaseFolderId : GoogleDriveSettingsServiceTests
+    public class BaseFolderId : GoogleDriveServiceTests
     {
         [Fact]
         public void GivenNotDefinedBaseFolderShouldThrowException()
