@@ -46,7 +46,10 @@ public class ClientsSetup(IServiceProvider serviceProvider) : ISetup
                 var healthCheckResult = await factoryData.factory.HealthCheckAsync(clientResult.Value, ct);
                 results.Add(healthCheckResult);
                 if (healthCheckResult.IsFailed)
+                {
                     results.Add(new Error($"Health check failed for {factoryName}"));
+                    return;
+                }
 
                 results.Add(Result.Ok().WithSuccess($"{factoryName} executed successfully."));
             }

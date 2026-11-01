@@ -72,7 +72,10 @@ public class ClientsSetupTests : UnitTest
         {
             var result = await setup.ExecuteAsync(cancellationToken);
 
-            result.Should().BeSuccess();
+            result.Should()
+                .BeSuccess().And
+                .HaveReason("Fake Client A executed successfully.").Which
+                .Reasons.Should().ContainSingle();
         }
 
         [Fact]
@@ -90,7 +93,8 @@ public class ClientsSetupTests : UnitTest
 
             result.Should().BeFailure()
                 .And.HaveError(ERROR_MESSAGE)
-                .And.HaveError($"Validation failed for Fake Client A");
+                .And.HaveError("Validation failed for Fake Client A")
+                .Which.Reasons.Should().HaveCount(2);
         }
 
         [Fact]
@@ -106,6 +110,7 @@ public class ClientsSetupTests : UnitTest
 
             var result = await setup.ExecuteAsync(cancellationToken);
 
+            result.Reasons.Should().ContainSingle();
             result.Errors.Should().ContainSingle();
             result.Errors[0].Should().BeOfType<ExceptionalError>();
             result.Errors[0].As<ExceptionalError>()!.Exception.Should().BeOfType<InvalidOperationException>();
@@ -125,7 +130,8 @@ public class ClientsSetupTests : UnitTest
 
             result.Should().BeFailure()
                 .And.HaveError(ERROR_MESSAGE)
-                .And.HaveError($"Object creation failed for Fake Client A");
+                .And.HaveError("Object creation failed for Fake Client A")
+                .Which.Reasons.Should().HaveCount(2);
         }
 
         [Fact]
@@ -144,6 +150,7 @@ public class ClientsSetupTests : UnitTest
                 .And.HaveError($"Failed to create a client of type Object.")
                 .And.HaveError($"Object creation failed for Fake Client A");
 
+            result.Reasons.Should().HaveCount(2);
             result.Errors.Should().HaveCount(2);
             result.Errors[1].Reasons.Should().HaveCount(1);
             result.Errors[1].Reasons.FirstOrDefault()?.Should().BeOfType<ExceptionalError>();
@@ -168,6 +175,7 @@ public class ClientsSetupTests : UnitTest
 
             var result = await setup.ExecuteAsync(cancellationToken);
 
+            result.Reasons.Should().HaveCount(2);
             result.Should().BeFailure()
                 .And.HaveError(ERROR_MESSAGE)
                 .And.HaveError($"Health check failed for Fake Client A");
@@ -190,6 +198,7 @@ public class ClientsSetupTests : UnitTest
 
             var result = await setup.ExecuteAsync(cancellationToken);
 
+            result.Reasons.Should().HaveCount(1);
             result.Errors.Should().ContainSingle();
             result.Errors[0].Should().BeOfType<ExceptionalError>();
             result.Errors[0].As<ExceptionalError>()!.Exception.Should().BeOfType<InvalidOperationException>();
@@ -220,6 +229,14 @@ public class ClientsSetupTests : UnitTest
         [Fact]
         public async Task GivenMultipleClientsShouldAggregateSetupResults()
         {
+            const string CREATE_SUCCESS_MSG_FACTORY_A = "create-success-a";
+            const string HEALTH_SUCCESS_MSG_FACTORY_A = "health-success-a";
+            const string EXECUTION_SUCCESS_MSG_FACTORY_A = "Fake Client A executed successfully.";
+
+            const string CREATE_SUCCESS_MSG_FACTORY_B = "create-success-b";
+            const string HEALTH_ERROR_MSG_1_FACTORY_B = "health-error-b";
+            const string HEALTH_ERROR_MSG_2_FACTORY_B = "Health check failed for Fake Client B";
+
             // FakeClientFactoryA
             A.CallTo(() => fixture
                 .FreezeFake<IServiceProvider>()
@@ -238,13 +255,11 @@ public class ClientsSetupTests : UnitTest
                     A<CancellationToken>.That.IsNotCanceled()))
                 .Returns(new ValidationResult());
 
-            const string CREATE_SUCCESS_MSG_FACTORY_A = "create-success-a";
             A.CallTo(() => fixture
                 .FreezeFake<FakeClientFactoryA>()
                 .CreateAsync(A<CancellationToken>.That.IsNotCanceled()))
                 .Returns(Result.Ok().WithSuccess(CREATE_SUCCESS_MSG_FACTORY_A));
 
-            const string HEALTH_SUCCESS_MSG_FACTORY_A = "health-success-a";
             A.CallTo(() => fixture
                 .FreezeFake<FakeClientFactoryA>()
                 .HealthCheckAsync(A<object>.Ignored, A<CancellationToken>.That.IsNotCanceled()))
@@ -272,28 +287,31 @@ public class ClientsSetupTests : UnitTest
                 .FreezeFake<FakeClientFactoryB>().Enabled)
                 .Returns(true);
 
-            const string CREATE_SUCCESS_MSG_FACTORY_B = "create-success-b";
             A.CallTo(() => fixture
                 .FreezeFake<FakeClientFactoryB>()
                 .CreateAsync(A<CancellationToken>.That.IsNotCanceled()))
                 .Returns(Result.Ok().WithSuccess(CREATE_SUCCESS_MSG_FACTORY_B));
 
-            const string HEALTH_ERROR_MSG_FACTORY_B = "health-error-b";
             A.CallTo(() => fixture
                 .FreezeFake<FakeClientFactoryB>()
                 .HealthCheckAsync(A<object>.Ignored, A<CancellationToken>.That.IsNotCanceled()))
-                .Returns(Result.Fail(HEALTH_ERROR_MSG_FACTORY_B));
+                .Returns(Result.Fail(HEALTH_ERROR_MSG_1_FACTORY_B));
 
             // Act
             var result = await setup.ExecuteAsync(cancellationToken);
 
             // Assert
-            result.Should().BeFailure()
-                .And.HaveReason(CREATE_SUCCESS_MSG_FACTORY_A)
+            result.Should().BeFailure();
+            result.Errors.Should().HaveCount(2);
+            result.Reasons.Should().HaveCount(6);
+
+            result.Should()
+                    .HaveReason(CREATE_SUCCESS_MSG_FACTORY_A)
                 .And.HaveReason(HEALTH_SUCCESS_MSG_FACTORY_A)
                 .And.HaveReason(CREATE_SUCCESS_MSG_FACTORY_B)
-                .And.HaveError(HEALTH_ERROR_MSG_FACTORY_B)
-                .And.HaveError($"Health check failed for Fake Client B");
+                .And.HaveReason(EXECUTION_SUCCESS_MSG_FACTORY_A)
+                .And.HaveError(HEALTH_ERROR_MSG_1_FACTORY_B)
+                .And.HaveError(HEALTH_ERROR_MSG_2_FACTORY_B);
         }
 
         public class FakeClientFactoryA : ClientFactory<object>
