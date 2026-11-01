@@ -5,11 +5,12 @@ using FluentResults;
 using FluentValidation;
 using Google.Apis.Drive.v3.Data;
 using Microsoft.Extensions.Configuration;
+using System.Reflection;
 using File = Google.Apis.Drive.v3.Data.File;
 
 namespace BotDeScans.UnitTests.Specs.Features.GoogleDrive;
 
-public class GoogleDriveServiceTests : UnitTest
+public class GoogleDriveServiceTests : UnitTest, IDisposable
 {
     private readonly GoogleDriveService service;
 
@@ -23,6 +24,36 @@ public class GoogleDriveServiceTests : UnitTest
         fixture.FreezeFake<IConfiguration>();
 
         service = fixture.Create<GoogleDriveService>();
+    }
+
+    public void Dispose()
+    {
+        typeof(GoogleDriveService)
+            .GetField("_baseFolderId", BindingFlags.NonPublic | BindingFlags.Static)!
+            .SetValue(null, null);
+
+        GC.SuppressFinalize(this);
+    }
+
+    public class BaseFolderId : GoogleDriveServiceTests
+    {
+        [Fact]
+        public void GivenNotDefinedBaseFolderShouldThrowException()
+        {
+            Func<string> call = () => GoogleDriveService.BaseFolderId;
+            call.Should().Throw<InvalidOperationException>().WithMessage("Base folder not set.");
+        }
+
+        [Fact]
+        public void GivenDefinedBaseFolderShouldNotThrowException()
+        {
+            typeof(GoogleDriveService)
+                .GetField("_baseFolderId", BindingFlags.NonPublic | BindingFlags.Static)!
+                .SetValue(null, fixture.Create<string>());
+
+            Func<string> call = () => GoogleDriveService.BaseFolderId;
+            call.Should().NotThrow();
+        }
     }
 
     public class GetOrCreateFolderAsync : GoogleDriveServiceTests
@@ -324,14 +355,14 @@ public class GoogleDriveServiceTests : UnitTest
 
         public DeleteFileByNameAndParentNameAsync()
         {
-            GoogleDriveSettingsService.BaseFolderId = fixture.Create<string>();
+            GoogleDriveService.BaseFolderId = fixture.Create<string>();
             fileName = fixture.Create<string>();
             parentFolderName = fixture.Create<string>();
             resources = fixture.FreezeFakes<File>(2);
 
             A.CallTo(() => fixture
                 .FreezeFake<GoogleDriveFoldersService>()
-                .GetAsync(parentFolderName, GoogleDriveSettingsService.BaseFolderId, cancellationToken))
+                .GetAsync(parentFolderName, GoogleDriveService.BaseFolderId, cancellationToken))
                 .Returns(resources[0]);
 
             A.CallTo(() => fixture
@@ -360,7 +391,7 @@ public class GoogleDriveServiceTests : UnitTest
 
             A.CallTo(() => fixture
                 .FreezeFake<GoogleDriveFoldersService>()
-                .GetAsync(parentFolderName, GoogleDriveSettingsService.BaseFolderId, cancellationToken))
+                .GetAsync(parentFolderName, GoogleDriveService.BaseFolderId, cancellationToken))
                 .Returns(null as File);
 
             var result = await service.DeleteFileByNameAndParentNameAsync(fileName, parentFolderName, cancellationToken);
@@ -375,7 +406,7 @@ public class GoogleDriveServiceTests : UnitTest
 
             A.CallTo(() => fixture
                 .FreezeFake<GoogleDriveFoldersService>()
-                .GetAsync(parentFolderName, GoogleDriveSettingsService.BaseFolderId, cancellationToken))
+                .GetAsync(parentFolderName, GoogleDriveService.BaseFolderId, cancellationToken))
                 .Returns(Result.Fail(ERROR_MESSAGE));
 
             var result = await service.DeleteFileByNameAndParentNameAsync(fileName, parentFolderName, cancellationToken);
@@ -509,17 +540,17 @@ public class GoogleDriveServiceTests : UnitTest
 
         public GrantReaderAccessToBotFilesAsync()
         {
-            GoogleDriveSettingsService.BaseFolderId = fixture.Create<string>();
+            GoogleDriveService.BaseFolderId = fixture.Create<string>();
             email = fixture.Create<string>();
 
             A.CallTo(() => fixture
                 .FreezeFake<GoogleDrivePermissionsService>()
-                .GetUserPermissionsAsync(email, GoogleDriveSettingsService.BaseFolderId, cancellationToken))
+                .GetUserPermissionsAsync(email, GoogleDriveService.BaseFolderId, cancellationToken))
                 .Returns(Result.Ok<IEnumerable<Permission>>([]));
 
             A.CallTo(() => fixture
                 .FreezeFake<GoogleDrivePermissionsService>()
-                .CreateUserReaderPermissionAsync(email, GoogleDriveSettingsService.BaseFolderId, cancellationToken))
+                .CreateUserReaderPermissionAsync(email, GoogleDriveService.BaseFolderId, cancellationToken))
                 .Returns(fixture.FreezeFake<Permission>());
         }
 
@@ -536,7 +567,7 @@ public class GoogleDriveServiceTests : UnitTest
         {
             A.CallTo(() => fixture
                 .FreezeFake<GoogleDrivePermissionsService>()
-                .GetUserPermissionsAsync(email, GoogleDriveSettingsService.BaseFolderId, cancellationToken))
+                .GetUserPermissionsAsync(email, GoogleDriveService.BaseFolderId, cancellationToken))
                 .Returns(Result.Ok<IEnumerable<Permission>>([new Permission()]));
 
             var result = await service.GrantReaderAccessToBotFilesAsync(email, cancellationToken);
@@ -556,7 +587,7 @@ public class GoogleDriveServiceTests : UnitTest
 
             A.CallTo(() => fixture
                 .FreezeFake<GoogleDrivePermissionsService>()
-                .GetUserPermissionsAsync(email, GoogleDriveSettingsService.BaseFolderId, cancellationToken))
+                .GetUserPermissionsAsync(email, GoogleDriveService.BaseFolderId, cancellationToken))
                 .Returns(Result.Fail(ERROR_MESSAGE));
 
             var result = await service.GrantReaderAccessToBotFilesAsync(email, cancellationToken);
@@ -570,7 +601,7 @@ public class GoogleDriveServiceTests : UnitTest
 
             A.CallTo(() => fixture
                 .FreezeFake<GoogleDrivePermissionsService>()
-                .CreateUserReaderPermissionAsync(email, GoogleDriveSettingsService.BaseFolderId, cancellationToken))
+                .CreateUserReaderPermissionAsync(email, GoogleDriveService.BaseFolderId, cancellationToken))
                 .Returns(Result.Fail(ERROR_MESSAGE));
 
             var result = await service.GrantReaderAccessToBotFilesAsync(email, cancellationToken);
@@ -584,19 +615,19 @@ public class GoogleDriveServiceTests : UnitTest
 
         public RevokeReaderAccessToBotFilesAsync()
         {
-            GoogleDriveSettingsService.BaseFolderId = fixture.Create<string>();
+            GoogleDriveService.BaseFolderId = fixture.Create<string>();
             email = fixture.Create<string>();
 
             A.CallTo(() => fixture
                 .FreezeFake<GoogleDrivePermissionsService>()
-                .GetUserPermissionsAsync(email, GoogleDriveSettingsService.BaseFolderId, cancellationToken))
+                .GetUserPermissionsAsync(email, GoogleDriveService.BaseFolderId, cancellationToken))
                 .Returns(Result.Ok(fixture.FreezeFake<IEnumerable<Permission>>()));
 
             A.CallTo(() => fixture
                 .FreezeFake<GoogleDrivePermissionsService>()
                 .DeleteUserReaderPermissionsAsync(
                     fixture.FreezeFake<IEnumerable<Permission>>(),
-                    GoogleDriveSettingsService.BaseFolderId,
+                    GoogleDriveService.BaseFolderId,
                     cancellationToken))
                 .Returns(Result.Ok());
         }
@@ -616,7 +647,7 @@ public class GoogleDriveServiceTests : UnitTest
 
             A.CallTo(() => fixture
                 .FreezeFake<GoogleDrivePermissionsService>()
-                .GetUserPermissionsAsync(email, GoogleDriveSettingsService.BaseFolderId, cancellationToken))
+                .GetUserPermissionsAsync(email, GoogleDriveService.BaseFolderId, cancellationToken))
                 .Returns(Result.Fail(ERROR_MESSAGE));
 
             var result = await service.RevokeReaderAccessToBotFilesAsync(email, cancellationToken);
@@ -632,7 +663,7 @@ public class GoogleDriveServiceTests : UnitTest
                 .FreezeFake<GoogleDrivePermissionsService>()
                 .DeleteUserReaderPermissionsAsync(
                     fixture.FreezeFake<IEnumerable<Permission>>(),
-                    GoogleDriveSettingsService.BaseFolderId,
+                    GoogleDriveService.BaseFolderId,
                     cancellationToken))
                 .Returns(Result.Fail(ERROR_MESSAGE));
 

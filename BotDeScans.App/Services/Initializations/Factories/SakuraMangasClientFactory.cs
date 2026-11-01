@@ -9,6 +9,8 @@ namespace BotDeScans.App.Services.Initializations.Factories;
 
 public class SakuraMangasClientFactory(IConfiguration configuration) : ClientFactory<SakuraMangasService>
 {
+    public override string Name => "Sakura Mangás";
+
     public override bool Enabled => configuration
         .GetValues<StepName>("Settings:Publish:Steps")
         .Any(x => x is StepName.UploadSakuraMangas);

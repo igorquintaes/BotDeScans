@@ -53,7 +53,6 @@ public class ImageService(IConfiguration configuration)
                 if (GetRgbDelta(pixel.Red, pixel.Green, pixel.Blue) > threshold)
                     return false;
             }
-
         return true;
 
         static int GetRgbDelta(byte r, byte g, byte b)

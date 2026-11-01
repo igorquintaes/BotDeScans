@@ -1,35 +1,29 @@
 ﻿using BotDeScans.App.Extensions;
 using BotDeScans.App.Features.Publish.Interaction.Pings;
 using BotDeScans.App.Services.Discord;
-using BotDeScans.App.Services.Wrappers;
 using FluentResults;
 using FluentValidation;
 using Microsoft.Extensions.Configuration;
-using Remora.Rest.Core;
 
-namespace BotDeScans.App.Services.Initializations;
+namespace BotDeScans.App.Services.Initializations.Setups;
 
-public class SetupDiscordService(
-    SlashServiceWrapper slashService,
-    IConfiguration configuration)
+public class DiscordValidatorSetup(IValidator<DiscordValidator> validator) : ISetup
 {
-    public virtual async Task<Result> SetupAsync(CancellationToken cancellationToken)
+    public virtual async Task<Result> ExecuteAsync(CancellationToken cancellationToken)
     {
-        // todo: podemos pensar em habilitar comando somente do que está configurado e validado
-        // ex: mega está no publish? habilitamos! Não está? não habilitamos!
-        Console.WriteLine("Updating Discord Slash Commands...");
+        var validationResult = await validator.ValidateAsync(new DiscordValidator(), cancellationToken);
+        var result = validationResult.ToResult();
 
-        var serverIdResult = configuration.GetRequiredValue<ulong>("Discord:ServerId");
-        var updateSlashResult = await slashService.UpdateSlashCommandsAsync(new Snowflake(serverIdResult), ct: cancellationToken);
-        return updateSlashResult.IsSuccess is false
-            ? Result.Fail("Failed to update Discord slash commands.")
-            : Result.Ok();
+        if (result.IsFailed)
+            return result;
+
+        return result.WithSuccess("Discord validation data completed");
     }
 }
 
-public class SetupDiscordServiceValidator : AbstractValidator<SetupDiscordService>
+public class DiscordValidatorSetupValidator : AbstractValidator<DiscordValidator>
 {
-    public SetupDiscordServiceValidator(
+    public DiscordValidatorSetupValidator(
         RolesService rolesService,
         IConfiguration configuration)
     {
@@ -71,7 +65,7 @@ public class SetupDiscordServiceValidator : AbstractValidator<SetupDiscordServic
     private static async Task<bool> RoleMustExists(
         string roleValue,
         RolesService rolesService,
-        ValidationContext<SetupDiscordService> context,
+        ValidationContext<DiscordValidator> context,
         CancellationToken cancellationToken)
     {
         var rolesResult = await rolesService.GetRoleAsync(roleValue, cancellationToken);
@@ -82,3 +76,5 @@ public class SetupDiscordServiceValidator : AbstractValidator<SetupDiscordServic
         return false;
     }
 }
+
+public record DiscordValidator();

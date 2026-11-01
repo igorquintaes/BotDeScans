@@ -13,6 +13,8 @@ namespace BotDeScans.App.Services.Initializations.Factories;
 
 public class CapivaraTradutorClientFactory(IConfiguration configuration, CapivaraTradutorUploadService capivaraTradutorUploadService) : ClientFactory<CapivaraTradutorService>
 {
+    public override string Name => "Capivara Tradutor";
+
     public override bool Enabled => configuration
         .GetValues<StepName>("Settings:Publish:Steps")
         .Any(x => x is StepName.UploadCapivaraTradutor);

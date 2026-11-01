@@ -1,4 +1,5 @@
-﻿using BotDeScans.App.Features.GoogleDrive.InternalServices;
+﻿using BotDeScans.App.Features.GoogleDrive;
+using BotDeScans.App.Features.GoogleDrive.InternalServices;
 using BotDeScans.App.Services.Wrappers;
 using FluentAssertions.Execution;
 using FluentResults;
@@ -6,6 +7,7 @@ using Google.Apis.Drive.v3;
 using Google.Apis.Drive.v3.Data;
 using static Google.Apis.Drive.v3.FilesResource;
 using File = Google.Apis.Drive.v3.Data.File;
+
 namespace BotDeScans.UnitTests.Specs.Features.GoogleDrive.InternalServices;
 
 public class GoogleDriveResourcesServiceTests : UnitTest, IDisposable
@@ -21,14 +23,14 @@ public class GoogleDriveResourcesServiceTests : UnitTest, IDisposable
             .FreezeFake<DriveService>().Files)
             .Returns(fixture.FreezeFake<FilesResource>());
 
-        GoogleDriveSettingsService.BaseFolderId = fixture.Create<string>();
+        GoogleDriveService.BaseFolderId = fixture.Create<string>();
 
         service = fixture.Create<GoogleDriveResourcesService>();
     }
 
     public void Dispose()
     {
-        GoogleDriveSettingsService.BaseFolderId = null!;
+        GoogleDriveService.BaseFolderId = null!;
         GC.SuppressFinalize(this);
     }
 
@@ -183,7 +185,7 @@ public class GoogleDriveResourcesServiceTests : UnitTest, IDisposable
 
             var expectedQuery = string.Format(
                 EXPECTED_QUERY_FORMAT,
-                GoogleDriveSettingsService.BaseFolderId);
+                GoogleDriveService.BaseFolderId);
 
             await service.GetResourcesAsync(
                 mimeType: default,
@@ -206,7 +208,7 @@ public class GoogleDriveResourcesServiceTests : UnitTest, IDisposable
             var expectedQuery = string.Format(
                 EXPECTED_QUERY_FORMAT,
                 name,
-                GoogleDriveSettingsService.BaseFolderId);
+                GoogleDriveService.BaseFolderId);
 
             await service.GetResourcesAsync(
                 mimeType: default,
@@ -229,7 +231,7 @@ public class GoogleDriveResourcesServiceTests : UnitTest, IDisposable
             var expectedQuery = string.Format(
                 EXPECTED_QUERY_FORMAT,
                 mimeType,
-                GoogleDriveSettingsService.BaseFolderId);
+                GoogleDriveService.BaseFolderId);
 
             await service.GetResourcesAsync(
                 mimeType: mimeType,
@@ -252,7 +254,7 @@ public class GoogleDriveResourcesServiceTests : UnitTest, IDisposable
             var expectedQuery = string.Format(
                 EXPECTED_QUERY_FORMAT,
                 forbiddenMimeType,
-                GoogleDriveSettingsService.BaseFolderId);
+                GoogleDriveService.BaseFolderId);
 
             await service.GetResourcesAsync(
                 mimeType: default,
@@ -326,7 +328,7 @@ public class GoogleDriveResourcesServiceTests : UnitTest, IDisposable
                 Name = name,
                 Description = name,
                 MimeType = mimeType,
-                Parents = new[] { GoogleDriveSettingsService.BaseFolderId }
+                Parents = new[] { GoogleDriveService.BaseFolderId }
             };
 
             var result = service.CreateResourceObject(mimeType, name);

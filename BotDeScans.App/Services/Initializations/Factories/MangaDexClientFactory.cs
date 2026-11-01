@@ -12,6 +12,7 @@ public class MangaDexClientFactory(
     IConfiguration configuration)
     : ClientFactory<MangaDexAccessToken>
 {
+    public override string Name => "Manga Dex";
 
     public override bool Enabled => configuration
         .GetValues<StepName>("Settings:Publish:Steps")

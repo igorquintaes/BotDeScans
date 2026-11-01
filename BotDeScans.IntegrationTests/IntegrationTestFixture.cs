@@ -27,11 +27,13 @@ public sealed class IntegrationTestFixture : IAsyncLifetime
         Environment.SetEnvironmentVariable("Discord__ServerId", "1");
         Environment.SetEnvironmentVariable("Discord__ApplicationId", "1");
 
-        Host = Program.CreateHostBuilder(
-                [],
-                enableDiscord: true,
-                buildDiscordClient: client => client.ConfigureHttpClient(httpClient =>
-                    httpClient.BaseAddress = new Uri($"{WireMock.Url}/api/v10/")))
+        var discordFakeUri = new Uri($"{WireMock.Url}/api/v10/");
+
+        void discordBuilder(IHttpClientBuilder client) => client
+            .ConfigureHttpClient(httpClient => httpClient.BaseAddress = discordFakeUri);
+
+        Host = Program
+            .CreateHostBuilder([], buildDiscordClient: discordBuilder)
             .ConfigureServices(services =>
             {
                 services.RemoveAll<IHostedService>();

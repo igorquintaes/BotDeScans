@@ -44,7 +44,7 @@ public class GoogleDriveQueryBuilder
         if (_name is not null)
             conditions.Add($"name = '{_name}'");
 
-        conditions.Add($"'{_parentId ?? GoogleDriveSettingsService.BaseFolderId}' in parents");
+        conditions.Add($"'{_parentId ?? GoogleDriveService.BaseFolderId}' in parents");
 
         return string.Join(" and ", conditions);
     }

@@ -3,7 +3,12 @@
     "Using": [ "Serilog.Sinks.Console" ],
     "MinimumLevel": "Debug",
     "WriteTo": [
-      { "Name": "Console" },
+      {
+        "Name": "Console",
+        "Args": {
+          "restrictedToMinimumLevel": "Warning"
+        }
+      },
       {
         "Name": "File",
         "Args": {

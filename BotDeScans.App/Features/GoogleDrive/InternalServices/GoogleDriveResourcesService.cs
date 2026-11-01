@@ -65,7 +65,7 @@ public class GoogleDriveResourcesService(
             Name = name,
             Description = name,
             MimeType = mimeType,
-            Parents = [parentId ?? GoogleDriveSettingsService.BaseFolderId],
+            Parents = [parentId ?? GoogleDriveService.BaseFolderId],
             WritersCanShare = true,
         };
 

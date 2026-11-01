@@ -1,4 +1,5 @@
-﻿using Microsoft.Extensions.DependencyInjection;
+﻿using BotDeScans.App.Services.Initializations.Setups;
+using Microsoft.Extensions.DependencyInjection;
 using System.Diagnostics.CodeAnalysis;
 namespace BotDeScans.App.Services.Initializations;
 
@@ -6,7 +7,7 @@ namespace BotDeScans.App.Services.Initializations;
 internal static class AddDependencies
 {
     internal static IServiceCollection AddInitializators(this IServiceCollection services) => services
-        .AddScoped<SetupDiscordService>()
-        .AddScoped<SetupStepsService>()
-        .AddScoped<SetupClientsService>();
+        .AddSetupDependencies()
+        .AddSingleton<GoogleDriveInitializer>()
+        .AddSingleton<SetupApplication>();
 }
