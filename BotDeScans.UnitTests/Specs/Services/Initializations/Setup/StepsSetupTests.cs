@@ -67,7 +67,7 @@ public class StepsSetupTests : UnitTest
             const string UNEXPECTED_STEP_KEY = "unexpected";
 
             fixture.FreezeFakeConfiguration(
-                StepsSetup.STEPS_KEY, 
+                StepsSetup.STEPS_KEY,
                 [UNEXPECTED_STEP_KEY, StepName.UploadMangadex.ToString()]);
 
             var result = await setup.ExecuteAsync(cancellationToken);
@@ -96,8 +96,8 @@ public class StepsSetupTests : UnitTest
             fixture.FreezeFakeConfiguration(
                 StepsSetup.STEPS_KEY,
                 [
-                    stepA.Name.ToString(), 
-                    stepB.Name.ToString(), 
+                    stepA.Name.ToString(),
+                    stepB.Name.ToString(),
                     stepC.Name.ToString()
                 ]);
 

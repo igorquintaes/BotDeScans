@@ -96,7 +96,7 @@ public class SetupApplication(
             return;
 
         var errorsInfo = result.Errors.GetErrorsInfo().Select(x => x.ToString());
-        var errorsText = string.Join(Environment.NewLine, errorsInfo); 
+        var errorsText = string.Join(Environment.NewLine, errorsInfo);
         Log.Error(errorsText);
     }
 }

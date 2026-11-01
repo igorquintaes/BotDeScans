@@ -35,7 +35,7 @@ public class SetupApplicationTests : UnitTest
 
             A.CallTo(() => scopedServiceProvider
                 .GetService(typeof(IEnumerable<ISetup>)))
-                .Returns(new List<ISetup>() 
+                .Returns(new List<ISetup>()
                 {
                     fixture.FreezeFake<ClientsSetup>(),
                     fixture.FreezeFake<DatabaseSetup>(),
@@ -274,7 +274,7 @@ public class SetupApplicationTests : UnitTest
                 .MustHaveHappenedOnceExactly();
         }
 
-    [Fact]
+        [Fact]
         public async Task GivenMissingClientsSetupShouldNotCallGoogleDriveInitializer()
         {
 
