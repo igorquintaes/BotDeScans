@@ -1,14 +1,14 @@
 ﻿using BotDeScans.App.Extensions;
+using BotDeScans.App.Services.Wrappers;
 using FluentResults;
 using Microsoft.Extensions.Configuration;
-using Remora.Discord.Commands.Services;
 using Remora.Rest.Core;
 
 namespace BotDeScans.App.Services.Initializations.Setups;
 
 public class DiscordSlashCommandsSetup(
-    IConfiguration configuration, 
-    SlashService slashService) : ISetup
+    IConfiguration configuration,
+    SlashServiceWrapper slashService) : ISetup
 {
     public virtual async Task<Result> ExecuteAsync(CancellationToken cancellationToken)
     {
