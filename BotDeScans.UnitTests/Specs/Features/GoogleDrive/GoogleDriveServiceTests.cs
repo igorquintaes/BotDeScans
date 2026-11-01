@@ -31,12 +31,28 @@ public class GoogleDriveServiceTests : UnitTest
         [Fact]
         public void GivenNotDefinedBaseFolderShouldThrowException()
         {
-            typeof(GoogleDriveService)
-                .GetField("_baseFolderId", BindingFlags.NonPublic | BindingFlags.Static)!
-                .SetValue(null, null);
-
             Func<string> call = () => GoogleDriveService.BaseFolderId;
             call.Should().Throw<InvalidOperationException>().WithMessage("Base folder not set.");
+        }
+
+        [Fact]
+        public void GivenDefinedBaseFolderShouldNotThrowException()
+        {
+            try
+            {
+                typeof(GoogleDriveService)
+                    .GetField("_baseFolderId", BindingFlags.NonPublic | BindingFlags.Static)!
+                    .SetValue(null, fixture.Create<string>());
+
+                Func<string> call = () => GoogleDriveService.BaseFolderId;
+                call.Should().NotThrow();
+            }
+            finally
+            {
+                typeof(GoogleDriveService)
+                    .GetField("_baseFolderId", BindingFlags.NonPublic | BindingFlags.Static)!
+                    .SetValue(null, null);
+            }
         }
     }
 

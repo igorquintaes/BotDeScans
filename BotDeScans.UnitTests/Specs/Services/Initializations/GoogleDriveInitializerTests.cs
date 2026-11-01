@@ -1,5 +1,4 @@
-﻿using Autofac.Core;
-using BotDeScans.App.Features.GoogleDrive;
+﻿using BotDeScans.App.Features.GoogleDrive;
 using BotDeScans.App.Features.GoogleDrive.InternalServices;
 using BotDeScans.App.Services.Initializations;
 using FluentAssertions.Execution;
@@ -11,7 +10,7 @@ namespace BotDeScans.UnitTests.Specs.Services.Initializations;
 
 public class GoogleDriveInitializerTests : UnitTest
 {
-    public class ExecuteAsync : GoogleDriveInitializerTests
+    public class ExecuteAsync : GoogleDriveInitializerTests, IDisposable
     {
         private readonly GoogleDriveInitializer initializer;
 
@@ -179,10 +178,6 @@ public class GoogleDriveInitializerTests : UnitTest
         [Fact]
         public async Task GivenCreateFolderErrorShouldNotSetBaseFolderId()
         {
-            typeof(GoogleDriveService)
-                .GetField("_baseFolderId", BindingFlags.NonPublic | BindingFlags.Static)!
-                .SetValue(null, null);
-
             A.CallTo(() => fixture
                 .FreezeFake<GoogleDriveFoldersService>()
                 .CreateAsync(
@@ -195,6 +190,15 @@ public class GoogleDriveInitializerTests : UnitTest
 
             Func<string> call = () => GoogleDriveService.BaseFolderId;
             call.Should().Throw<InvalidOperationException>().WithMessage("Base folder not set.");
+        }
+
+        public void Dispose()
+        {
+            typeof(GoogleDriveService)
+                .GetField("_baseFolderId", BindingFlags.NonPublic | BindingFlags.Static)!
+                .SetValue(null, null);
+
+            GC.SuppressFinalize(this);
         }
     }
 }
