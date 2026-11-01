@@ -22,21 +22,21 @@ public class Program
     {
         Console.WriteLine("Starting...");
 
-        Result.Setup(cfg =>
-        {
-            cfg.Logger = new ResultLogger(Log.Logger);
-            cfg.ExceptionalErrorFactory = (message, ex) =>
-            {
-                var error = new Error(message).CausedBy(ex);
-                var errorResult = new Result().WithError(error);
-                cfg.Logger.Log(ex.Source, message, errorResult, LogLevel.Error);
-
-                return new ExceptionalError(message, ex);
-            };
-        });
-
         try
         {
+            Result.Setup(cfg =>
+            {
+                cfg.Logger = new ResultLogger(Log.Logger);
+                cfg.ExceptionalErrorFactory = (message, ex) =>
+                {
+                    var error = new Error(message).CausedBy(ex);
+                    var errorResult = new Result().WithError(error);
+                    cfg.Logger.Log(ex.Source, message, errorResult, LogLevel.Error);
+
+                    return new ExceptionalError(message, ex);
+                };
+            });
+
             await CreateHostBuilder(args).Build().RunAsync();            
             return 0;
         }
