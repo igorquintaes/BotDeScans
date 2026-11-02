@@ -1,5 +1,5 @@
 #tool "nuget:?package=ReportGenerator&version=5.4.3"
-#addin nuget:?package=Cake.Coverlet&version=4.0.1
+// O addin Cake.Coverlet foi removido aqui
 using Spectre.Console
 
 var target = Argument("target", "Default");
@@ -12,72 +12,75 @@ Task("Restore")
     {
         DotNetRestore();
     });
-	
+
 Task("Build")
     .IsDependentOn("Restore")
     .Does(() =>
     {
         DotNetBuild(solution, new DotNetBuildSettings()
-			{
-				Configuration = configuration
-			});
+            {
+                Configuration = configuration
+            });
     });
 
 Task("Test")
     .IsDependentOn("Build")
     .Does(() =>
-    {	
-		CleanDirectory(testResultsDir);
-	
-		var coverletSettings = new CoverletSettings {
-			CollectCoverage = true,
-			CoverletOutputFormat = CoverletOutputFormat.cobertura,
-			CoverletOutputDirectory = Directory(testResultsDir),
-			CoverletOutputName = "coverage",
-			ExcludeByAttribute = ["GeneratedCodeAttribute", "ExcludeFromCodeCoverageAttribute"],
-			ExcludeByFile = ["**/Migrations/**/*"]
-		};
-		
-		DotNetTest(solution, new() { NoBuild = true }, coverletSettings);
+    {  
+        DotNetTest(solution, new DotNetTestSettings 
+        { 
+            Configuration = configuration,
+            NoBuild = true,
+            Verbosity = DotNetVerbosity.Normal,
+            ArgumentCustomization = args => args
+                .Append("--")
+                .Append("--coverage")
+                .Append("--coverage-output-format")
+                .Append("cobertura") 
+        });
     });
 
 Task("Report")
     .IsDependentOn("Test")
     .Does(() =>
-{
-    var reportSettings = new ReportGeneratorSettings
     {
-        ArgumentCustomization = args => args
-			.Append("-reportTypes:Html;TextSummary")
-    };	
-	
-    var coverageDirectory = Directory("./TestResults");
-    var files = GetFiles("./**/TestResults/coverage.cobertura.xml");
-    ReportGenerator(files, coverageDirectory, reportSettings);
+        var reportSettings = new ReportGeneratorSettings
+        {
+            ArgumentCustomization = args => args
+                .Append("-reportTypes:Html;TextSummary")
+        };  
+
+        var coverageDirectory = Directory("./TestResults"); // Pasta final unificada
     
-    // print summaries to console
-    var summaries = GetFiles($"{coverageDirectory}/Summary.txt");
-    foreach(var file in summaries) 
-    {
-        var summary = System.IO.File.ReadAllText(file.FullPath);
-        AnsiConsole.Markup($"[teal]{summary}[/]");
-    }
-});
+        // O curinga ** rastreia a solution inteira buscando os arquivos gerados pelo MTP
+        var files = GetFiles("./**/*.cobertura.xml"); 
+    
+        ReportGenerator(files, coverageDirectory, reportSettings);
+
+        var summaries = GetFiles($"{coverageDirectory}/Summary.txt");
+        foreach(var file in summaries) 
+        {
+            var summary = System.IO.File.ReadAllText(file.FullPath);
+            AnsiConsole.Markup($"[teal]{summary}[/]");
+        }
+    });
 
 Task("Format")
     .Does(() =>
-{
-    var projects = GetFiles("./*.csproj}").Select(p => p.FullPath);
-    foreach(var project in projects)
     {
-        DotNetTool($"dotnet-format {project}");
-    }
-});
-
-Task("Default").Does(() => {
-    DotNetTool("cake", new DotNetToolSettings{
-        ArgumentCustomization = args => args.Append("--showdescription")
+        var projects = GetFiles("./*.csproj").Select(p => p.FullPath); // Corrigido o erro de digitação original "csproj}"
+        foreach(var project in projects)
+        {
+            DotNetTool($"dotnet-format {project}");
+        }
     });
-});
+
+Task("Default")
+    .Does(() => 
+    {
+        DotNetTool("cake", new DotNetToolSettings{
+            ArgumentCustomization = args => args.Append("--showdescription")
+        });
+    });
 
 RunTarget(target);

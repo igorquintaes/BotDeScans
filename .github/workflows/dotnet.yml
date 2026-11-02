@@ -30,9 +30,10 @@ jobs:
     - name: Build
       run: dotnet build BotDeScans.sln --configuration Release --no-restore
         
-    - name: Execute unit tests
+    - name: Execute tests and generate coverage
       id: test
-      run: dotnet test BotDeScans.sln --configuration Release --no-build --verbosity normal --collect:"XPlat Code Coverage" --results-directory ./coverage -- DataCollectionRunSettings.DataCollectors.DataCollector.Configuration.ExcludeByAttribute="GeneratedCodeAttribute%2cExcludeFromCodeCoverageAttribute" DataCollectionRunSettings.DataCollectors.DataCollector.Configuration.ExcludeByFile="**/Migrations/**/*"
+      run: pwsh -NoLogo -NoProfile -File ./reportgenerator.ps1 -NoBuild
+
     - name: Code Coverage Report
       id: report
       if: success() || steps.test.conclusion == 'failure'
@@ -70,8 +71,8 @@ jobs:
       run: dotnet publish BotDeScans.App/BotDeScans.App.csproj  -c Release -r win-x64 -p:PublishSingleFile=true --self-contained true -p:PublishReadyToRunShowWarnings=true -o ${{env.DOTNET_ROOT}}/BotDeScans
 
     - name: Upload artifact for deployment job
-      uses: actions/upload-artifact@v4
       if: github.repository_owner == 'igorquintaes' && github.ref == 'refs/heads/main'
+      uses: actions/upload-artifact@v4
       with:
         name: BotDeScans
         path: ${{env.DOTNET_ROOT}}/BotDeScans
