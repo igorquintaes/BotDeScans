@@ -75,8 +75,13 @@ Invoke-DotNet -Arguments @(
     'tool', 'run', 'reportgenerator', '--',
     "-reports:$reports",
     "-targetdir:$reportDirectory",
-    '-reporttypes:Html;TextSummary'
+    '-reporttypes:Html;TextSummary;Cobertura'
 )
+
+$mergedCoveragePath = Join-Path $reportDirectory 'Cobertura.xml'
+if (-not (Test-Path -LiteralPath $mergedCoveragePath)) {
+    throw "O ReportGenerator não produziu o relatório Cobertura consolidado esperado: $mergedCoveragePath"
+}
 
 $summaryPath = Join-Path $reportDirectory 'Summary.txt'
 if (Test-Path -LiteralPath $summaryPath) {
@@ -84,3 +89,4 @@ if (Test-Path -LiteralPath $summaryPath) {
 }
 
 Write-Host "Relatório HTML: $(Join-Path $reportDirectory 'index.html')"
+Write-Host "Relatório Cobertura consolidado: $mergedCoveragePath"
