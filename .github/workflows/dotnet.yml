@@ -58,7 +58,7 @@ jobs:
 
     - name: Upload coverage artifacts
       uses: actions/upload-artifact@v4
-      if: (success() || steps.test.conclusion == 'failure') && hashFiles('TestResults/Report/Cobertura.xml') != ''
+      if: (success() || steps.test.conclusion == 'failure') && hashFiles('coverage/**/coverage.cobertura.xml', 'TestResults/Report/Cobertura.xml') != ''
       with:
         name: code-coverage-report
         path: |
