@@ -22,11 +22,11 @@
     </Attributes>
 
     <!-- 3. Filtros de Arquivo/Diretório -->
-    <SourcePaths>
+    <Sources>
       <Exclude>
         <!-- Ignora a pasta Migrations (o [/\\] garante que funcione no Windows e no Linux/CI) -->
-        <SourcePath>.*[/\\]Migrations[/\\].*</SourcePath>
+        <Source>.*[/\\]Migrations[/\\].*</Source>
       </Exclude>
-    </SourcePaths>
+    </Sources>
   </CodeCoverage>
 </Configuration>
