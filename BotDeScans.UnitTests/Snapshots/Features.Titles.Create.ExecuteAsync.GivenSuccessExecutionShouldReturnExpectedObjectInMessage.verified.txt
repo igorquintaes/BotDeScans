@@ -1,4 +1,4 @@
-﻿[
+[
   {
     CustomID: remora::interactivity::modal::Titles.Create,
     Title: Cadastrar nova obra,

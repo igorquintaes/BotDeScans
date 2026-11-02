@@ -1,4 +1,4 @@
-﻿{
+{
   Title: {
     Value: Obra cadastrada com sucesso!,
     HasValue: true

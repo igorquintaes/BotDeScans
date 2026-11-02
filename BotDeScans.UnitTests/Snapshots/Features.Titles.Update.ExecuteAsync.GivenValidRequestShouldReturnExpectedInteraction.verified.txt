@@ -1,4 +1,4 @@
-﻿[
+[
   {
     CustomID: remora::interactivity::$!3 modal::Titles.Update,
     Title: Atualizar Obra,

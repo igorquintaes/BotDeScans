@@ -1,4 +1,4 @@
-﻿[
+[
   {
     CustomID: remora::interactivity::$!123456 modal::Features.Publish,
     Title: Publicar novo lançamento,
