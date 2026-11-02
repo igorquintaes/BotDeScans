@@ -30,13 +30,14 @@
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
-    <PackageReference Include="FluentAssertions" Version="[7.1.0]" />
+    <PackageReference Include="FluentAssertions" Version="[7.2.2, 8.0.0)" />
     <PackageReference Include="FluentResults.Extensions.FluentAssertions" Version="2.2.1" />
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="18.11.0" />
     <PackageReference Include="SQLitePCLRaw.lib.e_sqlite3" Version="3.53.3" />
-    <PackageReference Include="Verify" Version="[31.16.3]" />
+    <PackageReference Include="System.Text.RegularExpressions" Version="4.3.1" />
+    <PackageReference Include="Verify" Version="[32.0.0]" />
     <PackageReference Include="Verify.FakeItEasy" Version="[2.1.0]" />
-    <PackageReference Include="Verify.XunitV3" Version="[31.16.3]" />
+    <PackageReference Include="Verify.XunitV3" Version="[32.0.0]" />
     <PackageReference Include="xunit.analyzers" Version="2.2.0">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
@@ -65,6 +66,10 @@
 	  <Using Include="FakeItEasy" />
 	  <Using Include="FluentAssertions" />
 	  <Using Include="FluentResults.Extensions.FluentAssertions" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Snapshots\" />
   </ItemGroup>
 
 </Project>

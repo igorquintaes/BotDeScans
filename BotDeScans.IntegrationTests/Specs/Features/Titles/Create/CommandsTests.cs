@@ -33,6 +33,7 @@ public sealed class CommandsTests(IntegrationTestFixture fixture) : IntegrationT
 
         result.IsSuccess.Should().BeTrue();
         Fixture.WireMock.LogEntries.Should().ContainSingle(entry =>
+            entry.RequestMessage != null &&
             entry.RequestMessage.Method == "POST" &&
             entry.RequestMessage.Path.EndsWith("/callback", StringComparison.Ordinal));
     }
