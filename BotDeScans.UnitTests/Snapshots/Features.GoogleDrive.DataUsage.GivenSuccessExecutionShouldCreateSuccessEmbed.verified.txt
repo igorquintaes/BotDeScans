@@ -1,4 +1,4 @@
-﻿{
+{
   Title: {
     Value: Uso de dados do Google Drive:,
     HasValue: true

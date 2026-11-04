@@ -1,6 +1,8 @@
 ﻿using AutoFixture.AutoFakeItEasy;
+using Xunit.Sdk;
+using Xunit.v3;
 
-[assembly: CollectionBehavior(DisableTestParallelization = true)]
+[assembly: Parallelization(Mode = ParallelMode.None)]
 namespace BotDeScans.UnitTests.Specs;
 
 public abstract class UnitTest

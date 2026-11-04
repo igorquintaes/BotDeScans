@@ -1,4 +1,4 @@
-﻿{
+{
   Title: {
     Value: Arquivos válidos para publicação!,
     HasValue: true

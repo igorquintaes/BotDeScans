@@ -1,4 +1,4 @@
-﻿{
+{
   Title: {
     Value: Lista de obras,
     HasValue: true

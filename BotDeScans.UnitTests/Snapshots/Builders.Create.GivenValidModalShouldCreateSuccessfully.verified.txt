@@ -1,4 +1,4 @@
-﻿{
+{
   CustomID: remora::interactivity::modal::some_modal_id,
   Title: Some Modal Title,
   Components: [

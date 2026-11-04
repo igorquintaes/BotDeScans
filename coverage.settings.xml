@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Configuration>
+  <CodeCoverage>
+    <!-- 1. Limita aos assemblies da sua aplicação, ignorando pacotes NuGet e terceiros -->
+    <ModulePaths>
+      <Include>
+        <!-- Coleta cobertura de qualquer DLL que comece com BotDeScans -->
+        <ModulePath>.*BotDeScans.*</ModulePath>
+      </Include>
+      <Exclude>
+        <!-- Garante que as próprias DLLs de teste não entrem no cálculo da porcentagem -->
+        <ModulePath>.*Tests\.dll$</ModulePath>
+      </Exclude>
+    </ModulePaths>
+
+    <!-- 2. Filtros de Atributo -->
+    <Attributes>
+      <Exclude>
+        <Attribute>^System\.CodeDom\.Compiler\.GeneratedCodeAttribute$</Attribute>
+        <Attribute>^System\.Diagnostics\.CodeAnalysis\.ExcludeFromCodeCoverageAttribute$</Attribute>
+      </Exclude>
+    </Attributes>
+
+    <!-- 3. Filtros de Arquivo/Diretório -->
+    <Sources>
+      <Exclude>
+        <!-- Ignora a pasta Migrations (o [/\\] garante que funcione no Windows e no Linux/CI) -->
+        <Source>.*[/\\]Migrations[/\\].*</Source>
+      </Exclude>
+    </Sources>
+  </CodeCoverage>
+</Configuration>

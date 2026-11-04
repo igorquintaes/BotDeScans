@@ -1,0 +1,11 @@
+{
+  "TestingPlatform": {
+    "CodeCoverage": {
+      "Path": "coverage.cobertura.xml",
+      "ModulePaths": {
+        "Include": [ ".*BotDeScans.*" ],
+        "Exclude": [ ".*Tests\\.dll$" ]
+      }
+    }
+  }
+}

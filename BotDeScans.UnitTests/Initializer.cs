@@ -12,5 +12,6 @@ internal static class Initializer
              methodName: method.Name));
 
         VerifyFakeItEasy.Initialize();
+        VerifierSettings.UseUtf8NoBom();
     }
 }

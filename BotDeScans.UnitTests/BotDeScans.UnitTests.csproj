@@ -5,6 +5,8 @@
     <IsPackable>false</IsPackable>
     <Nullable>enable</Nullable>
 	<ImplicitUsings>enable</ImplicitUsings>
+	<OutputType>Exe</OutputType>
+	<TestingPlatformDotnetTestSupport>true</TestingPlatformDotnetTestSupport>
   </PropertyGroup>
 
   <ItemGroup>
@@ -14,39 +16,27 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Autofac" Version="9.1.0" />
+    <PackageReference Include="Autofac" Version="9.3.4" />
     <PackageReference Include="AutoFixture.AutoFakeItEasy" Version="4.18.1" />
     <PackageReference Include="Bogus" Version="35.6.5" />
-    <PackageReference Include="coverlet.collector" Version="10.0.0">
-      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-      <PrivateAssets>all</PrivateAssets>
-    </PackageReference>
-    <PackageReference Include="coverlet.msbuild" Version="10.0.0">
-      <PrivateAssets>all</PrivateAssets>
-      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-    </PackageReference>
-    <PackageReference Include="FakeItEasy" Version="9.0.1" />
+    <PackageReference Include="FakeItEasy" Version="8.3.0" /> <!-- AutoFixture.AutoFakeItEasy 4.18.1 requires FakeItEasy (>= 4.9.0 && < 9.0.0) -->
+    <PackageReference Include="Microsoft.Testing.Extensions.CodeCoverage" Version="18.12.0" />
     <PackageReference Include="FakeItEasy.Analyzer.CSharp" Version="6.1.1">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
-    <PackageReference Include="FluentAssertions" Version="[7.1.0]" />
+    <PackageReference Include="FluentAssertions" Version="[6.7.0]" /> <!-- FluentResults.Extensions.FluentAssertions 2.2.1 requires FluentAssertions (= 6.7.0) -->
     <PackageReference Include="FluentResults.Extensions.FluentAssertions" Version="2.2.1" />
-    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="18.5.1" />
-    <PackageReference Include="SQLitePCLRaw.lib.e_sqlite3" Version="2.1.12" />
-    <PackageReference Include="Verify" Version="31.16.3" />
-    <PackageReference Include="Verify.FakeItEasy" Version="2.1.0" />
-    <PackageReference Include="Verify.XunitV3" Version="31.16.3" />
-    <PackageReference Include="xunit.analyzers" Version="1.27.0">
+    <PackageReference Include="SQLitePCLRaw.lib.e_sqlite3" Version="3.53.3" />
+    <PackageReference Include="Verify" Version="[32.0.0]" />  <!-- needs licence after 32 -->
+    <PackageReference Include="Verify.FakeItEasy" Version="[2.1.0]" /> <!-- needs licence after Verify 32 -->
+    <PackageReference Include="Verify.XunitV3" Version="[32.0.0]" /> <!-- needs licence after Verify 32 -->
+    <PackageReference Include="xunit.analyzers" Version="2.2.0">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
-    <PackageReference Include="xunit.runner.visualstudio" Version="3.1.5">
-      <PrivateAssets>all</PrivateAssets>
-      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-    </PackageReference>
-    <PackageReference Include="SkiaSharp" Version="3.119.0" />
-    <PackageReference Include="xunit.v3" Version="3.2.2" />
+    <PackageReference Include="SkiaSharp" Version="4.154.0" />
+    <PackageReference Include="xunit.v3" Version="4.0.2" />
   </ItemGroup>
 
   <ItemGroup>
@@ -65,6 +55,10 @@
 	  <Using Include="FakeItEasy" />
 	  <Using Include="FluentAssertions" />
 	  <Using Include="FluentResults.Extensions.FluentAssertions" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Snapshots\" />
   </ItemGroup>
 
 </Project>
