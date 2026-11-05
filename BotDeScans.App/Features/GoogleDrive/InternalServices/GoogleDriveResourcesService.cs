@@ -1,4 +1,4 @@
-﻿using BotDeScans.App.Services.Wrappers;
+using BotDeScans.App.Services.Wrappers;
 using FluentResults;
 using Google.Apis.Drive.v3;
 using File = Google.Apis.Drive.v3.Data.File;

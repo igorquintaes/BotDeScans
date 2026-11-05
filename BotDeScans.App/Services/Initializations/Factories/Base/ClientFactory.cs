@@ -1,4 +1,4 @@
-﻿using FluentResults;
+using FluentResults;
 
 namespace BotDeScans.App.Services.Initializations.Factories.Base;
 

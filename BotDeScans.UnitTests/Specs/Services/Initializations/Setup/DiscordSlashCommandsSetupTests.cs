@@ -1,4 +1,4 @@
-﻿using BotDeScans.App.Services.Initializations.Setups;
+using BotDeScans.App.Services.Initializations.Setups;
 using BotDeScans.App.Services.Wrappers;
 using Remora.Rest.Core;
 using Remora.Results;

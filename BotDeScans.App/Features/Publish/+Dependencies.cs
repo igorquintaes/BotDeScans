@@ -1,4 +1,4 @@
-﻿using BotDeScans.App.Features.Publish.Command;
+using BotDeScans.App.Features.Publish.Command;
 using BotDeScans.App.Features.Publish.Interaction;
 using Microsoft.Extensions.DependencyInjection;
 using System.Diagnostics.CodeAnalysis;

@@ -1,4 +1,4 @@
-﻿using BotDeScans.App.Services;
+using BotDeScans.App.Services;
 using SkiaSharp;
 using System.IO.Compression;
 using System.Reflection;

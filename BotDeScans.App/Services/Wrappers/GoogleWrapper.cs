@@ -1,4 +1,4 @@
-﻿using BotDeScans.App.Extensions;
+using BotDeScans.App.Extensions;
 using FluentResults;
 using Google.Apis.Requests;
 using Google.Apis.Upload;

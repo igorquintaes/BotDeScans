@@ -1,4 +1,4 @@
-﻿using FluentResults;
+using FluentResults;
 using iText.IO.Image;
 using iText.Kernel.Geom;
 using iText.Kernel.Pdf;

@@ -1,4 +1,4 @@
-﻿using BotDeScans.App.Features.GoogleDrive;
+using BotDeScans.App.Features.GoogleDrive;
 using BotDeScans.App.Features.GoogleDrive.InternalServices;
 
 namespace BotDeScans.UnitTests.Specs.Features.GoogleDrive.InternalServices;

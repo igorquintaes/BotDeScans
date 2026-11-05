@@ -1,4 +1,4 @@
-﻿using BotDeScans.App.Services;
+using BotDeScans.App.Services;
 using FluentValidation;
 using System.Globalization;
 using File = Google.Apis.Drive.v3.Data.File;

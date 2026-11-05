@@ -1,4 +1,4 @@
-﻿using BotDeScans.App.Builders;
+using BotDeScans.App.Builders;
 using FluentAssertions.Execution;
 using FluentResults;
 using Remora.Discord.API.Objects;

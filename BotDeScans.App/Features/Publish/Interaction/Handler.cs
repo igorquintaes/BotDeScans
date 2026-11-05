@@ -1,4 +1,4 @@
-﻿using BotDeScans.App.Extensions;
+using BotDeScans.App.Extensions;
 using BotDeScans.App.Features.Publish.Interaction.Steps;
 using FluentResults;
 

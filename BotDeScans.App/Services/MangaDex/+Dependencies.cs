@@ -1,4 +1,4 @@
-﻿using BotDeScans.App.Services.MangaDex.InternalServices;
+using BotDeScans.App.Services.MangaDex.InternalServices;
 using Microsoft.Extensions.DependencyInjection;
 using System.Diagnostics.CodeAnalysis;
 

@@ -1,4 +1,4 @@
-﻿using BotDeScans.App.Attributes;
+using BotDeScans.App.Attributes;
 using BotDeScans.App.Extensions;
 using Remora.Commands.Conditions;
 using Remora.Discord.API.Abstractions.Objects;

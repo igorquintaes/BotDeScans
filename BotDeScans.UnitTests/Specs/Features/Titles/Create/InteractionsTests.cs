@@ -1,4 +1,4 @@
-﻿using BotDeScans.App.Features.Titles.Create;
+using BotDeScans.App.Features.Titles.Create;
 using FluentResults;
 using Remora.Discord.API.Abstractions.Objects;
 using Remora.Discord.API.Objects;

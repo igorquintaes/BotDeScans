@@ -1,4 +1,4 @@
-﻿using FluentResults;
+using FluentResults;
 using MangaDexSharp;
 
 namespace BotDeScans.App.Extensions;

@@ -1,4 +1,4 @@
-﻿using BotDeScans.App.Extensions;
+using BotDeScans.App.Extensions;
 using BotDeScans.App.Services.Discord.Cache;
 using FluentResults;
 using Microsoft.Extensions.Configuration;

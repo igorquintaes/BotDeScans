@@ -1,4 +1,4 @@
-﻿using FluentResults;
+using FluentResults;
 using Serilog;
 using System.Net.Http.Headers;
 using System.Text.Json;

@@ -1,4 +1,4 @@
-﻿using BotDeScans.App.Builders;
+using BotDeScans.App.Builders;
 using BotDeScans.App.Extensions;
 using BotDeScans.App.Features.Publish.Interaction.Models;
 using Microsoft.Extensions.Configuration;

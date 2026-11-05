@@ -1,4 +1,4 @@
-﻿using BotDeScans.App.Features.Mega.InternalServices;
+using BotDeScans.App.Features.Mega.InternalServices;
 using CG.Web.MegaApiClient;
 using FluentResults;
 using Microsoft.Extensions.Configuration;

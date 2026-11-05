@@ -1,4 +1,4 @@
-﻿using BotDeScans.App.Features.GoogleDrive.InternalServices;
+using BotDeScans.App.Features.GoogleDrive.InternalServices;
 using BotDeScans.App.Services.Initializations.Factories;
 using Microsoft.Extensions.DependencyInjection;
 using Remora.Commands.Extensions;

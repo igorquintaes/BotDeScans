@@ -1,4 +1,4 @@
-﻿using BotDeScans.App.Services.Wrappers;
+using BotDeScans.App.Services.Wrappers;
 using CG.Web.MegaApiClient;
 using FluentResults;
 namespace BotDeScans.App.Features.Mega.InternalServices;

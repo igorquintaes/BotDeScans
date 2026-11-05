@@ -1,4 +1,4 @@
-﻿using BotDeScans.App.Attributes;
+using BotDeScans.App.Attributes;
 using BotDeScans.App.Builders;
 using BotDeScans.App.Features.Mega.InternalServices;
 using BotDeScans.App.Services;

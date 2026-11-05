@@ -1,4 +1,4 @@
-﻿using FluentResults;
+using FluentResults;
 using Google;
 using System.Collections.Frozen;
 using System.Text.Json;

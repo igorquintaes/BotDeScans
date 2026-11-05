@@ -1,4 +1,4 @@
-﻿using BotDeScans.App.Features.References.Update;
+using BotDeScans.App.Features.References.Update;
 using BotDeScans.App.Models.Entities;
 using FluentResults;
 using Remora.Discord.API.Abstractions.Objects;

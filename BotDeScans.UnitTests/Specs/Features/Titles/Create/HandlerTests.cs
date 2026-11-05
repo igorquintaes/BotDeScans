@@ -1,4 +1,4 @@
-﻿using BotDeScans.App.Features.Titles.Create;
+using BotDeScans.App.Features.Titles.Create;
 using BotDeScans.App.Infra;
 using BotDeScans.App.Models.Entities;
 using BotDeScans.App.Services.Discord;

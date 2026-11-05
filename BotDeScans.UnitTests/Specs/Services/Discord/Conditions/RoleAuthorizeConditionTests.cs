@@ -1,4 +1,4 @@
-﻿using BotDeScans.App.Attributes;
+using BotDeScans.App.Attributes;
 using BotDeScans.App.Services.Discord;
 using BotDeScans.App.Services.Discord.Conditions;
 using BotDeScans.UnitTests.FakeObjects;

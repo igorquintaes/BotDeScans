@@ -1,4 +1,4 @@
-﻿using BotDeScans.App.Extensions;
+using BotDeScans.App.Extensions;
 using BotDeScans.App.Services.Wrappers;
 using FluentResults;
 using Microsoft.Extensions.Configuration;

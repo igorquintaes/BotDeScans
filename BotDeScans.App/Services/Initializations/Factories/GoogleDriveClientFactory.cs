@@ -1,4 +1,4 @@
-﻿using BotDeScans.App.Services.Initializations.Factories.Base;
+using BotDeScans.App.Services.Initializations.Factories.Base;
 using BotDeScans.App.Services.Wrappers;
 using FluentResults;
 using Google.Apis.Auth.OAuth2;

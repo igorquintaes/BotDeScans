@@ -1,4 +1,4 @@
-﻿using BotDeScans.App.Infra;
+using BotDeScans.App.Infra;
 using BotDeScans.App.Models;
 using BotDeScans.App.Models.Entities;
 using BotDeScans.App.Services.Discord.Autocomplete;

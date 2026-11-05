@@ -1,4 +1,4 @@
-﻿using BotDeScans.App.Features.GoogleDrive.InternalServices;
+using BotDeScans.App.Features.GoogleDrive.InternalServices;
 using BotDeScans.App.Models.DTOs;
 using BotDeScans.App.Services.Wrappers;
 using FluentResults;

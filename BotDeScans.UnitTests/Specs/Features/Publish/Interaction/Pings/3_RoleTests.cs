@@ -1,4 +1,4 @@
-﻿using BotDeScans.App.Features.Publish.Interaction;
+using BotDeScans.App.Features.Publish.Interaction;
 using BotDeScans.App.Features.Publish.Interaction.Pings;
 using BotDeScans.App.Services.Discord;
 using FluentResults;

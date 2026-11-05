@@ -1,4 +1,4 @@
-﻿using BotDeScans.App.Features.GoogleDrive;
+using BotDeScans.App.Features.GoogleDrive;
 using BotDeScans.App.Features.Mega;
 using BotDeScans.App.Features.Publish;
 using BotDeScans.App.Features.References;

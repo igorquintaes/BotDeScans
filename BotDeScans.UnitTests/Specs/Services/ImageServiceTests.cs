@@ -1,4 +1,4 @@
-﻿using BotDeScans.App.Services;
+using BotDeScans.App.Services;
 using Microsoft.Extensions.Configuration;
 using SkiaSharp;
 using System.Reflection;

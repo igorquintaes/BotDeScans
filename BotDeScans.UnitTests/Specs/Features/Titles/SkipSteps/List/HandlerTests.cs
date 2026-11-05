@@ -1,4 +1,4 @@
-﻿using BotDeScans.App.Extensions;
+using BotDeScans.App.Extensions;
 using BotDeScans.App.Features.Titles.SkipSteps.List;
 using BotDeScans.App.Infra.Repositories;
 using BotDeScans.App.Models.Entities;

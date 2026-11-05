@@ -1,4 +1,4 @@
-﻿using BotDeScans.App.Features.Publish.Interaction;
+using BotDeScans.App.Features.Publish.Interaction;
 using BotDeScans.App.Models.DTOs;
 using FluentResults;
 using Remora.Discord.API.Abstractions.Objects;

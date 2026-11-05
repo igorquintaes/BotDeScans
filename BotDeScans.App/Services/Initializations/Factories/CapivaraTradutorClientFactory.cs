@@ -1,4 +1,4 @@
-﻿using BotDeScans.App.Extensions;
+using BotDeScans.App.Extensions;
 using BotDeScans.App.Infra.Logging;
 using BotDeScans.App.Models.Entities.Enums;
 using BotDeScans.App.Services.CapivaraTradutor;

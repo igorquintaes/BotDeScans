@@ -1,4 +1,4 @@
-﻿using BotDeScans.App.Attributes;
+using BotDeScans.App.Attributes;
 namespace BotDeScans.UnitTests.Specs.Attributes;
 
 public class EmojiAttributeTests : UnitTest

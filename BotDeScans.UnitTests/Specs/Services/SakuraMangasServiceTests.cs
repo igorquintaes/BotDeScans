@@ -1,4 +1,4 @@
-﻿using BotDeScans.App.Services;
+using BotDeScans.App.Services;
 using BotDeScans.UnitTests.FakeObjects;
 using System.Net;
 

@@ -1,4 +1,4 @@
-﻿using AutoFixture.Dsl;
+using AutoFixture.Dsl;
 using FakeItEasy.Creation;
 using Microsoft.Extensions.Configuration;
 using Remora.Commands.Groups;

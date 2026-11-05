@@ -1,4 +1,4 @@
-﻿using BotDeScans.App.Features.Publish.Command;
+using BotDeScans.App.Features.Publish.Command;
 using BotDeScans.UnitTests.FakeObjects;
 using Remora.Discord.API.Abstractions.Rest;
 using Remora.Discord.API.Objects;

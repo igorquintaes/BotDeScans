@@ -1,4 +1,4 @@
-﻿using BotDeScans.App.Features.References.Update;
+using BotDeScans.App.Features.References.Update;
 using BotDeScans.App.Infra.Repositories;
 using BotDeScans.App.Models.Entities;
 using FluentValidation;

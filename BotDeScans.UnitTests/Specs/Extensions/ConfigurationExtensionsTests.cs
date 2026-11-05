@@ -1,4 +1,4 @@
-﻿using BotDeScans.App.Extensions;
+using BotDeScans.App.Extensions;
 using BotDeScans.App.Models.Entities.Enums;
 using Microsoft.Extensions.Configuration;
 using static FluentAssertions.FluentActions;

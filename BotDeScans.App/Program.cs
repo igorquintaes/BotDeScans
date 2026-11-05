@@ -1,4 +1,4 @@
-﻿using BotDeScans.App.Infra;
+using BotDeScans.App.Infra;
 using BotDeScans.App.Services;
 using BotDeScans.App.Services.Discord;
 using BotDeScans.App.Services.Initializations;

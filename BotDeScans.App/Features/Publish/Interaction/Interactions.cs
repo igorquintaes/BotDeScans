@@ -1,4 +1,4 @@
-﻿using BotDeScans.App.Models.DTOs;
+using BotDeScans.App.Models.DTOs;
 using Remora.Discord.Interactivity;
 using Remora.Results;
 using System.ComponentModel;

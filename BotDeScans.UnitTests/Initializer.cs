@@ -1,4 +1,4 @@
-﻿using System.Runtime.CompilerServices;
+using System.Runtime.CompilerServices;
 namespace BotDeScans.UnitTests;
 
 internal static class Initializer

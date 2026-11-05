@@ -1,4 +1,4 @@
-﻿using BotDeScans.App.Builders;
+using BotDeScans.App.Builders;
 using Remora.Discord.API.Abstractions.Objects;
 
 namespace BotDeScans.UnitTests.Specs.Builders;

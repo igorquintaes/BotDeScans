@@ -1,4 +1,4 @@
-﻿using Remora.Commands.Conditions;
+using Remora.Commands.Conditions;
 
 namespace BotDeScans.App.Attributes;
 

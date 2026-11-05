@@ -1,4 +1,4 @@
-﻿using BotDeScans.App.Models.DTOs;
+using BotDeScans.App.Models.DTOs;
 using BotDeScans.App.Services.MangaDex;
 using BotDeScans.App.Services.MangaDex.InternalServices;
 using FluentResults;

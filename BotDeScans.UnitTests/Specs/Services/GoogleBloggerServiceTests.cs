@@ -1,4 +1,4 @@
-﻿using BotDeScans.App.Services;
+using BotDeScans.App.Services;
 using BotDeScans.App.Services.Wrappers;
 using Google.Apis.Blogger.v3;
 using Google.Apis.Blogger.v3.Data;

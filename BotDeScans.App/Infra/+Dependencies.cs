@@ -1,4 +1,4 @@
-﻿using BotDeScans.App.Infra.Repositories;
+using BotDeScans.App.Infra.Repositories;
 using Microsoft.Extensions.DependencyInjection;
 using System.Diagnostics.CodeAnalysis;
 

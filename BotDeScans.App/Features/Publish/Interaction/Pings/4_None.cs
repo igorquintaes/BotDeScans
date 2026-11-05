@@ -1,4 +1,4 @@
-﻿using FluentResults;
+using FluentResults;
 using Microsoft.Extensions.Configuration;
 
 namespace BotDeScans.App.Features.Publish.Interaction.Pings;

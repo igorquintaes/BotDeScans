@@ -1,4 +1,4 @@
-﻿using Remora.Discord.API.Abstractions.Objects;
+using Remora.Discord.API.Abstractions.Objects;
 
 namespace BotDeScans.App.Services.Discord.Cache;
 

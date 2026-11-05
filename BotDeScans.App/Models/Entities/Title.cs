@@ -1,4 +1,4 @@
-﻿using BotDeScans.App.Extensions;
+using BotDeScans.App.Extensions;
 using BotDeScans.App.Features.Publish.Interaction.Pings;
 using BotDeScans.App.Models.Entities.Enums;
 using BotDeScans.App.Services.Discord;

@@ -1,4 +1,4 @@
-﻿using BotDeScans.App.Services.Initializations.Factories;
+using BotDeScans.App.Services.Initializations.Factories;
 using BotDeScans.App.Services.Wrappers;
 using FluentResults;
 using Google.Apis.Drive.v3;

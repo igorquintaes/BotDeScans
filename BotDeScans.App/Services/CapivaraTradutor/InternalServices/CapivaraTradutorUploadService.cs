@@ -1,4 +1,4 @@
-﻿using BotDeScans.App.Models.DTOs;
+using BotDeScans.App.Models.DTOs;
 using FluentResults;
 using System.Collections.Immutable;
 using System.Globalization;

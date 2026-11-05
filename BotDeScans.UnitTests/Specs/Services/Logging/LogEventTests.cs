@@ -1,4 +1,4 @@
-﻿using BotDeScans.App.Services.Logging;
+using BotDeScans.App.Services.Logging;
 using Remora.Results;
 using Serilog;
 

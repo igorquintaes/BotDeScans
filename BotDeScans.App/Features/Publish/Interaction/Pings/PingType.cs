@@ -1,4 +1,4 @@
-﻿namespace BotDeScans.App.Features.Publish.Interaction.Pings;
+namespace BotDeScans.App.Features.Publish.Interaction.Pings;
 
 public enum PingType
 {

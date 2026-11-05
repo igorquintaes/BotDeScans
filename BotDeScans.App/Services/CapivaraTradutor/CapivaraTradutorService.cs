@@ -1,4 +1,4 @@
-﻿using BotDeScans.App.Infra.Logging;
+using BotDeScans.App.Infra.Logging;
 using BotDeScans.App.Models.DTOs;
 using BotDeScans.App.Services.CapivaraTradutor.InternalServices;
 using FluentResults;
