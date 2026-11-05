@@ -1,4 +1,4 @@
-﻿using BotDeScans.App.Infra;
+using BotDeScans.App.Infra;
 using BotDeScans.App.Models;
 using Microsoft.EntityFrameworkCore;
 using Remora.Discord.API.Abstractions.Objects;

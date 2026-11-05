@@ -1,4 +1,4 @@
-﻿using BotDeScans.App.Features.Titles.SkipSteps;
+using BotDeScans.App.Features.Titles.SkipSteps;
 using Microsoft.Extensions.DependencyInjection;
 using Remora.Commands.Extensions;
 using Remora.Discord.Interactivity.Extensions;

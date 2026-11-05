@@ -1,4 +1,4 @@
-﻿using BotDeScans.App.Models.DTOs;
+using BotDeScans.App.Models.DTOs;
 
 namespace BotDeScans.UnitTests.Specs.Models.DTOs;
 

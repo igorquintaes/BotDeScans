@@ -1,4 +1,4 @@
-﻿using BotDeScans.App.Extensions;
+using BotDeScans.App.Extensions;
 using BotDeScans.App.Services.Initializations.Factories;
 using FluentValidation;
 using Microsoft.Extensions.Configuration;

@@ -1,4 +1,4 @@
-﻿using BotDeScans.App.Builders;
+using BotDeScans.App.Builders;
 
 namespace BotDeScans.UnitTests.Specs.Builders;
 

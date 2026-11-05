@@ -1,4 +1,4 @@
-﻿using Imageflow.Fluent;
+using Imageflow.Fluent;
 using Microsoft.Extensions.Configuration;
 using SkiaSharp;
 

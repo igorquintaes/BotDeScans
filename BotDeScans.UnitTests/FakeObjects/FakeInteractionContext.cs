@@ -1,4 +1,4 @@
-﻿using Remora.Discord.API.Abstractions.Objects;
+using Remora.Discord.API.Abstractions.Objects;
 using Remora.Discord.API.Objects;
 using Remora.Discord.Commands.Contexts;
 using Remora.Rest.Core;

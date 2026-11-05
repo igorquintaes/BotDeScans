@@ -1,4 +1,4 @@
-﻿using BotDeScans.App.Features.Publish.Interaction.Models;
+using BotDeScans.App.Features.Publish.Interaction.Models;
 using BotDeScans.App.Features.Publish.Interaction.Steps;
 using BotDeScans.App.Features.Publish.Interaction.Steps.Enums;
 using FluentResults;

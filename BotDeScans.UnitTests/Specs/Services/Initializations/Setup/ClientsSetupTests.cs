@@ -1,4 +1,4 @@
-﻿using BotDeScans.App.Services.Initializations.Factories.Base;
+using BotDeScans.App.Services.Initializations.Factories.Base;
 using BotDeScans.App.Services.Initializations.Setups;
 using FluentResults;
 using FluentValidation;

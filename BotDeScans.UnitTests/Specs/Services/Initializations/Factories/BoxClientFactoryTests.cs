@@ -1,4 +1,4 @@
-﻿using BotDeScans.App.Models.Entities.Enums;
+using BotDeScans.App.Models.Entities.Enums;
 using BotDeScans.App.Services;
 using BotDeScans.App.Services.Initializations.Factories;
 using Box.Sdk.Gen;

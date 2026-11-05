@@ -1,4 +1,4 @@
-﻿using BotDeScans.App.Services.Discord;
+using BotDeScans.App.Services.Discord;
 using BotDeScans.App.Services.Discord.Cache;
 using Microsoft.Extensions.Configuration;
 using Remora.Discord.API.Abstractions.Objects;

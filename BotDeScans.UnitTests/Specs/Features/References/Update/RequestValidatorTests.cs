@@ -1,4 +1,4 @@
-﻿using BotDeScans.App.Extensions;
+using BotDeScans.App.Extensions;
 using BotDeScans.App.Features.References.Update;
 using BotDeScans.App.Models.Entities;
 using FluentValidation.TestHelper;

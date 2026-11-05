@@ -1,4 +1,4 @@
-﻿using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection;
 using Remora.Commands.Extensions;
 using System.Diagnostics.CodeAnalysis;
 

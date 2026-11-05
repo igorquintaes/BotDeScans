@@ -1,4 +1,4 @@
-﻿using BotDeScans.App.Services.Initializations;
+using BotDeScans.App.Services.Initializations;
 using BotDeScans.App.Services.Initializations.Setups;
 using FluentResults;
 using Microsoft.Extensions.DependencyInjection;

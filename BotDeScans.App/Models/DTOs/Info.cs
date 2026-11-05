@@ -1,4 +1,4 @@
-﻿using BotDeScans.App.Extensions;
+using BotDeScans.App.Extensions;
 using BotDeScans.App.Features.GoogleDrive.Models;
 using FluentValidation;
 using System.Text.RegularExpressions;

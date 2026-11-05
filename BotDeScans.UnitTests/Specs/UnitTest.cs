@@ -1,4 +1,4 @@
-﻿using AutoFixture.AutoFakeItEasy;
+using AutoFixture.AutoFakeItEasy;
 using Xunit.Sdk;
 using Xunit.v3;
 

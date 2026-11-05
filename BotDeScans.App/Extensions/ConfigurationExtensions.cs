@@ -1,4 +1,4 @@
-﻿using FluentResults;
+using FluentResults;
 using Microsoft.Extensions.Configuration;
 using System.ComponentModel;
 

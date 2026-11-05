@@ -1,4 +1,4 @@
-﻿using BotDeScans.App.Models.DTOs;
+using BotDeScans.App.Models.DTOs;
 using BotDeScans.App.Services.Initializations.Factories;
 using BotDeScans.App.Services.MangaDex.InternalServices;
 using MangaDexSharp;

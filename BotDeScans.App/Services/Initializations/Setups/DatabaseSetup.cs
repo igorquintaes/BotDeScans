@@ -1,4 +1,4 @@
-﻿using BotDeScans.App.Infra;
+using BotDeScans.App.Infra;
 using FluentResults;
 using Microsoft.EntityFrameworkCore;
 

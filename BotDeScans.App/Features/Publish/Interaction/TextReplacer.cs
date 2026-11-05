@@ -1,4 +1,4 @@
-﻿namespace BotDeScans.App.Features.Publish.Interaction;
+namespace BotDeScans.App.Features.Publish.Interaction;
 
 public class TextReplacer
 {

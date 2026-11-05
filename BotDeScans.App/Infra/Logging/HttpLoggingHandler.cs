@@ -1,4 +1,4 @@
-﻿using Serilog;
+using Serilog;
 using System.Diagnostics;
 
 namespace BotDeScans.App.Infra.Logging;

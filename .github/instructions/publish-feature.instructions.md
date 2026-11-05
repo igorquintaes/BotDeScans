@@ -1,4 +1,4 @@
-﻿---
+---
 applyTo: "BotDeScans.App/Features/Publish/**"
 description: >
   Skill (conhecimento + diretrizes) para evoluir e revisar a feature

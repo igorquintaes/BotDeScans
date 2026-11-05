@@ -1,4 +1,4 @@
-﻿using BotDeScans.App.Extensions;
+using BotDeScans.App.Extensions;
 using BotDeScans.App.Services.Wrappers;
 using Box.Sdk.Gen;
 using Box.Sdk.Gen.Managers;

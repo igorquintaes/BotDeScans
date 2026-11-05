@@ -1,4 +1,4 @@
-﻿using BotDeScans.App.Features.Mega.InternalServices;
+using BotDeScans.App.Features.Mega.InternalServices;
 using CG.Web.MegaApiClient;
 using FluentAssertions.Execution;
 namespace BotDeScans.UnitTests.Specs.Features.Mega.InternalServices;

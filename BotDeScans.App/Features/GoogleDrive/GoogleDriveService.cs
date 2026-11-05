@@ -1,4 +1,4 @@
-﻿using BotDeScans.App.Features.GoogleDrive.InternalServices;
+using BotDeScans.App.Features.GoogleDrive.InternalServices;
 using FluentResults;
 using Microsoft.Extensions.Configuration;
 using System.Collections.Concurrent;

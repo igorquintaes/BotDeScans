@@ -1,4 +1,4 @@
-﻿namespace BotDeScans.App.Models;
+namespace BotDeScans.App.Models;
 
 public static class Consts
 {

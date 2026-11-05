@@ -1,4 +1,4 @@
-﻿using BotDeScans.App.Services;
+using BotDeScans.App.Services;
 using BotDeScans.App.Services.Wrappers;
 using FluentResults;
 using Google.Apis.Download;

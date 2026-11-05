@@ -1,4 +1,4 @@
-﻿using Remora.Discord.Commands.Services;
+using Remora.Discord.Commands.Services;
 using Remora.Rest.Core;
 using Remora.Results;
 using System.Diagnostics.CodeAnalysis;

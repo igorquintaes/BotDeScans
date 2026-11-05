@@ -1,4 +1,4 @@
-﻿namespace BotDeScans.UnitTests.FakeObjects;
+namespace BotDeScans.UnitTests.FakeObjects;
 
 public abstract class FakeHttpMessageHandler : HttpMessageHandler
 {

@@ -1,4 +1,4 @@
-﻿using BotDeScans.App.Services;
+using BotDeScans.App.Services;
 using FluentAssertions.Execution;
 using System.Reflection;
 

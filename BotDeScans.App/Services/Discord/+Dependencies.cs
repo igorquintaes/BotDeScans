@@ -1,4 +1,4 @@
-﻿using BotDeScans.App.Extensions;
+using BotDeScans.App.Extensions;
 using BotDeScans.App.Services.Discord.Autocomplete;
 using BotDeScans.App.Services.Discord.Cache;
 using BotDeScans.App.Services.Discord.Conditions;

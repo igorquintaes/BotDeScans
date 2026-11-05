@@ -1,4 +1,4 @@
-﻿using BotDeScans.App.Features.References.List;
+using BotDeScans.App.Features.References.List;
 using Remora.Discord.API.Abstractions.Objects;
 using Remora.Discord.API.Objects;
 using Remora.Discord.Commands.Feedback.Messages;

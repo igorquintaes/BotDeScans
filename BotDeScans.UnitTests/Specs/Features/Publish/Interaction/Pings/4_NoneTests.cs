@@ -1,4 +1,4 @@
-﻿using BotDeScans.App.Features.Publish.Interaction.Pings;
+using BotDeScans.App.Features.Publish.Interaction.Pings;
 using Microsoft.Extensions.Configuration;
 
 namespace BotDeScans.UnitTests.Specs.Features.Publish.Interaction.Pings;

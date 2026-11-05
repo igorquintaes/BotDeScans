@@ -1,4 +1,4 @@
-﻿using CG.Web.MegaApiClient;
+using CG.Web.MegaApiClient;
 namespace BotDeScans.App.Features.Mega.InternalServices;
 
 public class MegaResourcesService(

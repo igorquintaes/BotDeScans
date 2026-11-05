@@ -1,4 +1,4 @@
-﻿using BotDeScans.App.Services.Initializations.Factories.Base;
+using BotDeScans.App.Services.Initializations.Factories.Base;
 using Microsoft.Extensions.DependencyInjection;
 using System.Diagnostics.CodeAnalysis;
 

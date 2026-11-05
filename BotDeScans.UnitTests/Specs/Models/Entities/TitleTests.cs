@@ -1,4 +1,4 @@
-﻿using BotDeScans.App.Models.Entities;
+using BotDeScans.App.Models.Entities;
 using BotDeScans.App.Models.Entities.Enums;
 
 namespace BotDeScans.UnitTests.Specs.Models.Entities;

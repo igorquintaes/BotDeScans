@@ -1,4 +1,4 @@
-﻿using BotDeScans.App.Attributes;
+using BotDeScans.App.Attributes;
 using BotDeScans.App.Extensions;
 using System.ComponentModel;
 using static FluentAssertions.FluentActions;

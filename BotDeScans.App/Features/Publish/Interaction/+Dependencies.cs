@@ -1,4 +1,4 @@
-﻿using BotDeScans.App.Features.Publish.Interaction.Pings;
+using BotDeScans.App.Features.Publish.Interaction.Pings;
 using BotDeScans.App.Features.Publish.Interaction.Steps;
 using Microsoft.Extensions.DependencyInjection;
 using Remora.Discord.Interactivity.Extensions;

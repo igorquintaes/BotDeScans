@@ -1,4 +1,4 @@
-﻿using BotDeScans.App.Features.Titles.List;
+using BotDeScans.App.Features.Titles.List;
 using BotDeScans.App.Infra.Repositories;
 using BotDeScans.App.Models.Entities;
 using Remora.Discord.API.Abstractions.Objects;

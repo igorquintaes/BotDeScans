@@ -1,4 +1,4 @@
-﻿using BotDeScans.UnitTests.Helpers;
+using BotDeScans.UnitTests.Helpers;
 
 namespace BotDeScans.UnitTests.Specs;
 

@@ -1,4 +1,4 @@
-﻿using BotDeScans.App.Services.CapivaraTradutor.InternalServices;
+using BotDeScans.App.Services.CapivaraTradutor.InternalServices;
 using Microsoft.Extensions.DependencyInjection;
 using System.Diagnostics.CodeAnalysis;
 

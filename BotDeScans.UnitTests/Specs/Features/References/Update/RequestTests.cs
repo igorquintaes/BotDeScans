@@ -1,4 +1,4 @@
-﻿using BotDeScans.App.Features.References.Update;
+using BotDeScans.App.Features.References.Update;
 using BotDeScans.App.Models.Entities;
 
 namespace BotDeScans.UnitTests.Specs.Features.References.Update;

@@ -1,4 +1,4 @@
-﻿using BotDeScans.App.Services.Initializations.Factories;
+using BotDeScans.App.Services.Initializations.Factories;
 using BotDeScans.App.Services.Initializations.FactoriesValidators;
 using FluentValidation.TestHelper;
 

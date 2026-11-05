@@ -1,4 +1,4 @@
-﻿using BotDeScans.App.Attributes;
+using BotDeScans.App.Attributes;
 using BotDeScans.App.Builders;
 using Remora.Commands.Attributes;
 using Remora.Commands.Groups;

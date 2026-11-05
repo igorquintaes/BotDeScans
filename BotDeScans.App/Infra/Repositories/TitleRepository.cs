@@ -1,4 +1,4 @@
-﻿using BotDeScans.App.Models.Entities;
+using BotDeScans.App.Models.Entities;
 using Microsoft.EntityFrameworkCore;
 
 namespace BotDeScans.App.Infra.Repositories;

@@ -1,4 +1,4 @@
-﻿using BotDeScans.App.Features.GoogleDrive.Models;
+using BotDeScans.App.Features.GoogleDrive.Models;
 using BotDeScans.App.Models.DTOs;
 using FluentValidation;
 using FluentValidation.TestHelper;
