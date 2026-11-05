@@ -277,7 +277,7 @@ paket-files/
 __pycache__/
 *.pyc
 
-# Cake - Uncomment if you are using it
+# Dotnet tools
 tools/**
 !tools/packages.config
 
