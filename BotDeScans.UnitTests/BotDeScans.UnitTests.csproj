@@ -27,14 +27,13 @@
     </PackageReference>
     <PackageReference Include="FluentAssertions" Version="[6.7.0]" /> <!-- FluentResults.Extensions.FluentAssertions 2.2.1 requires FluentAssertions (= 6.7.0) -->
     <PackageReference Include="FluentResults.Extensions.FluentAssertions" Version="2.2.1" />
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="18.5.1" />
+    <PackageReference Include="Serilog.Sinks.InMemory" Version="2.0.0" />
+    <PackageReference Include="Serilog.Sinks.InMemory.Assertions" Version="2.0.0" />
     <PackageReference Include="SQLitePCLRaw.lib.e_sqlite3" Version="3.53.3" />
     <PackageReference Include="Verify" Version="[32.0.0]" />  <!-- needs licence after 32 -->
     <PackageReference Include="Verify.FakeItEasy" Version="[2.1.0]" /> <!-- needs licence after Verify 32 -->
     <PackageReference Include="Verify.XunitV3" Version="[32.0.0]" /> <!-- needs licence after Verify 32 -->
-    <PackageReference Include="xunit.analyzers" Version="2.2.0">
-      <PrivateAssets>all</PrivateAssets>
-      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-    </PackageReference>
     <PackageReference Include="SkiaSharp" Version="4.154.0" />
     <PackageReference Include="xunit.v3" Version="4.0.2" />
   </ItemGroup>
