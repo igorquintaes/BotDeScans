@@ -24,7 +24,7 @@ $coverageSettings = Join-Path $PSScriptRoot 'coverage.settings.xml'
 $testProjects = @(
     @{
         Name = 'unit'
-        Project = Join-Path $PSScriptRoot 'BotDeScans.UnitTests/BotDeScans.UnitTests.csproj'
+        Project = Join-Path $PSScriptRoot 'BotDeScans.Tests/BotDeScans.Tests.csproj'
     },
     @{
         Name = 'integration'
