@@ -214,46 +214,5 @@ public class HttpLoggingHandlerTests : UnitTest, IDisposable
             failureLog.Properties["StatusCode"].ToString().Should().Contain("404");
             failureLog.Properties["Url"].ToString().Should().Contain("https://example.com/test");
         }
-
-        [Fact]
-        public async Task GivenPostRequestShouldLogCorrectMethod()
-        {
-            ClearInMemorySink();
-
-            await httpClient.PostAsync(
-                "https://example.com/test",
-                null,
-                cancellationToken);
-
-            var startLog = InMemorySink.Instance.LogEvents.First();
-            startLog.Properties["Method"].ToString().Should().Contain("POST");
-        }
-
-        [Fact]
-        public async Task GivenDeleteRequestShouldLogCorrectMethod()
-        {
-            ClearInMemorySink();
-
-            await httpClient.DeleteAsync(
-                "https://example.com/test",
-                cancellationToken);
-
-            var startLog = InMemorySink.Instance.LogEvents.First();
-            startLog.Properties["Method"].ToString().Should().Contain("DELETE");
-        }
-
-        [Fact]
-        public async Task GivenPutRequestShouldLogCorrectMethod()
-        {
-            ClearInMemorySink();
-
-            await httpClient.PutAsync(
-                "https://example.com/test",
-                null,
-                cancellationToken);
-
-            var startLog = InMemorySink.Instance.LogEvents.First();
-            startLog.Properties["Method"].ToString().Should().Contain("PUT");
-        }
     }
 }

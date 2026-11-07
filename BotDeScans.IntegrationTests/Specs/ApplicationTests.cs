@@ -1,12 +1,14 @@
 using BotDeScans.App.Models.Entities;
+using BotDeScans.IntegrationTests.Fixtures;
+using BotDeScans.IntegrationTests.Specs.Application;
 using FluentAssertions;
 using Microsoft.EntityFrameworkCore;
 using Xunit;
 
 namespace BotDeScans.IntegrationTests.Specs;
 
-[Collection(IntegrationTestCollection.Name)]
-public sealed class ApplicationTests(IntegrationTestFixture fixture) : IntegrationTest(fixture)
+[Collection(ApplicationTestCollection.Name)]
+public sealed class ApplicationTests(ApplicationTestFixture fixture) : ApplicationTest(fixture)
 {
     [Fact]
     public async Task Application_should_start_with_an_in_memory_database()

@@ -29,7 +29,17 @@ public class DatabaseContext : DbContext
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.Entity<Title>()
+            .HasIndex(e => e.Name)
+            .IsUnique();
+
+        modelBuilder.Entity<Title>()
             .HasMany(e => e.References)
+            .WithOne(e => e.Title)
+            .HasForeignKey(e => e.TitleId)
+            .IsRequired();
+
+        modelBuilder.Entity<Title>()
+            .HasMany(e => e.SkipSteps)
             .WithOne(e => e.Title)
             .HasForeignKey(e => e.TitleId)
             .IsRequired();
@@ -38,8 +48,8 @@ public class DatabaseContext : DbContext
             .HasIndex(e => new { e.TitleId, e.Key })
             .IsUnique();
 
-        modelBuilder.Entity<Title>()
-            .HasIndex(e => e.Name)
+        modelBuilder.Entity<SkipStep>()
+            .HasIndex(e => new { e.TitleId, e.Step })
             .IsUnique();
     }
 }

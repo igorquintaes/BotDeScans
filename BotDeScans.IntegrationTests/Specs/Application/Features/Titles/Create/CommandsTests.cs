@@ -1,4 +1,5 @@
 using BotDeScans.App.Features.Titles.Create;
+using BotDeScans.IntegrationTests.Fixtures;
 using FakeItEasy;
 using FluentAssertions;
 using Microsoft.Extensions.DependencyInjection;
@@ -11,10 +12,9 @@ using WireMock.RequestBuilders;
 using WireMock.ResponseBuilders;
 using Xunit;
 
-namespace BotDeScans.IntegrationTests.Specs.Features.Titles.Create;
+namespace BotDeScans.IntegrationTests.Specs.Application.Features.Titles.Create;
 
-[Collection(IntegrationTestCollection.Name)]
-public sealed class CommandsTests(IntegrationTestFixture fixture) : IntegrationTest(fixture)
+public sealed class CommandsTests(ApplicationTestFixture fixture) : ApplicationTest(fixture)
 {
     [Fact]
     public async Task ExecuteAsync_should_create_the_title_modal_successfully()

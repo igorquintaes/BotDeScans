@@ -8,9 +8,15 @@ using Microsoft.Extensions.Hosting;
 using WireMock.Server;
 using Xunit;
 
-namespace BotDeScans.IntegrationTests;
+namespace BotDeScans.IntegrationTests.Fixtures;
 
-public sealed class IntegrationTestFixture : IAsyncLifetime
+[CollectionDefinition(Name)]
+public sealed class ApplicationTestCollection : ICollectionFixture<ApplicationTestFixture>
+{
+    public const string Name = "Application tests";
+}
+
+public sealed class ApplicationTestFixture : IAsyncLifetime
 {
     private SqliteConnection connection = null!;
 
@@ -61,5 +67,7 @@ public sealed class IntegrationTestFixture : IAsyncLifetime
         Environment.SetEnvironmentVariable("Discord__Token", null);
         Environment.SetEnvironmentVariable("Discord__ServerId", null);
         Environment.SetEnvironmentVariable("Discord__ApplicationId", null);
+
+        GC.SuppressFinalize(this);
     }
 }

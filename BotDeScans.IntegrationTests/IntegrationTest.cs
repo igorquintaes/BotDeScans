@@ -1,35 +1,22 @@
-using BotDeScans.App.Infra;
-using Microsoft.Extensions.DependencyInjection;
+
 using Xunit;
 using Xunit.v3;
 using Xunit.Sdk;
 
 [assembly: Parallelization(Mode = ParallelMode.None)]
-
 namespace BotDeScans.IntegrationTests;
 
-public abstract class IntegrationTest(IntegrationTestFixture fixture) : IAsyncLifetime
+public abstract class IntegrationTest : IAsyncLifetime
 {
-    protected IntegrationTestFixture Fixture { get; } = fixture;
-    protected IServiceScope Scope { get; private set; } = null!;
-    protected DatabaseContext Database => Scope.ServiceProvider.GetRequiredService<DatabaseContext>();
+    public IntegrationTest()
+    {
+    }
 
     public async ValueTask InitializeAsync()
     {
-        Scope = Fixture.Host.Services.CreateScope();
-        await Database.Database.EnsureDeletedAsync();
-        await Database.Database.EnsureCreatedAsync();
-    }
-
-    [CollectionDefinition(Name, DisableParallelization = true)]
-    public sealed class IntegrationTestCollection : ICollectionFixture<IntegrationTestFixture>
-    {
-        public const string Name = "Integration tests";
     }
 
     public async ValueTask DisposeAsync()
     {
-        await Database.Database.EnsureDeletedAsync();
-        Scope.Dispose();
     }
 }
