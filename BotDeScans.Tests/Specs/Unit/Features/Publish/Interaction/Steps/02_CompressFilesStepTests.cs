@@ -6,7 +6,7 @@ using BotDeScans.App.Services;
 using SkiaSharp;
 using System.Reflection;
 
-namespace BotDeScans.Tests.Specs.Features.Publish.Interaction.Steps;
+namespace BotDeScans.Tests.Specs.Unit.Features.Publish.Interaction.Steps;
 
 public class CompressFilesStepTests : UnitTest
 {

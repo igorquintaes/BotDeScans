@@ -4,7 +4,7 @@ using BotDeScans.App.Models.Entities;
 using FluentValidation;
 using FluentValidation.Results;
 
-namespace BotDeScans.Tests.Specs.Features.References.Update;
+namespace BotDeScans.Tests.Specs.Unit.Features.References.Update;
 
 public class HandlerTests : UnitTest
 {

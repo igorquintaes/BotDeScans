@@ -3,7 +3,7 @@ using BotDeScans.App.Infra.Repositories;
 using BotDeScans.App.Models.Entities;
 using FluentAssertions.Execution;
 
-namespace BotDeScans.Tests.Specs.Infra.Repositories;
+namespace BotDeScans.Tests.Specs.Unit.Infra.Repositories;
 
 public class TitleRepositoryTests : UnitPersistenceTest
 {

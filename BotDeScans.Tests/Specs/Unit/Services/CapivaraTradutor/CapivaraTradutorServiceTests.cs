@@ -7,7 +7,7 @@ using System.Collections.Immutable;
 using System.Net;
 using static BotDeScans.App.Services.CapivaraTradutor.InternalServices.CapivaraTradutorUploadService;
 
-namespace BotDeScans.Tests.Specs.Services.CapivaraTradutor;
+namespace BotDeScans.Tests.Specs.Unit.Services.CapivaraTradutor;
 
 public class CapivaraTradutorServiceTests : UnitTest
 {

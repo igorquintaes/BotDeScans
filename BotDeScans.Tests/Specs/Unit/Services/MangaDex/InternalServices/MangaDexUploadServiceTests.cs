@@ -5,7 +5,7 @@ using MangaDexSharp;
 using MangaDexSharp.Utilities.Upload;
 using static MangaDexSharp.UploadSessionFile;
 
-namespace BotDeScans.Tests.Specs.Services.MangaDex.InternalServices;
+namespace BotDeScans.Tests.Specs.Unit.Services.MangaDex.InternalServices;
 
 public class MangaDexUploadServiceTests : UnitTest
 {

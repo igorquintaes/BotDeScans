@@ -2,7 +2,7 @@ using BotDeScans.App.Services;
 using BotDeScans.Tests.FakeObjects;
 using System.Net;
 
-namespace BotDeScans.Tests.Specs.Services;
+namespace BotDeScans.Tests.Specs.Unit.Services;
 
 // todo: seria bom futuramente trocarmos os mocks de client por um wiremock
 public class SakuraMangasServiceTests : UnitTest

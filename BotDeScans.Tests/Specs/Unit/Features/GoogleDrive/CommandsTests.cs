@@ -12,7 +12,7 @@ using Remora.Discord.Commands.Feedback.Messages;
 using Remora.Discord.Commands.Feedback.Services;
 using Remora.Discord.Extensions.Errors;
 
-namespace BotDeScans.Tests.Specs.Features.GoogleDrive;
+namespace BotDeScans.Tests.Specs.Unit.Features.GoogleDrive;
 
 public class CommandsTests : UnitTest
 {

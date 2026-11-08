@@ -6,7 +6,7 @@ using Remora.Discord.Commands.Contexts;
 using Remora.Discord.Commands.Feedback.Services;
 using Remora.Results;
 
-namespace BotDeScans.Tests.Specs.Features.Publish.Command;
+namespace BotDeScans.Tests.Specs.Unit.Features.Publish.Command;
 
 public class CommandsTests : UnitTest
 {

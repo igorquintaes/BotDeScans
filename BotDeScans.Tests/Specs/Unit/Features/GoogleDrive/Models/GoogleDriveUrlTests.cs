@@ -1,4 +1,4 @@
-namespace BotDeScans.Tests.Specs.Features.GoogleDrive.Models
+namespace BotDeScans.Tests.Specs.Unit.Features.GoogleDrive.Models
 {
     internal class GoogleDriveUrlTests
     {

@@ -5,10 +5,9 @@ using FluentResults;
 using FluentValidation;
 using Google.Apis.Drive.v3.Data;
 using Microsoft.Extensions.Configuration;
-using System.Reflection;
 using File = Google.Apis.Drive.v3.Data.File;
 
-namespace BotDeScans.Tests.Specs.Features.GoogleDrive;
+namespace BotDeScans.Tests.Specs.Unit.Features.GoogleDrive;
 
 public class GoogleDriveServiceTests : UnitTest, IDisposable
 {
@@ -28,9 +27,7 @@ public class GoogleDriveServiceTests : UnitTest, IDisposable
 
     public void Dispose()
     {
-        typeof(GoogleDriveService)
-            .GetField("_baseFolderId", BindingFlags.NonPublic | BindingFlags.Static)!
-            .SetValue(null, null);
+        GoogleDriveService.BaseFolderId = null!;
 
         GC.SuppressFinalize(this);
     }
@@ -41,15 +38,13 @@ public class GoogleDriveServiceTests : UnitTest, IDisposable
         public void GivenNotDefinedBaseFolderShouldThrowException()
         {
             Func<string> call = () => GoogleDriveService.BaseFolderId;
-            call.Should().Throw<InvalidOperationException>().WithMessage("Base folder not set.");
+            call.Should().ThrowExactly<InvalidOperationException>().WithMessage("Base folder not set.");
         }
 
         [Fact]
         public void GivenDefinedBaseFolderShouldNotThrowException()
         {
-            typeof(GoogleDriveService)
-                .GetField("_baseFolderId", BindingFlags.NonPublic | BindingFlags.Static)!
-                .SetValue(null, fixture.Create<string>());
+            GoogleDriveService.BaseFolderId = fixture.Create<string>();
 
             Func<string> call = () => GoogleDriveService.BaseFolderId;
             call.Should().NotThrow();

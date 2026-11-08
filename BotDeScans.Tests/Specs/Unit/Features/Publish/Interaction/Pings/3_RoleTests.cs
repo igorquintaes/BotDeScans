@@ -6,7 +6,7 @@ using Microsoft.Extensions.Configuration;
 using Remora.Discord.API.Abstractions.Objects;
 using Remora.Rest.Core;
 
-namespace BotDeScans.Tests.Specs.Features.Publish.Interaction.Pings;
+namespace BotDeScans.Tests.Specs.Unit.Features.Publish.Interaction.Pings;
 
 public class RoleTests : UnitTest
 {

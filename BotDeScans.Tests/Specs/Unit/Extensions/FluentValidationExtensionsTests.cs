@@ -1,7 +1,7 @@
 using BotDeScans.App.Extensions;
 using FluentValidation.Results;
 
-namespace BotDeScans.Tests.Specs.Extensions;
+namespace BotDeScans.Tests.Specs.Unit.Extensions;
 
 public abstract class FluentValidationExtensionsTests : UnitTest
 {

@@ -5,7 +5,7 @@ using BotDeScans.App.Features.Publish.Interaction.Steps.Enums;
 using BotDeScans.App.Models.Entities.Enums;
 using FluentResults;
 
-namespace BotDeScans.Tests.Specs.Features.Publish.Interaction;
+namespace BotDeScans.Tests.Specs.Unit.Features.Publish.Interaction;
 
 public class HandlerTests : UnitTest
 {

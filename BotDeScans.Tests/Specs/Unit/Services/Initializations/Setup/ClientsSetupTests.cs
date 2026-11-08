@@ -4,7 +4,7 @@ using FluentResults;
 using FluentValidation;
 using FluentValidation.Results;
 
-namespace BotDeScans.Tests.Specs.Services.Initializations.Setup;
+namespace BotDeScans.Tests.Specs.Unit.Services.Initializations.Setup;
 
 public class ClientsSetupTests : UnitTest
 {

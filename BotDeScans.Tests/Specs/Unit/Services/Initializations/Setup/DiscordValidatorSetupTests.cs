@@ -6,7 +6,7 @@ using FluentValidation;
 using FluentValidation.Results;
 using FluentValidation.TestHelper;
 
-namespace BotDeScans.Tests.Specs.Services.Initializations.Setup;
+namespace BotDeScans.Tests.Specs.Unit.Services.Initializations.Setup;
 
 public class DiscordValidatorSetupTests : UnitTest
 {

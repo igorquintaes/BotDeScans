@@ -2,7 +2,7 @@ using BotDeScans.App.Extensions;
 using Remora.Discord.API.Abstractions.Objects;
 using Remora.Rest.Core;
 
-namespace BotDeScans.Tests.Specs.Extensions;
+namespace BotDeScans.Tests.Specs.Unit.Extensions;
 
 public class RoleExtensionsTests : UnitTest
 {

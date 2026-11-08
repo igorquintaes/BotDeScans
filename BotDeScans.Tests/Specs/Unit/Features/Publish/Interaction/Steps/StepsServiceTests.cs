@@ -5,7 +5,7 @@ using FluentAssertions.Execution;
 using System.Reflection;
 using System.Runtime.CompilerServices;
 
-namespace BotDeScans.Tests.Specs.Features.Publish.Interaction.Steps;
+namespace BotDeScans.Tests.Specs.Unit.Features.Publish.Interaction.Steps;
 
 public class StepsServiceTests : UnitTest
 {

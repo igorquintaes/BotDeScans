@@ -3,7 +3,7 @@ using BotDeScans.App.Models.Entities.Enums;
 using Microsoft.Extensions.Configuration;
 using static FluentAssertions.FluentActions;
 
-namespace BotDeScans.Tests.Specs.Extensions;
+namespace BotDeScans.Tests.Specs.Unit.Extensions;
 
 public abstract class ConfigurationExtensionsTests : UnitTest
 {

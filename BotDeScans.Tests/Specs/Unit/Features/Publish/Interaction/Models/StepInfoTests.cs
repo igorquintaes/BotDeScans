@@ -3,7 +3,7 @@ using BotDeScans.App.Features.Publish.Interaction.Steps;
 using BotDeScans.App.Features.Publish.Interaction.Steps.Enums;
 using FluentResults;
 
-namespace BotDeScans.Tests.Specs.Features.Publish.Interaction.Models;
+namespace BotDeScans.Tests.Specs.Unit.Features.Publish.Interaction.Models;
 
 public class StepInfoTests : UnitTest
 {

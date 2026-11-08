@@ -1,7 +1,7 @@
 using BotDeScans.App.Features.Publish.Interaction.Pings;
 using Microsoft.Extensions.Configuration;
 
-namespace BotDeScans.Tests.Specs.Features.Publish.Interaction.Pings;
+namespace BotDeScans.Tests.Specs.Unit.Features.Publish.Interaction.Pings;
 
 public class EveryoneTests : UnitTest
 {

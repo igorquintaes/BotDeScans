@@ -1,7 +1,7 @@
 using BotDeScans.App.Extensions;
 using Remora.Results;
 
-namespace BotDeScans.Tests.Specs.Extensions;
+namespace BotDeScans.Tests.Specs.Unit.Extensions;
 
 public abstract class RemoraResultExtensionsTests : UnitTest
 {

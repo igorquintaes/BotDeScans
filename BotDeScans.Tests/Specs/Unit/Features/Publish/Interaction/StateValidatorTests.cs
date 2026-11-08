@@ -9,7 +9,7 @@ using FluentResults;
 using FluentValidation;
 using FluentValidation.TestHelper;
 
-namespace BotDeScans.Tests.Specs.Features.Publish.Interaction;
+namespace BotDeScans.Tests.Specs.Unit.Features.Publish.Interaction;
 
 public class StateValidatorTests : UnitTest
 {

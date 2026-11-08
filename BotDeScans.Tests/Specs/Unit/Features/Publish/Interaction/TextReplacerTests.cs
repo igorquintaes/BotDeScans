@@ -2,7 +2,7 @@ using BotDeScans.App.Features.Publish.Interaction;
 using BotDeScans.App.Models.DTOs;
 using BotDeScans.App.Models.Entities;
 
-namespace BotDeScans.Tests.Specs.Features.Publish.Interaction;
+namespace BotDeScans.Tests.Specs.Unit.Features.Publish.Interaction;
 
 public class TextReplacerTests : UnitTest
 {

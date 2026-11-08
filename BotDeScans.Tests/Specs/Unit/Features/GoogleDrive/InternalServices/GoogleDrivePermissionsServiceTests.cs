@@ -4,7 +4,7 @@ using FluentResults;
 using Google.Apis.Drive.v3;
 using Google.Apis.Drive.v3.Data;
 using static Google.Apis.Drive.v3.PermissionsResource;
-namespace BotDeScans.Tests.Specs.Features.GoogleDrive.InternalServices;
+namespace BotDeScans.Tests.Specs.Unit.Features.GoogleDrive.InternalServices;
 
 public class GoogleDrivePermissionsServiceTests : UnitTest
 {

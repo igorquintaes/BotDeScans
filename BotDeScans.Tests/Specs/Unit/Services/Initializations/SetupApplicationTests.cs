@@ -4,7 +4,7 @@ using FluentResults;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 
-namespace BotDeScans.Tests.Specs.Services.Initializations;
+namespace BotDeScans.Tests.Specs.Unit.Services.Initializations;
 
 public class SetupApplicationTests : UnitTest
 {

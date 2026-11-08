@@ -7,7 +7,7 @@ using BotDeScans.App.Models.Entities.Enums;
 using FluentResults;
 using File = Google.Apis.Drive.v3.Data.File;
 
-namespace BotDeScans.Tests.Specs.Features.Publish.Interaction.Steps;
+namespace BotDeScans.Tests.Specs.Unit.Features.Publish.Interaction.Steps;
 
 public class UploadPdfGoogleDriveStepTests : UnitTest
 {

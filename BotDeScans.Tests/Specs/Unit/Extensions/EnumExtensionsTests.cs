@@ -3,7 +3,7 @@ using BotDeScans.App.Extensions;
 using System.ComponentModel;
 using static FluentAssertions.FluentActions;
 
-namespace BotDeScans.Tests.Specs.Extensions;
+namespace BotDeScans.Tests.Specs.Unit.Extensions;
 
 public class EnumExtensionsTests
 {

@@ -7,7 +7,7 @@ using FluentResults;
 using Microsoft.Extensions.Configuration;
 using System.Reflection;
 
-namespace BotDeScans.Tests.Specs.Services.Initializations.Factories;
+namespace BotDeScans.Tests.Specs.Unit.Services.Initializations.Factories;
 
 public class CapivaraTradutorClientFactoryTests : UnitTest
 {

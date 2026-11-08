@@ -7,7 +7,7 @@ using Box.Sdk.Gen.Schemas;
 using Microsoft.Extensions.Configuration;
 using Task = System.Threading.Tasks.Task;
 
-namespace BotDeScans.Tests.Specs.Services.Initializations.Factories;
+namespace BotDeScans.Tests.Specs.Unit.Services.Initializations.Factories;
 
 public abstract class BoxClientFactoryTests : UnitTest
 {

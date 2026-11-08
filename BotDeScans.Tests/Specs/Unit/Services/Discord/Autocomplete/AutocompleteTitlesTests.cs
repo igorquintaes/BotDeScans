@@ -4,7 +4,7 @@ using BotDeScans.App.Models.Entities;
 using BotDeScans.App.Services.Discord.Autocomplete;
 using FluentAssertions.Execution;
 
-namespace BotDeScans.Tests.Specs.Services.Discord.Autocomplete;
+namespace BotDeScans.Tests.Specs.Unit.Services.Discord.Autocomplete;
 
 public class AutocompleteTitlesTests : UnitPersistenceTest
 {

@@ -153,7 +153,7 @@ public class TitleRepositoryTests(DatabaseTestFixture databaseTestFixture)
         new()
         {
             Title = title,
-            Key =  (ExternalReference)index,
+            Key = (ExternalReference)index,
             Value = $"value_{index}"
         };
 

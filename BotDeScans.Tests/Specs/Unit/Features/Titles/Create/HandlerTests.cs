@@ -7,7 +7,7 @@ using FluentValidation;
 using Remora.Discord.API.Abstractions.Objects;
 using Remora.Rest.Core;
 
-namespace BotDeScans.Tests.Specs.Features.Titles.Create;
+namespace BotDeScans.Tests.Specs.Unit.Features.Titles.Create;
 
 public class HandlerTests : UnitTest
 {

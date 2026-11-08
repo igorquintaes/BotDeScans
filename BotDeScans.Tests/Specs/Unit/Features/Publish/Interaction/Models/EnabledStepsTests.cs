@@ -6,7 +6,7 @@ using BotDeScans.App.Models.Entities.Enums;
 using FluentAssertions.Execution;
 using System.Drawing;
 
-namespace BotDeScans.Tests.Specs.Features.Publish.Interaction.Models;
+namespace BotDeScans.Tests.Specs.Unit.Features.Publish.Interaction.Models;
 
 public class EnabledStepsTests : UnitTest
 {

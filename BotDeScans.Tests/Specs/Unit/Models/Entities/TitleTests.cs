@@ -1,7 +1,7 @@
 using BotDeScans.App.Models.Entities;
 using BotDeScans.App.Models.Entities.Enums;
 
-namespace BotDeScans.Tests.Specs.Models.Entities;
+namespace BotDeScans.Tests.Specs.Unit.Models.Entities;
 
 public class TitleTests : UnitTest
 {

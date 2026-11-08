@@ -1,5 +1,5 @@
-using System.Runtime.CompilerServices;
 using AutoFixture.AutoFakeItEasy;
+using System.Runtime.CompilerServices;
 using Xunit.Sdk;
 
 [assembly: Parallelization(Mode = ParallelMode.None)]

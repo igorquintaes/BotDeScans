@@ -5,7 +5,7 @@ using FluentResults;
 using FluentValidation.TestHelper;
 using Remora.Discord.API.Abstractions.Objects;
 
-namespace BotDeScans.Tests.Specs.Models.Entities;
+namespace BotDeScans.Tests.Specs.Unit.Models.Entities;
 
 public class TitleValidatorTests : UnitTest
 {

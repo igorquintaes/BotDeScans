@@ -3,7 +3,7 @@ using BotDeScans.App.Services.Wrappers;
 using Remora.Rest.Core;
 using Remora.Results;
 
-namespace BotDeScans.Tests.Specs.Services.Initializations.Setup;
+namespace BotDeScans.Tests.Specs.Unit.Services.Initializations.Setup;
 
 public class DiscordSlashCommandsSetupTests : UnitTest
 {

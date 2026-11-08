@@ -5,7 +5,7 @@ using Remora.Discord.API.Objects;
 using Remora.Discord.Commands.Feedback.Messages;
 using Remora.Discord.Commands.Feedback.Services;
 
-namespace BotDeScans.Tests.Specs.Features.Titles.Update;
+namespace BotDeScans.Tests.Specs.Unit.Features.Titles.Update;
 
 public class InteractionsTests : UnitTest
 {

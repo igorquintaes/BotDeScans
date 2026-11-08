@@ -5,7 +5,7 @@ using FluentResults;
 using System.Net;
 using static BotDeScans.App.Services.CapivaraTradutor.InternalServices.CapivaraTradutorUploadService;
 
-namespace BotDeScans.Tests.Specs.Services.CapivaraTradutor.InternalServices;
+namespace BotDeScans.Tests.Specs.Unit.Services.CapivaraTradutor.InternalServices;
 
 public class CapivaraTradutorUploadServiceTests : UnitTest
 {

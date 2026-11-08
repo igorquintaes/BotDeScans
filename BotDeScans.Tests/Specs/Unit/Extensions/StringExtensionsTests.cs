@@ -1,5 +1,5 @@
 using BotDeScans.App.Extensions;
-namespace BotDeScans.Tests.Specs.Extensions;
+namespace BotDeScans.Tests.Specs.Unit.Extensions;
 
 public abstract class StringExtensionsTests : UnitTest
 {

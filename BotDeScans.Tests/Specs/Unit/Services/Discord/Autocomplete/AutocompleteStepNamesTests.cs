@@ -2,7 +2,7 @@ using BotDeScans.App.Extensions;
 using BotDeScans.App.Models.Entities.Enums;
 using BotDeScans.App.Services.Discord.Autocomplete;
 
-namespace BotDeScans.Tests.Specs.Services.Discord.Autocomplete;
+namespace BotDeScans.Tests.Specs.Unit.Services.Discord.Autocomplete;
 
 public class AutocompleteStepNamesTests : UnitTest
 {

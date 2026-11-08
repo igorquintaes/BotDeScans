@@ -1,7 +1,7 @@
 using BotDeScans.App.Features.Mega.InternalServices;
 using CG.Web.MegaApiClient;
 using FluentAssertions.Execution;
-namespace BotDeScans.Tests.Specs.Features.Mega.InternalServices;
+namespace BotDeScans.Tests.Specs.Unit.Features.Mega.InternalServices;
 
 public class MegaResourcesServiceTests : UnitTest
 {

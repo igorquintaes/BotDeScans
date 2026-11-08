@@ -3,7 +3,7 @@ using BotDeScans.App.Features.Publish.Interaction.Steps.Enums;
 using BotDeScans.App.Models.Entities.Enums;
 using BotDeScans.App.Services.Initializations.Setups;
 
-namespace BotDeScans.Tests.Specs.Services.Initializations.Setup;
+namespace BotDeScans.Tests.Specs.Unit.Services.Initializations.Setup;
 
 public class StepsSetupTests : UnitTest
 {

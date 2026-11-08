@@ -3,10 +3,9 @@ using BotDeScans.App.Features.GoogleDrive.InternalServices;
 using BotDeScans.App.Services.Initializations;
 using FluentAssertions.Execution;
 using FluentResults;
-using System.Reflection;
 using File = Google.Apis.Drive.v3.Data.File;
 
-namespace BotDeScans.Tests.Specs.Services.Initializations;
+namespace BotDeScans.Tests.Specs.Unit.Services.Initializations;
 
 public class GoogleDriveInitializerTests : UnitTest
 {
@@ -37,9 +36,7 @@ public class GoogleDriveInitializerTests : UnitTest
 
         public void Dispose()
         {
-            typeof(GoogleDriveService)
-                .GetField("_baseFolderId", BindingFlags.NonPublic | BindingFlags.Static)!
-                .SetValue(null, null);
+            GoogleDriveService.BaseFolderId = null!;
 
             GC.SuppressFinalize(this);
         }

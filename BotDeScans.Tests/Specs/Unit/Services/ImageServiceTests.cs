@@ -3,7 +3,7 @@ using Microsoft.Extensions.Configuration;
 using SkiaSharp;
 using System.Reflection;
 
-namespace BotDeScans.Tests.Specs.Services;
+namespace BotDeScans.Tests.Specs.Unit.Services;
 
 public class ImageServiceTests : UnitTest, IDisposable
 {

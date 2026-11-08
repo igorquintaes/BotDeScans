@@ -5,7 +5,7 @@ using Google.Apis.Blogger.v3.Data;
 using Microsoft.Extensions.Configuration;
 using static Google.Apis.Blogger.v3.PostsResource;
 
-namespace BotDeScans.Tests.Specs.Services;
+namespace BotDeScans.Tests.Specs.Unit.Services;
 
 public class GoogleBloggerServiceTests : UnitTest
 {

@@ -1,6 +1,6 @@
 using BotDeScans.App.Builders;
 
-namespace BotDeScans.Tests.Specs.Builders;
+namespace BotDeScans.Tests.Specs.Unit.Builders;
 
 public abstract class FeedbackMessageOptionsBuilderTests : UnitTest
 {

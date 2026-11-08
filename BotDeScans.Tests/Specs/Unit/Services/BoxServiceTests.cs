@@ -6,7 +6,7 @@ using Box.Sdk.Gen.Schemas;
 using FluentResults;
 using Task = System.Threading.Tasks.Task;
 
-namespace BotDeScans.Tests.Specs.Services;
+namespace BotDeScans.Tests.Specs.Unit.Services;
 
 public class BoxServiceTests : UnitTest
 {

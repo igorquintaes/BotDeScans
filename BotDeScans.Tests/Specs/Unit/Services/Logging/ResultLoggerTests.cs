@@ -4,7 +4,7 @@ using Microsoft.Extensions.Logging;
 using Serilog.Events;
 using ILogger = Serilog.ILogger;
 
-namespace BotDeScans.Tests.Specs.Services.Logging;
+namespace BotDeScans.Tests.Specs.Unit.Services.Logging;
 
 public class ResultLoggerTests : UnitTest
 {

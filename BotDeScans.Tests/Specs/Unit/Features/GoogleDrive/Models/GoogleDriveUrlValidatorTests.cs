@@ -5,7 +5,7 @@ using FluentValidation;
 using FluentValidation.TestHelper;
 using File = Google.Apis.Drive.v3.Data.File;
 
-namespace BotDeScans.Tests.Specs.Features.GoogleDrive.Models;
+namespace BotDeScans.Tests.Specs.Unit.Features.GoogleDrive.Models;
 
 public class GoogleDriveUrlValidatorTests : UnitTest
 {

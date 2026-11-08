@@ -8,7 +8,7 @@ using FluentValidation.Results;
 using Remora.Discord.API.Abstractions.Objects;
 using Remora.Rest.Core;
 
-namespace BotDeScans.Tests.Specs.Features.Titles.Update;
+namespace BotDeScans.Tests.Specs.Unit.Features.Titles.Update;
 
 public class HandlerTests : UnitTest
 {

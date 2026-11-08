@@ -4,7 +4,7 @@ using SkiaSharp;
 using System.Globalization;
 using System.Reflection;
 
-namespace BotDeScans.Tests.Specs.Services;
+namespace BotDeScans.Tests.Specs.Unit.Services;
 
 public class ChartServiceTests : UnitTest
 {

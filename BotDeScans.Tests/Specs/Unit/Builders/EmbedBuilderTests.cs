@@ -4,7 +4,7 @@ using FluentResults;
 using Remora.Discord.API.Objects;
 using System.Drawing;
 
-namespace BotDeScans.Tests.Specs.Builders;
+namespace BotDeScans.Tests.Specs.Unit.Builders;
 
 public class EmbedBuilderTests : UnitTest
 {

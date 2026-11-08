@@ -2,7 +2,7 @@ using BotDeScans.App.Services.Initializations.Factories;
 using BotDeScans.App.Services.Initializations.FactoriesValidators;
 using FluentValidation.TestHelper;
 
-namespace BotDeScans.Tests.Specs.Services.Initializations.FactoriesValidators;
+namespace BotDeScans.Tests.Specs.Unit.Services.Initializations.FactoriesValidators;
 
 public class MegaClientFactoryValidatorTests : UnitTest
 {

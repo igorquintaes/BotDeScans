@@ -12,7 +12,7 @@ using Remora.Discord.Commands.Feedback.Messages;
 using Remora.Discord.Commands.Feedback.Services;
 using Remora.Rest.Core;
 
-namespace BotDeScans.Tests.Specs.Features.Publish.Interaction;
+namespace BotDeScans.Tests.Specs.Unit.Features.Publish.Interaction;
 
 public class DiscordPublisherTests : UnitTest, IDisposable
 {

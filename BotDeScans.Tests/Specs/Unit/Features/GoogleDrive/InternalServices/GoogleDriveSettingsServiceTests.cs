@@ -7,7 +7,7 @@ using Google.Apis.Drive.v3.Data;
 using static Google.Apis.Drive.v3.AboutResource;
 using static Google.Apis.Drive.v3.Data.About;
 
-namespace BotDeScans.Tests.Specs.Features.GoogleDrive.InternalServices;
+namespace BotDeScans.Tests.Specs.Unit.Features.GoogleDrive.InternalServices;
 
 public class GoogleDriveSettingsServiceTests : UnitTest
 {

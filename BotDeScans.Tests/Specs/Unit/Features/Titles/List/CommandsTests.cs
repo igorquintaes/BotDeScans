@@ -8,7 +8,7 @@ using Remora.Discord.Commands.Feedback.Services;
 using Remora.Discord.Extensions.Errors;
 using Remora.Rest.Core;
 
-namespace BotDeScans.Tests.Specs.Features.Titles.List;
+namespace BotDeScans.Tests.Specs.Unit.Features.Titles.List;
 
 public class CommandsTests : UnitTest
 {

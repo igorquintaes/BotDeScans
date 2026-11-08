@@ -3,7 +3,7 @@ using BotDeScans.App.Models.DTOs;
 using FluentValidation;
 using FluentValidation.TestHelper;
 
-namespace BotDeScans.Tests.Specs.Models.DTOs;
+namespace BotDeScans.Tests.Specs.Unit.Models.DTOs;
 
 public class InfoValidatorTests : UnitTest
 {

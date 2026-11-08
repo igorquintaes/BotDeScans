@@ -1,6 +1,6 @@
 using BotDeScans.App.Models.DTOs;
 
-namespace BotDeScans.Tests.Specs.Models.DTOs;
+namespace BotDeScans.Tests.Specs.Unit.Models.DTOs;
 
 public class InfoTests : UnitTest
 {

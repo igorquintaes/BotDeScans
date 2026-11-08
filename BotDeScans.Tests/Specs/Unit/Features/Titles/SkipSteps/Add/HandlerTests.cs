@@ -4,7 +4,7 @@ using BotDeScans.App.Infra.Repositories;
 using BotDeScans.App.Models.Entities;
 using BotDeScans.App.Models.Entities.Enums;
 
-namespace BotDeScans.Tests.Specs.Features.Titles.SkipSteps.Add;
+namespace BotDeScans.Tests.Specs.Unit.Features.Titles.SkipSteps.Add;
 
 public class HandlerTests : UnitTest
 {

@@ -7,7 +7,7 @@ using Remora.Discord.API.Objects;
 using Remora.Rest.Core;
 using Remora.Results;
 
-namespace BotDeScans.Tests.Specs.Services.Discord;
+namespace BotDeScans.Tests.Specs.Unit.Services.Discord;
 
 public class RolesServiceTests : UnitTest
 {

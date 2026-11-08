@@ -10,7 +10,7 @@ using Remora.Discord.API.Objects;
 using Remora.Discord.Commands.Feedback.Messages;
 using Remora.Discord.Extensions.Errors;
 
-namespace BotDeScans.Tests.Specs.Features.Mega.Discord;
+namespace BotDeScans.Tests.Specs.Unit.Features.Mega.Discord;
 
 public class MegaCommandsTests : UnitTest
 {

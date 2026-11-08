@@ -3,7 +3,7 @@ using BotDeScans.App.Infra.Repositories;
 using BotDeScans.App.Models.Entities;
 using FluentAssertions.Execution;
 
-namespace BotDeScans.Tests.Specs.Features.References.List;
+namespace BotDeScans.Tests.Specs.Unit.Features.References.List;
 
 public abstract class HandlerTests : UnitTest
 {

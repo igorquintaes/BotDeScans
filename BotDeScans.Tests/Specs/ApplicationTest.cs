@@ -7,7 +7,7 @@ using WireMock.Server;
 namespace BotDeScans.Tests.Specs;
 
 [Collection(ApplicationTestCollection.Name)]
-public abstract class ApplicationTest(ApplicationTestFixture fixture) :  Test, IAsyncLifetime
+public abstract class ApplicationTest(ApplicationTestFixture fixture) : Test, IAsyncLifetime
 {
     protected WireMockServer DiscordServer = fixture.DiscordServer;
     protected IServiceScope Scope { get; private set; } = fixture.Host.Services.CreateScope()!;

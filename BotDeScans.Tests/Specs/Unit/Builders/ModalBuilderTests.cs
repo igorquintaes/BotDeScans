@@ -1,7 +1,7 @@
 using BotDeScans.App.Builders;
 using Remora.Discord.API.Abstractions.Objects;
 
-namespace BotDeScans.Tests.Specs.Builders;
+namespace BotDeScans.Tests.Specs.Unit.Builders;
 
 public class ModalBuilderTests : UnitTest
 {

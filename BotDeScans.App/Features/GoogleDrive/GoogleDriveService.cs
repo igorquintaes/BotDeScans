@@ -22,13 +22,11 @@ public class GoogleDriveService(
         $"Já existe um arquivo com o nome especificado. " +
         $"Se desejar sobrescrever o arquivo existente, altere a configuração {REWRITE_KEY} para permitir.";
 
-    private static string _baseFolderId = null!;
-
     public static string BaseFolderId
     {
-        get => _baseFolderId ?? throw new InvalidOperationException("Base folder not set.");
-        set => _baseFolderId = value;
-    }
+        get => field ?? throw new InvalidOperationException("Base folder not set.");
+        set;
+    } = null!;
 
     public virtual async Task<Result<File>> GetOrCreateFolderAsync(
         string folderName,

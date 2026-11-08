@@ -7,7 +7,7 @@ using Remora.Discord.Extensions.Errors;
 using Remora.Results;
 using static BotDeScans.App.Features.Titles.SkipSteps.Commands;
 
-namespace BotDeScans.Tests.Specs.Features.Titles.SkipSteps;
+namespace BotDeScans.Tests.Specs.Unit.Features.Titles.SkipSteps;
 
 public abstract class CommandsTests : UnitTest
 {

@@ -10,7 +10,7 @@ using Remora.Discord.Commands.Contexts;
 using Remora.Rest.Core;
 using Remora.Results;
 
-namespace BotDeScans.Tests.Specs.Services.Discord.Conditions;
+namespace BotDeScans.Tests.Specs.Unit.Services.Discord.Conditions;
 
 public class RoleAuthorizeConditionTests : UnitTest
 {

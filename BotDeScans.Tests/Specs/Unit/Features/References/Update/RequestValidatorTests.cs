@@ -3,7 +3,7 @@ using BotDeScans.App.Features.References.Update;
 using BotDeScans.App.Models.Entities;
 using FluentValidation.TestHelper;
 
-namespace BotDeScans.Tests.Specs.Features.References.Update;
+namespace BotDeScans.Tests.Specs.Unit.Features.References.Update;
 
 public abstract class RequestValidatorTests : UnitTest
 {

@@ -1,7 +1,7 @@
 using BotDeScans.App.Features.GoogleDrive;
 using BotDeScans.App.Features.GoogleDrive.InternalServices;
 
-namespace BotDeScans.Tests.Specs.Features.GoogleDrive.InternalServices;
+namespace BotDeScans.Tests.Specs.Unit.Features.GoogleDrive.InternalServices;
 
 public class GoogleDriveQueryBuilderTests : UnitTest, IDisposable
 {

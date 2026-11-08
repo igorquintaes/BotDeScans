@@ -10,7 +10,7 @@ using Remora.Discord.Commands.Feedback.Messages;
 using Remora.Discord.Commands.Feedback.Services;
 using Remora.Results;
 
-namespace BotDeScans.Tests.Specs.Features.Titles.Update;
+namespace BotDeScans.Tests.Specs.Unit.Features.Titles.Update;
 
 public class CommandsTests : UnitTest
 {

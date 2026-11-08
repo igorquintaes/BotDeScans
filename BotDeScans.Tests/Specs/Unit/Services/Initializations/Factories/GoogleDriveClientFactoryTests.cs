@@ -4,7 +4,7 @@ using FluentResults;
 using Google.Apis.Drive.v3;
 using Google.Apis.Drive.v3.Data;
 
-namespace BotDeScans.Tests.Specs.Services.Initializations.Factories;
+namespace BotDeScans.Tests.Specs.Unit.Services.Initializations.Factories;
 
 public class GoogleDriveClientFactoryTests : UnitTest
 {

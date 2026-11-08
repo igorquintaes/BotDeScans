@@ -1,7 +1,7 @@
 using BotDeScans.App.Features.References.Update;
 using BotDeScans.App.Models.Entities;
 
-namespace BotDeScans.Tests.Specs.Features.References.Update;
+namespace BotDeScans.Tests.Specs.Unit.Features.References.Update;
 
 public class RequestTests : UnitTest
 {

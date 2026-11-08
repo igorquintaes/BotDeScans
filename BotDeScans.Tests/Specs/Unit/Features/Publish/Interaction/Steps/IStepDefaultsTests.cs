@@ -4,7 +4,7 @@ using BotDeScans.App.Features.Publish.Interaction.Steps.Enums;
 using BotDeScans.App.Models.Entities.Enums;
 using FluentResults;
 
-namespace BotDeScans.Tests.Specs.Features.Publish.Interaction.Steps;
+namespace BotDeScans.Tests.Specs.Unit.Features.Publish.Interaction.Steps;
 
 public class IStepDefaultsTests : UnitTest
 {

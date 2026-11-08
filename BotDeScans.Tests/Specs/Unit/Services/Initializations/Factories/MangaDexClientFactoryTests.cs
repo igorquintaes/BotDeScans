@@ -3,7 +3,7 @@ using BotDeScans.App.Services.Initializations.Factories;
 using MangaDexSharp;
 using Microsoft.Extensions.Configuration;
 
-namespace BotDeScans.Tests.Specs.Services.Initializations.Factories;
+namespace BotDeScans.Tests.Specs.Unit.Services.Initializations.Factories;
 
 public class MangaDexClientFactoryTests : UnitTest
 {

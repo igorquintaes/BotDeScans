@@ -2,7 +2,7 @@ using BotDeScans.App.Services;
 using FluentAssertions.Execution;
 using System.Reflection;
 
-namespace BotDeScans.Tests.Specs.Services;
+namespace BotDeScans.Tests.Specs.Unit.Services;
 
 public class FileReleaseServiceTests : UnitTest
 {

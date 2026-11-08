@@ -2,7 +2,7 @@ using BotDeScans.App.Services.Logging;
 using Remora.Results;
 using Serilog;
 
-namespace BotDeScans.Tests.Specs.Services.Logging;
+namespace BotDeScans.Tests.Specs.Unit.Services.Logging;
 
 public class LogEventTests : UnitTest
 {

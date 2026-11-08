@@ -4,7 +4,7 @@ using Serilog.Events;
 using Serilog.Sinks.InMemory;
 using System.Net;
 
-namespace BotDeScans.Tests.Specs.Infra.Logging;
+namespace BotDeScans.Tests.Specs.Unit.Infra.Logging;
 
 public class HttpLoggingHandlerTests : UnitTest, IDisposable
 {

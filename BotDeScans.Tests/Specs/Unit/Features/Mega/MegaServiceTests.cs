@@ -3,7 +3,7 @@ using BotDeScans.App.Features.Mega.InternalServices;
 using CG.Web.MegaApiClient;
 using FluentResults;
 using Microsoft.Extensions.Configuration;
-namespace BotDeScans.Tests.Specs.Features.Mega;
+namespace BotDeScans.Tests.Specs.Unit.Features.Mega;
 
 public class MegaServiceTests : UnitTest
 {

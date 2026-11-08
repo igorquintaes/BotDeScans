@@ -5,7 +5,7 @@ using BotDeScans.App.Models.Entities;
 using BotDeScans.App.Models.Entities.Enums;
 using FluentAssertions.Execution;
 
-namespace BotDeScans.Tests.Specs.Features.Titles.SkipSteps.Remove;
+namespace BotDeScans.Tests.Specs.Unit.Features.Titles.SkipSteps.Remove;
 
 public class HandlerTests : UnitTest
 {

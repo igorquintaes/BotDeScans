@@ -8,7 +8,7 @@ using BotDeScans.App.Services;
 using FluentResults;
 using Google.Apis.Blogger.v3.Data;
 
-namespace BotDeScans.Tests.Specs.Features.Publish.Interaction.Steps;
+namespace BotDeScans.Tests.Specs.Unit.Features.Publish.Interaction.Steps;
 
 public class PublishBloggerStepTests : UnitTest
 {

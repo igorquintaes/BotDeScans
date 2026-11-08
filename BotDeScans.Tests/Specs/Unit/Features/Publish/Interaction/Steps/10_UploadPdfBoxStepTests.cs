@@ -8,7 +8,7 @@ using Box.Sdk.Gen.Schemas;
 using File = Box.Sdk.Gen.Schemas.File;
 using Task = System.Threading.Tasks.Task;
 
-namespace BotDeScans.Tests.Specs.Features.Publish.Interaction.Steps;
+namespace BotDeScans.Tests.Specs.Unit.Features.Publish.Interaction.Steps;
 
 public class UploadPdfBoxStepTests : UnitTest
 {

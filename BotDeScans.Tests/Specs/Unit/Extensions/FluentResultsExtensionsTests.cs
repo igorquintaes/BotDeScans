@@ -4,7 +4,7 @@ using Google;
 using System.Net;
 using System.Text.Json;
 
-namespace BotDeScans.Tests.Specs.Extensions;
+namespace BotDeScans.Tests.Specs.Unit.Extensions;
 
 public abstract class FluentResultsExtensionsTests : UnitTest
 {

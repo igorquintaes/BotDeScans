@@ -5,7 +5,7 @@ using FluentResults;
 using MangaDexSharp;
 using Microsoft.Extensions.Configuration;
 
-namespace BotDeScans.Tests.Specs.Services.MangaDex;
+namespace BotDeScans.Tests.Specs.Unit.Services.MangaDex;
 
 public class MangaDexServiceTests : UnitTest
 {

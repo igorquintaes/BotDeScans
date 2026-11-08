@@ -5,7 +5,7 @@ using Serilog.Events;
 using System.Linq.Expressions;
 using ILogger = Serilog.ILogger;
 
-namespace BotDeScans.Tests.Specs.Extensions;
+namespace BotDeScans.Tests.Specs.Unit.Extensions;
 
 public abstract class ObjectExtensionsTests : UnitTest
 {

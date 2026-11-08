@@ -3,7 +3,7 @@ using Remora.Discord.API.Abstractions.Gateway.Bidirectional;
 using Remora.Discord.API.Gateway.Bidirectional;
 using System.Text.Json;
 
-namespace BotDeScans.Tests.Specs.Services.Discord;
+namespace BotDeScans.Tests.Specs.Unit.Services.Discord;
 
 public class NullSafeHeartbeatConverterTests : UnitTest
 {

@@ -8,7 +8,7 @@ using Google.Apis.Drive.v3.Data;
 using static Google.Apis.Drive.v3.FilesResource;
 using File = Google.Apis.Drive.v3.Data.File;
 
-namespace BotDeScans.Tests.Specs.Features.GoogleDrive.InternalServices;
+namespace BotDeScans.Tests.Specs.Unit.Features.GoogleDrive.InternalServices;
 
 public class GoogleDriveResourcesServiceTests : UnitTest, IDisposable
 {

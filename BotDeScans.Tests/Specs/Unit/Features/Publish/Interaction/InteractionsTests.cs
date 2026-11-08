@@ -3,7 +3,7 @@ using BotDeScans.App.Models.DTOs;
 using FluentResults;
 using Remora.Discord.API.Abstractions.Objects;
 
-namespace BotDeScans.Tests.Specs.Features.Publish.Interaction;
+namespace BotDeScans.Tests.Specs.Unit.Features.Publish.Interaction;
 
 public class InteractionsTests : UnitTest
 {
