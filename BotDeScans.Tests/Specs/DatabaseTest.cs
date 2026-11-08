@@ -4,6 +4,7 @@ using Microsoft.EntityFrameworkCore.Infrastructure;
 
 namespace BotDeScans.Tests.Specs;
 
+[Trait("Category", "Database")]
 [Collection(DatabaseTestCollection.Name)]
 public abstract class DatabaseTest(DatabaseTestFixture databaseTestFixture) : Test, IAsyncLifetime
 {

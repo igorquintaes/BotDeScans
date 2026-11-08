@@ -1,36 +1,36 @@
-using BotDeScans.App.Infra;
+using BotDeScans.App.Infra.Repositories;
 using BotDeScans.App.Models;
-using Microsoft.EntityFrameworkCore;
 using Remora.Discord.API.Abstractions.Objects;
 using Remora.Discord.API.Objects;
 using Remora.Discord.Commands.Autocomplete;
 
 namespace BotDeScans.App.Services.Discord.Autocomplete;
 
-public class AutocompleteTitles(DatabaseContext databaseContext) : IAutocompleteProvider
+public class AutocompleteTitles(TitleRepository titleRepository) : IAutocompleteProvider
 {
     public const string ID = "autocomplete::titles";
-    public const int DISCORD_MAX_RESULTS = 25;
 
     public string Identity => ID;
 
     public async ValueTask<IReadOnlyList<IApplicationCommandOptionChoice>> GetSuggestionsAsync(
         IReadOnlyList<IApplicationCommandInteractionDataOption> options,
         string userInput,
-        CancellationToken ct = default)
+        CancellationToken cancellationToken = default)
     {
-        var titles = await databaseContext.Titles
-            .Where(x => EF.Functions.Like(x.Name, $"%{userInput}%"))
-            .OrderBy(x => x.Name)
-            .Take(DISCORD_MAX_RESULTS)
-            .ToArrayAsync(ct);
+        var titles = await titleRepository.GetTitlesByNameLikeAsync(
+            userInput,
+            Consts.DISCORD_CHOICE_MAX_RESULTS,
+            cancellationToken);
 
         return titles
             .Select(title => new ApplicationCommandOptionChoice(
-                Name: title.Name.Length > Consts.DISCORD_PARAM_MAX_LENGTH
-                    ? string.Concat(title.Name.AsSpan(0, Consts.DISCORD_PARAM_MAX_LENGTH - 3), "...")
-                    : title.Name,
+                Name: Truncate(title.Name, Consts.DISCORD_PARAM_MAX_LENGTH),
                 Value: title.Id))
             .ToList();
     }
+
+    private static string Truncate(string value, int maxLength) =>
+        value.Length > maxLength
+            ? string.Concat(value.AsSpan(0, maxLength - 3), "...")
+            : value;
 }

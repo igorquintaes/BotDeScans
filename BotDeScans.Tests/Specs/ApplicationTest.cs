@@ -6,6 +6,7 @@ using WireMock.Server;
 
 namespace BotDeScans.Tests.Specs;
 
+[Trait("Category", "Application")]
 [Collection(ApplicationTestCollection.Name)]
 public abstract class ApplicationTest(ApplicationTestFixture fixture) : Test, IAsyncLifetime
 {
