@@ -1,6 +1,6 @@
 ---
 description: Implements C# changes following existing project conventions
-mode: primary
+mode: default_agent
 temperature: 0.1
 steps: 30
 ---

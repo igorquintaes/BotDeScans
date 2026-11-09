@@ -46,47 +46,6 @@ public class AutocompleteTitlesTests : UnitTest
                    .Returns(databaseTitles);
         }
 
-        //[Fact]
-        //public async Task GivenEmptyRequestShouldReturnFirst25Titles()
-        //{
-        //    var expectedNames = databaseTitles.Take(25).Select(x => x.Name);
-        //    var expectedIds = databaseTitles.Take(25).Select(x => $"System.Int32: {x.Id}");
-
-        //    var result = await autocomplete.GetSuggestionsAsync(default!, string.Empty, cancellationToken);
-
-        //    result.Count.Should().Be(AutocompleteTitles.DISCORD_MAX_RESULTS);
-        //    result.Select(s => s.Name).Should().BeEquivalentTo(expectedNames);
-        //    result.Select(s => s.Value.ToString()).Should().BeEquivalentTo(expectedIds);
-        //}
-
-        //[Theory]
-        //[InlineData("title-1")]
-        //[InlineData("TITLE-1")]
-        //public async Task GivenMatchingRequestShouldReturnExpectedTitles(string query)
-        //{
-        //    var expectedNames = databaseTitles
-        //        .Where(x => x.Id is >= 10 and <= 19)
-        //        .Select(x => x.Name);
-        //    var expectedIds = databaseTitles
-        //        .Where(x => x.Id is >= 10 and <= 19)
-        //        .Select(x => $"System.Int32: {x.Id}");
-
-        //    var result = await autocomplete.GetSuggestionsAsync(default!, query, cancellationToken);
-
-        //    result.Count.Should().Be(10);
-        //    result.Select(s => s.Name).Should().BeEquivalentTo(expectedNames);
-        //    result.Select(s => s.Value.ToString()).Should().BeEquivalentTo(expectedIds);
-        //}
-
-        //[Fact]
-        //public async Task GivenNoneMatchingRequestShouldReturnEmpty()
-        //{
-        //    var query = "non-matching-title";
-        //    var result = await autocomplete.GetSuggestionsAsync(default!, query, cancellationToken);
-
-        //    result.Should().BeEmpty();
-        //}
-
         [Fact]
         public async Task GivenMaxTitleLenghtShouldReturnItWithoutEscaping()
         {
@@ -150,25 +109,5 @@ public class AutocompleteTitlesTests : UnitTest
             result.Select(s => s.Name).Should().BeEquivalentTo([expectedTitleReturn]);
             result.Select(s => s.Value.ToString()).Should().BeEquivalentTo([$"System.Int32: {titleId}"]);
         }
-
-        //[Fact]
-        //public async Task GivenDataShouldReturnOrderedResult()
-        //{
-        //    var newTitle = new Title
-        //    {
-        //        Id = 999,
-        //        Name = "000" + databaseTitles[0].Name,
-        //        DiscordRoleId = default
-        //    };
-
-        //    await fixture.Freeze<DatabaseContext>().Titles.AddAsync(newTitle, cancellationToken);
-        //    fixture.Freeze<DatabaseContext>().SaveChanges();
-
-        //    var result = await autocomplete.GetSuggestionsAsync(default!, string.Empty, cancellationToken);
-
-        //    using var _ = new AssertionScope();
-        //    result[0].Name.Should().Be(newTitle.Name);
-        //    result[1].Name.Should().Be(databaseTitles[0].Name);
-        //}
     }
 }
