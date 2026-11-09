@@ -27,6 +27,8 @@ public class TitleRepositoryTests(DatabaseTestFixture databaseTestFixture)
             Context.TitleReferences.AddRange([referenceA, referenceB]);
 
             await Context.SaveChangesAsync(cancellationToken);
+            Context.ChangeTracker.Clear();
+
             var result = await repository.GetTitleAsync(title.Id, cancellationToken);
 
             var expectedResult = new Title
@@ -47,7 +49,9 @@ public class TitleRepositoryTests(DatabaseTestFixture databaseTestFixture)
                 ]
             };
 
-            result.Should().BeEquivalentTo(expectedResult);
+            result.Should()
+                .BeEquivalentTo(expectedResult, options => options
+                .IgnoringCyclicReferences());
         }
 
         [Fact]
@@ -64,6 +68,7 @@ public class TitleRepositoryTests(DatabaseTestFixture databaseTestFixture)
             Context.Titles.Add(title);
 
             await Context.SaveChangesAsync(cancellationToken);
+            Context.ChangeTracker.Clear();
 
             var result = await repository.GetTitleAsync(title.Id, cancellationToken);
 
@@ -107,6 +112,7 @@ public class TitleRepositoryTests(DatabaseTestFixture databaseTestFixture)
             Context.TitleReferences.AddRange([referenceB_1, referenceB_2]);
 
             await Context.SaveChangesAsync(cancellationToken);
+            Context.ChangeTracker.Clear();
 
             var result = await repository.GetTitlesAsync(cancellationToken);
 
@@ -130,7 +136,9 @@ public class TitleRepositoryTests(DatabaseTestFixture databaseTestFixture)
                 }
             };
 
-            result.Should().BeEquivalentTo(expectedResult);
+            result.Should()
+                .BeEquivalentTo(expectedResult, options => options
+                .IgnoringCyclicReferences());
         }
 
         [Fact]
@@ -139,7 +147,6 @@ public class TitleRepositoryTests(DatabaseTestFixture databaseTestFixture)
             var result = await repository.GetTitlesAsync(cancellationToken);
             result.Should().BeEmpty();
         }
-
     }
 
     public class GetTitlesByNameLikeAsync(DatabaseTestFixture databaseTestFixture)
@@ -154,6 +161,7 @@ public class TitleRepositoryTests(DatabaseTestFixture databaseTestFixture)
 
             Context.Titles.AddRange([titleA, titleB, titleC]);
             await Context.SaveChangesAsync(cancellationToken);
+            Context.ChangeTracker.Clear();
 
             var result = await repository.GetTitlesByNameLikeAsync("Integration test title", Context.Titles.Count(), cancellationToken);
 
@@ -176,6 +184,7 @@ public class TitleRepositoryTests(DatabaseTestFixture databaseTestFixture)
 
             Context.Titles.AddRange([titleA, titleB, titleC]);
             await Context.SaveChangesAsync(cancellationToken);
+            Context.ChangeTracker.Clear();
 
             var result = await repository.GetTitlesByNameLikeAsync("Integration test title", Context.Titles.Count() - 1, cancellationToken);
 
@@ -191,6 +200,7 @@ public class TitleRepositoryTests(DatabaseTestFixture databaseTestFixture)
 
             Context.Titles.AddRange([titleC, titleA, titleB]);
             await Context.SaveChangesAsync(cancellationToken);
+            Context.ChangeTracker.Clear();
 
             var result = await repository.GetTitlesByNameLikeAsync("Integration test title", Context.Titles.Count(), cancellationToken);
 

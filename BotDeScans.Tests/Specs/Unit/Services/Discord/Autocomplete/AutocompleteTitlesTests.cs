@@ -25,11 +25,11 @@ public class AutocompleteTitlesTests : UnitTest
 
     public class GetSuggestionsAsync : AutocompleteTitlesTests
     {
-        private readonly IReadOnlyList<Title> databaseTitles;
+        private readonly IReadOnlyList<Title> titles;
 
         public GetSuggestionsAsync()
         {
-            databaseTitles = [.. Enumerable
+            titles = [.. Enumerable
                 .Range(1, 30)
                 .Select(i => new Title
                 {
@@ -38,12 +38,12 @@ public class AutocompleteTitlesTests : UnitTest
                     DiscordRoleId = (ulong)i
                 })];
 
-            A.CallTo( () =>fixture.Freeze<TitleRepository>()
+            A.CallTo(() => fixture.Freeze<TitleRepository>()
                    .GetTitlesByNameLikeAsync(
                         nameLike: A<string>.Ignored,
                         resultsQuantity: Consts.DISCORD_CHOICE_MAX_RESULTS,
                         cancellationToken))
-                   .Returns(databaseTitles);
+                   .Returns(titles);
         }
 
         [Fact]
@@ -53,7 +53,7 @@ public class AutocompleteTitlesTests : UnitTest
             var titleId = 50;
 
 
-            var databaseTitles = new List<Title>
+            var titles = new List<Title>
             {
                 new()
                 {
@@ -65,10 +65,10 @@ public class AutocompleteTitlesTests : UnitTest
 
             A.CallTo(() => fixture.Freeze<TitleRepository>()
                    .GetTitlesByNameLikeAsync(
-                        nameLike: A<string>.Ignored,
+                        nameLike: maxLenghtTitle,
                         resultsQuantity: Consts.DISCORD_CHOICE_MAX_RESULTS,
                         cancellationToken))
-                   .Returns(databaseTitles);
+                   .Returns(titles);
 
             var result = await autocomplete.GetSuggestionsAsync(default!, maxLenghtTitle, cancellationToken);
 
@@ -76,6 +76,8 @@ public class AutocompleteTitlesTests : UnitTest
             result.Count.Should().Be(1);
             result.Select(s => s.Name).Should().BeEquivalentTo([maxLenghtTitle]);
             result.Select(s => s.Value.ToString()).Should().BeEquivalentTo([$"System.Int32: {titleId}"]);
+
+
         }
 
         [Fact]
@@ -85,7 +87,7 @@ public class AutocompleteTitlesTests : UnitTest
             var expectedTitleReturn = "c".PadRight(Consts.DISCORD_PARAM_MAX_LENGTH - 3, 'a') + "...";
             var titleId = 50;
 
-            var databaseTitles = new List<Title>
+            var titles = new List<Title>
             {
                 new()
                 {
@@ -97,10 +99,10 @@ public class AutocompleteTitlesTests : UnitTest
 
             A.CallTo(() => fixture.Freeze<TitleRepository>()
                    .GetTitlesByNameLikeAsync(
-                        nameLike: A<string>.Ignored,
+                        nameLike: aboveMaxTitleLenght,
                         resultsQuantity: Consts.DISCORD_CHOICE_MAX_RESULTS,
                         cancellationToken))
-                   .Returns(databaseTitles);
+                   .Returns(titles);
 
             var result = await autocomplete.GetSuggestionsAsync(default!, aboveMaxTitleLenght, cancellationToken);
 
