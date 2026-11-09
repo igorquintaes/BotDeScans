@@ -1,0 +1,54 @@
+{
+  "$schema": "https://opencode.ai/config.json",
+  "model": "openapi/qwen25-coder",
+  "instructions": [
+    ".opencode/instructions/development.md"
+  ],
+  "providers": {
+    "openapi": {
+      "name": "llama.cpp",
+      "package": "@opencode/ai/providers/openai-compatible",
+      "settings": {
+        "baseURL": "http://127.0.0.1:8080/v1",
+        "timeout": 900000,
+        "headerTimeout": 900000,
+        "chunkTimeout": false
+      },
+      "models": {
+        "qwen25-coder": {
+          "name": "Qwen2.5-Coder 7B",
+          "modelID": "C:\\Users\\Striter\\.cache\\huggingface\\hub\\models--Qwen--Qwen2.5-Coder-7B-Instruct-GGUF\\snapshots\\13fb94bfda8c8cf22497dc57b78f391a9acb426a\\qwen2.5-coder-7b-instruct-q4_k_m-00001-of-00002.gguf",
+          "capabilities": {
+            "tools": true,
+            "input": ["text"],
+            "output": ["text"]
+          },
+          "limit": {
+            "context": 32768,
+            "output": 4096
+          },
+          "settings": {
+            "temperature": 0.1
+          }
+        },        
+	"qwen25": {
+          "name": "Qwen2.5 7B",
+          "modelID": "C:\\Users\\Striter\\.cache\\huggingface\\hub\\models--Qwen--Qwen2.5-7B-Instruct-GGUF\\snapshots\\bb5d59e06d9551d752d08b292a50eb208b07ab1f\\qwen2.5-7b-instruct-q4_k_m-00001-of-00002.gguf",
+          "capabilities": {
+            "tools": true,
+            "input": ["text"],
+            "output": ["text"]
+          },
+          "limit": {
+            "context": 32768,
+            "output": 4096
+          },
+          "settings": {
+            "temperature": 0.1
+          }
+        },
+	
+      }
+    }
+  }
+}

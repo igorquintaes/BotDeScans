@@ -24,13 +24,13 @@ public class AutocompleteTitles(TitleRepository titleRepository) : IAutocomplete
 
         return titles
             .Select(title => new ApplicationCommandOptionChoice(
-                Name: Truncate(title.Name, Consts.DISCORD_PARAM_MAX_LENGTH),
+                Name: Truncate(title.Name),
                 Value: title.Id))
             .ToList();
     }
 
-    private static string Truncate(string value, int maxLength) =>
-        value.Length > maxLength
-            ? string.Concat(value.AsSpan(0, maxLength - 3), "...")
+    private static string Truncate(string value) =>
+        value.Length > Consts.DISCORD_PARAM_MAX_LENGTH
+            ? string.Concat(value.AsSpan(0, Consts.DISCORD_PARAM_MAX_LENGTH - 3), "...")
             : value;
 }

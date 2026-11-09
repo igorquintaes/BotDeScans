@@ -142,6 +142,62 @@ public class TitleRepositoryTests(DatabaseTestFixture databaseTestFixture)
 
     }
 
+    public class GetTitlesByNameLikeAsync(DatabaseTestFixture databaseTestFixture)
+        : TitleRepositoryTests(databaseTestFixture)
+    {
+        [Fact]
+        public async Task Should_Return_Titles_That_Match_Name_Like()
+        {
+            var titleA = CreateTitle(1);
+            var titleB = CreateTitle(2);
+            var titleC = CreateTitle(3);
+
+            Context.Titles.AddRange([titleA, titleB, titleC]);
+            await Context.SaveChangesAsync(cancellationToken);
+
+            var result = await repository.GetTitlesByNameLikeAsync("Integration test title", Context.Titles.Count(), cancellationToken);
+
+            result.Should().BeEquivalentTo([titleA, titleB, titleC]);
+        }
+
+        [Fact]
+        public async Task Should_Return_Empty_List_When_No_Titles_Match_Name_Like()
+        {
+            var result = await repository.GetTitlesByNameLikeAsync("Nonexistent Title", Context.Titles.Count(), cancellationToken);
+            result.Should().BeEmpty();
+        }
+
+        [Fact]
+        public async Task Should_Return_Limited_Number_Of_Titles_When_MaxResults_Is_Specified()
+        {
+            var titleA = CreateTitle(1);
+            var titleB = CreateTitle(2);
+            var titleC = CreateTitle(3);
+
+            Context.Titles.AddRange([titleA, titleB, titleC]);
+            await Context.SaveChangesAsync(cancellationToken);
+
+            var result = await repository.GetTitlesByNameLikeAsync("Integration test title", Context.Titles.Count() - 1, cancellationToken);
+
+            result.Should().BeEquivalentTo([titleA, titleB]);
+        }
+
+        [Fact]
+        public async Task Should_Return_Ordered_Titles()
+        {
+            var titleA = CreateTitle(1);
+            var titleB = CreateTitle(2);
+            var titleC = CreateTitle(3);
+
+            Context.Titles.AddRange([titleC, titleA, titleB]);
+            await Context.SaveChangesAsync(cancellationToken);
+
+            var result = await repository.GetTitlesByNameLikeAsync("Integration test title", Context.Titles.Count(), cancellationToken);
+
+            result.Should().BeEquivalentTo([titleA, titleB, titleC], options => options.WithStrictOrdering());
+        }
+    }
+
     private static Title CreateTitle(int index) =>
         new()
         {
