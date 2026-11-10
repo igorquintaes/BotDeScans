@@ -1,6 +1,6 @@
 # Bot de Scans
 
-Um bot de Discord com diversas ferramentas para facilitar o dia a dia e o trabalho de grupos Scanlators, idealizado e desenvolvido pela [Escola de Scans](https://www.youtube.com/c/EscoladeScans)! Ele é totalmente gratuito, fique à vontade para contribuir se desejar. Aprenda já a usá-lo em nossa [Wiki](https://github.com/igorquintaes/BotDeScans/wiki). Lá ensinamos como baixar e configurar. Não é preciso ter tanto conhecimento com computadores nem com programação. 
+Um bot de Discord com diversas ferramentas para facilitar o dia a dia e o trabalho de grupos Scanlators, idealizado e desenvolvido pela [Escola de Scans](https://www.youtube.com/c/EscoladeScans)! Ele é totalmente gratuito, fique à vontade para contribuir se desejar. Aprenda já a usá-lo em nossa [Wiki](https://github.com/igorquintaes/BotDeScans/wiki). Lá ensinamos como baixar e configurar. Não é preciso ter tanto conhecimento com computadores nem com programação. 
 
 ## Como funciona
 

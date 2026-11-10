@@ -23,12 +23,8 @@ $reportDirectory = Join-Path $PSScriptRoot 'TestResults/Report'
 $coverageSettings = Join-Path $PSScriptRoot 'coverage.settings.xml'
 $testProjects = @(
     @{
-        Name = 'unit'
-        Project = Join-Path $PSScriptRoot 'BotDeScans.UnitTests/BotDeScans.UnitTests.csproj'
-    },
-    @{
-        Name = 'integration'
-        Project = Join-Path $PSScriptRoot 'BotDeScans.IntegrationTests/BotDeScans.IntegrationTests.csproj'
+        Name = 'Tests'
+        Project = Join-Path $PSScriptRoot 'BotDeScans.Tests/BotDeScans.Tests.csproj'
     }
 )
 

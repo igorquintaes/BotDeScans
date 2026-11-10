@@ -3,6 +3,7 @@ using Microsoft.Extensions.DependencyInjection;
 using System.Diagnostics.CodeAnalysis;
 
 namespace BotDeScans.App.Services.MangaDex;
+
 [ExcludeFromCodeCoverage]
 internal static class AddDependencies
 {

@@ -1,0 +1,94 @@
+using BotDeScans.App.Features.Publish.Interaction.Models;
+using BotDeScans.App.Features.Publish.Interaction.Steps;
+using BotDeScans.App.Features.Publish.Interaction.Steps.Enums;
+using FluentResults;
+
+namespace BotDeScans.Tests.Specs.Unit.Features.Publish.Interaction.Models;
+
+public class StepInfoTests : UnitTest
+{
+    public class StepStatusProp : StepInfoTests
+    {
+        [Fact]
+        public void GivenManagementStepTypeShouldCreateStepInfoWithQueuedForExecutionStatus() =>
+            new StepInfo(A.Fake<IManagementStep>()).Status
+               .Should().Be(StepStatus.QueuedForExecution);
+
+        [Fact]
+        public void GivenPublishStepTypeShouldCreateStepInfoWithQueuedForValidationStatus() =>
+            new StepInfo(A.Fake<IPublishStep>()).Status
+               .Should().Be(StepStatus.QueuedForValidation);
+    }
+
+    public class UpdateStatus : StepInfoTests
+    {
+        [Fact]
+        public void GivenManagementStepTypeShouldChangeStatusToSuccessWhenResultIsSuccess()
+        {
+            var stepInfo = new StepInfo(A.Fake<IManagementStep>());
+            var updated = stepInfo.UpdateStatus(Result.Ok());
+
+            updated.Status.Should().Be(StepStatus.Success);
+        }
+
+        [Fact]
+        public void GivenPublishStepTypeInFirstCallShouldChangeStatusToQueuedToExecutionWhenResultIsSuccess()
+        {
+            var stepInfo = new StepInfo(A.Fake<IPublishStep>());
+            var updated = stepInfo.UpdateStatus(Result.Ok());
+
+            updated.Status.Should().Be(StepStatus.QueuedForExecution);
+        }
+
+        [Fact]
+        public void GivenPublishStepTypeInSecondCallShouldChangeStatusToSuccessWhenResultIsSuccess()
+        {
+            var stepInfo = new StepInfo(A.Fake<IPublishStep>());
+            var updated = stepInfo.UpdateStatus(Result.Ok())
+                                  .UpdateStatus(Result.Ok());
+
+            updated.Status.Should().Be(StepStatus.Success);
+        }
+
+        [Fact]
+        public void GivenManagementStepTypeShouldChangeStatusToErrorWhenResultIsFailed()
+        {
+            var stepInfo = new StepInfo(A.Fake<IManagementStep>());
+            var updated = stepInfo.UpdateStatus(Result.Fail("some message"));
+
+            updated.Status.Should().Be(StepStatus.Error);
+        }
+
+        [Fact]
+        public void GivenPublishStepTypeInFirstCallShouldChangeStatusToErrorWhenResultIsFailed()
+        {
+            var stepInfo = new StepInfo(A.Fake<IPublishStep>());
+            var updated = stepInfo.UpdateStatus(Result.Fail("some message"));
+
+            updated.Status.Should().Be(StepStatus.Error);
+        }
+
+        [Fact]
+        public void GivenPublishStepTypeInSecondCallShouldChangeStatusToErrorWhenResultIsFailed()
+        {
+            var stepInfo = new StepInfo(A.Fake<IPublishStep>());
+            var updated = stepInfo.UpdateStatus(Result.Ok())
+                                  .UpdateStatus(Result.Fail("some message"));
+
+            updated.Status.Should().Be(StepStatus.Error);
+        }
+    }
+
+    public class SkipConstructorParam : StepInfoTests
+    {
+        [Fact]
+        public void GivenSkipTrueShouldCreateStepInfoWithSkipStatus() =>
+            new StepInfo(A.Fake<IManagementStep>(), skip: true).Status
+               .Should().Be(StepStatus.Skip);
+
+        [Fact]
+        public void GivenSkipFalseShouldCreateStepInfoWithNormalStatus() =>
+            new StepInfo(A.Fake<IManagementStep>(), skip: false).Status
+               .Should().Be(StepStatus.QueuedForExecution);
+    }
+}
