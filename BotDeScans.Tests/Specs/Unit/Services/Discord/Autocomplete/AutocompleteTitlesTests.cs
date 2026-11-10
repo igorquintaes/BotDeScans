@@ -83,33 +83,35 @@ public class AutocompleteTitlesTests : UnitTest
         [Fact]
         public async Task GivenAboveMaxLimitTitleLenghtShouldReturnItEscaping()
         {
-            var aboveMaxTitleLenght = "c".PadRight(Consts.DISCORD_PARAM_MAX_LENGTH + 1, 'a');
-            var expectedTitleReturn = "c".PadRight(Consts.DISCORD_PARAM_MAX_LENGTH - 3, 'a') + "...";
-            var titleId = 50;
+            const int TITLE_ID = 50;
+            const string TITLE_NAME_REQUEST = "some name";
+
+            var titleNameResult = "c".PadRight(Consts.DISCORD_PARAM_MAX_LENGTH + 1, 'a');
+            var titleNameResultTruncated = "c".PadRight(Consts.DISCORD_PARAM_MAX_LENGTH - 3, 'a') + "...";
 
             var titles = new List<Title>
             {
                 new()
                 {
-                    Id = titleId,
-                    Name = aboveMaxTitleLenght,
+                    Id = TITLE_ID,
+                    Name = titleNameResult,
                     DiscordRoleId = default
                 }
             };
 
             A.CallTo(() => fixture.Freeze<TitleRepository>()
                    .GetTitlesByNameLikeAsync(
-                        nameLike: aboveMaxTitleLenght,
+                        nameLike: TITLE_NAME_REQUEST,
                         resultsQuantity: Consts.DISCORD_CHOICE_MAX_RESULTS,
                         cancellationToken))
                    .Returns(titles);
 
-            var result = await autocomplete.GetSuggestionsAsync(default!, aboveMaxTitleLenght, cancellationToken);
+            var result = await autocomplete.GetSuggestionsAsync(default!, TITLE_NAME_REQUEST, cancellationToken);
 
             using var _ = new AssertionScope();
             result.Count.Should().Be(1);
-            result.Select(s => s.Name).Should().BeEquivalentTo([expectedTitleReturn]);
-            result.Select(s => s.Value.ToString()).Should().BeEquivalentTo([$"System.Int32: {titleId}"]);
+            result.Select(s => s.Name).Should().BeEquivalentTo([titleNameResultTruncated]);
+            result.Select(s => s.Value.ToString()).Should().BeEquivalentTo([$"System.Int32: {TITLE_ID}"]);
         }
     }
 }

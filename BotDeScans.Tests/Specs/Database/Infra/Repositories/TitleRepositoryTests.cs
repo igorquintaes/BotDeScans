@@ -2,6 +2,7 @@ using BotDeScans.App.Infra.Repositories;
 using BotDeScans.App.Models.Entities;
 using BotDeScans.App.Models.Entities.Enums;
 using BotDeScans.Tests.Fixtures;
+using Microsoft.EntityFrameworkCore.Metadata.Internal;
 
 namespace BotDeScans.Tests.Specs.Database.Infra.Repositories;
 
@@ -158,12 +159,17 @@ public class TitleRepositoryTests(DatabaseTestFixture databaseTestFixture)
             var titleA = CreateTitle(1);
             var titleB = CreateTitle(2);
             var titleC = CreateTitle(3);
+            var titleD = new Title()
+            {
+                Name = $"other",
+                DiscordRoleId = 50
+            };
 
-            Context.Titles.AddRange([titleA, titleB, titleC]);
+            Context.Titles.AddRange([titleA, titleB, titleC, titleD]);
             await Context.SaveChangesAsync(cancellationToken);
             Context.ChangeTracker.Clear();
 
-            var result = await repository.GetTitlesByNameLikeAsync("Integration test title", Context.Titles.Count(), cancellationToken);
+            var result = await repository.GetTitlesByNameLikeAsync("test TITLE", Context.Titles.Count(), cancellationToken);
 
             result.Should().BeEquivalentTo([titleA, titleB, titleC]);
         }
@@ -205,6 +211,22 @@ public class TitleRepositoryTests(DatabaseTestFixture databaseTestFixture)
             var result = await repository.GetTitlesByNameLikeAsync("Integration test title", Context.Titles.Count(), cancellationToken);
 
             result.Should().BeEquivalentTo([titleA, titleB, titleC], options => options.WithStrictOrdering());
+        }
+
+        [Fact]
+        public async Task Should_Return_Limited_Titles_Ordered()
+        {
+            var titleA = CreateTitle(1);
+            var titleB = CreateTitle(2);
+            var titleC = CreateTitle(3);
+
+            Context.Titles.AddRange([titleC, titleA, titleB]);
+            await Context.SaveChangesAsync(cancellationToken);
+            Context.ChangeTracker.Clear();
+
+            var result = await repository.GetTitlesByNameLikeAsync("Integration test title", 2, cancellationToken);
+
+            result.Should().BeEquivalentTo([titleA, titleB], options => options.WithStrictOrdering());
         }
     }
 
